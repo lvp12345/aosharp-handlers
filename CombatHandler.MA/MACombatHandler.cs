@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Combat;
 
@@ -15,35 +16,28 @@ namespace Desu
 
         public MACombatHandler() : base()
         {
-            _perkRules.Add(214399, Limber);                 //Limber
-            _perkRules.Add(211453, DanceOfFools);           //Dance of Fools
-            _perkRules.Add(248727, Moonmist);               //Moonmist
+            //Perks
+            RegisterPerkProcessor(PerkHash.Limber, Limber);
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);      
+            RegisterPerkProcessor(PerkHash.Moonmist, Moonmist);
+            RegisterPerkProcessor(PerkHash.Dragonfire, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.ChiConductor, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.Incapacitate, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.TremorHand, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.FleshQuiver, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.Obliterate, Obliterate);
+            RegisterPerkProcessor(PerkHash.Bore, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.Crave, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.NanoFeast, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.BotConfinement, GenericDamagePerk);
 
-            for (int i = 226177; i <= 226182; i++)          //Dragonfire
-                _perkRules.Add(i, GenericDamagePerk);
-
-            _perkRules.Add(226170, GenericDamagePerk);      //Chi Conductor
-            _perkRules.Add(226169, GenericDamagePerk);      //Incapacitate
-
-            for (int i = 226797; i <= 226802; i++)          //Tremor Hand
-                _perkRules.Add(i, GenericDamagePerk);
-
-            _perkRules.Add(226162, GenericDamagePerk);      //Flesh Quiver
-
-            for (int i = 226155; i <= 226160; i++)          //Obliterate
-                _perkRules.Add(i, Obliterate);
-
-            _perkRules.Add(253078, GenericDamagePerk);      //Bore
-            _perkRules.Add(253075, GenericDamagePerk);      //Crave
-            _perkRules.Add(253119, GenericDamagePerk);      //Nano Feast
-            _perkRules.Add(253122, GenericDamagePerk);      //Bot Confinement
-
-            _spellRules.Add(275698, MatrixOfKa);
+            //Spells
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SingleTargetHealing).OrderByStackingOrder(), SingleTargetHeal);
         }
 
-        private bool MatrixOfKa(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
+        private bool SingleTargetHeal(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
         {
-            if (DynelManager.LocalPlayer.MissingHealth > 2000)
+            if (DynelManager.LocalPlayer.MissingHealth > 2000) //TODO: Some kind of healing check to calc an optimal missing health value
             {
                 target = DynelManager.LocalPlayer;
                 return true;

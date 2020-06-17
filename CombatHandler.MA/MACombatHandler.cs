@@ -47,9 +47,9 @@ namespace Desu
             return false;
         }
 
-        private bool Limber(Perk perk, SimpleChar fightingTarget, out (CombatActionType actionType, SimpleChar target) actionUsageInfo)
+        private bool Limber(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            actionUsageInfo = (CombatActionType.Buff, null);
+            target = fightingTarget;
 
             Buff dof;
             if (DynelManager.LocalPlayer.Buffs.Find(DOF_BUFF, out dof) && dof.RemainingTime > 12.5f)
@@ -58,9 +58,9 @@ namespace Desu
             return true;
         }
 
-        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, out (CombatActionType actionType, SimpleChar target) actionUsageInfo)
+        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            actionUsageInfo = (CombatActionType.Buff, null);
+            target = fightingTarget;
 
             Buff limber;
             if (!DynelManager.LocalPlayer.Buffs.Find(LIMBER_BUFF, out limber) || limber.RemainingTime > 12.5f)
@@ -69,9 +69,9 @@ namespace Desu
             return true;
         }
 
-        private bool Moonmist(Perk perk, SimpleChar fightingTarget, out (CombatActionType actionType, SimpleChar target) actionUsageInfo)
+        private bool Moonmist(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            actionUsageInfo = (CombatActionType.Buff, null);
+            target = fightingTarget;
 
             if (fightingTarget == null || fightingTarget.HealthPercent < 90)
                 return false;
@@ -79,9 +79,9 @@ namespace Desu
             return true;
         }
 
-        private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, out (CombatActionType actionType, SimpleChar target) actionUsageInfo)
+        private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            actionUsageInfo = (CombatActionType.Damage, fightingTarget);
+            target = fightingTarget;
 
             if (fightingTarget == null || fightingTarget.HealthPercent < 5)
                 return false;
@@ -89,9 +89,9 @@ namespace Desu
             return true;
         }
 
-        private bool Obliterate(Perk perk, SimpleChar fightingTarget, out (CombatActionType actionType, SimpleChar target) actionUsageInfo)
+        private bool Obliterate(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            actionUsageInfo = (CombatActionType.Damage, fightingTarget);
+            target = fightingTarget;
 
             if (fightingTarget == null || fightingTarget.HealthPercent > 15)
                 return false;

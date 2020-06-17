@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.MA", "CombatHandler.MA\CombatHandler.MA.csproj", "{9DE96028-B6AB-4E50-8B2D-DA8E547A8724}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.NT", "CombatHandler.NT\CombatHandler.NT.csproj", "{C6269B50-65B8-4DF1-AC8C-6523841A8CB5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Shade", "CombatHandler.Shade\CombatHandler.Shade.csproj", "{EEFADB86-E1EB-4608-9FDE-09935465D586}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{9DE96028-B6AB-4E50-8B2D-DA8E547A8724}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DE96028-B6AB-4E50-8B2D-DA8E547A8724}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DE96028-B6AB-4E50-8B2D-DA8E547A8724}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6269B50-65B8-4DF1-AC8C-6523841A8CB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6269B50-65B8-4DF1-AC8C-6523841A8CB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6269B50-65B8-4DF1-AC8C-6523841A8CB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6269B50-65B8-4DF1-AC8C-6523841A8CB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEFADB86-E1EB-4608-9FDE-09935465D586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEFADB86-E1EB-4608-9FDE-09935465D586}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEFADB86-E1EB-4608-9FDE-09935465D586}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEFADB86-E1EB-4608-9FDE-09935465D586}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

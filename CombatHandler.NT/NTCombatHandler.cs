@@ -28,6 +28,7 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.BreachDefenses, GenericDamagePerk);
 
             //Spells
+            RegisterSpellProcessor(275024, IzgimmersWealth);
             RegisterSpellProcessor(275692, SingleTargetNuke);                                                                           //Garuk's Improved Viral Assault
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDotNuke);    //AI Dot
             RegisterSpellProcessor(218168, SingleTargetNuke);                                                                           //IU for now.. but once i'm not lazy, more nukes.
@@ -37,6 +38,19 @@ namespace Desu
         {
             target = fightingTarget;
             if (fightingTarget == null)
+                return false;
+
+            return true;
+        }
+
+        private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
+        {
+            target = fightingTarget;
+
+            if (fightingTarget == null)
+                return false;
+
+            if (DynelManager.LocalPlayer.MissingNano < 20000 && DynelManager.LocalPlayer.NanoPercent > 5)
                 return false;
 
             return true;

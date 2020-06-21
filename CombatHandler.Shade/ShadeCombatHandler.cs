@@ -68,6 +68,17 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.Diffuse, GenericDamagePerk);
 
             //Spells
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.HealthDrain).OrderByStackingOrder(), HealthDrainNano);
+        }
+
+        private bool HealthDrainNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        {
+            target = fightingtarget;
+
+            if (DynelManager.LocalPlayer.NanoPercent < 20)
+                return false;
+
+            return true;
         }
 
         private bool Limber(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
@@ -95,17 +106,17 @@ namespace Desu
         private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
             target = null;
-
-            if (fightingTarget == null || fightingTarget.HealthPercent < 5)
-                return false;
-
-            return true;
+            return DamagePerk(perk, fightingTarget, target);
         }
 
         private bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
             target = fightingTarget;
+            return DamagePerk(perk, fightingTarget, target);
+        }
 
+        private bool DamagePerk(Perk perk, SimpleChar fightingTarget, SimpleChar target = null)
+        {
             if (fightingTarget == null || fightingTarget.HealthPercent < 5)
                 return false;
 
@@ -171,22 +182,5 @@ namespace Desu
 
             return true;
         }
-
-        private IEnumerable<PerkHash> GetTotemicRitesPerks()
-        {
-            yield return PerkHash.RitualOfDevotion;
-            yield return PerkHash.DevourVigor;
-
-
-            RegisterPerkProcessor(PerkHash.RitualOfDevotion, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.DevourVigor, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.RitualOfZeal, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.DevourEssence, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.RitualOfSpirit, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.DevourVitality, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.RitualOfBlood, GenericDamagePerk);
-        }
-
-
     }
 }

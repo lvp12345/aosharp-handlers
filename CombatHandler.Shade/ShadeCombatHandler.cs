@@ -53,21 +53,21 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.Limber, Limber);
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
 
-            RegisterPerkProcessor(PerkHash.Blur, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.Blur, TargetedDamagePerk);
 
             SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
             TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
             PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
 
-            RegisterPerkProcessor(PerkHash.Bore, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.Crave, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.NanoFeast, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.BotConfinement, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.Bore, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.Crave, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.NanoFeast, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.BotConfinement, TargetedDamagePerk);
 
             RegisterPerkProcessor(PerkHash.ChaosRitual, GenericDamagePerk);
             RegisterPerkProcessor(PerkHash.Diffuse, GenericDamagePerk);
-            //Spells
 
+            //Spells
         }
 
         private bool Limber(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
@@ -94,6 +94,16 @@ namespace Desu
 
         private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
+            target = null;
+
+            if (fightingTarget == null || fightingTarget.HealthPercent < 5)
+                return false;
+
+            return true;
+        }
+
+        private bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        {
             target = fightingTarget;
 
             if (fightingTarget == null || fightingTarget.HealthPercent < 5)
@@ -104,7 +114,7 @@ namespace Desu
 
         private bool PiercingMasteryPerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            target = fightingTarget;
+            target = null;
 
             if (fightingTarget == null)
                 return false;
@@ -136,7 +146,7 @@ namespace Desu
 
         private bool SpiritPhylacteryPerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            target = fightingTarget;
+            target = null;
 
             if (fightingTarget == null)
                 return false;
@@ -150,7 +160,7 @@ namespace Desu
 
         private bool TotemicRitesPerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            target = fightingTarget;
+            target = null;
 
             if (fightingTarget == null)
                 return false;

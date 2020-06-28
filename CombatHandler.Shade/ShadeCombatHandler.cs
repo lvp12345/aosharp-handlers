@@ -66,12 +66,26 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.Diffuse, TargetedDamagePerk);
 
             //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.EmergencySneak).OrderByStackingOrder(), SmokeBombNano);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaressNano, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.HealthDrain).OrderByStackingOrder(), HealthDrainNano);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
 
             //Items
 
+        }
+
+        private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        {
+            target = fightingtarget;
+
+            if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
+                return false;
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 50 && fightingtarget.HealthPercent > 5)
+                return true;
+
+            return false;
         }
 
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)

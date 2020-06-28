@@ -1,5 +1,4 @@
 ﻿using AOSharp.Core;
-using AOSharp.Core.Combat;
 using System;
 
 namespace Desu
@@ -11,7 +10,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("Shade Combat Handler Loaded!");
-                CombatHandler.Set(new ShadeCombatHandler());
+                AOSharp.Core.Combat.CombatHandler.Set(new ShadeCombatHandler());
             }
             catch (Exception e)
             {

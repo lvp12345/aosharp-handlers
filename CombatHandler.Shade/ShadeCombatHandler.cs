@@ -6,13 +6,16 @@ using System.Threading.Tasks;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Combat;
+using CombatHandler.Generic;
 
 namespace Desu
 {
-    public class ShadeCombatHandler : CombatHandler
+    public class ShadeCombatHandler : GenericCombatHandler
     {
         private const int DOF_BUFF = 210159;
         private const int LIMBER_BUFF = 210158;
+        private const int ShadesCaress = 266300;
+        private const int MissingHealthCombatAbortPercentage = 30;
 
         private List<PerkHash> TotemicRites = new List<PerkHash>
         {
@@ -50,8 +53,8 @@ namespace Desu
         public ShadeCombatHandler() : base()
         {
             //Perks
-            RegisterPerkProcessor(PerkHash.Limber, Limber);
-            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
+            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
 
             RegisterPerkProcessor(PerkHash.Blur, TargetedDamagePerk);
 
@@ -59,23 +62,66 @@ namespace Desu
             TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
             PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
 
-            RegisterPerkProcessor(PerkHash.Bore, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Crave, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.NanoFeast, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.BotConfinement, TargetedDamagePerk);
-
-            RegisterPerkProcessor(PerkHash.ChaosRitual, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.Diffuse, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.ChaosRitual, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.Diffuse, TargetedDamagePerk);
 
             //Spells
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.EmergencySneak).OrderByStackingOrder(), SmokeBombNano);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.HealthDrain).OrderByStackingOrder(), HealthDrainNano);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
+
+            //Items
+
+        }
+
+        private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        {
+            target = null;
+
+            if (DynelManager.LocalPlayer.HealthPercent <= MissingHealthCombatAbortPercentage)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool SpiritSiphonNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        {
+            target = fightingtarget;
+
+            if (DynelManager.LocalPlayer.Nano < spell.Cost)
+                return false;
+
+            if (!DynelManager.LocalPlayer.IsAttacking)
+                return false;
+
+            return true;
         }
 
         private bool HealthDrainNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
         {
             target = fightingtarget;
 
-            if (DynelManager.LocalPlayer.NanoPercent < 20)
+            if (DynelManager.LocalPlayer.Nano < spell.Cost)
+                return false;
+
+            if (!DynelManager.LocalPlayer.IsAttacking)
+                return false;
+
+            // if we have caress, save enough nano to use it
+            if (Spell.Find(ShadesCaress, out Spell caress))
+            {
+                if (DynelManager.LocalPlayer.Nano - spell.Cost < caress.Cost)
+                    return false;
+            }
+
+            // only use it for dps if we have plenty of nano
+            if (DynelManager.LocalPlayer.NanoPercent > 80)
+                return true;
+
+            // otherwise save it for if our health starts to drop
+            if (DynelManager.LocalPlayer.HealthPercent >= 85)
                 return false;
 
             return true;
@@ -98,26 +144,6 @@ namespace Desu
 
             Buff limber;
             if (!DynelManager.LocalPlayer.Buffs.Find(LIMBER_BUFF, out limber) || limber.RemainingTime > 12.5f)
-                return false;
-
-            return true;
-        }
-
-        private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
-        {
-            target = null;
-            return DamagePerk(perk, fightingTarget, target);
-        }
-
-        private bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
-        {
-            target = fightingTarget;
-            return DamagePerk(perk, fightingTarget, target);
-        }
-
-        private bool DamagePerk(Perk perk, SimpleChar fightingTarget, SimpleChar target = null)
-        {
-            if (fightingTarget == null || fightingTarget.HealthPercent < 5)
                 return false;
 
             return true;
@@ -178,6 +204,35 @@ namespace Desu
 
             //Don't TR if there are SP/PM chains in progress
             if (_actionQueue.Any(x => x.CombatAction is Perk action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash))))
+                return false;
+
+            return true;
+        }
+
+        protected override bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        {
+            target = fightingTarget;
+
+            //Don't use if there are SP/PM/TR chains in progress
+            if (_actionQueue.Any(x => x.CombatAction is Perk action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
+                return false;
+
+            return DamagePerk(perk, fightingTarget, target);
+        }
+
+        protected override bool DamagePerk(Perk perk, SimpleChar fightingTarget, SimpleChar target = null)
+        {
+            if (fightingTarget == null)
+                return false;
+
+            if (fightingTarget.Health > 50000)
+                return true;
+
+            if (fightingTarget.HealthPercent < 5)
+                return false;
+
+            //Don't use if there are SP/PM/TR chains in progress
+            if (_actionQueue.Any(x => x.CombatAction is Perk action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
                 return false;
 
             return true;

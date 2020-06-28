@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Combat;
+using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 
 namespace Desu
@@ -72,7 +73,21 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
 
             //Items
+            RegisterItemProcessor(245990, 245990, LavaCap);
+        }
 
+        private bool LavaCap(Item item, SimpleChar fightingtarget, out SimpleChar target)
+        {
+            target = null;
+
+            if (fightingtarget == null)
+                return false;
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.SharpObject))
+                return false;
+
+            target = fightingtarget;
+            return true;
         }
 
         private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)

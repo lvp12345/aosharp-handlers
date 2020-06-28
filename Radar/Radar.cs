@@ -36,8 +36,40 @@ namespace Radar
                 if (player.Identity == DynelManager.LocalPlayer.Identity)
                     continue;
 
-                Debug.DrawSphere(player.Position, 1, DebuggingColor.Red);
-                Debug.DrawLine(DynelManager.LocalPlayer.Position, player.Position, DebuggingColor.Red);
+                Vector3 debuggingColor = DebuggingColor.White;
+
+                if (Playfield.IsBattleStation)
+                {
+                    int battlestationSide = DynelManager.LocalPlayer.GetStat(Stat.BattlestationSide);
+
+                    if (battlestationSide != player.GetStat(Stat.BattlestationSide))
+                    {
+                        debuggingColor = DebuggingColor.Red;
+                    }
+                    else
+                    {
+                        debuggingColor = DebuggingColor.Green;  
+                    }
+                }
+                else
+                {
+                    switch (player.Side)
+                    {
+                        case Side.Clan:
+                            debuggingColor = DebuggingColor.Yellow;
+                            break;
+                        case Side.OmniTek:
+                            debuggingColor = DebuggingColor.LightBlue;
+                            break;
+                        case Side.Neutral:
+                            debuggingColor = DebuggingColor.Purple;
+                            break;
+                    }
+
+                }
+
+                Debug.DrawSphere(player.Position, 1, debuggingColor);
+                Debug.DrawLine(DynelManager.LocalPlayer.Position, player.Position, debuggingColor);
             }
         }
     }

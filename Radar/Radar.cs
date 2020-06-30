@@ -31,6 +31,8 @@ namespace Radar
 
         private void DrawPlayers()
         {
+            int time = (int) Time.NormalTime;
+
             foreach (SimpleChar player in DynelManager.Players)
             {
                 if (player.Identity == DynelManager.LocalPlayer.Identity)
@@ -53,19 +55,26 @@ namespace Radar
                 }
                 else
                 {
-                    switch (player.Side)
+                    if ((player.HasBuff(216382) || player.HasBuff(284620) || player.HasBuff(202732) ||
+                         player.HasBuff(214879) && time % 2 == 0))
                     {
-                        case Side.Clan:
-                            debuggingColor = DebuggingColor.Yellow;
-                            break;
-                        case Side.OmniTek:
-                            debuggingColor = DebuggingColor.LightBlue;
-                            break;
-                        case Side.Neutral:
-                            debuggingColor = DebuggingColor.Purple;
-                            break;
+                        debuggingColor = DebuggingColor.Red;
                     }
-
+                    else
+                    {
+                        switch (player.Side)
+                        {
+                            case Side.Clan:
+                                debuggingColor = DebuggingColor.Yellow;
+                                break;
+                            case Side.OmniTek:
+                                debuggingColor = DebuggingColor.LightBlue;
+                                break;
+                            case Side.Neutral:
+                                debuggingColor = DebuggingColor.Purple;
+                                break;
+                        }
+                    }
                 }
 
                 Debug.DrawSphere(player.Position, 1, debuggingColor);

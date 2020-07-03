@@ -11,7 +11,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("NT Combat Handler Loaded!");
-                CombatHandler.Set(new NTCombatHandler());
+                AOSharp.Core.Combat.CombatHandler.Set(new NTCombatHandler());
             }
             catch (Exception e)
             {

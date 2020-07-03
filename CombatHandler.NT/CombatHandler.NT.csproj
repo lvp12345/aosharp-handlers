@@ -51,5 +51,11 @@
     <Compile Include="NTCombatHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CombatHandler.Generic\CombatHandler.Generic.csproj">
+      <Project>{8cb8419f-3914-49c1-aba3-78c5d26e8e48}</Project>
+      <Name>CombatHandler.Generic</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

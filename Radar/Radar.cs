@@ -27,6 +27,7 @@ namespace Radar
         private void OnUpdate(object sender, float e)
         {
             DrawPlayers();
+            DrawLifts();
         }
 
         private void DrawPlayers()
@@ -55,8 +56,7 @@ namespace Radar
                 }
                 else
                 {
-                    if ((player.HasBuff(216382) || player.HasBuff(284620) || player.HasBuff(202732) ||
-                         player.HasBuff(214879) && time % 2 == 0))
+                    if(player.Buffs.Contains(new [] {216382, 284620, 202732, 214879 }) && time % 2 == 0)
                     {
                         debuggingColor = DebuggingColor.Red;
                     }
@@ -79,6 +79,19 @@ namespace Radar
 
                 Debug.DrawSphere(player.Position, 1, debuggingColor);
                 Debug.DrawLine(DynelManager.LocalPlayer.Position, player.Position, debuggingColor);
+            }
+        }
+
+        private void DrawLifts()
+        {
+            foreach (Dynel lift in DynelManager.AllDynels.Where(d => d.Identity.Type == IdentityType.Terminal))
+            {
+                if (lift is SimpleChar)
+                {
+
+                }
+                Debug.DrawSphere(lift.Position, 1, DebuggingColor.White);
+                Debug.DrawLine(DynelManager.LocalPlayer.Position, lift.Position, DebuggingColor.White);
             }
         }
     }

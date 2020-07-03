@@ -246,11 +246,13 @@ namespace Desu
             if (_actionQueue.Any(x => x.CombatAction is Perk action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
                 return false;
 
-            return DamagePerk(perk, fightingTarget, target);
+            return DamagePerk(perk, fightingTarget, out _);
         }
 
-        protected override bool DamagePerk(Perk perk, SimpleChar fightingTarget, SimpleChar target = null)
+        protected override bool DamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
+            target = null;
+
             if (fightingTarget == null)
                 return false;
 

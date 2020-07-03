@@ -78,11 +78,13 @@ namespace CombatHandler.Generic
         protected virtual bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
             target = fightingTarget;
-            return DamagePerk(perk, fightingTarget, target);
+            return DamagePerk(perk, fightingTarget, out _);
         }
 
-        protected virtual bool DamagePerk(Perk perk, SimpleChar fightingTarget, SimpleChar target = null)
+        protected virtual bool DamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
+            target = null;
+
             if (fightingTarget == null)
                 return false;
 

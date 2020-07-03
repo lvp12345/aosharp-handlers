@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Combat;
+using AOSharp.Core.GameData;
 using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
 
@@ -19,10 +20,10 @@ namespace Desu
             //Perks
             RegisterPerkProcessor(PerkHash.HostileTakeover, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.ChaoticAssumption, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.ProgramOverload, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.FlimFocus, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.ProgramOverload, DamagePerk);
+            RegisterPerkProcessor(PerkHash.FlimFocus, DamagePerk);
             RegisterPerkProcessor(PerkHash.Utilize, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.DazzleWithLights, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.DazzleWithLights, StarfallPerk);
             RegisterPerkProcessor(PerkHash.Combust, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.ThermalDetonation, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.Supernova, TargetedDamagePerk);
@@ -38,6 +39,16 @@ namespace Desu
             _menu = new Menu("CombatHandler.NT", "CombatHandler.NT");
             _menu.AddItem(new MenuBool("UseAIDot", "Use AI DoT", true));
             OptionPanel.AddMenu(_menu);
+        }
+
+        protected virtual bool StarfallPerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        {
+            target = null;
+
+            if (Perk.Find(PerkHash.Combust, out Perk combust) && !combust.IsAvailable)
+                return false;
+
+            return TargetedDamagePerk(perk, fightingTarget, out target);
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
@@ -82,16 +93,6 @@ namespace Desu
                 return false;
 
             if (fightingTarget.Buffs.Find(spell.Identity.Instance, out Buff buff) && buff.RemainingTime > 5)
-                return false;
-
-            return true;
-        }
-
-        private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
-        {
-            target = fightingTarget;
-
-            if (fightingTarget == null || fightingTarget.HealthPercent < 5)
                 return false;
 
             return true;

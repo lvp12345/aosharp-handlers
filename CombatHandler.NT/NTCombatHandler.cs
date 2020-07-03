@@ -34,9 +34,9 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis);
             RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth);
-            RegisterSpellProcessor(RelevantNanos.IzgimmersUltimatum, SingleTargetNuke);                                                                           //Garuk's Improved Viral Assault
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDotNuke);          //AI Dot
-            RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);                                                                           //IU for now.. but once i'm not lazy, more nukes.
+            RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDotNuke);
+            RegisterSpellProcessor(RelevantNanos.IzgimmersUltimatum, SingleTargetNuke);
 
             _menu = new Menu("CombatHandler.NT", "CombatHandler.NT");
             _menu.AddItem(new MenuBool("UseAIDot", "Use AI DoT", true));
@@ -110,8 +110,8 @@ namespace Desu
         {
             public const int NanobotAegis = 302074;
             public const int IzgimmersWealth = 275024;
-            public const int IzgimmersUltimatum = 275692;
-            public const int Garuk = 218168;
+            public const int IzgimmersUltimatum = 218168;
+            public const int Garuk = 275692;
         }
     }
 }

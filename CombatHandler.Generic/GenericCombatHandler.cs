@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Combat;
+using AOSharp.Core.Inventory;
 
 namespace CombatHandler.Generic
 {
@@ -35,6 +36,8 @@ namespace CombatHandler.Generic
 
             // Opportunity knocks
 
+
+            //RegisterItemProcessor(245990, 245990, DamageItem);
 
             // xp stim?
             // health and nano recharger
@@ -77,7 +80,7 @@ namespace CombatHandler.Generic
 
         protected virtual bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
         {
-            target = fightingTarget;
+            target = fightingTarget; 
             return DamagePerk(perk, fightingTarget, out _);
         }
 
@@ -92,6 +95,22 @@ namespace CombatHandler.Generic
                 return true;
 
             if (fightingTarget.HealthPercent < 5)
+                return false;
+
+            return true;
+        }
+
+        protected virtual bool TargetedDamageItem(Item item, SimpleChar fightingTarget, out SimpleChar target)
+        {
+            target = fightingTarget;
+            return DamageItem(item, fightingTarget, out _);
+        }
+
+        protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, out SimpleChar target)
+        {
+            target = null;
+
+            if (fightingTarget == null)
                 return false;
 
             return true;

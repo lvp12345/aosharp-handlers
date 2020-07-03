@@ -62,7 +62,7 @@ namespace Desu
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
         {
             target = null;
-            return DynelManager.LocalPlayer.HealthPercent < 50;
+            return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
         }
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, out SimpleChar target)

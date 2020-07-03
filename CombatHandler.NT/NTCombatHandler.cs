@@ -15,6 +15,7 @@ namespace Desu
     public class NTCombatHandler : GenericCombatHandler
     {
         private Menu _menu;
+
         public NTCombatHandler() : base()
         {
             //Perks
@@ -31,10 +32,11 @@ namespace Desu
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.High);
-            RegisterSpellProcessor(275024, IzgimmersWealth);
-            RegisterSpellProcessor(275692, SingleTargetNuke);                                                                           //Garuk's Improved Viral Assault
+            RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis);
+            RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth);
+            RegisterSpellProcessor(RelevantNanos.IzgimmersUltimatum, SingleTargetNuke);                                                                           //Garuk's Improved Viral Assault
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDotNuke);          //AI Dot
-            RegisterSpellProcessor(218168, SingleTargetNuke);                                                                           //IU for now.. but once i'm not lazy, more nukes.
+            RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);                                                                           //IU for now.. but once i'm not lazy, more nukes.
 
             _menu = new Menu("CombatHandler.NT", "CombatHandler.NT");
             _menu.AddItem(new MenuBool("UseAIDot", "Use AI DoT", true));
@@ -51,10 +53,16 @@ namespace Desu
             return TargetedDamagePerk(perk, fightingTarget, out target);
         }
 
+        private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
+        {
+            target = null;
+            return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(Nanoline.NullitySphereNano);
+        }
+
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
         {
             target = null;
-            return DynelManager.LocalPlayer.HealthPercent < 40;
+            return DynelManager.LocalPlayer.HealthPercent < 50;
         }
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
@@ -96,6 +104,14 @@ namespace Desu
                 return false;
 
             return true;
+        }
+
+        private static class RelevantNanos
+        {
+            public const int NanobotAegis = 302074;
+            public const int IzgimmersWealth = 275024;
+            public const int IzgimmersUltimatum = 275692;
+            public const int Garuk = 218168;
         }
     }
 }

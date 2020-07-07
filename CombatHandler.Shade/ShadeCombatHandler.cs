@@ -7,6 +7,7 @@ using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Combat;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
 
 namespace Desu
@@ -17,6 +18,7 @@ namespace Desu
         private const int LIMBER_BUFF = 210158;
         private const int ShadesCaress = 266300;
         private const int MissingHealthCombatAbortPercentage = 30;
+        private Menu _menu;
 
         private List<PerkHash> TotemicRites = new List<PerkHash>
         {
@@ -71,6 +73,11 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaressNano, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.HealthDrain).OrderByStackingOrder(), HealthDrainNano);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
+
+            _menu = new Menu("CombatHandler.Shade", "CombatHandler.Shade");
+            _menu.AddItem(new MenuBool("UseDrainNanoForDps", "Use drain nano for dps", false));
+            _menu.AddItem(new MenuBool("UseSpiritSiphon", "Use spirit siphon", false));
+            OptionPanel.AddMenu(_menu);
         }
 
         private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
@@ -102,6 +109,9 @@ namespace Desu
         {
             target = fightingtarget;
 
+            if (!_menu.GetBool("UseSpiritSiphon"))
+                return false;
+
             if (DynelManager.LocalPlayer.Nano < spell.Cost)
                 return false;
 
@@ -129,7 +139,7 @@ namespace Desu
             }
 
             // only use it for dps if we have plenty of nano
-            if (DynelManager.LocalPlayer.NanoPercent > 80)
+            if (_menu.GetBool("UseDrainNanoForDps") && DynelManager.LocalPlayer.NanoPercent > 80)
                 return true;
 
             // otherwise save it for if our health starts to drop

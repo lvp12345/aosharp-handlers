@@ -3,9 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using AOSharp.Common.GameData;
+using AOSharp.Common.Unmanaged.Imports;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.Movement;
+using AOSharp.Core.UI;
 
 namespace Radar
 {
@@ -27,6 +30,7 @@ namespace Radar
         private void OnUpdate(object sender, float e)
         {
             DrawPlayers();
+            DrawBots();
             DrawLifts();
         }
 
@@ -43,16 +47,7 @@ namespace Radar
 
                 if (Playfield.IsBattleStation)
                 {
-                    int battlestationSide = DynelManager.LocalPlayer.GetStat(Stat.BattlestationSide);
-
-                    if (battlestationSide != player.GetStat(Stat.BattlestationSide))
-                    {
-                        debuggingColor = DebuggingColor.Red;
-                    }
-                    else
-                    {
-                        debuggingColor = DebuggingColor.Green;  
-                    }
+                    debuggingColor = DynelManager.LocalPlayer.GetStat(Stat.BattlestationSide) != player.GetStat(Stat.BattlestationSide) ? DebuggingColor.Red : DebuggingColor.Green;
                 }
                 else
                 {
@@ -84,14 +79,22 @@ namespace Radar
 
         private void DrawLifts()
         {
-            foreach (Dynel lift in DynelManager.AllDynels.Where(d => d.Identity.Type == IdentityType.Terminal))
+            foreach (Dynel terminal in DynelManager.AllDynels.Where(t => t.Identity.Type == IdentityType.Terminal))
             {
-                if (lift is SimpleChar)
-                {
+                if (!terminal.Name.Contains("Button"))
+                    continue;
 
-                }
-                Debug.DrawSphere(lift.Position, 1, DebuggingColor.White);
-                Debug.DrawLine(DynelManager.LocalPlayer.Position, lift.Position, DebuggingColor.White);
+                Debug.DrawSphere(terminal.Position, 1, DebuggingColor.White);
+                Debug.DrawLine(DynelManager.LocalPlayer.Position, terminal.Position, DebuggingColor.White);
+            }
+        }
+
+        private void DrawBots()
+        {
+            foreach (SimpleChar player in DynelManager.Players.Where(p => p.GetStat(Stat.InPlay) == 0))
+            {
+                Debug.DrawSphere(player.Position, 1, DebuggingColor.Blue);
+                Debug.DrawLine(DynelManager.LocalPlayer.Position, player.Position, DebuggingColor.Blue);
             }
         }
     }

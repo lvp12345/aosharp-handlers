@@ -80,10 +80,8 @@ namespace Desu
             OptionPanel.AddMenu(_menu);
         }
 
-        private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingtarget;
-
             if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
                 return false;
 
@@ -93,22 +91,16 @@ namespace Desu
             return false;
         }
 
-        private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (DynelManager.LocalPlayer.HealthPercent <= MissingHealthCombatAbortPercentage)
-            {
                 return true;
-            }
 
             return false;
         }
 
-        private bool SpiritSiphonNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        private bool SpiritSiphonNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingtarget;
-
             if (!_menu.GetBool("UseSpiritSiphon"))
                 return false;
 
@@ -121,10 +113,8 @@ namespace Desu
             return true;
         }
 
-        private bool HealthDrainNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        private bool HealthDrainNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingtarget;
-
             if (DynelManager.LocalPlayer.Nano < spell.Cost)
                 return false;
 
@@ -149,10 +139,8 @@ namespace Desu
             return true;
         }
 
-        private bool Limber(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool Limber(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             Buff dof;
             if (DynelManager.LocalPlayer.Buffs.Find(DOF_BUFF, out dof) && dof.RemainingTime > 12.5f)
                 return false;
@@ -160,10 +148,8 @@ namespace Desu
             return true;
         }
 
-        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             Buff limber;
             if (!DynelManager.LocalPlayer.Buffs.Find(LIMBER_BUFF, out limber) || limber.RemainingTime > 12.5f)
                 return false;
@@ -171,10 +157,8 @@ namespace Desu
             return true;
         }
 
-        private bool PiercingMasteryPerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool PiercingMasteryPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (fightingTarget == null)
                 return false;
 
@@ -203,10 +187,8 @@ namespace Desu
             return true;
         }
 
-        private bool SpiritPhylacteryPerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool SpiritPhylacteryPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (fightingTarget == null)
                 return false;
 
@@ -217,10 +199,8 @@ namespace Desu
             return true;
         }
 
-        private bool TotemicRitesPerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool TotemicRitesPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (fightingTarget == null)
                 return false;
 
@@ -231,21 +211,18 @@ namespace Desu
             return true;
         }
 
-        protected override bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        protected override bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-
             //Don't use if there are SP/PM/TR chains in progress
             if (_actionQueue.Any(x => x.CombatAction is Perk action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
                 return false;
 
-            return DamagePerk(perk, fightingTarget, out _);
+            actionTarget.ShouldSetTarget = true;
+            return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected override bool DamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        protected override bool DamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (fightingTarget == null)
                 return false;
 

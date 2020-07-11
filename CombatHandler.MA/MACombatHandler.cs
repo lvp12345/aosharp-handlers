@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Combat;
+using CombatHandler.Generic;
 
 namespace Desu
 {
-    public class MACombatHandler : CombatHandler
+    public class MACombatHandler : GenericCombatHandler
     {
         private const int DOF_BUFF = 210159;
         private const int LIMBER_BUFF = 210158;
@@ -35,22 +36,19 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SingleTargetHealing).OrderByStackingOrder(), SingleTargetHeal);
         }
 
-        private bool SingleTargetHeal(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
+        private bool SingleTargetHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.MissingHealth > 2000) //TODO: Some kind of healing check to calc an optimal missing health value
             {
-                target = DynelManager.LocalPlayer;
+                actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
-            target = null;
             return false;
         }
 
-        private bool Limber(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool Limber(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-
             Buff dof;
             if (DynelManager.LocalPlayer.Buffs.Find(DOF_BUFF, out dof) && dof.RemainingTime > 12.5f)
                 return false;
@@ -58,10 +56,8 @@ namespace Desu
             return true;
         }
 
-        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-
             Buff limber;
             if (!DynelManager.LocalPlayer.Buffs.Find(LIMBER_BUFF, out limber) || limber.RemainingTime > 12.5f)
                 return false;
@@ -69,30 +65,24 @@ namespace Desu
             return true;
         }
 
-        private bool Moonmist(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool Moonmist(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-
             if (fightingTarget == null || fightingTarget.HealthPercent < 90)
                 return false;
 
             return true;
         }
 
-        private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-
             if (fightingTarget == null || fightingTarget.HealthPercent < 5)
                 return false;
 
             return true;
         }
 
-        private bool Obliterate(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        private bool Obliterate(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-
             if (fightingTarget == null || fightingTarget.HealthPercent > 15)
                 return false;
 

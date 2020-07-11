@@ -43,8 +43,8 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.StrengthOfTheImmortal, RelevantItems.StrengthOfTheImmortal, DamageItem);
             RegisterItemProcessor(RelevantItems.MightOfTheRevenant, RelevantItems.MightOfTheRevenant, DamageItem);
             RegisterItemProcessor(RelevantItems.BarrowStrength, RelevantItems.BarrowStrength, DamageItem);
-            RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, DamageItem);
-            RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, DamageItem);
+            RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.SteamingHotCupOfEnhancedCoffee, RelevantItems.SteamingHotCupOfEnhancedCoffee, Coffee);
 
             // xp stim?
@@ -81,16 +81,14 @@ namespace CombatHandler.Generic
             }
         }
 
-        protected virtual bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        protected virtual bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget; 
-            return DamagePerk(perk, fightingTarget, out _);
+            actionTarget.ShouldSetTarget = true;
+            return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected virtual bool DamagePerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        protected virtual bool DamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (fightingTarget == null)
                 return false;
 
@@ -103,16 +101,14 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        protected virtual bool TargetedDamageItem(Item item, SimpleChar fightingTarget, out SimpleChar target)
+        protected virtual bool TargetedDamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-            return DamageItem(item, fightingTarget, out _);
+            actionTarget.ShouldSetTarget = true;
+            return DamageItem(item, fightingTarget, ref actionTarget);
         }
 
-        protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, out SimpleChar target)
+        protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (fightingTarget == null)
                 return false;
 
@@ -122,12 +118,10 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        protected virtual bool Coffee(Item item, SimpleChar fightingTarget, out SimpleChar target)
+        protected virtual bool Coffee(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (!DynelManager.LocalPlayer.Buffs.Contains(Nanoline.FoodandDrinkBuffs))
-                return DamageItem(item, fightingTarget, out _);
+                return DamageItem(item, fightingTarget, ref actionTarget);
 
             return false;
         }

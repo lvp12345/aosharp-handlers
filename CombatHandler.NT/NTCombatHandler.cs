@@ -43,41 +43,34 @@ namespace Desu
             OptionPanel.AddMenu(_menu);
         }
 
-        protected virtual bool StarfallPerk(Perk perk, SimpleChar fightingTarget, out SimpleChar target)
+        protected virtual bool StarfallPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
-
             if (Perk.Find(PerkHash.Combust, out Perk combust) && !combust.IsAvailable)
                 return false;
 
-            return TargetedDamagePerk(perk, fightingTarget, out target);
+            return TargetedDamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
+        private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
             return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(Nanoline.NullitySphereNano);
         }
 
-        private bool NullitySphere(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = null;
             return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
         }
 
-        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
+        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
             if (fightingTarget == null)
                 return false;
 
             return true;
         }
 
-        private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
+        private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-
             if (fightingTarget == null)
                 return false;
 
@@ -87,10 +80,8 @@ namespace Desu
             return true;
         }
 
-        private bool AIDotNuke(Spell spell, SimpleChar fightingTarget, out SimpleChar target)
+        private bool AIDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            target = fightingTarget;
-
             if (!_menu.GetBool("UseAIDot"))
                 return false;
 

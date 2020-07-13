@@ -17,6 +17,7 @@ namespace Desu
         private const int DOF_BUFF = 210159;
         private const int LIMBER_BUFF = 210158;
         private const int ShadesCaress = 266300;
+        private const int Tattoo = 269511;
         private const int MissingHealthCombatAbortPercentage = 30;
         private Menu _menu;
 
@@ -74,10 +75,41 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.HealthDrain).OrderByStackingOrder(), HealthDrainNano);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
 
+            //Items
+            RegisterItemProcessor(Tattoo, Tattoo, TattooItem, CombatActionPriority.High);
+
             _menu = new Menu("CombatHandler.Shade", "CombatHandler.Shade");
             _menu.AddItem(new MenuBool("UseDrainNanoForDps", "Use drain nano for dps", false));
             _menu.AddItem(new MenuBool("UseSpiritSiphon", "Use spirit siphon", false));
             OptionPanel.AddMenu(_menu);
+        }
+
+        private bool TattooItem(Item item, SimpleChar fightingtarget, out SimpleChar target)
+        {
+            target = null;
+
+            // don't use if BM is locked (we will add this dynamically later)
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis))
+                return false;
+
+            // don't use if we're above 40%
+            if (DynelManager.LocalPlayer.HealthPercent > 40)
+                return false;
+
+            // don't use if nothing is fighting us
+            if (DynelManager.LocalPlayer.GetStat(Stat.IsFightingMe) == 0)
+                return false;
+
+            // don't use if we have another major absorb (example: nanomage booster) running
+            // we could check remaining absorb stat to be slightly more effective
+            if (DynelManager.LocalPlayer.Buffs.Contains(Nanoline.BioCocoon))
+                return false;
+
+            // don't use if our fighting target has caress running
+            if (fightingtarget.Buffs.Contains(275242))
+                return false;
+
+            return true;
         }
 
         private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)

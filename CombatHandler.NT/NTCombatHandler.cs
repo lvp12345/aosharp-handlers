@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AOSharp.Common.GameData;
+﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.Combat;
-using AOSharp.Core.GameData;
 using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
 
@@ -16,7 +9,7 @@ namespace Desu
     {
         private Menu _menu;
 
-        public NTCombatHandler() : base()
+        public NTCombatHandler()
         {
             //Perks
             RegisterPerkProcessor(PerkHash.HostileTakeover, TargetedDamagePerk);
@@ -35,7 +28,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis);
             RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth);
             RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDotNuke);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
             RegisterSpellProcessor(RelevantNanos.IzgimmersUltimatum, SingleTargetNuke);
 
             _menu = new Menu("CombatHandler.NT", "CombatHandler.NT");
@@ -53,11 +46,13 @@ namespace Desu
 
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            actionTarget.ShouldSetTarget = false;
             return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(Nanoline.NullitySphereNano);
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            actionTarget.ShouldSetTarget = false;
             return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
         }
 
@@ -71,6 +66,8 @@ namespace Desu
 
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            actionTarget.ShouldSetTarget = false;
+
             if (fightingTarget == null)
                 return false;
 
@@ -80,7 +77,7 @@ namespace Desu
             return true;
         }
 
-        private bool AIDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AiDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_menu.GetBool("UseAIDot"))
                 return false;

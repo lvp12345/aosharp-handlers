@@ -14,8 +14,6 @@ namespace Desu
 {
     public class ShadeCombatHandler : GenericCombatHandler
     {
-        private const int DOF_BUFF = 210159;
-        private const int LIMBER_BUFF = 210158;
         private const int ShadesCaress = 266300;
         private const int Tattoo = 269511;
         private const int MissingHealthCombatAbortPercentage = 30;
@@ -57,11 +55,7 @@ namespace Desu
         public ShadeCombatHandler() : base()
         {
             //Perks
-            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
-
             RegisterPerkProcessor(PerkHash.Blur, TargetedDamagePerk);
-
             SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
             TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
             PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
@@ -84,10 +78,19 @@ namespace Desu
             OptionPanel.AddMenu(_menu);
         }
 
-        private bool TattooItem(Item item, SimpleChar fightingtarget, out SimpleChar target)
+        private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            target = null;
+            if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
+                return false;
 
+            if (DynelManager.LocalPlayer.HealthPercent <= 50 && fightingtarget.HealthPercent > 5)
+                return true;
+
+            return false;
+        }
+
+        private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
             // don't use if BM is locked (we will add this dynamically later)
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis))
                 return false;
@@ -112,19 +115,10 @@ namespace Desu
             return true;
         }
 
-        private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
-        {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
-                return false;
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 50 && fightingtarget.HealthPercent > 5)
-                return true;
-
-            return false;
-        }
-
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            actionTarget.ShouldSetTarget = false;
+
             if (DynelManager.LocalPlayer.HealthPercent <= MissingHealthCombatAbortPercentage)
                 return true;
 
@@ -166,24 +160,6 @@ namespace Desu
 
             // otherwise save it for if our health starts to drop
             if (DynelManager.LocalPlayer.HealthPercent >= 85)
-                return false;
-
-            return true;
-        }
-
-        private bool Limber(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            Buff dof;
-            if (DynelManager.LocalPlayer.Buffs.Find(DOF_BUFF, out dof) && dof.RemainingTime > 12.5f)
-                return false;
-
-            return true;
-        }
-
-        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            Buff limber;
-            if (!DynelManager.LocalPlayer.Buffs.Find(LIMBER_BUFF, out limber) || limber.RemainingTime > 12.5f)
                 return false;
 
             return true;

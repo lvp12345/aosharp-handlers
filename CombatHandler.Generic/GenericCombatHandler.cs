@@ -1,21 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.Combat;
 using AOSharp.Core.Inventory;
-using AOSharp.Core.UI;
 
 namespace CombatHandler.Generic
 {
     public class GenericCombatHandler : AOSharp.Core.Combat.CombatHandler
     {
-        public GenericCombatHandler() : base()
+        private double _lastCombatTime = double.MinValue;
+        public int EvadeCycleTimeoutSeconds = 600;
+
+        public GenericCombatHandler()
         {
+            Game.OnUpdate += OnUpdate;
+            Game.TeleportEnded += TeleportEnded;
+
+            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
+
             RegisterPerkProcessor(PerkHash.Bore, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.Crave, TargetedDamagePerk);
 
@@ -47,9 +50,14 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.SteamingHotCupOfEnhancedCoffee, RelevantItems.SteamingHotCupOfEnhancedCoffee, Coffee);
+            RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
+            RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
 
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBooster, RelevantItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.HealthAndNanoStimLow, RelevantItems.HealthAndNanoStimHigh, HealthAndNanoStim, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
+
             // xp stim?
             // health and nano recharger
             // first aid stim
@@ -85,12 +93,54 @@ namespace CombatHandler.Generic
             }
         }
 
-        private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, out SimpleChar target)
+        private void TeleportEnded(object sender, EventArgs e)
+        {
+            _lastCombatTime = double.MinValue;
+        }
+
+        private void OnUpdate(object sender, float e)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.IsFightingMe) > 0)
+            {
+                _lastCombatTime = Time.NormalTime;
+            }
+        }
+
+        private bool FlowerOfLife(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (fightingtarget == null)
+                return false;
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)))
+                return false;
+
+            int approximateHealing = item.QualityLevel * 10;
+
+            return DynelManager.LocalPlayer.MissingHealth > approximateHealing;
+        }
+
+        private bool HealthAndNanoStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (fightingtarget == null)
+                return false;
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)))
+                return false;
+
+            actiontarget.ShouldSetTarget = true;
+            actiontarget.Target = DynelManager.LocalPlayer;
+
+            int approximateHealing = item.QualityLevel * 12;
+
+            return DynelManager.LocalPlayer.MissingHealth > approximateHealing || DynelManager.LocalPlayer.MissingNano > approximateHealing;
+        }
+
+        private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             // Prioritize keeping ourself alive
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
             {
-                target = DynelManager.LocalPlayer;
+                actiontarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
@@ -105,19 +155,16 @@ namespace CombatHandler.Generic
 
                 if (dyingTeamMember != null)
                 {
-                    target = dyingTeamMember;
+                    actiontarget.Target = dyingTeamMember;
                     return true;
                 }
             }
 
-            target = null;
             return false;
         }
 
-        private bool EnduranceBooster(Item item, SimpleChar fightingtarget, out SimpleChar target)
+        private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            target = null;
-
             // don't use if skill is locked (we will add this dynamically later)
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
                 return false;
@@ -183,12 +230,45 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        private bool Limber(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f)
+                return false;
+
+            // stop cycling if we haven't fought anything for over 10 minutes
+            if (Time.NormalTime - _lastCombatTime > EvadeCycleTimeoutSeconds)
+                return false;
+
+            return true;
+        }
+
+        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.Limber, out Buff limber) || limber.RemainingTime > 12.5f)
+                return false;
+
+            // stop cycling if we haven't fought anything for over 10 minutes
+            if (Time.NormalTime - _lastCombatTime > EvadeCycleTimeoutSeconds)
+                return false;
+
+            return true;
+        }
+
         // This will eventually be done dynamically but for now I will implement
         // it statically so we can have it functional
         private Stat GetSkillLockStat(Item item)
         {
             switch (item.HighId)
             {
+                case RelevantItems.UponAWaveOfSummerLow:
+                case RelevantItems.UponAWaveOfSummerHigh:
+                    return Stat.Riposte;
+                case RelevantItems.FlowerOfLifeLow:
+                case RelevantItems.FlowerOfLifeHigh:
+                    return Stat.MartialArts;
+                case RelevantItems.HealthAndNanoStimLow:
+                case RelevantItems.HealthAndNanoStimHigh:
+                    return Stat.FirstAid;
                 case RelevantItems.FlurryOfBlowsLow:
                 case RelevantItems.FlurryOfBlowsHigh:
                     return Stat.AggDef;
@@ -202,6 +282,8 @@ namespace CombatHandler.Generic
                     return Stat.SharpObject;
                 case RelevantItems.SteamingHotCupOfEnhancedCoffee:
                     return Stat.RunSpeed;
+                case RelevantItems.GnuffsEternalRiftCrystal:
+                    return Stat.MapNavigation;
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
@@ -220,11 +302,20 @@ namespace CombatHandler.Generic
             public const int DreadlochEnduranceBooster = 267168;
             public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
             public const int MeteoriteSpikes = 244204;
+            public const int FlowerOfLifeLow = 70614;
+            public const int FlowerOfLifeHigh = 204326;
+            public const int UponAWaveOfSummerLow = 205405;
+            public const int UponAWaveOfSummerHigh = 205406;
+            public const int GnuffsEternalRiftCrystal = 303179;
+            public const int HealthAndNanoStimLow = 291043;
+            public const int HealthAndNanoStimHigh = 291044;
         }
 
         private static class RelevantNanos
         {
             public const int FountainOfLife = 302907;
+            public const int DanceOfFools = 210159;
+            public const int Limber = 210158;
         }
     }
 }

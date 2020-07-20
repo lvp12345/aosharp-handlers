@@ -14,11 +14,16 @@ namespace Radar
 {
     public class Main : IAOPluginEntry
     {
+        private List<string> _trackedNames;
+
         public void Run(string pluginDir)
         {
             try
             {
                 Chat.WriteLine("Radar loaded!");
+                _trackedNames = new List<string>();
+                Chat.RegisterCommand("track", TrackCallback);
+                Chat.RegisterCommand("untrack", UntrackCallback);
                 Game.OnUpdate += OnUpdate;
             }
             catch (Exception e)
@@ -27,11 +32,59 @@ namespace Radar
             }
         }
 
+        private void UntrackCallback(string command, string[] args, ChatWindow window)
+        {
+            if (args.Length > 0)
+            {
+                string name = string.Join(" ", args);
+                if (_trackedNames.Contains(name))
+                {
+                    _trackedNames.Remove(name);
+                    window.WriteLine($"Removed \"{name}\" from tracking list");
+                }
+                else
+                {
+                    window.WriteLine($"Not tracking \"{name}\"");
+                }
+            }
+            else
+            {
+                window.WriteLine("Please specify a name");
+            }
+        }
+
+        private void TrackCallback(string command, string[] args, ChatWindow window)
+        {
+            if (args.Length > 0)
+            {
+                string name = string.Join(" ", args);
+                _trackedNames.Add(name);
+                window.WriteLine($"Added \"{name}\" to tracking list");
+            }
+            else
+            {
+                window.WriteLine("Please specify a name");
+            }
+        }
+
         private void OnUpdate(object sender, float e)
         {
             DrawPlayers();
             DrawBots();
             DrawLifts();
+            DrawTracked();
+        }
+
+        private void DrawTracked()
+        {
+            foreach (SimpleChar character in DynelManager.Characters)
+            {
+                if (_trackedNames.Contains(character.Name))
+                {
+                    Debug.DrawSphere(character.Position, 1, DebuggingColor.Green);
+                    Debug.DrawLine(DynelManager.LocalPlayer.Position, character.Position, DebuggingColor.Green);
+                }
+            }
         }
 
         private void DrawPlayers()

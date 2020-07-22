@@ -88,7 +88,7 @@ namespace Desu
         {
             actionTarget.ShouldSetTarget = false;
 
-            if (fightingTarget == null || (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.IsFightingMe) < 2))
+            if (fightingTarget == null || (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2))
                 return false;
 
             return true;

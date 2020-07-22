@@ -100,7 +100,7 @@ namespace Desu
                 return false;
 
             // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.IsFightingMe) == 0)
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
                 return false;
 
             // don't use if we have another major absorb (example: nanomage booster) running

@@ -112,7 +112,7 @@ namespace CombatHandler.Generic
 
         private void OnUpdate(object sender, float e)
         {
-            if (DynelManager.LocalPlayer.GetStat(Stat.IsFightingMe) > 0)
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
             {
                 _lastCombatTime = Time.NormalTime;
             }
@@ -162,7 +162,7 @@ namespace CombatHandler.Generic
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent < 30)
-                    .OrderByDescending(c => c.GetStat(Stat.IsFightingMe))
+                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
@@ -186,7 +186,7 @@ namespace CombatHandler.Generic
                 return false;
 
             // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.IsFightingMe) == 0)
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
                 return false;
 
             // don't use if we have another major absorb running

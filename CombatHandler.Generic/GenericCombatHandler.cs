@@ -9,7 +9,7 @@ namespace CombatHandler.Generic
     public class GenericCombatHandler : AOSharp.Core.Combat.CombatHandler
     {
         private double _lastCombatTime = double.MinValue;
-        public int EvadeCycleTimeoutSeconds = 600;
+        public int EvadeCycleTimeoutSeconds = 180;
 
         public GenericCombatHandler()
         {
@@ -24,6 +24,8 @@ namespace CombatHandler.Generic
 
             RegisterPerkProcessor(PerkHash.NanoFeast, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.BotConfinement, TargetedDamagePerk);
+
+            RegisterPerkProcessor(PerkHash.RegainNano, RegainNano);
 
             //Fuzz
             //Fire Frenzy
@@ -75,7 +77,6 @@ namespace CombatHandler.Generic
 
             RegisterSpellProcessor(RelevantNanos.FountainOfLife, FountainOfLife);
 
-
             switch (DynelManager.LocalPlayer.Breed)
             {
                 case Breed.Solitus:
@@ -91,6 +92,17 @@ namespace CombatHandler.Generic
                 case Breed.Atrox:
                     break;
             }
+        }
+
+        private bool RegainNano(Perk perk, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (fightingtarget == null)
+                return false;
+
+            if (DynelManager.LocalPlayer.MaxNano < 1200)
+                return DynelManager.LocalPlayer.NanoPercent < 50;
+
+            return DynelManager.LocalPlayer.Nano < 1200;
         }
 
         private void TeleportEnded(object sender, EventArgs e)
@@ -316,6 +328,7 @@ namespace CombatHandler.Generic
             public const int FountainOfLife = 302907;
             public const int DanceOfFools = 210159;
             public const int Limber = 210158;
+            public const int CompositeRangedExpertise = 223348;
         }
     }
 }

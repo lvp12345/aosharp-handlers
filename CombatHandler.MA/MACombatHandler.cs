@@ -17,22 +17,18 @@ namespace Desu
         {
             //Perks
             RegisterPerkProcessor(PerkHash.Moonmist, Moonmist);
-            RegisterPerkProcessor(PerkHash.Dragonfire, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.ChiConductor, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.Incapacitate, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.TremorHand, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.FleshQuiver, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.Obliterate, Obliterate);
-            RegisterPerkProcessor(PerkHash.Bore, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.Crave, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.NanoFeast, GenericDamagePerk);
-            RegisterPerkProcessor(PerkHash.BotConfinement, GenericDamagePerk);
+            RegisterPerkProcessor(PerkHash.Dragonfire, DamagePerk);
+            RegisterPerkProcessor(PerkHash.ChiConductor, DamagePerk);
+            RegisterPerkProcessor(PerkHash.Incapacitate, DamagePerk);
+            RegisterPerkProcessor(PerkHash.TremorHand, DamagePerk);
+            RegisterPerkProcessor(PerkHash.FleshQuiver, DamagePerk);
+            RegisterPerkProcessor(PerkHash.Obliterate, DamagePerk);
             RegisterPerkProcessor(PerkHash.RedDawn, RedDawnPerk, CombatActionPriority.High);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SingleTargetHealing).OrderByStackingOrder(), SingleTargetHeal, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.TeamHealing).OrderByStackingOrder(), TeamHeal, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.FistsOfTheWinterFlame, ConditionProcessor);
+            RegisterSpellProcessor(RelevantNanos.FistsOfTheWinterFlame, FistsOfTheWinterFlameNano);
 
             //Items
             RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
@@ -60,7 +56,7 @@ namespace Desu
             return specialAttack != SpecialAttack.Dimach;
         }
 
-        private bool ConditionProcessor(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool FistsOfTheWinterFlameNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             actiontarget.ShouldSetTarget = false;
             return fightingtarget != null && fightingtarget.HealthPercent > 50;
@@ -90,15 +86,9 @@ namespace Desu
 
         private bool Moonmist(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || fightingTarget.HealthPercent < 90)
-                return false;
+            actionTarget.ShouldSetTarget = false;
 
-            return true;
-        }
-
-        private bool GenericDamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null || fightingTarget.HealthPercent < 5)
+            if (fightingTarget == null || (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.IsFightingMe) < 2))
                 return false;
 
             return true;

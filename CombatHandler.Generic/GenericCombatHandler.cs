@@ -102,7 +102,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.MaxNano < 1200)
                 return DynelManager.LocalPlayer.NanoPercent < 50;
 
-            return DynelManager.LocalPlayer.Nano < 1200;
+            return DynelManager.LocalPlayer.MissingNano > 1200;
         }
 
         private void TeleportEnded(object sender, EventArgs e)

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radar", "Radar\Radar.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Generic", "CombatHandler.Generic\CombatHandler.Generic.csproj", "{8CB8419F-3914-49C1-ABA3-78C5D26E8E48}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiboxHelper", "MultiboxHelper\MultiboxHelper.csproj", "{5B5488B2-FEC0-4C69-8933-98151C575220}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{8CB8419F-3914-49C1-ABA3-78C5D26E8E48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CB8419F-3914-49C1-ABA3-78C5D26E8E48}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CB8419F-3914-49C1-ABA3-78C5D26E8E48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B5488B2-FEC0-4C69-8933-98151C575220}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B5488B2-FEC0-4C69-8933-98151C575220}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B5488B2-FEC0-4C69-8933-98151C575220}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B5488B2-FEC0-4C69-8933-98151C575220}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -28,10 +28,12 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnTargetMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
 
             _menu = new Menu("MultiboxHelper", "MultiboxHelper");
             _menu.AddItem(new MenuBool("SyncMove", "Sync Movement", true));
             _menu.AddItem(new MenuBool("SyncAttack", "Sync Attacks", true));
+            _menu.AddItem(new MenuBool("SyncUse", "Sync Use", true));
             OptionPanel.AddMenu(_menu);
 
             Network.N3MessageSent += Network_N3MessageSent;
@@ -46,7 +48,7 @@ namespace MultiboxHelper
             if (n3Msg.Identity != DynelManager.LocalPlayer.Identity)
                 return;
 
-            if(n3Msg.N3MessageType == N3MessageType.CharDCMove)
+            if (n3Msg.N3MessageType == N3MessageType.CharDCMove)
             {
                 if (!_menu.GetBool("SyncMove"))
                     return;
@@ -104,6 +106,21 @@ namespace MultiboxHelper
                 StopFightMessage lookAtMsg = (StopFightMessage)n3Msg;
                 IPCChannel.Broadcast(new StopAttackIPCMessage());
             }
+            else if (n3Msg.N3MessageType == N3MessageType.GenericCmd)
+            {
+                if (!_menu.GetBool("SyncUse"))
+                    return;
+
+                GenericCmdMessage genericCmdMsg = (GenericCmdMessage)n3Msg;
+   
+                if(genericCmdMsg.Action == GenericCmdAction.Use && genericCmdMsg.Target.Type == IdentityType.Terminal)
+                {
+                    IPCChannel.Broadcast(new UseMessage()
+                    {
+                        Target = genericCmdMsg.Target
+                    });
+                }
+            }
         }
 
         private void OnMoveMessage(int sender, IPCMessage msg)
@@ -143,6 +160,15 @@ namespace MultiboxHelper
                 return;
 
             DynelManager.LocalPlayer.StopAttack();
+        }
+
+        private void OnUseMessage(int sender, IPCMessage msg)
+        {
+            if (!Team.IsInTeam || Team.IsLeader)
+                return;
+
+            UseMessage useMsg = (UseMessage)msg;
+            DynelManager.GetDynel<SimpleItem>(useMsg.Target)?.Use();
         }
     }
 }

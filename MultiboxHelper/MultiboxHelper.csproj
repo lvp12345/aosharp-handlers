@@ -50,6 +50,7 @@
     <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\AttackIPCMessage.cs" />
+    <Compile Include="IPCMessages\UseMessage.cs" />
     <Compile Include="IPCMessages\TargetMessage.cs" />
     <Compile Include="IPCMessages\MoveMessage.cs" />
     <Compile Include="MultiboxHelper.cs" />

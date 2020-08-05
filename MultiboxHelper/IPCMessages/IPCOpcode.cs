@@ -11,6 +11,7 @@ namespace MultiboxHelper.IPCMessages
         Move,
         Target,
         Attack,
-        StopAttack
+        StopAttack,
+        Use
     }
 }

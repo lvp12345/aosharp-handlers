@@ -37,6 +37,7 @@ namespace MultiboxHelper
             OptionPanel.AddMenu(_menu);
 
             Network.N3MessageSent += Network_N3MessageSent;
+            Chat.WriteLine("Multibox Helper Loaded!");
         }
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
@@ -57,6 +58,7 @@ namespace MultiboxHelper
                 IPCChannel.Broadcast(new MoveMessage()
                 {
                     MoveType = charDCMoveMsg.MoveType,
+                    PlayfieldId = Playfield.Identity.Instance,
                     Position = charDCMoveMsg.Position,
                     Rotation = charDCMoveMsg.Heading
                 });
@@ -75,6 +77,7 @@ namespace MultiboxHelper
                 IPCChannel.Broadcast(new MoveMessage()
                 {
                     MoveType = MovementAction.LeaveSit,
+                    PlayfieldId = Playfield.Identity.Instance,
                     Position = DynelManager.LocalPlayer.Position,
                     Rotation = DynelManager.LocalPlayer.Rotation
                 });
@@ -127,9 +130,15 @@ namespace MultiboxHelper
         {
             //Only followers will act on commands
             if (!Team.IsInTeam || Team.IsLeader)
-                return; 
+                return;
+
+            if (Game.IsZoning)
+                return;
 
             MoveMessage moveMsg = (MoveMessage)msg;
+
+            if (Playfield.Identity.Instance != moveMsg.PlayfieldId)
+                return;
 
             DynelManager.LocalPlayer.Position = moveMsg.Position;
             DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
@@ -141,6 +150,9 @@ namespace MultiboxHelper
             if (!Team.IsInTeam || Team.IsLeader)
                 return;
 
+            if (Game.IsZoning)
+                return;
+
             TargetMessage targetMsg = (TargetMessage)msg;
             Targeting.SetTarget(targetMsg.Target);
         }
@@ -148,6 +160,9 @@ namespace MultiboxHelper
         private void OnAttackMessage(int sender, IPCMessage msg)
         {
             if (!Team.IsInTeam || Team.IsLeader)
+                return;
+
+            if (Game.IsZoning)
                 return;
 
             AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
@@ -159,12 +174,18 @@ namespace MultiboxHelper
             if (!Team.IsInTeam || Team.IsLeader)
                 return;
 
+            if (Game.IsZoning)
+                return;
+
             DynelManager.LocalPlayer.StopAttack();
         }
 
         private void OnUseMessage(int sender, IPCMessage msg)
         {
             if (!Team.IsInTeam || Team.IsLeader)
+                return;
+
+            if (Game.IsZoning)
                 return;
 
             UseMessage useMsg = (UseMessage)msg;

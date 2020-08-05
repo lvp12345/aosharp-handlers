@@ -18,9 +18,12 @@ namespace MultiboxHelper.IPCMessages
         public MovementAction MoveType { get; set; }
 
         [AoMember(1)]
-        public Vector3 Position { get; set; }
+        public int PlayfieldId { get; set; }
 
         [AoMember(2)]
+        public Vector3 Position { get; set; }
+
+        [AoMember(3)]
         public Quaternion Rotation { get; set; }
     }
 }

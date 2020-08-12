@@ -142,7 +142,7 @@ namespace MultiboxHelper
 
             DynelManager.LocalPlayer.Position = moveMsg.Position;
             DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
-            MovementController.SetMovement(moveMsg.MoveType);
+            MovementController.Instance.SetMovement(moveMsg.MoveType);
         }
 
         private void OnTargetMessage(int sender, IPCMessage msg)

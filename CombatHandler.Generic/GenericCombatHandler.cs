@@ -160,6 +160,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent < 30)
                     .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))

@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Soldier", "Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Doc", "CombatHandler.Doc\CombatHandler.Doc.csproj", "{EB91D777-E2CD-4659-AB18-8556EFE9843F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Crat", "CombatHandler.Crat\CombatHandler.Crat.csproj", "{DE83CAA4-61F0-4D58-8AE1-A1E2F72A4756}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{EB91D777-E2CD-4659-AB18-8556EFE9843F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB91D777-E2CD-4659-AB18-8556EFE9843F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB91D777-E2CD-4659-AB18-8556EFE9843F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE83CAA4-61F0-4D58-8AE1-A1E2F72A4756}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE83CAA4-61F0-4D58-8AE1-A1E2F72A4756}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE83CAA4-61F0-4D58-8AE1-A1E2F72A4756}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE83CAA4-61F0-4D58-8AE1-A1E2F72A4756}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

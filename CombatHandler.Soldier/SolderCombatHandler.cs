@@ -45,9 +45,9 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.NeutroniumSlug, DamagePerk);
 
             //Spells
-            RegisterSpellProcessor(RelevantNanos.AugmentedMirrorShieldMKV, AugmentedMirrorShieldMKV);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.TotalMirrorShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.AdrenalineRush, AdrenalineRush);
-            RegisterSpellProcessor(RelevantNanos.Distinctvictim, SingleTargetTaunt);
+            RegisterSpellProcessor(RelevantNanos.Distinctvictim, SingleTargetTaunt);//TODO: Generate soldier taunt line to support lower ql taunt use
 
             _menu = new Menu("CombatHandler.Sold", "CombatHandler.Sold");
             _menu.AddItem(new MenuBool("useTaunt", "Use Taunt", true));
@@ -85,7 +85,7 @@ namespace Desu
             if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
                 return false;
 
-            if (DynelManager.LocalPlayer.HealthPercent >= 1 && fightingtarget.HealthPercent > 1)
+            if (DynelManager.LocalPlayer.IsAlive && fightingtarget.IsAlive)
                 return true;
 
             return false;
@@ -93,7 +93,6 @@ namespace Desu
 
         private static class RelevantNanos
         {
-            public const int AugmentedMirrorShieldMKV = 273400;
             public const int AdrenalineRush = 301897;
             public const int Distinctvictim = 223205;
         }

@@ -20,7 +20,6 @@ namespace Desu
         };
         public DocCombatHandler()
         {
-
             //Perks
             RegisterPerkProcessor(PerkHash.HostileTakeover, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.ChaoticAssumption, TargetedDamagePerk);
@@ -32,37 +31,40 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.Deadeye, TargetedDamagePerk);
             BattleGroupHeals.ForEach(p => RegisterPerkProcessor(p, MajorHealPerk));
 
-
             //Spells
             RegisterSpellProcessor(RelevantNanos.BODILY_INV, TeamHeal, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.IMPROVED_CH, SingleTargetHeal);
             RegisterSpellProcessor(RelevantNanos.IMPROVED_LC, TeamHeal, CombatActionPriority.Low);
 
             //This needs work 
-            //RegisterSpellProcessor(RelevantNanos.UBT, DebuffTarget);
+            RegisterSpellProcessor(RelevantNanos.UBT, DebuffTarget);
 
             _menu = new Menu("CombatHandler.Doc", "CombatHandler.Doc");
-            //_menu.AddItem(new MenuBool("UseDebuff", "Doc Debuffing", true));
+            _menu.AddItem(new MenuBool("UseDebuff", "Doc Debuffing", true));
             OptionPanel.AddMenu(_menu);
         }
 
-        //This needs work , the return from find is not working for ubt.
         private bool DebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            // Check if we are fighting and if debuffing is enabled
             if (fightingTarget == null || !_menu.GetBool("UseDebuff"))
                 return false;
 
-            if (fightingTarget.Buffs.Find(spell.Identity.Instance, out Buff buff) && buff.RemainingTime > .30)
-                return false;
+            //Check if the target has the ubt buff running
+            const string UBT = "Uncontrollable Body Tremors";
+            foreach (Buff buff in fightingTarget.Buffs.AsEnumerable())
+                //Chat.WriteLine(n.Name);
+                if (buff.Name == UBT)
+                    return false;
 
-            // Prioritize keeping ourself alive if you are low hp dont debuff
+            //Check if you are low hp dont debuff
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return false;
             }
 
-            // Try to keep our teammates alive if we're in a team and someone is low hp , dont debuff
+            //Check if we're in a team and someone is low hp , dont debuff
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
@@ -77,7 +79,6 @@ namespace Desu
                     return false;
                 }
             }
-
             return true;
         }
 

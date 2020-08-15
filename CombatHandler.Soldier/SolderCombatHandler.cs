@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
 using System;
@@ -49,9 +50,34 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.AdrenalineRush, AdrenalineRush);
             RegisterSpellProcessor(RelevantNanos.Distinctvictim, SingleTargetTaunt);//TODO: Generate soldier taunt line to support lower ql taunt use
 
+            //Items
+            RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
+
             _menu = new Menu("CombatHandler.Sold", "CombatHandler.Sold");
             _menu.AddItem(new MenuBool("useTaunt", "Use Taunt", true));
             OptionPanel.AddMenu(_menu);
+        }
+
+        private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            // don't use if skill is locked (we will add this dynamically later)
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+                return false;
+
+            // don't use if we're above 40%
+            if (DynelManager.LocalPlayer.HealthPercent > 40)
+                return false;
+
+            // don't use if nothing is fighting us
+            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
+            //    return false;
+
+            // don't use if we have another major absorb running
+            // we could check remaining absorb stat to be slightly more effective
+            if (DynelManager.LocalPlayer.Buffs.Contains(Nanoline.BioCocoon))
+                return false;
+
+            return true;
         }
 
         private bool DmgBuffPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -71,10 +97,10 @@ namespace Desu
 
         private bool AdrenalineRush(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
-                return false;
+            //if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
+            //    return false;
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 30 && fightingtarget.HealthPercent > 1)
+            if (DynelManager.LocalPlayer.HealthPercent <= 30)
                 return true;
 
             return false;
@@ -85,7 +111,7 @@ namespace Desu
             if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
                 return false;
 
-            if (DynelManager.LocalPlayer.IsAlive && fightingtarget.IsAlive)
+            if (DynelManager.LocalPlayer.HealthPercent <= 25 && spell.IsReady)
                 return true;
 
             return false;
@@ -95,6 +121,12 @@ namespace Desu
         {
             public const int AdrenalineRush = 301897;
             public const int Distinctvictim = 223205;
+        }
+
+        private static class RelevantItems
+        {
+            public const int DreadlochEnduranceBooster = 267168;
+            public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
         }
     }
 }

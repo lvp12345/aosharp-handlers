@@ -46,15 +46,15 @@ namespace Desu
 
         private bool DebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+
             // Check if we are fighting and if debuffing is enabled
             if (fightingTarget == null || !_menu.GetBool("UseDebuff"))
                 return false;
 
             //Check if the target has the ubt buff running
-            const string UBT = "Uncontrollable Body Tremors";
             foreach (Buff buff in fightingTarget.Buffs.AsEnumerable())
                 //Chat.WriteLine(n.Name);
-                if (buff.Name == UBT)
+                if (buff.Name == spell.Name)
                     return false;
 
             //Check if you are low hp dont debuff
@@ -68,6 +68,7 @@ namespace Desu
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent < 30)
                     .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))

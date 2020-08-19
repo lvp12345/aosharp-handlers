@@ -53,14 +53,13 @@ namespace Desu
 
             //Check if the target has the ubt buff running
             foreach (Buff buff in fightingTarget.Buffs.AsEnumerable())
-                //Chat.WriteLine(n.Name);
                 if (buff.Name == spell.Name)
                     return false;
 
             //Check if you are low hp dont debuff
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
             {
-                actionTarget.Target = DynelManager.LocalPlayer;
+                //actionTarget.Target = DynelManager.LocalPlayer;
                 return false;
             }
 

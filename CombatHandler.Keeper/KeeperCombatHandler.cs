@@ -23,13 +23,6 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.MarkOfTheUnclean, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.MarkOfVengeance, TargetedDamagePerk);
 
-            //AI Perks
-            RegisterPerkProcessor(PerkHash.BotConfinement, DamagePerk);
-            RegisterPerkProcessor(PerkHash.NanoFeast, DamagePerk);
-            RegisterPerkProcessor(PerkHash.ForceOpponent, DamagePerk);
-            RegisterPerkProcessor(PerkHash.Purify, DamagePerk);
-            RegisterPerkProcessor(PerkHash.Bluntness, DamagePerk);
-
             //Shadow Dmg
             RegisterPerkProcessor(PerkHash.DeepCuts, DamagePerk);
             RegisterPerkProcessor(PerkHash.SeppukuSlash, DamagePerk);

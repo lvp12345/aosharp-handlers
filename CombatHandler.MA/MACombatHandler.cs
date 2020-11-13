@@ -81,7 +81,27 @@ namespace Desu
         private bool TeamHeal(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             actiontarget.ShouldSetTarget = false;
-            return DynelManager.LocalPlayer.MissingHealth > 1500;
+
+            /*
+            // Try to keep our teammates alive if we're in a team
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                List<SimpleChar> hurtTeammembers = Team.Members.Where(x => x.Character != null)
+                    .Where(x => .;
+
+                Team.Members.d
+                if (dyingTeamMember != null)
+                {
+                    actiontarget.Target = dyingTeamMember;
+                    return true;
+                }
+            }
+            else
+            {
+                return DynelManager.LocalPlayer.MissingHealth > 1500;
+            }
+            */
+            return false;
         }
 
         private bool Moonmist(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

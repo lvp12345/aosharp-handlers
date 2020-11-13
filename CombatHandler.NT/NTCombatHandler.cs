@@ -2,6 +2,7 @@
 using AOSharp.Core;
 using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
+using System;
 
 namespace Desu
 {
@@ -30,6 +31,19 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
             RegisterSpellProcessor(RelevantNanos.IzgimmersUltimatum, SingleTargetNuke);
+
+            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeNano, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.NanobotShelter, GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NanoOverTime_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NanoDamageMultiplierBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NPCostBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MatCreaBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.Fortify).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.NanobotShelter, GenericBuff);
 
             _menu = new Menu("CombatHandler.NT", "CombatHandler.NT");
             _menu.AddItem(new MenuBool("UseAIDot", "Use AI DoT", true));
@@ -100,6 +114,11 @@ namespace Desu
             public const int IzgimmersWealth = 275024;
             public const int IzgimmersUltimatum = 218168;
             public const int Garuk = 275692;
+
+            //Buffs
+            public static readonly int[] NanobotShelter = { 273388, 263265 };
+            public static readonly int CompositeAttribute = 223372;
+            public static readonly int CompositeNano = 223380;
         }
     }
 }

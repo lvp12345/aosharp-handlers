@@ -40,10 +40,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AOSharp.Common">
-      <HintPath>..\..\..\AoSharp\aosharp\AOSharp.Common\bin\Debug\AOSharp.Common.dll</HintPath>
+      <HintPath>..\..\AOSharp\AOSharp\bin\Debug\AOSharp.Common.dll</HintPath>
     </Reference>
     <Reference Include="AOSharp.Core">
-      <HintPath>..\..\..\AoSharp\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
+      <HintPath>..\..\AOSharp\AOSharp\bin\Debug\AOSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data.DataSetExtensions" />

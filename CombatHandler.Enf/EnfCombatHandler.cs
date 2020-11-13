@@ -44,7 +44,7 @@ namespace Desu
 
             //Spells (Im not sure the spell lines are up to date to support the full line of SL mongos)
             RegisterSpellProcessor(RelevantNanos.MONGO_KRAKEN, MajorHpBuff, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.MONGO_DEMOLISH, AoeTaunt);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MongoBuff).OrderByStackingOrder(), AoeTaunt);
             RegisterSpellProcessor(RelevantNanos.ELEMENT_OF_MALICE, SingleTargetTaunt, CombatActionPriority.High);
 
 
@@ -60,8 +60,11 @@ namespace Desu
             if (!_menu.GetBool("UseSingleTaunt") || !DynelManager.LocalPlayer.IsAttacking)
                 return false;
 
+            if (fightingTarget == null)
+                return false;
+
             //If our target has a different target than us we need to make sure we taunt
-            if (fightingTarget.FightingTarget.Name != DynelManager.LocalPlayer.Name)
+            if (fightingTarget.FightingTarget != null && (fightingTarget.FightingTarget.Identity != DynelManager.LocalPlayer.Identity))
             {
                 return true;
             }
@@ -74,15 +77,15 @@ namespace Desu
 
         private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-
             if (!_menu.GetBool("UseAOEMongo"))
                 return false;
 
+            if (fightingTarget == null)
+                return false;
+
             //If our target has a different target than us we need to make sure we taunt
-            if (fightingTarget.FightingTarget.Name != DynelManager.LocalPlayer.Name)
-            {
+            if (fightingTarget.FightingTarget != null && (fightingTarget.FightingTarget.Identity != DynelManager.LocalPlayer.Identity))
                 return true;
-            }
 
             //Check if our team members are being attacked first
             if (DynelManager.LocalPlayer.IsInTeam())

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.Movement;
@@ -13,13 +10,20 @@ using AOSharp.Common.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using MultiboxHelper.IPCMessages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.GameData;
+using System.Runtime.InteropServices;
 
 namespace MultiboxHelper
 {
     public class MultiboxHelper : IAOPluginEntry
     {
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
         private Menu _menu;
         private IPCChannel IPCChannel;
+
+        private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public void Run(string pluginDir)
         {
@@ -42,8 +46,8 @@ namespace MultiboxHelper
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
-            //Only the leader will issue commands
-            if (!Team.IsInTeam || !Team.IsLeader)
+            //Only the active window will issue commands
+            if (!Team.IsInTeam || !IsActiveWindow)
                 return;
 
             if (n3Msg.Identity != DynelManager.LocalPlayer.Identity)
@@ -129,7 +133,7 @@ namespace MultiboxHelper
         private void OnMoveMessage(int sender, IPCMessage msg)
         {
             //Only followers will act on commands
-            if (!Team.IsInTeam || Team.IsLeader)
+            if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -147,7 +151,7 @@ namespace MultiboxHelper
 
         private void OnTargetMessage(int sender, IPCMessage msg)
         {
-            if (!Team.IsInTeam || Team.IsLeader)
+            if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -159,7 +163,7 @@ namespace MultiboxHelper
 
         private void OnAttackMessage(int sender, IPCMessage msg)
         {
-            if (!Team.IsInTeam || Team.IsLeader)
+            if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -171,7 +175,7 @@ namespace MultiboxHelper
 
         private void OnStopAttackMessage(int sender, IPCMessage msg)
         {
-            if (!Team.IsInTeam || Team.IsLeader)
+            if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -182,7 +186,7 @@ namespace MultiboxHelper
 
         private void OnUseMessage(int sender, IPCMessage msg)
         {
-            if (!Team.IsInTeam || Team.IsLeader)
+            if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
             if (Game.IsZoning)

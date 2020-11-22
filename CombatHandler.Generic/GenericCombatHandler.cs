@@ -29,6 +29,9 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.Purify, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.Bluntness, TargetedDamagePerk);
 
+            RegisterPerkProcessor(PerkHash.Collapser, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.Implode, TargetedDamagePerk);
+
             RegisterPerkProcessor(PerkHash.RegainNano, RegainNano);
 
 

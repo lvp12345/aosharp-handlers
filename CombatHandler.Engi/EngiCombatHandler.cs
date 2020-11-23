@@ -65,6 +65,7 @@ namespace CombatHandler.Engi
                 RegisterItemProcessor(shellId, shellId, PetSpawnerItem);
 
             _menu = new Menu("CombatHandler.Engi", "CombatHandler.Engi");
+            _menu.AddItem(new MenuBool("SpawnPets", "Spawn Pets?", true));
             _menu.AddItem(new MenuBool("BuffPets", "Buff Pets?", true));
             OptionPanel.AddMenu(_menu);
 
@@ -78,6 +79,9 @@ namespace CombatHandler.Engi
 
         protected bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_menu.GetBool("SpawnPets"))
+                return false;
+
             if (Time.NormalTime < _lastZonedTime + PostZonePetCheckBuffer)
                 return false;
 
@@ -102,6 +106,9 @@ namespace CombatHandler.Engi
 
         protected virtual bool PetSpawnerItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_menu.GetBool("SpawnPets"))
+                return false;
+
             if (Time.NormalTime < _lastZonedTime + PostZonePetCheckBuffer)
                 return false;
 
@@ -114,6 +121,9 @@ namespace CombatHandler.Engi
 
         protected bool PetTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_menu.GetBool("BuffPets"))
+                return false;
+
             if (Time.NormalTime < _lastZonedTime + PostZonePetCheckBuffer)
                 return false;
 
@@ -146,6 +156,9 @@ namespace CombatHandler.Engi
 
         protected bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_menu.GetBool("BuffPets"))
+                return false;
+
             if (!DynelManager.LocalPlayer.Pets.Where(x => x.Character != null)
                                             .Where(x => x.Type == PetType.Attack || x.Type == PetType.Support)
                                             .Any(x => !x.Character.Buffs.Find(spell.Identity.Instance == 270790 ? 285699 : 285698, out _)))

@@ -30,6 +30,29 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.TeamHealing).OrderByStackingOrder(), TeamHeal, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.FistsOfTheWinterFlame, FistsOfTheWinterFlameNano);
 
+            //Buffs
+            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeNano, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeUtility, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositePhysical, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, GenericBuff);
+
+
+            RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.CriticalIncreaseBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.BrawlBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.ControlledRageBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.InitiativeBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.RunspeedBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.StrengthBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MartialArtsBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.ArmorBuff).Where(s => s.Identity.Instance != 28879).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.RiposteBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NanoResistBuff).OrderByStackingOrder(), GenericBuff);
+
             //Items
             RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
 
@@ -137,6 +160,12 @@ namespace Desu
         private static class RelevantNanos
         {
             public const int FistsOfTheWinterFlame = 269470;
+            public const int CompositeAttribute = 223372;
+            public const int CompositeNano = 223380;
+            public const int CompositeUtility = 287046;
+            public const int CompositePhysical = 215264;
+            public const int CompositeMartialProwess = 302158;
+            public const int LimboMastery = 28894;
         }
 
         private static class RelevantItems

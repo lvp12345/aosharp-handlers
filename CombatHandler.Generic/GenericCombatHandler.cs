@@ -66,8 +66,8 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.HealthAndNanoStimLow, RelevantItems.HealthAndNanoStimHigh, HealthAndNanoStim, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
+            RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
 
-            // xp stim?
             // health and nano recharger
             // first aid stim
             // free movement
@@ -99,6 +99,17 @@ namespace CombatHandler.Generic
                 case Breed.Atrox:
                     break;
             }
+        }
+
+        private bool ExperienceStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid))
+                return false;
+
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = false;
+            return true;
+
         }
 
         protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -358,7 +369,8 @@ namespace CombatHandler.Generic
             public const int GnuffsEternalRiftCrystal = 303179;
             public const int HealthAndNanoStimLow = 291043;
             public const int HealthAndNanoStimHigh = 291044;
-        }
+            public const int ExperienceStim = 288769;
+        };
 
         private static class RelevantNanos
         {

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8CB8419F-3914-49C1-ABA3-78C5D26E8E48}</ProjectGuid>
+    <ProjectGuid>{0AD668D3-8956-46F7-A481-4FD8EE696F3F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CombatHandler.Generic</RootNamespace>
-    <AssemblyName>CombatHandler.Generic</AssemblyName>
+    <RootNamespace>CombatHandler.Engi</RootNamespace>
+    <AssemblyName>CombatHandler.Engi</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -32,10 +32,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AOSharp.Common">
-      <HintPath>..\..\aosharp\AOSharp.Common\bin\Debug\AOSharp.Common.dll</HintPath>
+      <HintPath>..\..\AOSharp\AOSharp.Common\bin\Debug\AOSharp.Common.dll</HintPath>
     </Reference>
     <Reference Include="AOSharp.Core">
-      <HintPath>..\..\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
+      <HintPath>..\..\AOSharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,8 +47,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GenericCombatHandler.cs" />
+    <Compile Include="EngiCombatHandler.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CombatHandler.Generic\CombatHandler.Generic.csproj">
+      <Project>{8cb8419f-3914-49c1-aba3-78c5d26e8e48}</Project>
+      <Name>CombatHandler.Generic</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

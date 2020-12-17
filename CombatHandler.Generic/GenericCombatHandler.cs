@@ -144,7 +144,7 @@ namespace CombatHandler.Generic
 
             int approximateHealing = item.QualityLevel * 12;
 
-            return DynelManager.LocalPlayer.MissingHealth > approximateHealing || DynelManager.LocalPlayer.MissingNano > approximateHealing;
+            return DynelManager.LocalPlayer.HealthPercent < 50 || DynelManager.LocalPlayer.NanoPercent < 50 || DynelManager.LocalPlayer.MissingHealth > (approximateHealing * 2) || DynelManager.LocalPlayer.MissingNano > (approximateHealing * 2);
         }
 
         private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)

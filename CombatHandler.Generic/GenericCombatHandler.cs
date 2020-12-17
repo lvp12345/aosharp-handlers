@@ -25,7 +25,15 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.NanoFeast, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.BotConfinement, TargetedDamagePerk);
 
+            RegisterPerkProcessor(PerkHash.ForceOpponent, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.Purify, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.Bluntness, TargetedDamagePerk);
+
+            RegisterPerkProcessor(PerkHash.Collapser, TargetedDamagePerk);
+            RegisterPerkProcessor(PerkHash.Implode, TargetedDamagePerk);
+
             RegisterPerkProcessor(PerkHash.RegainNano, RegainNano);
+
 
             //Fuzz
             //Fire Frenzy
@@ -94,6 +102,34 @@ namespace CombatHandler.Generic
             }
         }
 
+        protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null)
+                return false;
+
+            if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+            {
+                //Don't cast if weaker than existing
+                if (spell.StackingOrder < buff.StackingOrder)
+                    return false;
+
+                //Don't cast if greater than 10% time remaining
+                if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1)
+                    return false;
+
+                if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                    return false;
+            }
+            else
+            {
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    return false;
+            }
+
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+
         private bool RegainNano(Perk perk, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (fightingtarget == null)
@@ -160,6 +196,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent < 30)
                     .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))

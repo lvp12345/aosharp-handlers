@@ -17,6 +17,11 @@ namespace Desu
         private const int ShadesCaress = 266300;
         private const int Tattoo = 269511;
         private const int MissingHealthCombatAbortPercentage = 30;
+        private const int CompositeAttribute = 223372;
+        private const int CompositeNano = 223380;
+        private const int CompositeMelee = 223360;
+        private const int CompositeMeleeSpec = 215264;
+        private readonly int[] ShadeDmgProc = {224167, 224165, 224163, 210371, 210369 , 210367, 210365, 210363, 210361, 210359, 210357, 210355, 210353};
         private Menu _menu;
 
         private List<PerkHash> TotemicRites = new List<PerkHash>
@@ -71,6 +76,19 @@ namespace Desu
 
             //Items
             RegisterItemProcessor(Tattoo, Tattoo, TattooItem, CombatActionPriority.High);
+
+            RegisterSpellProcessor(CompositeAttribute, GenericBuff);
+            RegisterSpellProcessor(CompositeNano, GenericBuff);
+            RegisterSpellProcessor(CompositeMelee, GenericBuff);
+            RegisterSpellProcessor(CompositeMeleeSpec, GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.AgilityBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.ConcealmentBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.RunspeedBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.ShadePiercingBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SneakAttackBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(ShadeDmgProc, GenericBuff);
 
             _menu = new Menu("CombatHandler.Shade", "CombatHandler.Shade");
             _menu.AddItem(new MenuBool("UseDrainNanoForDps", "Use drain nano for dps", false));

@@ -101,6 +101,11 @@ namespace Desu
             return false;
         }
 
+        protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
+        {
+            return specialAttack != SpecialAttack.Dimach;
+        }
+
         private static class RelevantNanos
         {
             public const int CourageOfTheJust = 279379;

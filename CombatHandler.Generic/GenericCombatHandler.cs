@@ -13,7 +13,6 @@ namespace CombatHandler.Generic
 
         public GenericCombatHandler()
         {
-            Game.OnUpdate += OnUpdate;
             Game.TeleportEnded += TeleportEnded;
 
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
@@ -146,8 +145,9 @@ namespace CombatHandler.Generic
             _lastCombatTime = double.MinValue;
         }
 
-        private void OnUpdate(object sender, float e)
+        protected override void OnUpdate(float deltaTime)
         {
+            base.OnUpdate(deltaTime);
             if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
             {
                 _lastCombatTime = Time.NormalTime;

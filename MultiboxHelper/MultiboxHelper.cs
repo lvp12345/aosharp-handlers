@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 
 namespace MultiboxHelper
 {
-    public class MultiboxHelper : IAOPluginEntry
+    public class MultiboxHelper : AOPluginEntry
     {
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -25,7 +25,7 @@ namespace MultiboxHelper
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
-        public void Run(string pluginDir)
+        public override void Run(string pluginDir)
         {
             IPCChannel = new IPCChannel(111);
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);

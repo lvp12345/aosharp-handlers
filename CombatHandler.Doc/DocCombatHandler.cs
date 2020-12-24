@@ -46,7 +46,6 @@ namespace Desu
 
         private bool DebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-
             // Check if we are fighting and if debuffing is enabled
             if (fightingTarget == null || !_menu.GetBool("UseDebuff"))
                 return false;

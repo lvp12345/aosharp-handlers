@@ -4,9 +4,9 @@ using AOSharp.Core.UI;
 
 namespace CombatHandler.Engi
 {
-    public class Main : IAOPluginEntry
+    public class Main : AOPluginEntry
     {
-        public void Run(string pluginDir)
+        public override void Run(string pluginDir)
         {
             try
             {

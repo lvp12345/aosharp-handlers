@@ -12,11 +12,11 @@ using AOSharp.Core.UI;
 
 namespace Radar
 {
-    public class Main : IAOPluginEntry
+    public class Main : AOPluginEntry
     {
         private List<string> _trackedNames;
 
-        public void Run(string pluginDir)
+        public override void Run(string pluginDir)
         {
             try
             {

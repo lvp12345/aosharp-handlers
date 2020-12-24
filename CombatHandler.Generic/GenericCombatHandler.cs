@@ -67,6 +67,10 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.HealthAndNanoStimLow, RelevantItems.HealthAndNanoStimHigh, HealthAndNanoStim, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
             RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
+            RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
+            RegisterItemProcessor(RelevantItems.SitKit1, RelevantItems.SitKit100, SitKit);
+            RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
+            RegisterItemProcessor(RelevantItems.SitKit200, RelevantItems.SitKit300, SitKit);
 
             // health and nano recharger
             // first aid stim
@@ -100,6 +104,21 @@ namespace CombatHandler.Generic
                     break;
             }
         }
+
+        private bool SitKit(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                return false;
+
+            if (DynelManager.LocalPlayer.HealthPercent > 65 && DynelManager.LocalPlayer.NanoPercent > 65)
+                return false;
+
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+
+        }
+
 
         private bool ExperienceStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -370,6 +389,11 @@ namespace CombatHandler.Generic
             public const int HealthAndNanoStimLow = 291043;
             public const int HealthAndNanoStimHigh = 291044;
             public const int ExperienceStim = 288769;
+            public const int PremSitKit = 297274;
+            public const int SitKit1 = 291082;
+            public const int SitKit100 = 291083;
+            public const int SitKit200 = 291084;
+            public const int SitKit300 = 293296;
         };
 
         private static class RelevantNanos

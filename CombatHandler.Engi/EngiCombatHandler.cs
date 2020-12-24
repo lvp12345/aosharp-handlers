@@ -51,9 +51,11 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.ArmorBuff).OrderByStackingOrder(), GenericBuff);
 
+            //Pet Spawners
             RegisterSpellProcessor(RelevantNanos.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), PetSpawner);
             RegisterSpellProcessor(RelevantNanos.Pets.Where(x => x.Value.PetType == PetType.Support).Select(x => x.Key).ToArray(), PetSpawner);
 
+            //Pet Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MPPetInitiativeBuffs).OrderByStackingOrder(), PetTargetBuff);
@@ -61,6 +63,7 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.ArmorBuff).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(RelevantNanos.ShieldOfTheObedientServant, ShieldOfTheObedientServant);
 
+            //Pet Shells
             foreach(int shellId in RelevantNanos.Pets.Values.Select(x => x.ShellId))
                 RegisterItemProcessor(shellId, shellId, PetSpawnerItem);
 

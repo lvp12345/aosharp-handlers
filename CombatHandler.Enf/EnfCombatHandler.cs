@@ -17,7 +17,7 @@ namespace Desu
         {
             List<PerkHash> RebuffPerks = new List<PerkHash>
             {
-                PerkHash.ViolationBuffer,
+                PerkHash.LEProcEnforcerViolationBuffer,
             };
 
             //Perks
@@ -44,7 +44,7 @@ namespace Desu
 
             //Spells (Im not sure the spell lines are up to date to support the full line of SL mongos)
             RegisterSpellProcessor(RelevantNanos.MONGO_KRAKEN, MajorHpBuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MongoBuff).OrderByStackingOrder(), AoeTaunt);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AoeTaunt);
             RegisterSpellProcessor(RelevantNanos.ELEMENT_OF_MALICE, SingleTargetTaunt, CombatActionPriority.High);
 
 
@@ -100,8 +100,8 @@ namespace Desu
             }
 
             //Check if we have tanking enabled & have more than one enemy
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2) 
-            { 
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2)
+            {
                 return false;
             }
 
@@ -122,23 +122,23 @@ namespace Desu
         private bool MajorHpBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             //Check if we have Kraken in our ncu at all times, if not we refresh it.
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable()) 
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Identity == spell.Identity)
                     return false;
             }
 
-            if(DynelManager.LocalPlayer.NanoPercent < 30)
+            if (DynelManager.LocalPlayer.NanoPercent < 30)
                 return false;
 
             return true;
         }
 
-        private bool SelfBuffPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SelfBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
-                if (buff.Name == perk.Name) 
+                if (buff.Name == perkAction.Name)
                 {
                     //Chat.WriteLine(buff.Name+" "+perk.Name);
                     return false;
@@ -147,7 +147,7 @@ namespace Desu
             return true;
         }
 
-        private bool SelfHealPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SelfHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!DynelManager.LocalPlayer.IsAttacking)
                 return false;
@@ -161,7 +161,7 @@ namespace Desu
             return false;
         }
 
-        private bool TeamHealPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
             if (!DynelManager.LocalPlayer.IsAttacking)
@@ -195,9 +195,9 @@ namespace Desu
 
         private static class RelevantNanos
         {
-           public const int MONGO_KRAKEN = 273322;
-           public const int MONGO_DEMOLISH = 270786;
-           public const int ELEMENT_OF_MALICE = 275014;
+            public const int MONGO_KRAKEN = 273322;
+            public const int MONGO_DEMOLISH = 270786;
+            public const int ELEMENT_OF_MALICE = 275014;
         }
     }
 }

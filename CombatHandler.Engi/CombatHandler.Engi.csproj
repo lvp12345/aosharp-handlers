@@ -31,11 +31,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AOSharp.Common">
-      <HintPath>..\..\AOSharp\AOSharp.Common\bin\Debug\AOSharp.Common.dll</HintPath>
+    <Reference Include="AOSharp.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\aosharp\AOSharp.Common\bin\Debug\AOSharp.Common.dll</HintPath>
     </Reference>
-    <Reference Include="AOSharp.Core">
-      <HintPath>..\..\AOSharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
+    <Reference Include="AOSharp.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

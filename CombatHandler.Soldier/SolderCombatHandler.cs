@@ -27,7 +27,7 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.LaserPaintTarget, TargetedDamagePerk);
             RegisterPerkProcessor(PerkHash.Fuzz, DamagePerk);
             RegisterPerkProcessor(PerkHash.FireFrenzy, DamagePerk);
-            RegisterPerkProcessor(PerkHash.ClipFever, DamagePerk);
+            RegisterPerkProcessor(PerkHash.Clipfever, DamagePerk);
             RegisterPerkProcessor(PerkHash.MuzzleOverload, DamagePerk);
             RegisterPerkProcessor(PerkHash.BotConfinement, DamagePerk);
             RegisterPerkProcessor(PerkHash.BotConfinement, DamagePerk);
@@ -46,7 +46,7 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.NeutroniumSlug, DamagePerk);
 
             //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.TotalMirrorShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalMirrorShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.AdrenalineRush, AdrenalineRush);
             RegisterSpellProcessor(RelevantNanos.Distinctvictim, SingleTargetTaunt);//TODO: Generate soldier taunt line to support lower ql taunt use
 
@@ -74,28 +74,28 @@ namespace Desu
 
             // don't use if we have another major absorb running
             // we could check remaining absorb stat to be slightly more effective
-            if (DynelManager.LocalPlayer.Buffs.Contains(Nanoline.BioCocoon))
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
                 return false;
 
             return true;
         }
 
-        private bool DmgBuffPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DmgBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
                 return false;
             return true;
         }
 
-        private bool SingleTargetTaunt(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("useTaunt") || !DynelManager.LocalPlayer.IsAttacking || fightingtarget == null || DynelManager.LocalPlayer.Nano < spell.Cost)
+            if (!_menu.GetBool("useTaunt") || !DynelManager.LocalPlayer.IsAttacking || fightingTarget == null || DynelManager.LocalPlayer.Nano < spell.Cost)
                 return false;
 
             return true;
         }
 
-        private bool AdrenalineRush(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool AdrenalineRush(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             //if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
             //    return false;

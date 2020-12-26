@@ -27,12 +27,12 @@ namespace Desu
 
         public KeeperCombatHandler()
         {
-            _barrierAuras = Spell.GetSpellsForNanoline(Nanoline.KeeperAura_Absorb_Reflect_AMSBuff).Where(s => s.Name.Contains("Barrier of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _imminenceAuras = Spell.GetSpellsForNanoline(Nanoline.KeeperAura_Absorb_Reflect_AMSBuff).Where(s => s.Name.Contains("Imminence of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _vengeanceAuras = Spell.GetSpellsForNanoline(Nanoline.KeeperAura_Damage_SnareReductionBuff).Where(s => s.Name.Contains("Vengeance")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _enervateAuras = Spell.GetSpellsForNanoline(Nanoline.KeeperAura_Damage_SnareReductionBuff).Where(s => s.Name.Contains("Enervate")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _allHpAuras = Spell.GetSpellsForNanoline(Nanoline.KeeperAura_HPandNPHeal).Where(s => s.Name.Contains("Ambient")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _allNpAuras = Spell.GetSpellsForNanoline(Nanoline.KeeperAura_HPandNPHeal).Where(s => s.Name.Contains("Tone of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            _barrierAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Absorb_Reflect_AMSBuff).Where(s => s.Name.Contains("Barrier of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            _imminenceAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Absorb_Reflect_AMSBuff).Where(s => s.Name.Contains("Imminence of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            _vengeanceAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Damage_SnareReductionBuff).Where(s => s.Name.Contains("Vengeance")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            _enervateAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Damage_SnareReductionBuff).Where(s => s.Name.Contains("Enervate")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            _allHpAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_HPandNPHeal).Where(s => s.Name.Contains("Ambient")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            _allNpAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_HPandNPHeal).Where(s => s.Name.Contains("Tone of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
             //Since the new nanos are significantly better than the old ones, we will only consider them
             _hpAuras = new [] { 210528, 210536, 223024, 273362 };
             _npAuras = new[] { 210589, 210597, 224073 };
@@ -62,7 +62,6 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.BioRejuvenation, TeamHealPerk);
             RegisterPerkProcessor(PerkHash.BioRegrowth, TeamHealPerk);
             RegisterPerkProcessor(PerkHash.LayOnHands, TeamHealPerk);
-            RegisterPerkProcessor(PerkHash.LayOnHands, TeamHealPerk);
             RegisterPerkProcessor(PerkHash.BioShield, SelfHealPerk);
             RegisterPerkProcessor(PerkHash.BioCocoon, SelfHealPerk);//TODO: Write independent logic for this
 
@@ -76,7 +75,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.CompositePhysical, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMelee, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.Fortify).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), GenericBuff);
 
 
             //I'm defining health and nano auras statically since they added new versions with lower stacking order.
@@ -136,7 +135,7 @@ namespace Desu
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool SelfHealPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SelfHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
             {
@@ -146,7 +145,7 @@ namespace Desu
             return false;
         }
 
-        private bool DmgBuffPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DmgBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
                 return false;
@@ -154,7 +153,7 @@ namespace Desu
         }
 
 
-        private bool TeamHealPerk(Perk perk, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamHealPerk(PerkAction perkAction, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             // Prioritize keeping ourself alive
             if (DynelManager.LocalPlayer.HealthPercent <= 30)

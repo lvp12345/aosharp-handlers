@@ -18,31 +18,27 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.ProgramOverload, DamagePerk);
             RegisterPerkProcessor(PerkHash.FlimFocus, DamagePerk);
             RegisterPerkProcessor(PerkHash.Utilize, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.DazzleWithLights, StarfallPerk);
-            RegisterPerkProcessor(PerkHash.Combust, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.ThermalDetonation, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Supernova, TargetedDamagePerk);
+
             RegisterPerkProcessor(PerkHash.BreachDefenses, TargetedDamagePerk);
 
             //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis);
             RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth);
             RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
             RegisterSpellProcessor(RelevantNanos.IzgimmersUltimatum, SingleTargetNuke);
 
             RegisterSpellProcessor(RelevantNanos.CompositeAttribute, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeNano, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.NanobotShelter, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NanoOverTime_LineA).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NanoDamageMultiplierBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NPCostBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MatCreaBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.Fortify).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDamageMultiplierBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(RelevantNanos.NanobotShelter, GenericBuff);
 
             _menu = new Menu("CombatHandler.NT", "CombatHandler.NT");
@@ -50,18 +46,12 @@ namespace Desu
             OptionPanel.AddMenu(_menu);
         }
 
-        protected virtual bool StarfallPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Perk.Find(PerkHash.Combust, out Perk combust) && !combust.IsAvailable)
-                return false;
 
-            return TargetedDamagePerk(perk, fightingTarget, ref actionTarget);
-        }
 
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             actionTarget.ShouldSetTarget = false;
-            return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(Nanoline.NullitySphereNano);
+            return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

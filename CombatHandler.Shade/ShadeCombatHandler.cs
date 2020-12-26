@@ -69,10 +69,10 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.Diffuse, TargetedDamagePerk);
 
             //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaressNano, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.HealthDrain).OrderByStackingOrder(), HealthDrainNano);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaressNano, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealthDrain).OrderByStackingOrder(), HealthDrainNano);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
 
             //Items
             RegisterItemProcessor(Tattoo, Tattoo, TattooItem, CombatActionPriority.High);
@@ -81,13 +81,13 @@ namespace Desu
             RegisterSpellProcessor(CompositeNano, GenericBuff);
             RegisterSpellProcessor(CompositeMelee, GenericBuff);
             RegisterSpellProcessor(CompositeMeleeSpec, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.AgilityBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.ConcealmentBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.RunspeedBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.ShadePiercingBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(Nanoline.SneakAttackBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(ShadeDmgProc, GenericBuff);
 
             _menu = new Menu("CombatHandler.Shade", "CombatHandler.Shade");
@@ -123,7 +123,7 @@ namespace Desu
 
             // don't use if we have another major absorb (example: nanomage booster) running
             // we could check remaining absorb stat to be slightly more effective
-            if (DynelManager.LocalPlayer.Buffs.Contains(Nanoline.BioCocoon))
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
                 return false;
 
             // don't use if our fighting target has caress running
@@ -183,71 +183,71 @@ namespace Desu
             return true;
         }
 
-        private bool PiercingMasteryPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PiercingMasteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null)
                 return false;
 
             //Don't PM if there are TR/SP chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is Perk action && (TotemicRites.Contains(action.Hash) || SpiritPhylactery.Contains(action.Hash))))
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (TotemicRites.Contains(action.Hash) || SpiritPhylactery.Contains(action.Hash))))
                 return false;
 
-            if (!(Perk.Find(PerkHash.Stab, out Perk stab) && Perk.Find(PerkHash.DoubleStab, out Perk doubleStab)))
+            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))
                 return true;
 
-            if (perk.Hash == PerkHash.Perforate)
+            if (perkAction.Hash == PerkHash.Perforate)
             {
-                if (_actionQueue.Any(x => x.CombatAction is Perk action && (action == stab || action == doubleStab)))
+                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab)))
                     return false;
             }
 
-            if (!(Perk.Find(PerkHash.Stab, out Perk perforate) && Perk.Find(PerkHash.DoubleStab, out Perk lacerate)))
+            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction perforate) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction lacerate)))
                 return true;
 
-            if (perk.Hash == PerkHash.Impale)
+            if (perkAction.Hash == PerkHash.Impale)
             {
-                if (_actionQueue.Any(x => x.CombatAction is Perk action && (action == stab || action == doubleStab || action == perforate || action == lacerate)))
+                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab || action == perforate || action == lacerate)))
                     return false;
             }
 
             return true;
         }
 
-        private bool SpiritPhylacteryPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SpiritPhylacteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null)
                 return false;
 
             //Don't SP if there are TR/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is Perk action && (TotemicRites.Contains(action.Hash) || PiercingMastery.Contains(action.Hash))))
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (TotemicRites.Contains(action.Hash) || PiercingMastery.Contains(action.Hash))))
                 return false;
 
             return true;
         }
 
-        private bool TotemicRitesPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TotemicRitesPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null)
                 return false;
 
             //Don't TR if there are SP/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is Perk action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash))))
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash))))
                 return false;
 
             return true;
         }
 
-        protected override bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected override bool TargetedDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             //Don't use if there are SP/PM/TR chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is Perk action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
                 return false;
 
             actionTarget.ShouldSetTarget = true;
-            return DamagePerk(perk, fightingTarget, ref actionTarget);
+            return DamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
 
-        protected override bool DamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected override bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null)
                 return false;
@@ -259,7 +259,7 @@ namespace Desu
                 return false;
 
             //Don't use if there are SP/PM/TR chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is Perk action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
                 return false;
 
             return true;

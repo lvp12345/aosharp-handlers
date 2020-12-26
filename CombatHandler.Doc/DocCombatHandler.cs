@@ -13,10 +13,10 @@ namespace Desu
         private Menu _menu;
 
         private List<PerkHash> BattleGroupHeals = new List<PerkHash> {
-            PerkHash.BattleGroupHeal1,
-            PerkHash.BattleGroupHeal2,
-            PerkHash.BattleGroupHeal3,
-            PerkHash.BattleGroupHeal4,
+            PerkHash.BattlegroupHeal1,
+            PerkHash.BattlegroupHeal2,
+            PerkHash.BattlegroupHeal3,
+            PerkHash.BattlegroupHeal4,
         };
         public DocCombatHandler()
         {
@@ -81,7 +81,7 @@ namespace Desu
             return true;
         }
 
-        private bool MajorHealPerk(Perk perk, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MajorHealPerk(PerkAction perkAction, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             // Prioritize keeping ourself alive
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
@@ -109,12 +109,12 @@ namespace Desu
             return false;
         }
 
-        protected virtual bool StarfallPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected virtual bool StarfallPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Perk.Find(PerkHash.Combust, out Perk combust) && !combust.IsAvailable)
+            if (PerkAction.Find(PerkHash.Combust, out PerkAction combust) && !combust.IsAvailable)
                 return false;
 
-            return TargetedDamagePerk(perk, fightingTarget, ref actionTarget);
+            return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
 
         private bool TeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

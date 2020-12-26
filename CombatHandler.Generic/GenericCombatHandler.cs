@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
@@ -10,9 +11,11 @@ namespace CombatHandler.Generic
     {
         private double _lastCombatTime = double.MinValue;
         public int EvadeCycleTimeoutSeconds = 180;
+        private Dictionary<PerkLine, int> _perkLineLevels;
 
         public GenericCombatHandler()
         {
+            _perkLineLevels = Perk.GetPerkLineLevels(true);
             Game.TeleportEnded += TeleportEnded;
 
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
@@ -159,7 +162,7 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        private bool RegainNano(Perk perk, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool RegainNano(PerkAction perkAction, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (fightingtarget == null)
                 return false;
@@ -173,6 +176,7 @@ namespace CombatHandler.Generic
         private void TeleportEnded(object sender, EventArgs e)
         {
             _lastCombatTime = double.MinValue;
+            _perkLineLevels = Perk.GetPerkLineLevels(true);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -258,19 +262,19 @@ namespace CombatHandler.Generic
 
             // don't use if we have another major absorb running
             // we could check remaining absorb stat to be slightly more effective
-            if (DynelManager.LocalPlayer.Buffs.Contains(Nanoline.BioCocoon))
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
                 return false;
 
             return true;
         }
 
-        protected virtual bool TargetedDamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected virtual bool TargetedDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             actionTarget.ShouldSetTarget = true;
-            return DamagePerk(perk, fightingTarget, ref actionTarget);
+            return DamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
 
-        protected virtual bool DamagePerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected virtual bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null)
                 return false;
@@ -303,13 +307,13 @@ namespace CombatHandler.Generic
 
         protected virtual bool Coffee(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(Nanoline.FoodandDrinkBuffs))
+            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FoodandDrinkBuffs))
                 return DamageItem(item, fightingTarget, ref actionTarget);
 
             return false;
         }
 
-        private bool Limber(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Limber(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f)
                 return false;
@@ -321,7 +325,7 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        private bool DanceOfFools(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DanceOfFools(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.Limber, out Buff limber) || limber.RemainingTime > 12.5f)
                 return false;

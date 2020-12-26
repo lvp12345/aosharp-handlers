@@ -56,12 +56,12 @@ namespace Desu
             return true;
         }
 
-        protected virtual bool StarfallPerk(Perk perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected virtual bool StarfallPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Perk.Find(PerkHash.Combust, out Perk combust) && !combust.IsAvailable)
+            if (PerkAction.Find(PerkHash.Combust, out PerkAction combust) && !combust.IsAvailable)
                 return false;
 
-            return TargetedDamagePerk(perk, fightingTarget, ref actionTarget);
+            return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

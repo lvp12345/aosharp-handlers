@@ -17,22 +17,33 @@ namespace MultiboxHelper
 {
     public class MultiboxHelper : AOPluginEntry
     {
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
+        public static string PluginDir;
 
         private Menu _menu;
         private IPCChannel IPCChannel;
+        private StatusWindow _statusWindow;
+        private double _lastUpdateTime = 0;
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public override void Run(string pluginDir)
         {
+            PluginDir = pluginDir;
+            _statusWindow = new StatusWindow();
+
             IPCChannel = new IPCChannel(111);
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnTargetMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.CharStatus, OnCharStatusMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.CharLeft, OnCharLeftMessage);
+
+            Chat.RegisterCommand("mb", MbCommand);
 
             _menu = new Menu("MultiboxHelper", "MultiboxHelper");
             _menu.AddItem(new MenuBool("SyncMove", "Sync Movement", true));
@@ -40,8 +51,26 @@ namespace MultiboxHelper
             _menu.AddItem(new MenuBool("SyncUse", "Sync Use", true));
             OptionPanel.AddMenu(_menu);
 
+            Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
             Chat.WriteLine("Multibox Helper Loaded!");
+        }
+
+        private void OnUpdate(object s, float deltaTime)
+        {
+            if (Time.NormalTime > _lastUpdateTime + 0.5f)
+            {
+                IPCChannel.Broadcast(new CharStatusMessage
+                {
+                    Name = DynelManager.LocalPlayer.Name,
+                    Health = DynelManager.LocalPlayer.Health,
+                    MaxHealth = DynelManager.LocalPlayer.MaxHealth,
+                    Nano = DynelManager.LocalPlayer.Nano,
+                    MaxNano = DynelManager.LocalPlayer.MaxNano,
+                });
+
+                _lastUpdateTime = Time.NormalTime;
+            }
         }
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
@@ -194,6 +223,63 @@ namespace MultiboxHelper
 
             UseMessage useMsg = (UseMessage)msg;
             DynelManager.GetDynel<SimpleItem>(useMsg.Target)?.Use();
+        }
+
+        private void OnCharStatusMessage(int sender, IPCMessage msg)
+        {
+            CharStatusMessage statusMsg = (CharStatusMessage)msg;
+
+            _statusWindow.SetCharStatus(sender, new CharacterStatus
+            {
+                Name = statusMsg.Name,
+                Health = statusMsg.Health,
+                MaxHealth = statusMsg.MaxHealth,
+                Nano = statusMsg.Nano,
+                MaxNano = statusMsg.MaxNano
+            });
+        }
+
+        private void OnCharLeftMessage(int sender, IPCMessage msg)
+        {
+            _statusWindow.RemoveChar(sender);
+        }
+
+        public override void Teardown()
+        {
+            IPCChannel.Broadcast(new CharLeftMessage());
+        }
+
+        private void PrintCommandUsage(ChatWindow chatWindow)
+        {
+            string help = "Usage:\nStatus - toggles status window";
+
+            chatWindow.WriteLine(help, ChatColor.LightBlue);
+        }
+
+        private void MbCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            try
+            {
+                if (param.Length < 1)
+                {
+                    PrintCommandUsage(chatWindow);
+                    return;
+                }
+
+                switch (param[0].ToLower())
+                {
+                    case "status":
+                        _statusWindow.Open();
+                        break;
+                    default:
+                        PrintCommandUsage(chatWindow);
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e.Message);
+            }
         }
     }
 }

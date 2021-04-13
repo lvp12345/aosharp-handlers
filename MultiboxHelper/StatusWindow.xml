@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <View name="charStatusContainer">
+    <VLayoutSpacer/>
+  </View>
+</root>

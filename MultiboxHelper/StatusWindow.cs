@@ -14,13 +14,12 @@ namespace MultiboxHelper
         private Dictionary<int, CharacterStatus> _statuses = new Dictionary<int, CharacterStatus>();
         private Dictionary<int, View> _statusViews = new Dictionary<int, View>();
 
-        public StatusWindow()
-        {
-        }
-
         public void Open()
         {
-            WindowFlags winFlags = WindowFlags.AutoScale | WindowFlags.NoFade | WindowFlags.NoExit;
+            if (_window != null && _window.IsValid)
+                return;
+
+            WindowFlags winFlags = WindowFlags.AutoScale | WindowFlags.NoFade/*| WindowFlags.NoExit*/;
             _window = Window.CreateFromXml("MBStatus", $"{MultiboxHelper.PluginDir}\\StatusWindow.xml", windowSize: new Rect(0,0,150,0), windowStyle: WindowStyle.Default, windowFlags: winFlags);
 
             if(_window == null)
@@ -39,6 +38,9 @@ namespace MultiboxHelper
 
         private void AddStatusView(int charId, CharacterStatus status)
         {
+            if (_window == null || !_window.IsValid)
+                return;
+
             if (_window != null && _window.FindView("charStatusContainer", out View rootView))
             {
                 View statusView = View.CreateFromXml($"{MultiboxHelper.PluginDir}\\CharStatusView.xml");
@@ -66,7 +68,7 @@ namespace MultiboxHelper
         {
             _statuses.Remove(charId);
 
-            if (_window == null)
+            if (_window == null || !_window.IsValid)
                 return;
 
             if (_statusViews.TryGetValue(charId, out View charView) && _window.FindView("charStatusContainer", out View rootView))
@@ -79,6 +81,9 @@ namespace MultiboxHelper
 
         private void UpdateView(View statusView, CharacterStatus status)
         {
+            if (_window == null || !_window.IsValid)
+                return;
+
             if (statusView.FindChild("charNameLabel", out TextView nameLabel))
                 nameLabel.Text = status.Name;
 

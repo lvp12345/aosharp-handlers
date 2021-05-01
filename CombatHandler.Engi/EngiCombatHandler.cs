@@ -32,7 +32,7 @@ namespace CombatHandler.Engi
             RegisterPerkProcessor(PerkHash.LegShot, DamagePerk);
             RegisterPerkProcessor(PerkHash.EasyShot, DamagePerk);
             RegisterPerkProcessor(PerkHash.PointBlank, DamagePerk);
-            RegisterPerkProcessor(PerkHash.QuickShot, DamagePerk);
+            RegisterPerkProcessor(PerkHash.QuickShot, QuickShot);
             RegisterPerkProcessor(PerkHash.DoubleShot, DamagePerk);
             RegisterPerkProcessor(PerkHash.Deadeye, DamagePerk);
 
@@ -77,6 +77,14 @@ namespace CombatHandler.Engi
         private void OnZoned(object s, EventArgs e)
         {
             _lastZonedTime = Time.NormalTime;
+        }
+
+        protected bool QuickShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PerkAction.Find("Double Shot", out PerkAction doubleShot) && !doubleShot.IsAvailable)
+                return false;
+
+            return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

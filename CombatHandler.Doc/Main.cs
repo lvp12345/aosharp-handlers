@@ -11,7 +11,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("Doctor Combat Handler Loaded!");
-                AOSharp.Core.Combat.CombatHandler.Set(new DocCombatHandler());
+                AOSharp.Core.Combat.CombatHandler.Set(new DocCombatHandler(pluginDir));
             }
             catch (Exception e)
             {

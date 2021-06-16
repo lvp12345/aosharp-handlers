@@ -11,7 +11,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("Keeper Combat Handler Loaded!");
-                AOSharp.Core.Combat.CombatHandler.Set(new KeeperCombatHandler());
+                AOSharp.Core.Combat.CombatHandler.Set(new KeeperCombatHandler(pluginDir));
             }
             catch (Exception e)
             {

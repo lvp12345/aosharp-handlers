@@ -11,7 +11,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("Shade Combat Handler Loaded!");
-                AOSharp.Core.Combat.CombatHandler.Set(new ShadeCombatHandler());
+                AOSharp.Core.Combat.CombatHandler.Set(new ShadeCombatHandler(pluginDir));
             }
             catch (Exception e)
             {

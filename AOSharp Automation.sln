@@ -27,6 +27,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Enf", "Combat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Engi", "CombatHandler.Engi\CombatHandler.Engi.csproj", "{0AD668D3-8956-46F7-A481-4FD8EE696F3F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Trader", "CombatHandler.Trader\CombatHandler.Trader.csproj", "{CC47644B-AD9F-4E9F-A80F-37F218E3E808}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CharacterState", "CharacterState\CharacterState.csproj", "{CECC3096-FF39-4BD7-B65C-420718048D44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Fixer", "CombatHandler.Fixer\CombatHandler.Fixer.csproj", "{7F784C8F-8146-429A-9AFD-B7172D359CAD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.MP", "CombatHandler.MP\CombatHandler.MP.csproj", "{5A634F35-42FC-493E-8320-29877D9F508D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoLoot", "AutoLoot\AutoLoot.csproj", "{34674CBF-305C-4C78-8174-9D298E083E44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Agent", "CombatHandler.Agent\CombatHandler.Agent.csproj", "{99F69611-BE0F-4891-810C-6D1079A3B5BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +93,30 @@ Global
 		{0AD668D3-8956-46F7-A481-4FD8EE696F3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0AD668D3-8956-46F7-A481-4FD8EE696F3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0AD668D3-8956-46F7-A481-4FD8EE696F3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC47644B-AD9F-4E9F-A80F-37F218E3E808}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC47644B-AD9F-4E9F-A80F-37F218E3E808}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC47644B-AD9F-4E9F-A80F-37F218E3E808}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC47644B-AD9F-4E9F-A80F-37F218E3E808}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CECC3096-FF39-4BD7-B65C-420718048D44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CECC3096-FF39-4BD7-B65C-420718048D44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CECC3096-FF39-4BD7-B65C-420718048D44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CECC3096-FF39-4BD7-B65C-420718048D44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F784C8F-8146-429A-9AFD-B7172D359CAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F784C8F-8146-429A-9AFD-B7172D359CAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F784C8F-8146-429A-9AFD-B7172D359CAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F784C8F-8146-429A-9AFD-B7172D359CAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A634F35-42FC-493E-8320-29877D9F508D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A634F35-42FC-493E-8320-29877D9F508D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A634F35-42FC-493E-8320-29877D9F508D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A634F35-42FC-493E-8320-29877D9F508D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34674CBF-305C-4C78-8174-9D298E083E44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34674CBF-305C-4C78-8174-9D298E083E44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34674CBF-305C-4C78-8174-9D298E083E44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34674CBF-305C-4C78-8174-9D298E083E44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99F69611-BE0F-4891-810C-6D1079A3B5BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99F69611-BE0F-4891-810C-6D1079A3B5BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99F69611-BE0F-4891-810C-6D1079A3B5BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99F69611-BE0F-4891-810C-6D1079A3B5BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

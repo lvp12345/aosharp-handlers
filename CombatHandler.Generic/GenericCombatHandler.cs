@@ -1,57 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AOSharp.Character;
 using AOSharp.Common.GameData;
+using AOSharp.Common.Unmanaged.DataTypes;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.IPC;
+using AOSharp.Core.UI;
+using Character.State;
+using static CombatHandler.Generic.PerkCondtionProcessors;
 
 namespace CombatHandler.Generic
 {
     public class GenericCombatHandler : AOSharp.Core.Combat.CombatHandler
     {
-        private double _lastCombatTime = double.MinValue;
+        private const float PostZonePetCheckBuffer = 5;
+        private double _lastPetSyncTime = Time.NormalTime;
+        protected double _lastZonedTime = Time.NormalTime;
+        protected double _lastCombatTime = double.MinValue;
         public int EvadeCycleTimeoutSeconds = 180;
-        private Dictionary<PerkLine, int> _perkLineLevels;
+        private string pluginDir = "";
+        protected Settings settings;
 
-        public GenericCombatHandler()
+        public GenericCombatHandler(string pluginDir)
         {
-            _perkLineLevels = Perk.GetPerkLineLevels(true);
+            this.pluginDir = pluginDir;
             Game.TeleportEnded += TeleportEnded;
+            settings = new Settings("CombatHandler");
 
+            RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
-
-            RegisterPerkProcessor(PerkHash.Bore, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Crave, TargetedDamagePerk);
-
-            RegisterPerkProcessor(PerkHash.NanoFeast, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.BotConfinement, TargetedDamagePerk);
-
-            RegisterPerkProcessor(PerkHash.ForceOpponent, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Purify, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Bluntness, TargetedDamagePerk);
-
-            RegisterPerkProcessor(PerkHash.Collapser, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Implode, TargetedDamagePerk);
-
-            RegisterPerkProcessor(PerkHash.RegainNano, RegainNano);
-
-
-            //Fuzz
-            //Fire Frenzy
-
-            //Bluntness
-            //Break
-
-            //Collapser
-            //Implode
-
-            //Initial strike
-
-            //Tick
-            //Assume target
-
-            // Opportunity knocks
 
             RegisterItemProcessor(RelevantItems.FlurryOfBlowsLow, RelevantItems.FlurryOfBlowsLow, DamageItem);
             RegisterItemProcessor(RelevantItems.FlurryOfBlowsHigh, RelevantItems.FlurryOfBlowsHigh, DamageItem);
@@ -64,6 +46,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.SteamingHotCupOfEnhancedCoffee, RelevantItems.SteamingHotCupOfEnhancedCoffee, Coffee);
             RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
             RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.BlessedWithThunderLow, RelevantItems.BlessedWithThunderHigh, TargetedDamageItem);
 
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBooster, RelevantItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
@@ -74,6 +57,23 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.SitKit1, RelevantItems.SitKit100, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit200, RelevantItems.SitKit300, SitKit);
+
+            RegisterSpellProcessor(RelevantNanos.CompositeNano, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeUtility, GenericBuff);
+            if (CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == CharacterWeaponType.MELEE)
+            {
+                //We are melee
+                RegisterSpellProcessor(RelevantNanos.CompositeMartial, GenericBuffExcludeInnerSanctum);
+                RegisterSpellProcessor(RelevantNanos.CompositeMelee, GenericBuff);
+                RegisterSpellProcessor(RelevantNanos.CompositePhysicalSpecial, GenericBuff);
+            } 
+            else
+            {
+                //We are ranged
+                RegisterSpellProcessor(RelevantNanos.CompositeRanged, GenericBuff);
+                RegisterSpellProcessor(RelevantNanos.CompositeRangedSpecial, GenericBuff);
+            }
 
             // health and nano recharger
             // first aid stim
@@ -106,6 +106,49 @@ namespace CombatHandler.Generic
                 case Breed.Atrox:
                     break;
             }
+
+            Game.TeleportEnded += OnZoned;
+        }
+
+        protected bool HealOverTimeTeamBuff(string toggleName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return ToggledTeamBuff(toggleName, spell, fightingTarget,  target => HasBuffNanoLine(NanoLine.HealOverTime, target) || HasBuffNanoLine(NanoLine.MongoBuff, target), ref actionTarget);
+        }
+        
+        protected void RegisterPerkProcessors()
+        {
+            PerkAction.List.ForEach(perkAction => RegisterPerkAction(perkAction));
+        }
+
+        private void RegisterPerkAction(PerkAction perkAction)
+        {
+            GenericPerkConditionProcessor perkConditionProcessor = PerkCondtionProcessors.GetPerkConditionProcessor(perkAction);
+
+            if(perkConditionProcessor != null)
+            {
+                RegisterPerkProcessor(perkAction.Hash, ToPerkConditionProcessor(perkConditionProcessor));
+            }
+        }
+
+        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        {
+            SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, settings);
+        }
+
+        protected bool TauntTool(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || !IsSettingEnabled("UseTauntTool"))
+            {
+                return false;
+            }
+
+            if (TauntTools.CanUseTauntTool())
+            {
+                actionTarget.Target = fightingTarget;
+                actionTarget.ShouldSetTarget = true;
+            }
+
+            return false;
         }
 
         private bool SitKit(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -134,57 +177,286 @@ namespace CombatHandler.Generic
 
         }
 
-        protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null)
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            {
+                if (buff.Name == perk.Name)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        protected bool GenericBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum())
+            {
                 return false;
+            }
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool CombatBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || !CanCast(spell))
+            {
+                return false;
+            }
 
             if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
             {
                 //Don't cast if weaker than existing
                 if (spell.StackingOrder < buff.StackingOrder)
+                {
                     return false;
+                }
 
                 //Don't cast if greater than 10% time remaining
                 if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1)
+                {
+
                     return false;
+                }
 
                 if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                {
                     return false;
+                }
             }
             else
             {
                 if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                {
                     return false;
+                }
             }
-
             actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
             return true;
         }
 
-        private bool RegainNano(PerkAction perkAction, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingtarget == null)
+            if (fightingTarget != null || !CanCast(spell))
+            {
                 return false;
+            }
 
-            if (DynelManager.LocalPlayer.MaxNano < 1200)
-                return DynelManager.LocalPlayer.NanoPercent < 50;
+            if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+            {
+                //Don't cast if weaker than existing
+                if (spell.StackingOrder < buff.StackingOrder)
+                {
+                    return false;
+                }
 
-            return DynelManager.LocalPlayer.MissingNano > 1200;
+                //Don't cast if greater than 10% time remaining
+                if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1)
+                {
+
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                {
+                    return false;
+                }
+            }
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+
+        protected bool ToggledDebuffTarget(string settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            // Check if we are fighting and if debuffing is enabled
+            if (fightingTarget == null || !IsSettingEnabled(settingName))
+            {
+                return false;
+            }
+
+            return !fightingTarget.Buffs.Any(buff => ShouldRefreshBuff(spell, buff));
+        }
+
+        protected bool ToggledDebuffTarget(string settingName, Spell spell, SimpleChar fightingTarget, NanoLine debuffNanoLine, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            // Check if we are fighting and if debuffing is enabled
+            if (fightingTarget == null || !IsSettingEnabled(settingName))
+            {
+                return false;
+            }
+
+            return !fightingTarget.Buffs.Any(buff => buff.Nanoline == debuffNanoLine);
+
+        }
+
+        protected bool ShouldRefreshBuff(Spell spell, Buff buff)
+        {
+            if(buff.Nanoline != spell.Nanoline)
+            {
+                return false;
+            }
+
+            return buff.StackingOrder > spell.StackingOrder || buff.StackingOrder == spell.StackingOrder && buff.RemainingTime / buff.TotalTime > 0.1;
+        }
+
+        protected bool ToggledTeamBuff(string settingName, Spell spell, SimpleChar fightingTarget, Func<SimpleChar, bool> hasBuffCheck, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled(settingName))
+            {
+                return false;
+            }
+            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck, CharacterWeaponType.UNAVAILABLE);
+        }
+
+        protected bool TeamBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if(IsInsideInnerSanctum())
+            {
+                return false;
+            }
+            return TeamBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuff(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.UNAVAILABLE);
+        }
+
+        private bool SpecialAttackTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SpecialAttacks, bool> specialAttackCheck)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => HasNCU(spell, c))
+                    .Where(c => !HasBuff(spell, c))
+                    .Where(c => specialAttackCheck == null || specialAttackCheck.Invoke(CharacterState.GetSpecialAttacks(c.Identity)))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck, CharacterWeaponType supportedWeaponType)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if(hasBuffCheck == null)
+            {
+                hasBuffCheck = c => HasBuff(spell, c);
+            }
+
+            if (!hasBuffCheck.Invoke(DynelManager.LocalPlayer) && HasNCU(spell, DynelManager.LocalPlayer))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => HasNCU(spell, c))
+                    .Where(c => !hasBuffCheck.Invoke(c))
+                    .Where(c => supportedWeaponType == CharacterWeaponType.UNAVAILABLE || CharacterState.GetWeaponType(c.Identity) == supportedWeaponType)
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool RangedTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuff(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.RANGED);
+        }
+
+        protected bool MeleeTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuff(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.MELEE);
+        }
+
+                protected bool BurstTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return SpecialAttackTeamBuff(spell, fightingTarget, ref actionTarget, specialAttacks => specialAttacks.HasBurst);
+        }
+
+        protected bool CanCast(Spell spell)
+        {
+            return spell.Cost < DynelManager.LocalPlayer.Nano;
+        }
+
+        protected bool IsSettingEnabled(string settingName)
+        {
+            return settings[settingName].AsBool();
+        }
+
+        protected bool HasNCU(Spell spell, SimpleChar target)
+        {
+            return CharacterState.GetRemainingNCU(target.Identity) > spell.NCU;
+        }
+
+        protected bool HasBuff(Spell spell, SimpleChar target)
+        {
+            return target.Buffs.Any(buff => ShouldRefreshBuff(spell, buff));
+        }
+
+        protected bool HasBuffNanoLine(NanoLine nanoLine, SimpleChar target)
+        {
+            return target.Buffs.Contains(nanoLine);
         }
 
         private void TeleportEnded(object sender, EventArgs e)
         {
             _lastCombatTime = double.MinValue;
-            _perkLineLevels = Perk.GetPerkLineLevels(true);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
+            if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
             {
                 _lastCombatTime = Time.NormalTime;
+            }
+        }
+
+        protected void CancelHostileAuras(int[] auras)
+        {
+            if (Time.NormalTime - _lastCombatTime > 5)
+            {
+                CancelBuffs(auras);
             }
         }
 
@@ -268,26 +540,6 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        protected virtual bool TargetedDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            actionTarget.ShouldSetTarget = true;
-            return DamagePerk(perkAction, fightingTarget, ref actionTarget);
-        }
-
-        protected virtual bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null)
-                return false;
-
-            if (fightingTarget.Health > 50000)
-                return true;
-
-            if (fightingTarget.HealthPercent < 5)
-                return false;
-
-            return true;
-        }
-
         protected virtual bool TargetedDamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             actionTarget.ShouldSetTarget = true;
@@ -337,6 +589,190 @@ namespace CombatHandler.Generic
             return true;
         }
 
+        protected static void CancelBuffs(int[] buffsToCancel)
+        {
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
+            {
+                if (buffsToCancel.Contains(buff.Identity.Instance))
+                    buff.Remove();
+            }
+        }
+
+        protected bool ToggledDebuffOthersInCombat(string toggleName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled(toggleName))
+            {
+                return false;
+            }
+
+            SimpleChar debuffTarget = DynelManager.Characters
+                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player of a pet
+                .Where(c => c.IsAttacking) //Is in combat
+                .Where(c => c.IsValid).Where(c => c.IsInLineOfSight).Where(c => c.IsInAttackRange()) //Is in range for debuff (we assume weapon range == debuff range)
+                .Where(c => NeedsDebuffRefresh(spell, c)) //Needs debuff refreshed
+                .FirstOrDefault();
+
+            if (debuffTarget != null)
+            {
+                actionTarget = (debuffTarget, true);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool NeedsDebuffRefresh(Spell spell, SimpleChar target)
+        {
+            if (target == null)
+            {
+                return false;
+            }
+            //Check the remaining time on debuffs. On the enemy target
+            return !target.Buffs.Where(buff => buff.Name == spell.Name)
+                .Where(buff => buff.RemainingTime > 1)
+                .Any();
+        }
+
+        protected bool IsInsideInnerSanctum()
+        {
+            return DynelManager.LocalPlayer.Buffs.Any(buff => buff.Identity.Instance == RelevantNanos.InnerSanctumDebuff);
+        }
+
+        protected bool NoShellPetSpawner(PetType petType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanSpawnPets(petType))
+            {
+                return false;
+            }
+
+            actionTarget.ShouldSetTarget = false;
+            return true;
+        }
+
+        protected bool PetSpawner(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!petData.ContainsKey(spell.Identity.Instance))
+            {
+                return false;
+            }
+
+            PetType petType = petData[spell.Identity.Instance].PetType;
+
+            //Ignore spell if we already have the shell in our inventory
+            if (Inventory.Find(petData[spell.Identity.Instance].ShellId, out Item shell))
+            {
+                return false;
+            }
+
+            return NoShellPetSpawner(petType, spell, fightingTarget, ref actionTarget);
+        }
+
+        protected virtual bool PetSpawnerItem(Dictionary<int, PetSpellData> petData, Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("SpawnPets"))
+                return false;
+
+            if (!CanLookupPetsAfterZone())
+                return false;
+
+            if (!petData.Values.Any(x => (x.ShellId == item.LowId || x.ShellId == item.HighId) && !DynelManager.LocalPlayer.Pets.Any(p => p.Type == x.PetType)))
+                return false;
+
+            actionTarget.ShouldSetTarget = false;
+            return true;
+        }
+
+        protected bool CanSpawnPets(PetType petType)
+        {
+            if (!IsSettingEnabled("SpawnPets") || !CanLookupPetsAfterZone() || PetAlreadySpawned(petType))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool PetAlreadySpawned(PetType petType)
+        {
+            return DynelManager.LocalPlayer.Pets.Any(x => (x.Type == PetType.Unknown || x.Type == petType));
+        }
+
+        protected Pet FindPetThat(Func<Pet, bool> Filter)
+        {
+            return DynelManager.LocalPlayer.Pets
+                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
+                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
+                .Where(pet => Filter.Invoke(pet))
+                .FirstOrDefault();
+        }
+
+        protected bool CanLookupPetsAfterZone()
+        {
+            return Time.NormalTime > _lastZonedTime + PostZonePetCheckBuffer;
+        }
+
+        protected bool PetTargetBuff(NanoLine buffNanoLine, PetType petType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
+            {
+                return false;
+            }
+
+            Pet petToBuff = FindPetThat(pet => pet.Type == petType && !pet.Character.Buffs.Contains(buffNanoLine));
+
+            if (petToBuff != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = petToBuff.Character;
+                return true;
+            }
+
+            return false;
+        }
+
+        protected void SynchronizePetCombatStateWithOwner()
+        {
+            if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetSyncTime > 1)
+            {
+                SynchronizePetCombatState(FindPetThat(pet => pet.Type == PetType.Attack));
+                SynchronizePetCombatState(FindPetThat(pet => pet.Type == PetType.Support));
+
+                _lastPetSyncTime = Time.NormalTime;
+            }
+        }
+
+        private void SynchronizePetCombatState(Pet pet)
+        {
+            if(pet != null)
+            {
+                if (DynelManager.LocalPlayer.IsAttacking)
+                {
+                    if (!pet.Character.IsAttacking)
+                    {
+                        pet.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                    }
+                }
+                else
+                {
+                    if (pet.Character.IsAttacking)
+                    {
+                        pet.Follow();
+                    }
+                }
+            }
+        }
+
+        private PerkConditionProcessor ToPerkConditionProcessor(GenericPerkConditionProcessor genericPerkConditionProcessor)
+        {
+            return (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => genericPerkConditionProcessor(perkAction, fightingTarget, ref actionTarget);
+        }
+
+        private void OnZoned(object s, EventArgs e)
+        {
+            _lastZonedTime = Time.NormalTime;
+        }
+
         // This will eventually be done dynamically but for now I will implement
         // it statically so we can have it functional
         private Stat GetSkillLockStat(Item item)
@@ -348,6 +784,8 @@ namespace CombatHandler.Generic
                     return Stat.Riposte;
                 case RelevantItems.FlowerOfLifeLow:
                 case RelevantItems.FlowerOfLifeHigh:
+                case RelevantItems.BlessedWithThunderLow:
+                case RelevantItems.BlessedWithThunderHigh:
                     return Stat.MartialArts;
                 case RelevantItems.HealthAndNanoStimLow:
                 case RelevantItems.HealthAndNanoStimHigh:
@@ -389,6 +827,8 @@ namespace CombatHandler.Generic
             public const int FlowerOfLifeHigh = 204326;
             public const int UponAWaveOfSummerLow = 205405;
             public const int UponAWaveOfSummerHigh = 205406;
+            public const int BlessedWithThunderLow = 70612;
+            public const int BlessedWithThunderHigh = 204327;
             public const int GnuffsEternalRiftCrystal = 303179;
             public const int HealthAndNanoStimLow = 291043;
             public const int HealthAndNanoStimHigh = 291044;
@@ -405,7 +845,52 @@ namespace CombatHandler.Generic
             public const int FountainOfLife = 302907;
             public const int DanceOfFools = 210159;
             public const int Limber = 210158;
-            public const int CompositeRangedExpertise = 223348;
+            public const int CompositeAttribute = 223372;
+            public const int CompositeNano = 223380;
+            public const int CompositeUtility = 287046;
+            public const int CompositeMartial = 302158;
+            public const int CompositeMelee = 223360;
+            public const int CompositePhysicalSpecial = 215264;
+            public const int CompositeRanged = 223348;
+            public const int CompositeRangedSpecial = 223364;
+            public const int InnerSanctumDebuff = 206387;
+        }
+
+        public class PetSpellData
+        {
+            public int ShellId;
+            public int ShellId2;
+            public PetType PetType;
+
+            public PetSpellData(int shellId, PetType petType)
+            {
+                ShellId = shellId;
+                PetType = petType;
+            }
+            public PetSpellData(int shellId, int shellId2, PetType petType)
+            {
+                ShellId = shellId;
+                ShellId2 = shellId2;
+                PetType = petType;
+            }
+        }
+
+        protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
+        {
+             "Unicorn Service Tower Alpha",
+             "Unicorn Service Tower Delta",
+             "Unicorn Service Tower Gamma",
+             "Rookie Alien Hunter",
+             "Altar of Torture",
+             "Altar of Purification",
+             "Guardian Spirit of Purification"
+        };
+
+        private static readonly List<string> AoeRootSnareSpamTargets = new List<string>() { "Flaming Vengeance", "Hand of the Colonel" };
+
+        protected bool IsAoeRootSnareSpamTarget(SimpleChar target)
+        {
+            return AoeRootSnareSpamTargets.Contains(target.Name);
         }
     }
 }

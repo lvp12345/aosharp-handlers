@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -49,10 +49,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPCMessages\FollowMessage.cs" />
+    <Compile Include="IPCMessages\NpcChatAnswerMessage.cs" />
+    <Compile Include="IPCMessages\NpcChatCloseMessage.cs" />
+    <Compile Include="IPCMessages\NpcChatOpenMessage.cs" />
     <Compile Include="IPCMessages\CharLeftMessage.cs" />
     <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\AttackIPCMessage.cs" />
+    <Compile Include="IPCMessages\UseNoviRingMessage.cs" />
     <Compile Include="IPCMessages\CharStatusMessage.cs" />
     <Compile Include="IPCMessages\UseMessage.cs" />
     <Compile Include="IPCMessages\TargetMessage.cs" />
@@ -68,6 +73,17 @@
     <Content Include="StatusWindow.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="UI\MultiboxSettingWindow.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CharacterState\CharacterState.csproj">
+      <Project>{cecc3096-ff39-4bd7-b65c-420718048d44}</Project>
+      <Name>CharacterState</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

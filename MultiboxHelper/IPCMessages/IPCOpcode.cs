@@ -14,6 +14,11 @@ namespace MultiboxHelper.IPCMessages
         StopAttack,
         Use,
         CharStatus,
-        CharLeft
+        CharLeft,
+        UseNoviRing,
+        NpcChatOpen,
+        NpcChatClose,
+        NpcChatAnswer,
+        Follow
     }
 }

@@ -12,7 +12,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("MA Combat Handler Loaded!");
-                AOSharp.Core.Combat.CombatHandler.Set(new MACombatHandler());
+                AOSharp.Core.Combat.CombatHandler.Set(new MACombatHandler(pluginDir));
             }
             catch(Exception e)
             {

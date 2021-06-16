@@ -9,53 +9,41 @@ namespace Desu
 {
     public class SoldCombathandler : GenericCombatHandler
     {
-        private Menu _menu;
-        public SoldCombathandler()
+        public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
+            settings.AddVariable("UseSingleTaunt", false);
+            settings.AddVariable("UseTauntTool", true);
+            RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
 
-            //DmgPerks
-            RegisterPerkProcessor(PerkHash.SupressiveHorde, DmgBuffPerk);
-            RegisterPerkProcessor(PerkHash.Energize, DmgBuffPerk);
-            RegisterPerkProcessor(PerkHash.ReinforceSlugs, DmgBuffPerk);
-
-            //Debuffs
-            RegisterPerkProcessor(PerkHash.Tracer, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.TriangulateTarget, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.LaserPaintTarget, TargetedDamagePerk);
-
-            //AI Perks
-            RegisterPerkProcessor(PerkHash.LaserPaintTarget, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Fuzz, DamagePerk);
-            RegisterPerkProcessor(PerkHash.FireFrenzy, DamagePerk);
-            RegisterPerkProcessor(PerkHash.Clipfever, DamagePerk);
-            RegisterPerkProcessor(PerkHash.MuzzleOverload, DamagePerk);
-            RegisterPerkProcessor(PerkHash.BotConfinement, DamagePerk);
-            RegisterPerkProcessor(PerkHash.BotConfinement, DamagePerk);
-            RegisterPerkProcessor(PerkHash.NanoFeast, DamagePerk);
-
-            //Shadow Dmg
-            RegisterPerkProcessor(PerkHash.WeaponBash, DamagePerk);
-            RegisterPerkProcessor(PerkHash.NapalmSpray, DamagePerk);
-            RegisterPerkProcessor(PerkHash.ContainedBurst, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PowerVolley, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PowerShock, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PowerBlast, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PowerCombo, DamagePerk);
-            RegisterPerkProcessor(PerkHash.JarringBurst, DamagePerk);
-            RegisterPerkProcessor(PerkHash.SolidSlug, DamagePerk);
-            RegisterPerkProcessor(PerkHash.NeutroniumSlug, DamagePerk);
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcSoldierGrazeJugularVein, LEProc);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalMirrorShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.AdrenalineRush, AdrenalineRush);
             RegisterSpellProcessor(RelevantNanos.Distinctvictim, SingleTargetTaunt);//TODO: Generate soldier taunt line to support lower ql taunt use
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AssaultRifleBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GenericBuff);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), BurstTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), TeamBuff);
 
             //Items
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
 
-            _menu = new Menu("CombatHandler.Sold", "CombatHandler.Sold");
-            _menu.AddItem(new MenuBool("useTaunt", "Use Taunt", true));
-            OptionPanel.AddMenu(_menu);
+            if (TauntTools.CanUseTauntTool()) {
+                Item tauntTool = TauntTools.GetBestTauntTool();
+                RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
+            }
         }
 
         private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -80,16 +68,9 @@ namespace Desu
             return true;
         }
 
-        private bool DmgBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
-                return false;
-            return true;
-        }
-
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("useTaunt") || !DynelManager.LocalPlayer.IsAttacking || fightingTarget == null || DynelManager.LocalPlayer.Nano < spell.Cost)
+            if (!IsSettingEnabled("UseSingleTaunt") || !DynelManager.LocalPlayer.IsAttacking || fightingTarget == null || DynelManager.LocalPlayer.Nano < spell.Cost)
                 return false;
 
             return true;
@@ -111,7 +92,7 @@ namespace Desu
             if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
                 return false;
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 25 && spell.IsReady)
+            if (DynelManager.LocalPlayer.HealthPercent <= 50 && spell.IsReady)
                 return true;
 
             return false;

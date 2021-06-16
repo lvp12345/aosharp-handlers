@@ -1,17 +1,22 @@
 ﻿using System;
+using System.Linq;
 using System.Diagnostics;
 using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
-using AOSharp.Core.UI.Options;
-using AOSharp.Common;
 using AOSharp.Common.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using MultiboxHelper.IPCMessages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using AOSharp.Core.Inventory;
+using AOSharp.Character;
+using CombatHandler.Generic;
 
 namespace MultiboxHelper
 {
@@ -19,13 +24,16 @@ namespace MultiboxHelper
     {
         public static string PluginDir;
 
-        private Menu _menu;
         private IPCChannel IPCChannel;
         private StatusWindow _statusWindow;
         private double _lastUpdateTime = 0;
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
+
+        private Settings settings = new Settings("MultiboxHelper");
+
+        private double _lastFollowTime = Time.NormalTime;
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
@@ -42,14 +50,21 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.CharStatus, OnCharStatusMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.CharLeft, OnCharLeftMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UseNoviRing, OnUseNoviRingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatOpen, OnNpcChatOpenMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
+
+            settings.AddVariable("UseFollow", false);
+            settings.AddVariable("SyncMove", false);
+            settings.AddVariable("SyncUse", true);
+            settings.AddVariable("SyncAttack", true);
+            settings.AddVariable("SyncChat", false);
+            settings.AddVariable("Disabled", false);
+            SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
 
             Chat.RegisterCommand("mb", MbCommand);
-
-            _menu = new Menu("MultiboxHelper", "MultiboxHelper");
-            _menu.AddItem(new MenuBool("SyncMove", "Sync Movement", true));
-            _menu.AddItem(new MenuBool("SyncAttack", "Sync Attacks", true));
-            _menu.AddItem(new MenuBool("SyncUse", "Sync Use", true));
-            OptionPanel.AddMenu(_menu);
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
@@ -71,12 +86,26 @@ namespace MultiboxHelper
 
                 _lastUpdateTime = Time.NormalTime;
             }
+
+            if(IsActiveCharacter() && settings["UseFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 3)
+            {
+                IPCChannel.Broadcast(new FollowMessage()
+                {
+                    Target = DynelManager.LocalPlayer.Identity
+                });
+                _lastFollowTime = Time.NormalTime;
+            }
+        }
+
+        private bool IsActiveCharacter()
+        {
+            return Team.IsInTeam && IsActiveWindow;
         }
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
             //Only the active window will issue commands
-            if (!Team.IsInTeam || !IsActiveWindow)
+            if (!IsActiveCharacter())
                 return;
 
             if (n3Msg.Identity != DynelManager.LocalPlayer.Identity)
@@ -84,7 +113,7 @@ namespace MultiboxHelper
 
             if (n3Msg.N3MessageType == N3MessageType.CharDCMove)
             {
-                if (!_menu.GetBool("SyncMove"))
+                if (!settings["SyncMove"].AsBool())
                     return;
 
                 CharDCMoveMessage charDCMoveMsg = (CharDCMoveMessage)n3Msg;
@@ -99,7 +128,7 @@ namespace MultiboxHelper
             }
             else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
             {
-                if (!_menu.GetBool("SyncMove"))
+                if (!settings["SyncMove"].AsBool())
                     return;
 
                 CharacterActionMessage charActionMsg = (CharacterActionMessage)n3Msg;
@@ -125,7 +154,7 @@ namespace MultiboxHelper
             }
             else if (n3Msg.N3MessageType == N3MessageType.Attack)
             {
-                if (!_menu.GetBool("SyncAttack"))
+                if (!settings["SyncAttack"].AsBool())
                     return;
 
                 AttackMessage attackMsg = (AttackMessage)n3Msg;
@@ -136,7 +165,7 @@ namespace MultiboxHelper
             }
             else if (n3Msg.N3MessageType == N3MessageType.StopFight)
             {
-                if (!_menu.GetBool("SyncAttack"))
+                if (!settings["SyncAttack"].AsBool())
                     return;
 
                 StopFightMessage lookAtMsg = (StopFightMessage)n3Msg;
@@ -144,12 +173,25 @@ namespace MultiboxHelper
             }
             else if (n3Msg.N3MessageType == N3MessageType.GenericCmd)
             {
-                if (!_menu.GetBool("SyncUse"))
+                if (!settings["SyncUse"].AsBool())
                     return;
 
                 GenericCmdMessage genericCmdMsg = (GenericCmdMessage)n3Msg;
-   
-                if(genericCmdMsg.Action == GenericCmdAction.Use && genericCmdMsg.Target.Type == IdentityType.Terminal)
+
+                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
+                {
+                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
+                    {
+                        if (item.Name.StartsWith("Pure Novictum"))
+                        {
+                            IPCChannel.Broadcast(new UseNoviRingMessage()
+                            {
+                                Target = genericCmdMsg.Target
+                            });
+                        }
+                    }
+                }
+                if (genericCmdMsg.Action == GenericCmdAction.Use && genericCmdMsg.Target.Type == IdentityType.Terminal)
                 {
                     IPCChannel.Broadcast(new UseMessage()
                     {
@@ -157,10 +199,55 @@ namespace MultiboxHelper
                     });
                 }
             }
+            else if (n3Msg.N3MessageType == N3MessageType.KnubotOpenChatWindow)
+            {
+                if(!settings["SyncChat"].AsBool())
+                {
+                    return;
+                }
+                KnuBotOpenChatWindowMessage n3OpenChatMessage = (KnuBotOpenChatWindowMessage)n3Msg;
+                IPCChannel.Broadcast(new NpcChatOpenMessage()
+                {
+                    Target = n3OpenChatMessage.Target
+                });
+            }
+            else if (n3Msg.N3MessageType == N3MessageType.KnubotCloseChatWindow)
+            {
+                if (!settings["SyncChat"].AsBool())
+                {
+                    return;
+                }
+                KnuBotCloseChatWindowMessage n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
+                IPCChannel.Broadcast(new NpcChatCloseMessage()
+                {
+                    Target = n3CloseChatMessage.Target
+                });
+            }
+            else if (n3Msg.N3MessageType == N3MessageType.KnubotAnswer)
+            {
+                if (!settings["SyncChat"].AsBool())
+                {
+                    return;
+                }
+                KnuBotAnswerMessage n3AnswerMsg = (KnuBotAnswerMessage)n3Msg;
+                IPCChannel.Broadcast(new NpcChatAnswerMessage()
+                {
+                    Target = n3AnswerMsg.Target,
+                    Answer = n3AnswerMsg.Answer
+                });
+            }
+        }
+
+        private bool IsSyncDisabled()
+        {
+            return settings["Disabled"].AsBool();
         }
 
         private void OnMoveMessage(int sender, IPCMessage msg)
         {
+            if (IsSyncDisabled())
+                return;
+
             //Only followers will act on commands
             if (!Team.IsInTeam || IsActiveWindow)
                 return;
@@ -180,6 +267,9 @@ namespace MultiboxHelper
 
         private void OnTargetMessage(int sender, IPCMessage msg)
         {
+            if (IsSyncDisabled())
+                return;
+
             if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
@@ -192,18 +282,24 @@ namespace MultiboxHelper
 
         private void OnAttackMessage(int sender, IPCMessage msg)
         {
+            if (IsSyncDisabled())
+                return;
+
             if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
                 return;
-
             AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
-            DynelManager.LocalPlayer.Attack(attackMsg.Target);
+            Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
+            DynelManager.LocalPlayer.Attack(targetDynel, true);
         }
 
         private void OnStopAttackMessage(int sender, IPCMessage msg)
         {
+            if (IsSyncDisabled())
+
+                return;
             if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
@@ -215,6 +311,9 @@ namespace MultiboxHelper
 
         private void OnUseMessage(int sender, IPCMessage msg)
         {
+            if (IsSyncDisabled())
+                return;
+
             if (!Team.IsInTeam || IsActiveWindow)
                 return;
 
@@ -223,6 +322,50 @@ namespace MultiboxHelper
 
             UseMessage useMsg = (UseMessage)msg;
             DynelManager.GetDynel<SimpleItem>(useMsg.Target)?.Use();
+        }
+
+        private void OnUseNoviRingMessage(int sender, IPCMessage msg)
+        {
+            if (!Team.IsInTeam || IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            Item noviRing = Inventory.Items
+                .Where(item => item.Name.Contains("Pure Novictum"))
+                .FirstOrDefault();
+
+            if (noviRing != null)
+            {
+                UseNoviRingMessage useNoviRingMessage = (UseNoviRingMessage)msg;
+                noviRing.UseOn(useNoviRingMessage.Target);
+            }
+        }
+
+        private void OnNpcChatOpenMessage(int sender, IPCMessage msg)
+        {
+            NpcChatOpenMessage message = (NpcChatOpenMessage)msg;
+            NpcDialog.Open(message.Target);
+        }
+
+        private void OnNpcChatCloseMessage(int sender, IPCMessage msg)
+        {
+            NpcChatCloseMessage message = (NpcChatCloseMessage)msg;
+            KnuBotCloseChatWindowMessage closeChatMessage = new KnuBotCloseChatWindowMessage()
+            {
+                Unknown1 = 2,
+                Unknown2 = 0,
+                Unknown3 = 0,
+                Target = message.Target
+            };
+            Network.Send(closeChatMessage);
+        }
+
+        private void OnNpcChatAnswerMessage(int sender, IPCMessage msg)
+        {
+            NpcChatAnswerMessage message = (NpcChatAnswerMessage)msg;
+            NpcDialog.SelectAnswer(message.Target, message.Answer);
         }
 
         private void OnCharStatusMessage(int sender, IPCMessage msg)
@@ -280,6 +423,23 @@ namespace MultiboxHelper
             {
                 Chat.WriteLine(e.Message);
             }
+        }
+
+        private void OnFollowMessage(int sender, IPCMessage msg)
+        {
+            FollowMessage followMessage = (FollowMessage)msg;
+            FollowTargetMessage n3Msg = new FollowTargetMessage()
+            {
+                Target = followMessage.Target,
+                Unknown1 = 0,
+                Unknown2 = 0,
+                Unknown3 = 0,
+                Unknown4 = 0,
+                Unknown5 = 0,
+                Unknown6 = 0,
+                Unknown7 = 0
+            };
+            Network.Send(n3Msg);
         }
     }
 }

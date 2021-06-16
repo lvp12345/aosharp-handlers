@@ -1,72 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.Combat;
 using AOSharp.Core.Inventory;
-using AOSharp.Core.UI.Options;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
 
 namespace Desu
 {
     public class ShadeCombatHandler : GenericCombatHandler
     {
-        private const int ShadesCaress = 266300;
-        private const int Tattoo = 269511;
         private const int MissingHealthCombatAbortPercentage = 30;
-        private const int CompositeAttribute = 223372;
-        private const int CompositeNano = 223380;
-        private const int CompositeMelee = 223360;
-        private const int CompositeMeleeSpec = 215264;
-        private readonly int[] ShadeDmgProc = {224167, 224165, 224163, 210371, 210369 , 210367, 210365, 210363, 210361, 210359, 210357, 210355, 210353};
-        private Menu _menu;
 
-        private List<PerkHash> TotemicRites = new List<PerkHash>
+        public ShadeCombatHandler(string pluginDir) : base(pluginDir)
         {
-            PerkHash.RitualOfDevotion,
-            PerkHash.DevourVigor,
-            PerkHash.RitualOfZeal,
-            PerkHash.DevourEssence,
-            PerkHash.RitualOfSpirit,
-            PerkHash.DevourVitality,
-            PerkHash.RitualOfBlood
-        };  
+            settings.AddVariable("UseDrainNanoForDps", true);
+            settings.AddVariable("UseSpiritSiphon", true);
+            settings.AddVariable("UseFasterThanYourShadow", false);
+            settings.AddVariable("ProcSelection", 0);
+            RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
-        private List<PerkHash> PiercingMastery = new List<PerkHash>
-        {
-            PerkHash.Stab,
-            PerkHash.DoubleStab,
-            PerkHash.Perforate,
-            PerkHash.Lacerate,
-            PerkHash.Impale,
-            PerkHash.Gore,
-            PerkHash.Hecatomb
-        };
+            RegisterPerkProcessor(PerkHash.LEProcShadeSiphonBeing, LEProc);
+            RegisterPerkProcessor(PerkHash.LEProcShadeBlackheart, LEProc);
 
-        private List<PerkHash> SpiritPhylactery = new List<PerkHash>
-        {
-            PerkHash.CaptureVigor,
-            PerkHash.UnsealedBlight,
-            PerkHash.CaptureEssence,
-            PerkHash.UnsealedPestilence,
-            PerkHash.CaptureSpirit,
-            PerkHash.UnsealedContagion,
-            PerkHash.CaptureVitality
-        };
-
-        public ShadeCombatHandler() : base()
-        {
             //Perks
-            RegisterPerkProcessor(PerkHash.Blur, TargetedDamagePerk);
-            SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
-            TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
-            PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
-
-            RegisterPerkProcessor(PerkHash.ChaosRitual, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Diffuse, TargetedDamagePerk);
+            RelevantPerks.SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
+            RelevantPerks.TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
+            RelevantPerks.PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
@@ -75,25 +35,57 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
 
             //Items
-            RegisterItemProcessor(Tattoo, Tattoo, TattooItem, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
 
-            RegisterSpellProcessor(CompositeAttribute, GenericBuff);
-            RegisterSpellProcessor(CompositeNano, GenericBuff);
-            RegisterSpellProcessor(CompositeMelee, GenericBuff);
-            RegisterSpellProcessor(CompositeMeleeSpec, GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(ShadeDmgProc, GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.ShadeDmgProc, DamageProc);
+            RegisterSpellProcessor(RelevantNanos.ShadeStunProc, StunProc);
+            RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc, InitDebuffProc);
+            RegisterSpellProcessor(RelevantNanos.ShadeDotProc, DotProc);
 
-            _menu = new Menu("CombatHandler.Shade", "CombatHandler.Shade");
-            _menu.AddItem(new MenuBool("UseDrainNanoForDps", "Use drain nano for dps", false));
-            _menu.AddItem(new MenuBool("UseSpiritSiphon", "Use spirit siphon", false));
-            OptionPanel.AddMenu(_menu);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
+        }
+
+        private bool DamageProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            return ShadeProc(ProcType.DAMAGE, spell, fightingtarget, ref actiontarget);
+        }
+
+        private bool StunProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            return ShadeProc(ProcType.STUN, spell, fightingtarget, ref actiontarget);
+        }
+
+        private bool InitDebuffProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            return ShadeProc(ProcType.INIT_DEBUFF, spell, fightingtarget, ref actiontarget);
+        }
+
+        private bool DotProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            return ShadeProc(ProcType.DOT, spell, fightingtarget, ref actiontarget);
+        }
+
+        private bool ShadeProc(ProcType procType, Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsProcSelected(procType))
+            {
+                return false;
+            }
+
+            return GenericBuff(spell, fightingtarget, ref actiontarget);
+        }
+
+        private bool IsProcSelected(ProcType procType)
+        {
+            return procType == (ProcType)settings["ProcSelection"].AsInt32();
         }
 
         private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -105,6 +97,20 @@ namespace Desu
                 return true;
 
             return false;
+        }
+
+        private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if(IsInsideInnerSanctum())
+            {
+                return false;
+            }
+            return ToggledTeamBuff("UseFasterThanYourShadow", spell, fightingTarget, target => HasBuffNanoLine(NanoLine.RunspeedBuffs, target) || HasGsfNanoLine(target), ref actionTarget);
+        }
+
+        private bool HasGsfNanoLine(SimpleChar target)
+        {
+            return target.Buffs.Any(buff => buff.Name.Contains("Grid"));
         }
 
         private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -145,7 +151,7 @@ namespace Desu
 
         private bool SpiritSiphonNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("UseSpiritSiphon"))
+            if (!IsSettingEnabled("UseSpiritSiphon"))
                 return false;
 
             if (DynelManager.LocalPlayer.Nano < spell.Cost)
@@ -166,14 +172,14 @@ namespace Desu
                 return false;
 
             // if we have caress, save enough nano to use it
-            if (Spell.Find(ShadesCaress, out Spell caress))
+            if (Spell.Find(RelevantNanos.ShadesCaress, out Spell caress))
             {
                 if (DynelManager.LocalPlayer.Nano - spell.Cost < caress.Cost)
                     return false;
             }
 
             // only use it for dps if we have plenty of nano
-            if (_menu.GetBool("UseDrainNanoForDps") && DynelManager.LocalPlayer.NanoPercent > 80)
+            if (IsSettingEnabled("UseDrainNanoForDps") && DynelManager.LocalPlayer.NanoPercent > 80)
                 return true;
 
             // otherwise save it for if our health starts to drop
@@ -189,7 +195,7 @@ namespace Desu
                 return false;
 
             //Don't PM if there are TR/SP chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (TotemicRites.Contains(action.Hash) || SpiritPhylactery.Contains(action.Hash))))
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.SpiritPhylactery.Contains(action.Hash))))
                 return false;
 
             if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))
@@ -219,7 +225,7 @@ namespace Desu
                 return false;
 
             //Don't SP if there are TR/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (TotemicRites.Contains(action.Hash) || PiercingMastery.Contains(action.Hash))))
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash))))
                 return false;
 
             return true;
@@ -231,38 +237,93 @@ namespace Desu
                 return false;
 
             //Don't TR if there are SP/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash))))
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash))))
                 return false;
 
             return true;
         }
 
-        protected override bool TargetedDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected override void OnUpdate(float deltaTime)
         {
-            //Don't use if there are SP/PM/TR chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
-                return false;
+            base.OnUpdate(deltaTime);
 
-            actionTarget.ShouldSetTarget = true;
-            return DamagePerk(perkAction, fightingTarget, ref actionTarget);
+            if (!IsProcSelected(ProcType.DAMAGE))
+            {
+                CancelBuffs(RelevantNanos.ShadeDmgProc);
+            }
+            if (!IsProcSelected(ProcType.STUN))
+            {
+                CancelBuffs(RelevantNanos.ShadeStunProc);
+            }
+            if (!IsProcSelected(ProcType.INIT_DEBUFF))
+            {
+                CancelBuffs(RelevantNanos.ShadeInitDebuffProc);
+            }
+            if (!IsProcSelected(ProcType.DOT))
+            {
+                CancelBuffs(RelevantNanos.ShadeDotProc);
+            }
         }
 
-        protected override bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private enum ProcType
         {
-            if (fightingTarget == null)
-                return false;
+            DAMAGE = 0,
+            STUN = 1,
+            INIT_DEBUFF = 2,
+            DOT = 3
+        }
 
-            if (fightingTarget.Health > 50000)
-                return true;
+        private class RelevantItems {
+            public const int Tattoo = 269511;
+        }
 
-            if (fightingTarget.HealthPercent < 5)
-                return false;
+        private class RelevantNanos
+        {
+            public const int ShadesCaress = 266300;
+            public const int CompositeAttribute = 223372;
+            public const int CompositeNano = 223380;
+            public const int CompositeMelee = 223360;
+            public const int CompositeMeleeSpec = 215264;
+            public static readonly int[] ShadeDmgProc = { 224167, 224165, 224163, 210371, 210369, 210367, 210365, 210363, 210361, 210359, 210357, 210355, 210353 };
+            public static readonly int[] ShadeStunProc = { 224171, 224169, 210380, 210378, 210376 };
+            public static readonly int[] ShadeInitDebuffProc = { 224177, 210407, 210401 };
+            public static readonly int[] ShadeDotProc = { 224161, 224159, 210395, 210393, 210391, 210389, 210387 };
+        }
 
-            //Don't use if there are SP/PM/TR chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (SpiritPhylactery.Contains(action.Hash) || PiercingMastery.Contains(action.Hash) || TotemicRites.Contains(action.Hash))))
-                return false;
+        private class RelevantPerks
+        {
+            public static readonly List<PerkHash> TotemicRites = new List<PerkHash>
+            {
+                PerkHash.RitualOfDevotion,
+                PerkHash.DevourVigor,
+                PerkHash.RitualOfZeal,
+                PerkHash.DevourEssence,
+                PerkHash.RitualOfSpirit,
+                PerkHash.DevourVitality,
+                PerkHash.RitualOfBlood
+            };
 
-            return true;
+            public static readonly List<PerkHash> PiercingMastery = new List<PerkHash>
+            {
+                PerkHash.Stab,
+                PerkHash.DoubleStab,
+                PerkHash.Perforate,
+                PerkHash.Lacerate,
+                PerkHash.Impale,
+                PerkHash.Gore,
+                PerkHash.Hecatomb
+            };
+
+            public static readonly List<PerkHash> SpiritPhylactery = new List<PerkHash>
+            {
+                PerkHash.CaptureVigor,
+                PerkHash.UnsealedBlight,
+                PerkHash.CaptureEssence,
+                PerkHash.UnsealedPestilence,
+                PerkHash.CaptureSpirit,
+                PerkHash.UnsealedContagion,
+                PerkHash.CaptureVitality
+            };
         }
     }
 }

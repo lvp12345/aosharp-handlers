@@ -11,7 +11,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("Crat Combat Handler Loaded!");
-                AOSharp.Core.Combat.CombatHandler.Set(new CratCombatHandler());
+                AOSharp.Core.Combat.CombatHandler.Set(new CratCombatHandler(pluginDir));
             }
             catch (Exception e)
             {

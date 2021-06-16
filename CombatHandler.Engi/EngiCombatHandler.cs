@@ -2,7 +2,6 @@
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
-using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
@@ -12,29 +11,33 @@ namespace CombatHandler.Engi
 {
     class EngiCombatHandler : GenericCombatHandler
     {
-        private const float PostZonePetCheckBuffer = 5;
-        private Menu _menu;
-        private double _lastZonedTime = 0;
-
-        public EngiCombatHandler()
+        private const float DelayBetweenTrims = 1;
+        private const float DelayBetweenDiverTrims = 305;
+        private bool attackPetTrimmedAggressive = false;
+        private double _lastTrimTime = 0;
+        private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
+        private Dictionary<PetType, double> _lastPetTrimDivertTime = new Dictionary<PetType, double>()
         {
-            //Perks
-            RegisterPerkProcessor(PerkHash.BioRejuvenation, TeamHealPerk);
-            RegisterPerkProcessor(PerkHash.BioRegrowth, TeamHealPerk);
-            //RegisterPerkProcessor(PerkHash.BioShield, SelfBuffPerk);
-            RegisterPerkProcessor(PerkHash.BioCocoon, SelfHealPerk);
+            { PetType.Attack, 0 },
+            { PetType.Support, 0 }
+        };
 
-            RegisterPerkProcessor(PerkHash.Energize, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PowerVolley, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PowerShock, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PowerBlast, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PowerCombo, DamagePerk);
-            RegisterPerkProcessor(PerkHash.LegShot, DamagePerk);
-            RegisterPerkProcessor(PerkHash.EasyShot, DamagePerk);
-            RegisterPerkProcessor(PerkHash.PointBlank, DamagePerk);
-            RegisterPerkProcessor(PerkHash.QuickShot, QuickShot);
-            RegisterPerkProcessor(PerkHash.DoubleShot, DamagePerk);
-            RegisterPerkProcessor(PerkHash.Deadeye, DamagePerk);
+        public EngiCombatHandler(string pluginDir) : base(pluginDir)
+        {
+            settings.AddVariable("SpawnPets", true);
+            settings.AddVariable("BuffPets", true);
+            settings.AddVariable("UseDivertTrimmer", true);
+            settings.AddVariable("UseTauntTrimmer", true);
+            settings.AddVariable("UseAggDefTrimmer", true);
+            settings.AddVariable("UseShieldRipper", false);
+            settings.AddVariable("UseSnareAura", false);
+            settings.AddVariable("SpamDebuffAura", false);
+            settings.AddVariable("SpamSnareAura", false);
+            RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
+
+            //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDroneMissiles, LEProc, CombatActionPriority.Low);
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.CompositeAttribute, GenericBuff);
@@ -45,183 +48,278 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(RelevantNanos.SympatheticReactiveCocoon, GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GenericBuff);
+            if(Spell.Find(RelevantNanos.BoostedTendons, out Spell boostedTendons))
+            {
+                RegisterSpellProcessor(boostedTendons, GenericBuff);
+            }
+            RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, TeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
+            RegisterSpellProcessor(RelevantNanos.ShieldRippers, ShieldRipperAura);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
+            RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), RangedTeamBuff);
 
             //Pet Spawners
-            RegisterSpellProcessor(RelevantNanos.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), PetSpawner);
-            RegisterSpellProcessor(RelevantNanos.Pets.Where(x => x.Value.PetType == PetType.Support).Select(x => x.Key).ToArray(), PetSpawner);
+            RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), PetSpawner);
+            RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Support).Select(x => x.Key).ToArray(), PetSpawner);
 
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPPetInitiativeBuffs).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), PetTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.ShieldOfTheObedientServant, ShieldOfTheObedientServant);
+            RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
+            RegisterPerkProcessor(PerkHash.ChaoticEnergy, GadgeteerBox);
+
+            ResetTrimmers();
+            RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.IncreaseAggressivenessHigh, RelevantTrimmers.IncreaseAggressivenessHigh, PetAggressiveTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, RelevantTrimmers.DivertEnergyToOffense, PetDivertTrimmer);
 
             //Pet Shells
-            foreach(int shellId in RelevantNanos.Pets.Values.Select(x => x.ShellId))
-                RegisterItemProcessor(shellId, shellId, PetSpawnerItem);
-
-            _menu = new Menu("CombatHandler.Engi", "CombatHandler.Engi");
-            _menu.AddItem(new MenuBool("SpawnPets", "Spawn Pets?", true));
-            _menu.AddItem(new MenuBool("BuffPets", "Buff Pets?", true));
-            OptionPanel.AddMenu(_menu);
+            foreach (PetSpellData petData in PetsList.Pets.Values)
+            {
+                RegisterItemProcessor(petData.ShellId, petData.ShellId2, PetSpawnerItem);
+            }
 
             Game.TeleportEnded += OnZoned;
         }
 
-        private void OnZoned(object s, EventArgs e)
+        private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            _lastZonedTime = Time.NormalTime;
+            if(fightingTarget != null)
+            {
+                return false;
+            }
+
+            Pet petWithSnareAura = FindPetThat(pet => HasBuffNanoLine(NanoLine.EngineerPetAOESnareBuff, pet.Character));
+
+            if(petWithSnareAura != null)
+            {
+                actionTarget.Target = petWithSnareAura.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
         }
 
-        protected bool QuickShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SnareAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PerkAction.Find("Double Shot", out PerkAction doubleShot) && !doubleShot.IsAvailable)
-                return false;
+            if (IsSettingEnabled("SpamSnareAura") && ShouldSpamAoeSnare())
+            {
+                Pet petToCastOn = FindPetThat(pet => true);
+                if (petToCastOn != null)
+                {
+                    actionTarget.Target = petToCastOn.Character;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
 
-            return DamagePerk(perk, fightingTarget, ref actionTarget);
+            if (!IsSettingEnabled("UseSnareAura") || fightingTarget == null)
+            {
+                return false;
+            }
+
+            return PetTargetBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool ShouldSpamAoeSnare()
+        {
+            return DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Any();
+        }
+
+        private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("UseShieldRipper") || fightingTarget == null)
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("SpamDebuffAura"))
+            {
+                return true;
+            }
+
+            return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
+        }
+
+        private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if(IsSettingEnabled("UseShieldRipper") || fightingTarget == null)
+            {
+                return false;
+            }
+
+            if(IsSettingEnabled("SpamDebuffAura"))
+            {
+                return true;
+            }
+            
+            return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
+        }
+
+        private bool GadgeteerBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
+            {
+                return false;
+            }
+
+            Pet petToPerk = FindPetThat(CanPerkBox);
+            if (petToPerk != null)
+            {
+                actionTarget.Target = petToPerk.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+            return false;
+        }
+
+        protected bool PetDivertTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsSettingEnabled("UseDivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            {
+                return false;
+            }
+
+            Pet petToTrim = FindPetThat(CanDivertTrim);
+            if (petToTrim != null)
+            {
+                actiontarget.Target = petToTrim.Character;
+                actiontarget.ShouldSetTarget = true;
+                _lastPetTrimDivertTime[petToTrim.Type] = Time.NormalTime;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
+            return false;
+        }
+
+        protected bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsSettingEnabled("UseAggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            {
+                return false;
+            }
+
+            Pet petToTrim = FindPetThat(CanAggDefTrim);                
+            if (petToTrim != null)
+            {
+                actiontarget.Target = petToTrim.Character;
+                actiontarget.ShouldSetTarget = true;
+                petTrimmedAggDef[petToTrim.Type] = true;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
+            return false;
+        }
+
+        protected bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsSettingEnabled("UseTauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            {
+                return false;
+            }
+
+            Pet petToTrim = FindPetThat(CanTauntTrim);
+            if (petToTrim != null)
+            {
+                actiontarget = (petToTrim.Character, true);
+                attackPetTrimmedAggressive = true;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
+            return false;
         }
 
         protected bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("SpawnPets"))
-                return false;
-
-            if (Time.NormalTime < _lastZonedTime + PostZonePetCheckBuffer)
-                return false;
-
-            //Do not attempt any pet spawns if we have a pet not loaded as it could be the pet we think we need to replace.
-            if (DynelManager.LocalPlayer.Pets.Any(x => x.Type == PetType.Unknown))
-                return false;
-
-            if (!RelevantNanos.Pets.ContainsKey(spell.Identity.Instance))
-                return false;
-
-            //Ignore spell if we already have this type of pet out
-            if (DynelManager.LocalPlayer.Pets.Any(x => x.Type == RelevantNanos.Pets[spell.Identity.Instance].PetType))
-                return false;
-
-            //Ignore spell if we already have the shell in our inventory
-            if (Inventory.Find(RelevantNanos.Pets[spell.Identity.Instance].ShellId, out Item shell))
-                return false;
-
-            actionTarget.ShouldSetTarget = false;
-            return true;
+            if(PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
+            {
+                ResetTrimmers();
+                return true;
+            }
+            return false;
         }
 
         protected virtual bool PetSpawnerItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("SpawnPets"))
-                return false;
-
-            if (Time.NormalTime < _lastZonedTime + PostZonePetCheckBuffer)
-                return false;
-
-            if (!RelevantNanos.Pets.Values.Any(x => (x.ShellId == item.LowId || x.ShellId == item.HighId) && !DynelManager.LocalPlayer.Pets.Any(p => p.Type == x.PetType)))
-                return false;
-
-            actionTarget.ShouldSetTarget = false;
-            return true;
+            return PetSpawnerItem(PetsList.Pets, item, fightingTarget, ref actionTarget);
         }
 
         protected bool PetTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("BuffPets"))
-                return false;
-
-            if (Time.NormalTime < _lastZonedTime + PostZonePetCheckBuffer)
-                return false;
-
-            bool petsNeedBuff = false;
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets.Where(x => x.Character != null && (x.Type == PetType.Attack || x.Type == PetType.Support)))
-            {
-                if (pet.Character.Buffs.Find(spell.Nanoline, out Buff buff))
-                {
-                    //Don't cast if weaker than existing
-                    if (spell.StackingOrder < buff.StackingOrder)
-                        continue;
-
-                    //Don't cast if greater than 10% time remaining
-                    if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1)
-                        continue;
-                }
-
-                actionTarget.Target = pet.Character;
-                petsNeedBuff = true;
-                break;
-            }
-
-            if (!petsNeedBuff)
-                return false;
-
-            actionTarget.ShouldSetTarget = true;
-            return true;
+            return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
+                || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         protected bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("BuffPets"))
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
+            {
                 return false;
+            }
 
-            if (!DynelManager.LocalPlayer.Pets.Where(x => x.Character != null)
-                                            .Where(x => x.Type == PetType.Attack || x.Type == PetType.Support)
-                                            .Any(x => !x.Character.Buffs.Find(spell.Identity.Instance == 270790 ? 285699 : 285698, out _)))
-                return false;
-
-            actionTarget.ShouldSetTarget = false;
-            return true;
+            return FindPetThat(pet => !HasBuffNanoLine(NanoLine.ShieldoftheObedientServant, pet.Character)) != null;
         }
 
-        private bool SelfHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CanTrim()
         {
-            if (!DynelManager.LocalPlayer.IsAttacking)
-                return false;
-
-            // Prioritize keeping ourself alive
-            if (DynelManager.LocalPlayer.HealthPercent <= 35)//We should consider making this a slider value in the options
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-            return false;
+            return _lastTrimTime + DelayBetweenTrims < Time.NormalTime;
         }
 
-        private bool TeamHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CanDivertTrim(Pet pet)
         {
+            return _lastPetTrimDivertTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime;
+        }
 
-            if (!DynelManager.LocalPlayer.IsAttacking)
-                return false;
+        protected bool CanAggDefTrim(Pet pet)
+        {
+            return !petTrimmedAggDef[pet.Type];
+        }
 
-            // Prioritize keeping ourself alive
-            if (DynelManager.LocalPlayer.HealthPercent <= 60)
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
+        protected bool CanTauntTrim(Pet pet)
+        {
+            return pet.Type == PetType.Attack && !attackPetTrimmedAggressive;
+        }
 
-            // Try to keep our teammates alive if we're in a team
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive)
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 60)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
-                    .FirstOrDefault();
+        private bool CanPerkBox(Pet pet)
+        {
+            return !pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.GadgeteerPetProcs);
+        }
 
-                if (dyingTeamMember != null)
-                {
-                    actionTarget.Target = dyingTeamMember;
-                    return true;
-                }
-            }
-            return false;
+        private void ResetTrimmers()
+        {
+            attackPetTrimmedAggressive = false;
+            petTrimmedAggDef[PetType.Attack] = false;
+            petTrimmedAggDef[PetType.Support] = false;
+        }
+
+        private void OnZoned(object s, EventArgs e)
+        {
+            ResetTrimmers();
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            SynchronizePetCombatStateWithOwner();
+
+            base.OnUpdate(deltaTime);
+
+            CancelBuffs(IsSettingEnabled("UseShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
+            CancelHostileAuras(RelevantNanos.Blinds);
+            CancelHostileAuras(RelevantNanos.ShieldRippers);
+        }
+
+        protected bool ShouldCancelHostileAuras()
+        {
+            return Time.NormalTime - _lastCombatTime > 5;
         }
 
         private static class RelevantNanos
@@ -232,27 +330,20 @@ namespace CombatHandler.Engi
             public const int CompositeRanged = 223348;
             public const int CompositeRangedSpec = 223364;
             public const int SympatheticReactiveCocoon = 154550;
-            public static int[] ShieldOfTheObedientServant = { 270790, 202260 };
-
-            public static Dictionary<int, PetSpellData> Pets = new Dictionary<int, PetSpellData>
-            { 
-                { 223323, new PetSpellData(217994, PetType.Attack) },
-                { 275815, new PetSpellData(275816, PetType.Support) }
-            };
-
-            //Doggos 275815, 223337, 223335, 223333, 223331, 223329, 223327, 301855, 223325 
+            public const int IntrusiveAuraCancellation = 204372;
+            public const int BoostedTendons = 269463;
+            public static readonly Spell[] DamageBuffLineA = Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).Where(spell => spell.Identity.Instance != RelevantNanos.BoostedTendons).OrderByStackingOrder().ToArray();
+            public static readonly int[] ShieldRippers = { 154725, 154726, 154727, 154728 };
+            public static readonly int[] Blinds = { 154715, 154716, 154717, 154718, 154719 };
+            public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
         }
 
-        private class PetSpellData
+        private static class RelevantTrimmers
         {
-            public int ShellId;
-            public PetType PetType;
-
-            public PetSpellData(int shellId, PetType petType)
-            {
-                ShellId = shellId;
-                PetType = petType;
-            }
+            public const int IncreaseAggressivenessLow = 154940;
+            public const int IncreaseAggressivenessHigh = 154940;
+            public const int DivertEnergyToOffense = 88378;
+            public const int PositiveAggressiveDefensive = 88384;
         }
     }
 }

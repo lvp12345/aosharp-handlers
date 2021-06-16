@@ -48,8 +48,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GenericCombatHandler.cs" />
+    <Compile Include="PerkProcessors.cs" />
+    <Compile Include="PerkTypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TauntTools.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\CharacterState\CharacterState.csproj">
+      <Project>{cecc3096-ff39-4bd7-b65c-420718048d44}</Project>
+      <Name>CharacterState</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

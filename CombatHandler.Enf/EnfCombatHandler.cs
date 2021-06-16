@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
 using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
@@ -11,193 +12,157 @@ namespace Desu
 {
     class EnfCombatHandler : GenericCombatHandler
     {
-        private Menu _menu;
-
-        public EnfCombatHandler()
+        public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
-            List<PerkHash> RebuffPerks = new List<PerkHash>
-            {
-                PerkHash.LEProcEnforcerViolationBuffer,
-            };
+            settings.AddVariable("UseSingleTaunt", false);
+            settings.AddVariable("UseAOETaunt", true);
+            settings.AddVariable("UseTauntTool", true);
+            settings.AddVariable("IsOST", false);
+            settings.AddVariable("SpamMongo", false);
+            RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
-            //Perks
-            RegisterPerkProcessor(PerkHash.Taunt, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Charge, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Headbutt, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Hatred, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.GroinKick, TargetedDamagePerk);
-
-            RegisterPerkProcessor(PerkHash.HammerAndAnvil, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Pulverize, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.OverwhelmingMight, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.SeismicSmash, TargetedDamagePerk);
-            RegisterPerkProcessor(PerkHash.Deadeye, TargetedDamagePerk);
-
-            RegisterPerkProcessor(PerkHash.BioRejuvenation, TeamHealPerk);
-            RegisterPerkProcessor(PerkHash.BioRegrowth, TeamHealPerk);
-            RegisterPerkProcessor(PerkHash.BioShield, SelfBuffPerk, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.BioCocoon, SelfHealPerk);
-
-            //LE Procs Support for these needs to re worked
-            //RegisterPerkProcessor(PerkHash.ShieldOfTheOgre, SelfBuffPerk, CombatActionPriority.Medium);//Type1
-            //RegisterPerkProcessor(PerkHash.ViolationBuffer, SelfBuffPerk, CombatActionPriority.Low);//Type2
+            //-------------LE procs-------------
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, LEProc, CombatActionPriority.Low);
 
             //Spells (Im not sure the spell lines are up to date to support the full line of SL mongos)
-            RegisterSpellProcessor(RelevantNanos.MONGO_KRAKEN, MajorHpBuff, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AoeTaunt);
-            RegisterSpellProcessor(RelevantNanos.ELEMENT_OF_MALICE, SingleTargetTaunt, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChangeBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), Fortify);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), GenericBuff);
 
+            //Team buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), MeleeTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, TeamBuff);
 
-            _menu = new Menu("CombatHandler.Enf", "CombatHandler.Enf");
-            _menu.AddItem(new MenuBool("UseAOEMongo", "Use Mongo?", true));
-            //Setting this to default to false for now, as I do not currently have the nano ( Will by EOD so expect a patch )
-            _menu.AddItem(new MenuBool("UseSingleTaunt", "Use IMalice?", false));
-            OptionPanel.AddMenu(_menu);
+            if (TauntTools.CanUseTauntTool())
+            {
+                Item tauntTool = TauntTools.GetBestTauntTool();
+                RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
+            }
+        }
+
+        private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if(HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer))
+            {
+                return false;
+            }
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("UseSingleTaunt") || !DynelManager.LocalPlayer.IsAttacking)
+            if (!IsSettingEnabled("UseSingleTaunt") || fightingTarget == null)
+            {
                 return false;
-
-            if (fightingTarget == null)
-                return false;
+            }
 
             //If our target has a different target than us we need to make sure we taunt
-            if (fightingTarget.FightingTarget != null && (fightingTarget.FightingTarget.Identity != DynelManager.LocalPlayer.Identity))
+            if (IsNotFightingMe(fightingTarget))
             {
                 return true;
             }
 
             if (DynelManager.LocalPlayer.NanoPercent < 30)
+            {
                 return false;
+            }
 
             return true;
         }
 
-        private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Fortify(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_menu.GetBool("UseAOEMongo"))
-                return false;
-
-            if (fightingTarget == null)
-                return false;
-
-            //If our target has a different target than us we need to make sure we taunt
-            if (fightingTarget.FightingTarget != null && (fightingTarget.FightingTarget.Identity != DynelManager.LocalPlayer.Identity))
-                return true;
-
-            //Check if our team members are being attacked first
-            if (DynelManager.LocalPlayer.IsInTeam())
+            if(DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF))
             {
-                SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive)
-                    .Where(c => c.GetStat(Stat.NumFightingOpponents) > 0)
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
-                    .FirstOrDefault();
+                return false;
+            }
+
+            if (IsSettingEnabled("IsOST") && DynelManager.LocalPlayer.NanoPercent > 30)
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
-            //Check if we have tanking enabled & have more than one enemy
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2)
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if(IsSettingEnabled("IsOST") || IsSettingEnabled("SpamMongo"))
+            {
+                return true;
+            }
+
+            if (!IsSettingEnabled("UseAOETaunt"))
             {
                 return false;
+            }
+
+            if (fightingTarget == null)
+            {
+                return false;
+            }
+
+            //If our target has a different target than us we need to make sure we taunt
+            if (fightingTarget.FightingTarget != null && (fightingTarget.FightingTarget.Identity != DynelManager.LocalPlayer.Identity))
+            {
+                return true;
+            }
+
+            //If there is a target in range, that is not fighting us, we need to make sure we taunt
+            if(DynelManager.Characters.Where(ShouldBeTaunted).Any(IsNotFightingMe))
+            {
+                return true;
             }
 
             //Check if we still have the mongo hot 
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
-                if ((buff.Name == spell.Name && buff.RemainingTime < 5))
-                    return true;
+                if ((buff.Name == spell.Name && buff.RemainingTime > 5))
+                {
+                    return false;
+                }
             }
 
             //Make sure we have plenty of nano for spamming mongo
             if (DynelManager.LocalPlayer.NanoPercent < 30)
-                return false;
-
-            return false;
-        }
-
-        private bool MajorHpBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //Check if we have Kraken in our ncu at all times, if not we refresh it.
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
-                if (buff.Identity == spell.Identity)
-                    return false;
-            }
-
-            if (DynelManager.LocalPlayer.NanoPercent < 30)
                 return false;
+            }
 
             return true;
         }
 
-        private bool SelfBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ShouldBeTaunted(SimpleChar target)
         {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
-            {
-                if (buff.Name == perkAction.Name)
-                {
-                    //Chat.WriteLine(buff.Name+" "+perk.Name);
-                    return false;
-                }
-            }
-            return true;
+            return !target.IsPlayer && !target.IsPet && target.IsValid && target.IsInLineOfSight;
         }
 
-        private bool SelfHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool IsNotFightingMe(SimpleChar target)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking)
-                return false;
-
-            // Prioritize keeping ourself alive
-            if (DynelManager.LocalPlayer.HealthPercent <= 35)//We should consider making this a slider value in the options
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-            return false;
-        }
-
-        private bool TeamHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-
-            if (!DynelManager.LocalPlayer.IsAttacking)
-                return false;
-
-            // Prioritize keeping ourself alive
-            if (DynelManager.LocalPlayer.HealthPercent <= 60)
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            // Try to keep our teammates alive if we're in a team
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive)
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 60)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
-                    .FirstOrDefault();
-
-                if (dyingTeamMember != null)
-                {
-                    actionTarget.Target = dyingTeamMember;
-                    return true;
-                }
-            }
-            return false;
+            return target.IsAttacking && target.FightingTarget.Identity != DynelManager.LocalPlayer.Identity;
         }
 
         private static class RelevantNanos
         {
+            public static readonly int[] SingleTargetTaunt = { 275014, 223123, 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
+            public static readonly int[] TargetedHpBuff = { 273629, 95708, 95700, 95701, 95702, 95704, 95706, 95707 };
+            public static readonly Spell[] TargetedDamageShields = Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder().Where(spell => spell.Identity.Instance != ICE_BURN).ToArray();
             public const int MONGO_KRAKEN = 273322;
             public const int MONGO_DEMOLISH = 270786;
-            public const int ELEMENT_OF_MALICE = 275014;
+            public const int FOCUSED_ANGER = 29641;
+            public const int IMPROVED_ESSENCE_OF_BEHEMOTH = 273629;
+            public const int CORUSCATING_SCREEN = 55751;
+            public const int ICE_BURN = 269460;
+            public const int BIO_COCOON_BUFF = 209802;
         }
     }
 }

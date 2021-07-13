@@ -10,6 +10,8 @@ namespace CombatHandler.Generic.IPCMessages
     {
         CharacterState = 90,
         Disband = 91,
-        CharacterSpecials = 92
+        CharacterSpecials = 92,
+        UseGrid = 93,
+        UseFGrid = 94
     }
 }

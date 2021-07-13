@@ -9,6 +9,7 @@ using AOSharp.Common.Unmanaged.DataTypes;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
+using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
 using Character.State;
 using static CombatHandler.Generic.PerkCondtionProcessors;
@@ -31,6 +32,9 @@ namespace CombatHandler.Generic
             Game.TeleportEnded += TeleportEnded;
             settings = new Settings("CombatHandler");
 
+
+            //Chat.RegisterCommand("grid", UseGridCanCommand);
+
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
@@ -42,6 +46,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.BarrowStrength, RelevantItems.BarrowStrength, DamageItem);
             RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.HSR1, RelevantItems.HSR2, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.SteamingHotCupOfEnhancedCoffee, RelevantItems.SteamingHotCupOfEnhancedCoffee, Coffee);
             RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
@@ -51,6 +56,8 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBooster, RelevantItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.HealthAndNanoStimLow, RelevantItems.HealthAndNanoStimHigh, HealthAndNanoStim, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.RezCan, RelevantItems.RezCan, UseRezCan);
+            RegisterItemProcessor(RelevantItems.FlurryOfBlows25, RelevantItems.FlurryOfBlows200, UseFlurry);
             RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
             RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
             RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
@@ -58,17 +65,31 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit200, RelevantItems.SitKit300, SitKit);
 
+            RegisterItemProcessor(RelevantItems.FreeStim1, RelevantItems.FreeStim50, UseFreeStim);
+            RegisterItemProcessor(RelevantItems.FreeStim50, RelevantItems.FreeStim100, UseFreeStim);
+            RegisterItemProcessor(RelevantItems.FreeStim100, RelevantItems.FreeStim200, UseFreeStim);
+            RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim300, UseFreeStim);
+
+
+            RegisterItemProcessor(RelevantItems.AmmoBoxArrows, RelevantItems.AmmoBoxArrows, AmmoBoxArrows);
+            RegisterItemProcessor(RelevantItems.AmmoBoxBullets, RelevantItems.AmmoBoxBullets, AmmoBoxBullets);
+            RegisterItemProcessor(RelevantItems.AmmoBoxEnergy, RelevantItems.AmmoBoxEnergy, AmmoBoxEnergy);
+            RegisterItemProcessor(RelevantItems.AmmoBoxShotgun, RelevantItems.AmmoBoxShotgun, AmmoBoxShotgun);
+
             RegisterSpellProcessor(RelevantNanos.CompositeNano, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeAttribute, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeUtility, GenericBuff);
+
             if (CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == CharacterWeaponType.MELEE)
             {
                 //We are melee
                 RegisterSpellProcessor(RelevantNanos.CompositeMartial, GenericBuffExcludeInnerSanctum);
                 RegisterSpellProcessor(RelevantNanos.CompositeMelee, GenericBuff);
                 RegisterSpellProcessor(RelevantNanos.CompositePhysicalSpecial, GenericBuff);
-            } 
-            else
+            }
+
+
+            if (CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == CharacterWeaponType.RANGED)
             {
                 //We are ranged
                 RegisterSpellProcessor(RelevantNanos.CompositeRanged, GenericBuff);
@@ -162,7 +183,6 @@ namespace CombatHandler.Generic
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;
             return true;
-
         }
 
 
@@ -239,7 +259,7 @@ namespace CombatHandler.Generic
 
         protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !CanCast(spell))
+            if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran"))
             {
                 return false;
             }
@@ -315,7 +335,7 @@ namespace CombatHandler.Generic
             {
                 return false;
             }
-            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck, CharacterWeaponType.UNAVAILABLE);
+            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck);
         }
 
         protected bool TeamBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -329,7 +349,7 @@ namespace CombatHandler.Generic
 
         protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuff(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.UNAVAILABLE);
+            return TeamBuff(spell, fightingTarget, ref actionTarget, null);
         }
 
         private bool SpecialAttackTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SpecialAttacks, bool> specialAttackCheck)
@@ -359,7 +379,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck, CharacterWeaponType supportedWeaponType)
+        protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck)
         {
             if (fightingTarget != null || !CanCast(spell))
             {
@@ -372,6 +392,183 @@ namespace CombatHandler.Generic
             }
 
             if (!hasBuffCheck.Invoke(DynelManager.LocalPlayer) && HasNCU(spell, DynelManager.LocalPlayer))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => HasNCU(spell, c))
+                    .Where(c => !hasBuffCheck.Invoke(c))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool TeamBuffInitDoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (hasBuffCheck == null)
+            {
+                hasBuffCheck = c => HasBuff(spell, c);
+            }
+
+            if (!hasBuffCheck.Invoke(DynelManager.LocalPlayer) && HasNCU(spell, DynelManager.LocalPlayer))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => HasNCU(spell, c))
+                    .Where(c => !hasBuffCheck.Invoke(c))
+                    .Where(c => c.Profession == Profession.Doctor || c.Profession == Profession.NanoTechnician)
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool TeamBuffInitEngi(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck, CharacterWeaponType supportedWeaponType)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (hasBuffCheck == null)
+            {
+                hasBuffCheck = c => HasBuff(spell, c);
+            }
+
+            if (!hasBuffCheck.Invoke(DynelManager.LocalPlayer) && HasNCU(spell, DynelManager.LocalPlayer))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => HasNCU(spell, c))
+                    .Where(c => !hasBuffCheck.Invoke(c))
+                    .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
+                    .Where(c => CharacterState.GetWeaponType(c.Identity) == supportedWeaponType)
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        protected bool TeamBuffInitSol(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (hasBuffCheck == null)
+            {
+                hasBuffCheck = c => HasBuff(spell, c);
+            }
+
+            if (!hasBuffCheck.Invoke(DynelManager.LocalPlayer) && HasNCU(spell, DynelManager.LocalPlayer))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => HasNCU(spell, c))
+                    .Where(c => !hasBuffCheck.Invoke(c))
+                    .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool TeamBuffOverAllSelf(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck, CharacterWeaponType supportedWeaponType)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (hasBuffCheck == null)
+            {
+                hasBuffCheck = c => HasBuff(spell, c);
+            }
+
+            if (!hasBuffCheck.Invoke(DynelManager.LocalPlayer) && HasNCU(spell, DynelManager.LocalPlayer) && CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == supportedWeaponType)
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        protected bool TeamBuffOverAll(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck, CharacterWeaponType supportedWeaponType)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (hasBuffCheck == null)
+            {
+                hasBuffCheck = c => HasBuff(spell, c);
+            }
+
+            if (!hasBuffCheck.Invoke(DynelManager.LocalPlayer) && HasNCU(spell, DynelManager.LocalPlayer) && CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == supportedWeaponType)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;
@@ -398,17 +595,71 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        protected bool TeamBuffWeaponCheck(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SimpleChar, bool> hasBuffCheck, CharacterWieldedWeapon supportedWeaponType, CharacterWieldedWeapon supportedWeaponType2, CharacterWieldedWeapon supportedWeaponType3, CharacterWieldedWeapon supportedWeaponType4)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (hasBuffCheck == null)
+            {
+                hasBuffCheck = c => HasBuff(spell, c);
+            }
+
+            if (!hasBuffCheck.Invoke(DynelManager.LocalPlayer) && HasNCU(spell, DynelManager.LocalPlayer) && (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType2 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType3 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType4))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => HasNCU(spell, c))
+                    .Where(c => !hasBuffCheck.Invoke(c))
+                    .Where(c => CharacterState.GetWieldedWeaponOther(c) == supportedWeaponType || CharacterState.GetWieldedWeaponOther(c) == supportedWeaponType2 || CharacterState.GetWieldedWeaponOther(c) == supportedWeaponType3 || CharacterState.GetWieldedWeaponOther(c) == supportedWeaponType4)
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         protected bool RangedTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuff(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.RANGED);
+            return TeamBuffOverAll(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.RANGED);
         }
 
         protected bool MeleeTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuff(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.MELEE);
+            return TeamBuffOverAll(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.MELEE);
         }
 
-                protected bool BurstTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool RangedTeamBuffSelf(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuffOverAllSelf(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.RANGED);
+        }
+
+        protected bool MeleeTeamBuffSelf(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuffOverAllSelf(spell, fightingTarget, ref actionTarget, null, CharacterWeaponType.MELEE);
+        }
+
+        protected bool PistolTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuffWeaponCheck(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.PistolBuff, target), CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun, CharacterWieldedWeapon.Bandaid);
+        }
+
+        protected bool BurstTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return SpecialAttackTeamBuff(spell, fightingTarget, ref actionTarget, specialAttacks => specialAttacks.HasBurst);
         }
@@ -475,18 +726,66 @@ namespace CombatHandler.Generic
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (fightingtarget == null)
-                return false;
+            //if (fightingtarget == null)
+            //    return false;
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)))
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 8)
                 return false;
 
             actiontarget.ShouldSetTarget = true;
             actiontarget.Target = DynelManager.LocalPlayer;
 
-            int approximateHealing = item.QualityLevel * 12;
+            //int approximateHealing = item.QualityLevel * 12;
 
-            return DynelManager.LocalPlayer.HealthPercent < 50 || DynelManager.LocalPlayer.NanoPercent < 50 || DynelManager.LocalPlayer.MissingHealth > (approximateHealing * 2) || DynelManager.LocalPlayer.MissingNano > (approximateHealing * 2);
+            return !DynelManager.LocalPlayer.Buffs.Contains(258231) && DynelManager.LocalPlayer.HealthPercent < 80 || DynelManager.LocalPlayer.NanoPercent < 80/* || DynelManager.LocalPlayer.MissingHealth > (approximateHealing * 2) || DynelManager.LocalPlayer.MissingNano > (approximateHealing * 2)*/;
+        }
+
+        private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            Item bulletsammo = Inventory.Items
+                .Where(c => c.Name.Contains("Bullets"))
+                .Where(c => !c.Name.Contains("Crate"))
+                .FirstOrDefault();
+
+            actiontarget.ShouldSetTarget = false;
+
+            return bulletsammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatWeaponSmithing());
+        }
+
+        private bool AmmoBoxEnergy(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            Item energyammo = Inventory.Items
+                .Where(c => c.Name.Contains("Energy"))
+                .Where(c => !c.Name.Contains("Crate"))
+                .FirstOrDefault();
+
+            actiontarget.ShouldSetTarget = false;
+
+            return energyammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatWeaponSmithing());
+        }
+
+        private bool AmmoBoxShotgun(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            Item shotgunammo = Inventory.Items
+                .Where(c => c.Name.Contains("Shotgun"))
+                .Where(c => !c.Name.Contains("Crate"))
+                .FirstOrDefault();
+
+            actiontarget.ShouldSetTarget = false;
+
+            return shotgunammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatWeaponSmithing());
+        }
+
+        private bool AmmoBoxArrows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            Item arrowammo = Inventory.Items
+                .Where(c => c.Name.Contains("Arrows"))
+                .Where(c => !c.Name.Contains("Crate"))
+                .FirstOrDefault();
+
+            actiontarget.ShouldSetTarget = false;
+
+            return arrowammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatWeaponSmithing());
         }
 
         private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -768,9 +1067,56 @@ namespace CombatHandler.Generic
             return (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => genericPerkConditionProcessor(perkAction, fightingTarget, ref actionTarget);
         }
 
+        private bool UseRezCan(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            //Item flurry = Inventory.Items
+            //.Where(c => c.Name.Contains("Blows"))
+            //.FirstOrDefault();
+
+            //Chat.WriteLine("" + flurry.HighId + flurry.LowId);
+            //Chat.WriteLine("Nope");
+
+            //return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
+
+            actiontarget.ShouldSetTarget = false;
+
+            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
+        }
+
+        private bool UseFlurry(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            actiontarget.ShouldSetTarget = false;
+
+            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatAggDef()) && DynelManager.LocalPlayer.IsAttacking;
+        }
+
+        private bool UseFreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            actiontarget.ShouldSetTarget = true;
+
+
+            return DynelManager.LocalPlayer.Buffs.Contains(258231) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
+
+        }
+
         private void OnZoned(object s, EventArgs e)
         {
             _lastZonedTime = Time.NormalTime;
+        }
+
+        private Stat GetSkillLockStatFirstAid()
+        {
+            return Stat.FirstAid;
+        }
+
+        private Stat GetSkillLockStatAggDef()
+        {
+            return Stat.AggDef;
+        }
+
+        private Stat GetSkillLockStatWeaponSmithing()
+        {
+            return Stat.WeaponSmithing;
         }
 
         // This will eventually be done dynamically but for now I will implement
@@ -805,6 +1151,9 @@ namespace CombatHandler.Generic
                     return Stat.RunSpeed;
                 case RelevantItems.GnuffsEternalRiftCrystal:
                     return Stat.MapNavigation;
+                case RelevantItems.HSR1:
+                case RelevantItems.HSR2:
+                    return Stat.Grenade;
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
@@ -814,10 +1163,12 @@ namespace CombatHandler.Generic
         {
             public const int FlurryOfBlowsLow = 85907;
             public const int FlurryOfBlowsHigh = 85908;
-            public const int StrengthOfTheImmortal = -1;
+            public const int StrengthOfTheImmortal = 305478;
             public const int MightOfTheRevenant = 206013;
             public const int BarrowStrength = 204653;
             public const int LavaCapsule = 245990;
+            public const int HSR1 = 164780;
+            public const int HSR2 = 164781;
             public const int KizzermoleGumboil = 245323;
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
             public const int DreadlochEnduranceBooster = 267168;
@@ -832,12 +1183,24 @@ namespace CombatHandler.Generic
             public const int GnuffsEternalRiftCrystal = 303179;
             public const int HealthAndNanoStimLow = 291043;
             public const int HealthAndNanoStimHigh = 291044;
+            public const int RezCan = 301070;
             public const int ExperienceStim = 288769;
             public const int PremSitKit = 297274;
             public const int SitKit1 = 291082;
             public const int SitKit100 = 291083;
             public const int SitKit200 = 291084;
             public const int SitKit300 = 293296;
+            public const int FreeStim1 = 204103;
+            public const int FreeStim50 = 204104;
+            public const int FreeStim100 = 204105;
+            public const int FreeStim200 = 204106;
+            public const int FreeStim300 = 204107;
+            public const int AmmoBoxEnergy = 303138;
+            public const int AmmoBoxShotgun = 303141;
+            public const int AmmoBoxBullets = 303137;
+            public const int AmmoBoxArrows = 303136;
+            public const int FlurryOfBlows25 = 85907;
+            public const int FlurryOfBlows200 = 85908;
         };
 
         private static class RelevantNanos
@@ -854,6 +1217,7 @@ namespace CombatHandler.Generic
             public const int CompositeRanged = 223348;
             public const int CompositeRangedSpecial = 223364;
             public const int InnerSanctumDebuff = 206387;
+            public const int AdvAAOMorph = 85070;
         }
 
         public class PetSpellData

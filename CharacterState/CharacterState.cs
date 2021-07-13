@@ -1,6 +1,7 @@
 ﻿using AOSharp.Character;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic.IPCMessages;
@@ -26,6 +27,8 @@ namespace Character.State
             ReportingIPCChannel.RegisterCallback((int)IPCOpcode.CharacterState, OnCharacterStateMessage);
             ReportingIPCChannel.RegisterCallback((int)IPCOpcode.CharacterSpecials, OnCharacterSpecialsMessage);
             ReportingIPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+            ReportingIPCChannel.RegisterCallback((int)IPCOpcode.UseGrid, OnUseGrid);
+            ReportingIPCChannel.RegisterCallback((int)IPCOpcode.UseFGrid, OnUseFGrid);
             Game.OnUpdate += ReportCharacterState;
             new TeamCommands().RegisterCommands();
         }
@@ -39,10 +42,92 @@ namespace Character.State
         {
             ReportingIPCChannel.Broadcast(new DisbandMessage());
         }
+        public static void BroadcastUseGrid()
+        {
+            ReportingIPCChannel.Broadcast(new UseGrid());
+        }
+
+        public static void BroadcastUseFGrid()
+        {
+            ReportingIPCChannel.Broadcast(new UseFGrid());
+        }
 
         public static int GetRemainingNCU(Identity target)
         {
             return CharacterState.RemainingNCU.ContainsKey(target) ? CharacterState.RemainingNCU[target] : 0;
+        }
+
+        public static CharacterWieldedWeapon GetWieldedWeapon(LocalPlayer local)
+        {
+            if (local.GetStat(Stat.EquippedWeapons) == 1028)
+                return CharacterWieldedWeapon.Pistol;
+            if (local.GetStat(Stat.EquippedWeapons) == 8196)
+                return CharacterWieldedWeapon.Shotgun;
+            if (local.GetStat(Stat.EquippedWeapons) == 3076)
+                return CharacterWieldedWeapon.PistolAndAssaultRifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 4100)
+                return CharacterWieldedWeapon.Rifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 2052)
+                return CharacterWieldedWeapon.AssaultRifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 20)
+                return CharacterWieldedWeapon.Smg;
+            if (local.GetStat(Stat.EquippedWeapons) == 12)
+                return CharacterWieldedWeapon.Bow;
+            if (local.GetStat(Stat.EquippedWeapons) == 1)
+                return CharacterWieldedWeapon.Fists;
+            if (local.GetStat(Stat.EquippedWeapons) == 258)
+                return CharacterWieldedWeapon.Blunt2H;
+            if (local.GetStat(Stat.EquippedWeapons) == 66)
+                return CharacterWieldedWeapon.Blunt1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 130)
+                return CharacterWieldedWeapon.Edged2H;
+            if (local.GetStat(Stat.EquippedWeapons) == 34)
+                return CharacterWieldedWeapon.Edged1H;
+
+            //if (local.GetStat(Stat.EquippedWeapons) == )
+            //    return CharacterWieldedWeapon.Grenade;
+            //if (local.GetStat(Stat.EquippedWeapons) == )
+            //    return CharacterWieldedWeapon.HeavyWeapons;
+            //if (local.GetStat(Stat.EquippedWeapons) == )
+            //    return CharacterWieldedWeapon.Piercing;
+
+            return CharacterWieldedWeapon.Invalid;
+        }
+        public static CharacterWieldedWeapon GetWieldedWeaponOther(SimpleChar local)
+        {
+            if (local.GetStat(Stat.EquippedWeapons) == 1028)
+                return CharacterWieldedWeapon.Pistol;
+            if (local.GetStat(Stat.EquippedWeapons) == 8196)
+                return CharacterWieldedWeapon.Shotgun;
+            if (local.GetStat(Stat.EquippedWeapons) == 3076)
+                return CharacterWieldedWeapon.PistolAndAssaultRifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 4100)
+                return CharacterWieldedWeapon.Rifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 2052)
+                return CharacterWieldedWeapon.AssaultRifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 20)
+                return CharacterWieldedWeapon.Smg;
+            if (local.GetStat(Stat.EquippedWeapons) == 12)
+                return CharacterWieldedWeapon.Bow;
+            if (local.GetStat(Stat.EquippedWeapons) == 1)
+                return CharacterWieldedWeapon.Fists;
+            if (local.GetStat(Stat.EquippedWeapons) == 258)
+                return CharacterWieldedWeapon.Blunt2H;
+            if (local.GetStat(Stat.EquippedWeapons) == 66)
+                return CharacterWieldedWeapon.Blunt1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 130)
+                return CharacterWieldedWeapon.Edged2H;
+            if (local.GetStat(Stat.EquippedWeapons) == 34)
+                return CharacterWieldedWeapon.Edged1H;
+
+            //if (local.GetStat(Stat.EquippedWeapons) == )
+            //    return CharacterWieldedWeapon.Grenade;
+            //if (local.GetStat(Stat.EquippedWeapons) == )
+            //    return CharacterWieldedWeapon.HeavyWeapons;
+            //if (local.GetStat(Stat.EquippedWeapons) == )
+            //    return CharacterWieldedWeapon.Piercing;
+
+            return CharacterWieldedWeapon.Invalid;
         }
 
         public static CharacterWeaponType GetWeaponType(Identity target)
@@ -100,6 +185,24 @@ namespace Character.State
         private static void OnDisband(int sender, IPCMessage msg)
         {
             Team.Leave();
+        }
+
+        private static void OnUseGrid(int sender, IPCMessage msg)
+        {
+            Item GridCan = null;
+
+            Inventory.Find(288822, out GridCan);
+
+            GridCan.Use();
+        }
+
+        private static void OnUseFGrid(int sender, IPCMessage msg)
+        {
+            Item FGridCan = null;
+
+            Inventory.Find(296805, out FGridCan);
+
+            FGridCan.Use();
         }
 
         private static void ReportCharacterState(object sender, float deltaTime)

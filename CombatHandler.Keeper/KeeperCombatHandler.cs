@@ -23,13 +23,19 @@ namespace Desu
 
         public KeeperCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("UseNanoAura", false);
-            settings.AddVariable("UseReflectAura", false);
-            settings.AddVariable("UseDerootAura", false);
-            settings.AddVariable("UseReaperAura", false);
+            settings.AddVariable("NanoAura", false);
+            settings.AddVariable("HealAura", false);
+            settings.AddVariable("ReflectAura", false);
+            settings.AddVariable("AAOAura", false);
+            settings.AddVariable("DamageAura", false);
+            settings.AddVariable("DerootAura", false);
+            settings.AddVariable("ReaperAura", false);
+            settings.AddVariable("SancAura", false);
             settings.AddVariable("SpamAntifear", false);
             RegisterSettingsWindow("Keeper Handler", "KeeperSettingsView.xml");
             RegisterPerkProcessors();
+
+            //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
 
             _barrierAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Absorb_Reflect_AMSBuff).Where(s => s.Name.Contains("Barrier of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
             _imminenceAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Absorb_Reflect_AMSBuff).Where(s => s.Name.Contains("Imminence of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
@@ -83,7 +89,12 @@ namespace Desu
 
         private bool ReaperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseReaperAura"))
+            if (IsSettingEnabled("SancAura"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("SancAura") && IsSettingEnabled("ReaperAura") || (!IsSettingEnabled("SancAura") && !IsSettingEnabled("ReaperAura")))
             {
                 return false;
             }
@@ -93,7 +104,12 @@ namespace Desu
 
         private bool SanctifierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("UseReaperAura"))
+            if (IsSettingEnabled("ReaperAura"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("SancAura") && IsSettingEnabled("ReaperAura") || (!IsSettingEnabled("SancAura") && !IsSettingEnabled("ReaperAura")))
             {
                 return false;
             }
@@ -103,7 +119,12 @@ namespace Desu
 
         private bool VengeanceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("UseDerootAura"))
+            if (IsSettingEnabled("DerootAura"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("DerootAura") || (!IsSettingEnabled("DamageAura") && !IsSettingEnabled("DerootAura")))
             {
                 return false;
             }
@@ -113,7 +134,12 @@ namespace Desu
 
         private bool EnervateAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseDerootAura"))
+            if (IsSettingEnabled("DamageAura"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("DerootAura") || (!IsSettingEnabled("DamageAura") && !IsSettingEnabled("DerootAura")))
             {
                 return false;
             }
@@ -123,7 +149,12 @@ namespace Desu
 
         private bool ImminenceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("UseReflectAura"))
+            if (IsSettingEnabled("ReflectAura"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("AAOAura") || (!IsSettingEnabled("ReflectAura") && !IsSettingEnabled("AAOAura")))
             {
                 return false;
             }
@@ -133,7 +164,12 @@ namespace Desu
 
         private bool BarrierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseReflectAura"))
+            if (IsSettingEnabled("AAOAura"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("AAOAura") || (!IsSettingEnabled("ReflectAura") && !IsSettingEnabled("AAOAura")))
             {
                 return false;
             }
@@ -143,7 +179,12 @@ namespace Desu
 
         private bool HpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("UseNanoAura"))
+            if (IsSettingEnabled("NanoAura"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("NanoAura") && IsSettingEnabled("HealAura") || (!IsSettingEnabled("NanoAura") && !IsSettingEnabled("HealAura")))
             {
                 return false;
             }
@@ -153,7 +194,12 @@ namespace Desu
 
         private bool NpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseNanoAura"))
+            if (IsSettingEnabled("HealAura"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("NanoAura") && IsSettingEnabled("HealAura") || (!IsSettingEnabled("NanoAura") && !IsSettingEnabled("HealAura")))
             {
                 return false;
             }
@@ -170,9 +216,9 @@ namespace Desu
         {
             base.OnUpdate(deltaTime);
 
-            CancelBuffs(IsSettingEnabled("UseNanoAura") ? _hpAuras : _npAuras);
-            CancelBuffs(IsSettingEnabled("UseReflectAura") ? _imminenceAuras : _barrierAuras);
-            CancelBuffs(IsSettingEnabled("UseDerootAura") ? _vengeanceAuras : _enervateAuras);
+            CancelBuffs(IsSettingEnabled("NanoAura") ? _hpAuras : _npAuras);
+            CancelBuffs(IsSettingEnabled("ReflectAura") ? _imminenceAuras : _barrierAuras);
+            CancelBuffs(IsSettingEnabled("DerootAura") ? _vengeanceAuras : _enervateAuras);
         }
 
         private static class RelevantNanos
@@ -185,6 +231,16 @@ namespace Desu
             public const int CompositeMartialProwess = 302158;
             public const int CompositeMelee = 223360;
             public const int PunisherOfTheWicked = 301602;
+        }
+
+        private static class RelevantItems
+        {
+            public const int ExperienceStim = 288769;
+            public const int PremSitKit = 297274;
+            public const int SitKit1 = 291082;
+            public const int SitKit100 = 291083;
+            public const int SitKit200 = 291084;
+            public const int SitKit300 = 293296;
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AOSharp.Core.Inventory;
 
 namespace Character.State
 {
@@ -17,7 +18,38 @@ namespace Character.State
         {
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
+            Chat.RegisterCommand("disband", DisbandCommand);
+            Chat.RegisterCommand("grid", UseGridCan);
+            Chat.RegisterCommand("fgrid", UseFGridCan);
             Team.TeamRequest = Team_TeamRequest;
+        }
+
+        private void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            Team.Disband();
+            CharacterState.BroadcastDisband();
+        }
+
+        private void UseGridCan(string command, string[] param, ChatWindow chatWindow)
+        {
+            Item GridCan = null;
+
+            Inventory.Find(288822, out GridCan);
+
+            GridCan.Use();
+
+            CharacterState.BroadcastUseGrid();
+        }
+
+        private void UseFGridCan(string command, string[] param, ChatWindow chatWindow)
+        {
+            Item FGridCan = null;
+
+            Inventory.Find(296805, out FGridCan);
+
+            FGridCan.Use();
+
+            CharacterState.BroadcastUseFGrid();
         }
 
         private void ReformCommand(string command, string[] param, ChatWindow chatWindow)
@@ -36,7 +68,7 @@ namespace Character.State
         {
             if (!DynelManager.LocalPlayer.IsInTeam())
             {
-                SendTeamInvite(GetFirstFiveRegisteredCharacters());
+                SendTeamInvite(GetRegisteredCharacters());
 
                 if (IsRaidEnabled(param))
                 {
@@ -61,10 +93,10 @@ namespace Character.State
             return param.Length > 0 && "raid".Equals(param[0]);
         }
 
-        private Identity[] GetFirstFiveRegisteredCharacters()
+        private Identity[] GetRegisteredCharacters()
         {
             Identity[] registeredCharacters = CharacterState.GetRegisteredCharacters();
-            int firstTeamCount = registeredCharacters.Length > 5 ? 5 : registeredCharacters.Length;
+            int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
             Identity[] firstTeamCharacters = new Identity[firstTeamCount];
             Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
             return firstTeamCharacters;
@@ -73,11 +105,11 @@ namespace Character.State
         private Identity[] GetRemainingRegisteredCharacters()
         {
             Identity[] registeredCharacters = CharacterState.GetRegisteredCharacters();
-            int characterCount = registeredCharacters.Length - 5;
+            int characterCount = registeredCharacters.Length - 6;
             Identity[] remainingCharacters = new Identity[characterCount];
             if(characterCount > 0)
             {
-                Array.Copy(registeredCharacters, 5, remainingCharacters, 0, characterCount);
+                Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
             }
             return remainingCharacters;
         }

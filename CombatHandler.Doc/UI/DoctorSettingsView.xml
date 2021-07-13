@@ -3,27 +3,26 @@
 <View h_alignment="LEFT" view_layout="vertical" name="parent">
 	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 		<TextView value="Debuffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Use Initiative Debuff (UBT line)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseInitDebuff" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Initiative Debuff (UBT line) on others" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseInitDebuffOnOthers" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Damage over Time A" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseDotA" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Damage over Time B" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseDotB" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Damage over Time C" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseDotC" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Initiative Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitDebuff" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="OS Initiative Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__OSInitDebuff" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Damage over Time A" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotA" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Damage over Time B" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotB" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Damage over Time C" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotC" layout_borders="Rect(10,1,5,1)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     
 		<TextView value="Buffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Use HP Buff (Omni-Med line)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseHPBuff" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Short HP Buff (Life Channeler line)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseShortHPBuff" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Short Hp" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHPBuff" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Individual HOT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__IndividualHOT" layout_borders="Rect(10,1,5,1)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		
 		<TextView value="Healing" layout_borders="Rect(5,5,5,5)"/>	
-		<OptionCheckBox label="Use Complete Healing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseCH" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use SL Heal" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseSLHeal" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use RK Heal" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseRKHeal" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use HOT in combat" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseHOT" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Complete Healing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CH" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="SL Heal" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLHeal" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="RK Heal" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RKHeal" layout_borders="Rect(10,1,5,1)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 
 		<TextView value="Helpers" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="(12 man) Spam Alpha and Omega" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamCH" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(12 man) Lock CH" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LockCH" layout_borders="Rect(10,1,5,1)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<VLayoutSpacer/>
 	</BorderView>

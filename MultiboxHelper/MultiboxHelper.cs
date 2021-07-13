@@ -51,6 +51,7 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.CharStatus, OnCharStatusMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.CharLeft, OnCharLeftMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UseNoviRing, OnUseNoviRingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UseFGrid, OnUseFGridMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatOpen, OnNpcChatOpenMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
@@ -191,6 +192,19 @@ namespace MultiboxHelper
                         }
                     }
                 }
+                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
+                {
+                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
+                    {
+                        if (item.Name.StartsWith("Data Receptacle"))
+                        {
+                            IPCChannel.Broadcast(new UseDataReceptacle()
+                            {
+                                Target = genericCmdMsg.Target
+                            });
+                        }
+                    }
+                }
                 if (genericCmdMsg.Action == GenericCmdAction.Use && genericCmdMsg.Target.Type == IdentityType.Terminal)
                 {
                     IPCChannel.Broadcast(new UseMessage()
@@ -322,6 +336,25 @@ namespace MultiboxHelper
 
             UseMessage useMsg = (UseMessage)msg;
             DynelManager.GetDynel<SimpleItem>(useMsg.Target)?.Use();
+        }
+
+        private void OnUseFGridMessage(int sender, IPCMessage msg)
+        {
+            if (!Team.IsInTeam || IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            Item Fgrid = Inventory.Items
+                .Where(item => item.Name.Contains("Data Receptacle"))
+                .FirstOrDefault();
+
+            if (Fgrid != null)
+            {
+                UseDataReceptacle useDataReceptacle = (UseDataReceptacle)msg;
+                Fgrid.UseOn(useDataReceptacle.Target);
+            }
         }
 
         private void OnUseNoviRingMessage(int sender, IPCMessage msg)

@@ -1,6 +1,8 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -52,7 +54,8 @@ namespace CombatHandler.Generic
             {PerkHash.DazzleWithLights, StarfallPerk },
             {PerkHash.InstallExplosiveDevice, InstallExplosiveDevice },
             {PerkHash.InstallNotumDepletionDevice, InstallNotumDepletionDevice },
-            {PerkHash.QuickShot, QuickShot }
+            {PerkHash.QuickShot, QuickShot },
+            //{PerkHash.UnhallowedWrath, UnhallowedWrath }
         };
 
         private static bool QuickShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -62,6 +65,14 @@ namespace CombatHandler.Generic
 
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
+
+        //private static bool UnhallowedWrath(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (PerkAction.Find("Unhallowed Wrath", out PerkAction unhallowedwrath) && !unhallowedwrath.IsAvailable)
+        //        return false;
+
+        //    return DamagePerk(perk, fightingTarget, ref actionTarget);
+        //}
 
         public static bool DamageBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -195,6 +206,14 @@ namespace CombatHandler.Generic
 
         public static bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (perkAction.Name == "Unhallowed Wrath" || perkAction.Name == "Spectator Wrath" || perkAction.Name == "Righteous Wrath")
+            {
+                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat()))
+                {
+                    return false;
+                }
+            }
+
             if (fightingTarget == null)
                 return false;
 
@@ -208,6 +227,11 @@ namespace CombatHandler.Generic
         }
 
         public delegate bool GenericPerkConditionProcessor(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget);
+
+        private static Stat GetSkillLockStat()
+        {
+            return Stat.Skill2hEdged;
+        }
 
         private static class RelevantEffects
         {

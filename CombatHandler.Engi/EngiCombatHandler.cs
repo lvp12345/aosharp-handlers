@@ -1,6 +1,7 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
+using Character.State;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
@@ -32,22 +33,24 @@ namespace CombatHandler.Engi
             settings.AddVariable("UseShieldRipper", false);
             settings.AddVariable("UseSnareAura", false);
             settings.AddVariable("SpamDebuffAura", false);
+            settings.AddVariable("AuraShield", false);
+            settings.AddVariable("AuraDamage", false);
+            settings.AddVariable("AuraReflect", false);
+            settings.AddVariable("AuraArmor", false);
             settings.AddVariable("SpamSnareAura", false);
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
+
+            //Chat.WriteLine("" + CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer));
+
+            Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, LEProc, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEngineerDroneMissiles, LEProc, CombatActionPriority.Low);
 
             //Buffs
-            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeNano, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeUtility, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeRanged, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeRangedSpec, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.SympatheticReactiveCocoon, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), PistolGrenadeTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GenericBuff);
@@ -59,9 +62,13 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamBuff);
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
             RegisterSpellProcessor(RelevantNanos.ShieldRippers, ShieldRipperAura);
+            RegisterSpellProcessor(RelevantNanos.AuraArmor, AuraArmor);
+            RegisterSpellProcessor(RelevantNanos.AuraDamage, AuraDamage);
+            RegisterSpellProcessor(RelevantNanos.AuraReflect, AuraReflect);
+            RegisterSpellProcessor(RelevantNanos.AuraShield, AuraShield);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
             RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), RangedTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             //Pet Spawners
             RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), PetSpawner);
@@ -135,6 +142,16 @@ namespace CombatHandler.Engi
             return DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Any();
         }
 
+        protected bool PistolGrenadeTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuffWeaponCheck(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.GrenadeBuffs, target), CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.Grenade, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun);
+        }
+
+        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuffInitEngi(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.InitiativeBuffs, target), CharacterWeaponType.RANGED);
+        }
+
         private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("UseShieldRipper") || fightingTarget == null)
@@ -148,6 +165,86 @@ namespace CombatHandler.Engi
             }
 
             return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
+        }
+
+        private bool AuraArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("AuraArmor") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer))
+            {
+                return true;
+            }
+
+            return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
+        }
+
+        private bool AuraDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("AuraDamage") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer))
+            {
+                return true;
+            }
+
+            return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
+        }
+
+        private bool AuraReflect(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraShield"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("AuraReflect") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer))
+            {
+                return true;
+            }
+
+            return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
+        }
+
+        private bool AuraShield(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraArmor"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("AuraShield") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer))
+            {
+                return true;
+            }
+
+            return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
 
         private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -303,6 +400,7 @@ namespace CombatHandler.Engi
 
         private void OnZoned(object s, EventArgs e)
         {
+
             ResetTrimmers();
         }
 
@@ -335,6 +433,10 @@ namespace CombatHandler.Engi
             public static readonly Spell[] DamageBuffLineA = Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).Where(spell => spell.Identity.Instance != RelevantNanos.BoostedTendons).OrderByStackingOrder().ToArray();
             public static readonly int[] ShieldRippers = { 154725, 154726, 154727, 154728 };
             public static readonly int[] Blinds = { 154715, 154716, 154717, 154718, 154719 };
+            public static readonly int[] AuraShield = { 154550, 154551, 154552, 154553 };
+            public static readonly int[] AuraDamage = { 154560, 154561 };
+            public static readonly int[] AuraArmor = { 154562, 154563, 154564, 154565, 154566, 154567 };
+            public static readonly int[] AuraReflect = { 154557, 154558, 154559 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
         }
 

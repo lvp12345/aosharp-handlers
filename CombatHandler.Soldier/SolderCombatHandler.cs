@@ -3,7 +3,9 @@ using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
+using Character.State;
 using System;
+using AOSharp.Core.UI;
 
 namespace Desu
 {
@@ -19,6 +21,8 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.LEProcSoldierGrazeJugularVein, LEProc);
             RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc);
 
+            //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
+
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.AdrenalineRush, AdrenalineRush);
@@ -33,14 +37,16 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AssaultRifleBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GenericBuff);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), TeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), BurstTeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), TeamBuffAAONoMorph);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RangedTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             //Items
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
 
-            if (TauntTools.CanUseTauntTool()) {
+            if (TauntTools.CanUseTauntTool()) 
+            {
                 Item tauntTool = TauntTools.GetBestTauntTool();
                 RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
             }
@@ -96,6 +102,16 @@ namespace Desu
                 return true;
 
             return false;
+        }
+
+        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuffInitSol(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.InitiativeBuffs, target));
+        }
+
+        protected bool TeamBuffAAONoMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.AAOBuffs, target) || HasBuffNanoLine(NanoLine.Polymorph, target));
         }
 
         private static class RelevantNanos

@@ -12,41 +12,42 @@ namespace Desu
     {
         public DocCombatHandler(String pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("UseInitDebuff", false);
-            settings.AddVariable("UseInitDebuffOnOthers", false);
-            settings.AddVariable("UseDotA", false);
-            settings.AddVariable("UseDotB", false);
-            settings.AddVariable("UseDotC", false);
-            settings.AddVariable("UseCH", true);
-            settings.AddVariable("UseHOT", true);
-            settings.AddVariable("UseSLHeal", true);
-            settings.AddVariable("UseRKHeal", false);
-            settings.AddVariable("UseHPBuff", true);
-            settings.AddVariable("UseShortHPBuff", true);
-            settings.AddVariable("SpamCH", false);
+            settings.AddVariable("InitDebuff", false);
+            settings.AddVariable("OSInitDebuff", false);
+            settings.AddVariable("DotA", false);
+            settings.AddVariable("DotB", false);
+            settings.AddVariable("DotC", false);
+            settings.AddVariable("CH", true);
+            settings.AddVariable("IndividualHOT", false);
+            settings.AddVariable("SLHeal", true);
+            settings.AddVariable("RKHeal", false);
+            settings.AddVariable("ShortHPBuff", false);
+            settings.AddVariable("LockCH", false);
             RegisterSettingsWindow("Doctor Handler", "DoctorSettingsView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, LEProc, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcDoctorMuscleMemory, LEProc, CombatActionPriority.Low);
 
-            RegisterSpellProcessor(RelevantNanos.ALPHA_AND_OMEGA, SpamCH, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.ALPHA_AND_OMEGA, LockCH, CombatActionPriority.High);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.SL_HEALS, ShadowlandsHeal, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.RK_HEALS, RubiKaHeal, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.SL_HEALS, ShadowlandsHeal, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.RK_HEALS, RubiKaHeal, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.IMPROVED_LC, TeamHeal, CombatActionPriority.High);
 
             //Team Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), TeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistanceBuff);
             
             RegisterSpellProcessor(RelevantNanos.HP_BUFFS, TeamHPBuff);
             
             if(HasNano(RelevantNanos.IMPROVED_LC))
             {
-                RegisterSpellProcessor(RelevantNanos.IMPROVED_LC, TeamShortHPBuff);
+                RegisterSpellProcessor(RelevantNanos.IMPROVED_LC, LifeChanneler);
             } 
             else
             {
@@ -64,25 +65,38 @@ namespace Desu
 
             //This needs work 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), InitDebuffTarget);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), InitDebuffOthers, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), OSInitDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(), DOTADebuffTarget);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(), DOTBDebuffTarget);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget);
         }
 
-        private bool InitDebuffOthers(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool OSInitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffOthersInCombat("UseInitDebuffOnOthers", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffOthersInCombat("OSInitDebuff", spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuffInitDoc(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.InitiativeBuffs, target));
+        }
+
+        private bool LifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DoctorShortHPBuffs))
+                return false;
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool NanoResistanceBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.NanoResistanceBuffs, target) || HasBuffNanoLine(NanoLine.Rage, target), CharacterWeaponType.UNAVAILABLE);
+            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.NanoResistanceBuffs, target) || HasBuffNanoLine(NanoLine.Rage, target));
         }
 
-        private bool SpamCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsSettingEnabled("SpamCH"))
+            if(IsSettingEnabled("LockCH"))
             {
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
@@ -93,12 +107,27 @@ namespace Desu
 
         private bool TeamHOTBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return HealOverTimeTeamBuff("UseHOT", spell, fightingTarget, ref actionTarget);
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent < 90)
+                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
+                    .FirstOrDefault();
+
+                if (dyingTeamMember != null)
+                {
+                    return false;
+                }
+            }
+
+            return HealOverTimeTeamBuff("IndividualHOT", spell, fightingTarget, ref actionTarget);
         }
 
         private bool TeamHPBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseHPBuff") || HasBuffNanoLine(NanoLine.DoctorHPBuffs, DynelManager.LocalPlayer))
+            if (HasBuffNanoLine(NanoLine.DoctorHPBuffs, DynelManager.LocalPlayer))
             {
                 return false;
             }
@@ -107,7 +136,7 @@ namespace Desu
 
         private bool TeamShortHPBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseShortHPBuff") || HasBuffNanoLine(NanoLine.DoctorShortHPBuffs, DynelManager.LocalPlayer))
+            if (!IsSettingEnabled("ShortHPBuff") || HasBuffNanoLine(NanoLine.DoctorShortHPBuffs, DynelManager.LocalPlayer))
             {
                 return false;
             }
@@ -117,27 +146,27 @@ namespace Desu
 
         private bool InitDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return DocToggledDebuffTarget("UseInitDebuff", spell, fightingTarget, ref actionTarget);
+            return DocToggledDebuffTarget("InitDebuff", spell, fightingTarget, ref actionTarget);
         }
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return DocToggledDebuffTarget("UseDotA", spell, fightingTarget, ref actionTarget);
+            return DocToggledDebuffTarget("DotA", spell, fightingTarget, ref actionTarget);
         }
 
         private bool DOTBDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return DocToggledDebuffTarget("UseDotB", spell, fightingTarget, ref actionTarget);
+            return DocToggledDebuffTarget("DotB", spell, fightingTarget, ref actionTarget);
         }
 
         private bool DOTCDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return DocToggledDebuffTarget("UseDotC", spell, fightingTarget, ref actionTarget);
+            return DocToggledDebuffTarget("DotC", spell, fightingTarget, ref actionTarget);
         }
 
         private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(fightingTarget == null || !IsSettingEnabled("UseHOT") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.HealOverTime))
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.HealOverTime) || DynelManager.LocalPlayer.HealthPercent <= 90 || !HasNCU(spell, DynelManager.LocalPlayer))
             {
                 return false;
             }
@@ -148,7 +177,7 @@ namespace Desu
         private bool DocToggledDebuffTarget(String settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             //Check if you are low hp dont debuff
-            if (DynelManager.LocalPlayer.HealthPercent <= 30)
+            if (DynelManager.LocalPlayer.HealthPercent <= 90)
             {
                 return false;
             }
@@ -159,7 +188,7 @@ namespace Desu
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent < 30)
+                    .Where(c => c.HealthPercent < 90)
                     .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .FirstOrDefault();
 
@@ -174,29 +203,55 @@ namespace Desu
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(!IsSettingEnabled("UseCH"))
+            if(!IsSettingEnabled("CH"))
             {
                 return false;
             }
             return FindMemberWithHealthBelow(50, ref actionTarget);
         }
 
-        private bool ShadowlandsHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(!IsSettingEnabled("UseSLHeal"))
+            if (!IsSettingEnabled("SLHeal"))
             {
                 return false;
             }
-            return FindMemberWithHealthBelow(80, ref actionTarget);
+
+            // Try to keep our teammates alive if we're in a team
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 90)
+                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 2)
+                {
+                    actionTarget.Target = dyingTeamMember.FirstOrDefault();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool ShadowlandsHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if(!IsSettingEnabled("SLHeal"))
+            {
+                return false;
+            }
+            return FindMemberWithHealthBelow(90, ref actionTarget);
         }
 
         private bool RubiKaHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseRKHeal"))
+            if (!IsSettingEnabled("RKHeal"))
             {
                 return false;
             }
-            return FindMemberWithHealthBelow(80, ref actionTarget);
+            return FindMemberWithHealthBelow(90, ref actionTarget);
         }
 
         private bool FindMemberWithHealthBelow(int healthPercentTreshold, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

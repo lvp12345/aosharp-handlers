@@ -21,6 +21,8 @@ namespace Desu
             settings.AddVariable("SpamMongo", false);
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
+            //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
+
             //-------------LE procs-------------
             RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, LEProc, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, LEProc, CombatActionPriority.Low);

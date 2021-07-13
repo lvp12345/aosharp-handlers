@@ -2,10 +2,14 @@
 <root>
 <View h_alignment="LEFT" view_layout="vertical" name="parent">
 	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-		<TextView value="Settings" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Use AI DOT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseAIDot" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use AoE Blind" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseAoeBlind" layout_borders="Rect(10,1,5,1)"/>
-		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="      Preference" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="AI DOT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseAIDot" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="AoE Blind" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseAoeBlind" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<VLayoutSpacer/>
 	</BorderView>
 </View>

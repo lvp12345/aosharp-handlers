@@ -48,8 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CharacterState.cs" />
+    <Compile Include="CharacterWieldedWeapon.cs" />
     <Compile Include="CharacterWeaponType.cs" />
     <Compile Include="IPCMessages\CharacterSpecialsMessage.cs" />
+    <Compile Include="IPCMessages\UseFgrid.cs" />
+    <Compile Include="IPCMessages\UseGrid.cs" />
     <Compile Include="IPCMessages\DisbandMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\CharacterStateMessage.cs" />

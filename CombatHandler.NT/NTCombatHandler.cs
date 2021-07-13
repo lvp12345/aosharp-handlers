@@ -36,8 +36,8 @@ namespace Desu
 
             //Team buffs
             RegisterSpellProcessor(RelevantNanos.AbsortAcTargetBuffs, TeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), TeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), CheckBeforeCast);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), CheckBeforeCast);
 
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
@@ -73,6 +73,38 @@ namespace Desu
         {
             actionTarget.ShouldSetTarget = false;
             return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
+        }
+
+        private bool CheckBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell))
+            {
+                return false;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => HasNCU(spell, c))
+                    .Where(c => !HasBuff(spell, c))
+                    .Where(c => c.Profession != Profession.Keeper)
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        private bool NanoHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            actionTarget.ShouldSetTarget = true;
+            return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NanoOverTime_LineA);
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

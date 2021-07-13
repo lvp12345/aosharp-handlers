@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoLoot", "AutoLoot\AutoLo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Agent", "CombatHandler.Agent\CombatHandler.Agent.csproj", "{99F69611-BE0F-4891-810C-6D1079A3B5BC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Adv", "CombatHandler.Adv\CombatHandler.Adv.csproj", "{3CA722B1-8974-4621-A98E-01A124296F34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +119,10 @@ Global
 		{99F69611-BE0F-4891-810C-6D1079A3B5BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99F69611-BE0F-4891-810C-6D1079A3B5BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99F69611-BE0F-4891-810C-6D1079A3B5BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CA722B1-8974-4621-A98E-01A124296F34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CA722B1-8974-4621-A98E-01A124296F34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CA722B1-8974-4621-A98E-01A124296F34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CA722B1-8974-4621-A98E-01A124296F34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

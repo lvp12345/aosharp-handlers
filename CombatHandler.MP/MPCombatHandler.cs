@@ -131,7 +131,7 @@ namespace Desu
             {
                 return false;
             }
-            return TeamBuff(spell, fightingTarget,  ref actionTarget, target => !spell.MeetsUseReqs(target) || HasAnyMPNanoLineBuff(target), CharacterWeaponType.UNAVAILABLE);
+            return TeamBuff(spell, fightingTarget,  ref actionTarget, target => !spell.MeetsUseReqs(target) || HasAnyMPNanoLineBuff(target));
         }
 
         private bool MPNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -192,19 +192,6 @@ namespace MultiboxHelper
                         }
                     }
                 }
-                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem) // to add other rings
-                {
-                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
-                    {
-                        if (item.Name.StartsWith("Pure Novictum"))
-                        {
-                            IPCChannel.Broadcast(new UseNoviRingMessage()
-                            {
-                                Target = genericCmdMsg.Target
-                            });
-                        }
-                    }
-                }
                 if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
                 {
                     if (Inventory.Find(genericCmdMsg.Source, out Item item))

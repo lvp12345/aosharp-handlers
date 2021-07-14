@@ -12,6 +12,16 @@ namespace Desu
     public class CratCombatHandler : GenericCombatHandler
     {
         private static readonly List<string> AoeRootTargets = new List<string>() { "Flaming Vengeance", "Hand of the Colonel" };
+        private double _lastTrimTime = 0;
+        private const float DelayBetweenTrims = 1;
+        private const float DelayBetweenDiverTrims = 305;
+        private bool attackPetTrimmedAggressive = false;
+        private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
+        private Dictionary<PetType, double> _lastPetTrimDivertTime = new Dictionary<PetType, double>()
+        {
+            { PetType.Attack, 0 },
+            { PetType.Support, 0 }
+        };
 
         public CratCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -20,6 +30,9 @@ namespace Desu
             settings.AddVariable("UseMalaise", true);
             settings.AddVariable("UseLEInitDebuffs", true);
             settings.AddVariable("UseMalaiseOnOthers", false);
+            settings.AddVariable("UseDivertTrimmer", true);
+            settings.AddVariable("UseTauntTrimmer", true);
+            settings.AddVariable("UseAggDefTrimmer", true);
             settings.AddVariable("UseNukes", true);
             settings.AddVariable("UseAoeRoot", false);
             settings.AddVariable("BuffAuraSelection", (int)BuffAuraType.AAD);
@@ -85,6 +98,14 @@ namespace Desu
             {
                 RegisterItemProcessor(shellId, shellId, RobotSpawnerItem);
             }
+
+            //Pet Trimmers
+            ResetTrimmers();
+            RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.IncreaseAggressivenessHigh, RelevantTrimmers.IncreaseAggressivenessHigh, PetAggressiveTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, RelevantTrimmers.DivertEnergyToOffense, PetDivertTrimmer);
+
+            Game.TeleportEnded += OnZoned;
         }
 
         private bool NanoPointsDebuffAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -212,6 +233,62 @@ namespace Desu
                 .Any();
         }
 
+        protected bool PetDivertTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsSettingEnabled("UseDivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            {
+                return false;
+            }
+
+            Pet petToTrim = FindPetThat(CanDivertTrim);
+            if (petToTrim != null)
+            {
+                actiontarget.Target = petToTrim.Character;
+                actiontarget.ShouldSetTarget = true;
+                _lastPetTrimDivertTime[petToTrim.Type] = Time.NormalTime;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
+            return false;
+        }
+
+        protected bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsSettingEnabled("UseAggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            {
+                return false;
+            }
+
+            Pet petToTrim = FindPetThat(CanAggDefTrim);
+            if (petToTrim != null)
+            {
+                actiontarget.Target = petToTrim.Character;
+                actiontarget.ShouldSetTarget = true;
+                petTrimmedAggDef[petToTrim.Type] = true;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
+            return false;
+        }
+
+        protected bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsSettingEnabled("UseTauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            {
+                return false;
+            }
+
+            Pet petToTrim = FindPetThat(CanTauntTrim);
+            if (petToTrim != null)
+            {
+                actiontarget = (petToTrim.Character, true);
+                attackPetTrimmedAggressive = true;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
+            return false;
+        }
+
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null || !IsSettingEnabled("UseNukes"))
@@ -238,6 +315,38 @@ namespace Desu
             }
 
             return false;
+        }
+
+        protected bool CanTrim()
+        {
+            return _lastTrimTime + DelayBetweenTrims < Time.NormalTime;
+        }
+        protected bool CanDivertTrim(Pet pet)
+        {
+            return _lastPetTrimDivertTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime;
+        }
+
+        protected bool CanAggDefTrim(Pet pet)
+        {
+            return !petTrimmedAggDef[pet.Type];
+        }
+
+        protected bool CanTauntTrim(Pet pet)
+        {
+            return pet.Type == PetType.Attack && !attackPetTrimmedAggressive;
+        }
+
+        private void ResetTrimmers()
+        {
+            attackPetTrimmedAggressive = false;
+            petTrimmedAggDef[PetType.Attack] = false;
+            petTrimmedAggDef[PetType.Support] = false;
+        }
+
+        private void OnZoned(object s, EventArgs e)
+        {
+
+            ResetTrimmers();
         }
 
         private bool RobotNeedsBuff(Spell spell, Pet pet)
@@ -401,6 +510,14 @@ namespace Desu
                 { 235386, new PetSpellData(239828, PetType.Attack) },
                 { 46391, new PetSpellData(96213, PetType.Attack) }
             };
+        }
+
+        private static class RelevantTrimmers
+        {
+            public const int IncreaseAggressivenessLow = 154940;
+            public const int IncreaseAggressivenessHigh = 154940;
+            public const int DivertEnergyToOffense = 88378;
+            public const int PositiveAggressiveDefensive = 88384;
         }
 
         private enum BuffAuraType

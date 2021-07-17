@@ -847,13 +847,13 @@ namespace CombatHandler.Generic
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
-                return false;
+            //if (fightingTarget == null)
+            //    return false;
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)))
-                return false;
+            //if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)))
+            //    return false;
 
-            return true;
+            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null;
         }
 
         protected virtual bool Coffee(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

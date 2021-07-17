@@ -242,6 +242,7 @@ namespace Desu
             {
                 return false;
             }
+
             return FindMemberWithHealthBelow(90, ref actionTarget);
         }
 

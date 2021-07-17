@@ -30,9 +30,9 @@ namespace Desu
             settings.AddVariable("UseMalaise", true);
             settings.AddVariable("UseLEInitDebuffs", true);
             settings.AddVariable("UseMalaiseOnOthers", false);
-            settings.AddVariable("UseDivertTrimmer", true);
-            settings.AddVariable("UseTauntTrimmer", true);
-            settings.AddVariable("UseAggDefTrimmer", true);
+            settings.AddVariable("DivertTrimmer", true);
+            settings.AddVariable("TauntTrimmer", true);
+            settings.AddVariable("AggDefTrimmer", true);
             settings.AddVariable("UseNukes", true);
             settings.AddVariable("UseAoeRoot", false);
             settings.AddVariable("BuffAuraSelection", (int)BuffAuraType.AAD);
@@ -235,7 +235,7 @@ namespace Desu
 
         protected bool PetDivertTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("UseDivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
             {
                 return false;
             }
@@ -254,7 +254,7 @@ namespace Desu
 
         protected bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("UseAggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            if (!IsSettingEnabled("AggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
             {
                 return false;
             }
@@ -273,7 +273,7 @@ namespace Desu
 
         protected bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("UseTauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
             {
                 return false;
             }

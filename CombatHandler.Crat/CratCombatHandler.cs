@@ -71,7 +71,7 @@ namespace Desu
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), TeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), RangedTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), TeamBuff);
 
             //Pet Buffs
@@ -223,10 +223,11 @@ namespace Desu
 
         private bool NeedsDebuffRefresh(Spell spell, SimpleChar target)
         {
-            if(target == null)
+            if(target == null || target.Buffs.Contains(301844))
             {
                 return false;
             }
+
             //Check the remaining time on debuffs. On the enemy target
             return !target.Buffs.Where(buff => buff.Name == spell.Name)
                 .Where(buff => buff.RemainingTime > 1)

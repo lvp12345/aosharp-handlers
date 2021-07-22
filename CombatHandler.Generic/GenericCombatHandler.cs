@@ -906,8 +906,9 @@ namespace CombatHandler.Generic
 
             SimpleChar debuffTarget = DynelManager.Characters
                 .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player of a pet
+                .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player or a pet
                 .Where(c => c.IsAttacking) //Is in combat
+                .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
                 .Where(c => c.IsValid).Where(c => c.IsInLineOfSight).Where(c => c.IsInAttackRange()) //Is in range for debuff (we assume weapon range == debuff range)
                 .Where(c => NeedsDebuffRefresh(spell, c)) //Needs debuff refreshed
                 .FirstOrDefault();
@@ -1095,7 +1096,7 @@ namespace CombatHandler.Generic
             actiontarget.ShouldSetTarget = true;
 
 
-            return DynelManager.LocalPlayer.Buffs.Contains(258231) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
+            return (DynelManager.LocalPlayer.Buffs.Contains(258231) || DynelManager.LocalPlayer.Buffs.Contains(82166)) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
 
         }
 

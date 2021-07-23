@@ -1096,7 +1096,7 @@ namespace CombatHandler.Generic
             actiontarget.ShouldSetTarget = true;
 
 
-            return (DynelManager.LocalPlayer.Buffs.Contains(258231) || DynelManager.LocalPlayer.Buffs.Contains(82166)) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
+            return (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
 
         }
 

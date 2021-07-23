@@ -46,8 +46,8 @@ namespace Desu
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), CratDebuffOthersInCombat, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), MalaiseTargetDebuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GeneralRadiationACDebuff).OrderByStackingOrder(), LEInitTargetDebuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GeneralProjectileACDebuff).OrderByStackingOrder(), LEInitTargetDebuff);
+            RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, LEInitTargetDebuff);
+            RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, LEInitTargetDebuff);
             RegisterSpellProcessor(RelevantNanos.AoeRoots, AoeRoot, CombatActionPriority.High);
 
             //Debuff Aura
@@ -497,6 +497,8 @@ namespace Desu
             public static readonly int[] NanoPointsDebuffAuras = { 157524, 157534, 157533, 157532, 157531 };
             public static readonly int[] CritDebuffAuras = { 157530, 157529, 157528 };
             public static readonly int[] NanoResDebuffAuras = { 157527, 157526, 157525, 157535 };
+            public static readonly int[] GeneralRadACDebuff = { 302143, 302142 };
+            public static readonly int[] GeneralProjACDebuff = { 302150, 302152 };
 
             public static Dictionary<int, int> PetNanoToBuff = new Dictionary<int, int>
             {

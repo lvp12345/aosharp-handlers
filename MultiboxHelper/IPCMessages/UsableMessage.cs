@@ -9,12 +9,18 @@ using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
 
 namespace MultiboxHelper.IPCMessages
 {
-    [AoContract((int)IPCOpcode.UseNoviRing)]
-    public class UseNoviRingMessage : IPCMessage
+    [AoContract((int)IPCOpcode.UseItem)]
+    public class UsableMessage : IPCMessage
     {
-        public override short Opcode => (short)IPCOpcode.UseNoviRing;
+        public override short Opcode => (short)IPCOpcode.UseItem;
 
         [AoMember(0)]
+        public int ItemLowId { get; set; }
+
+        [AoMember(1)]
+        public int ItemHighId { get; set; }
+
+        [AoMember(2)]
         public Identity Target { get; set; }
     }
 }

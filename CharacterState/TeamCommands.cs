@@ -19,8 +19,6 @@ namespace Character.State
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
-            Chat.RegisterCommand("grid", UseGridCan);
-            Chat.RegisterCommand("fgrid", UseFGridCan);
             Team.TeamRequest = Team_TeamRequest;
         }
 
@@ -28,28 +26,6 @@ namespace Character.State
         {
             Team.Disband();
             CharacterState.BroadcastDisband();
-        }
-
-        private void UseGridCan(string command, string[] param, ChatWindow chatWindow)
-        {
-            Item GridCan = null;
-
-            Inventory.Find(288822, out GridCan);
-
-            GridCan.Use();
-
-            CharacterState.BroadcastUseGrid();
-        }
-
-        private void UseFGridCan(string command, string[] param, ChatWindow chatWindow)
-        {
-            Item FGridCan = null;
-
-            Inventory.Find(296805, out FGridCan);
-
-            FGridCan.Use();
-
-            CharacterState.BroadcastUseFGrid();
         }
 
         private void ReformCommand(string command, string[] param, ChatWindow chatWindow)

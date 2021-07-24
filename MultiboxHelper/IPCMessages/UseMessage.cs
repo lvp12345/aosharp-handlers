@@ -16,5 +16,9 @@ namespace MultiboxHelper.IPCMessages
 
         [AoMember(0)]
         public Identity Target { get; set; }
+
+
+        [AoMember(1)]
+        public int PfId { get; set; }
     }
 }

@@ -30,6 +30,12 @@ namespace MultiboxHelper
         private StatusWindow _statusWindow;
         private double _lastUpdateTime = 0;
 
+        private static Identity useDynel;
+        private static Identity useOnDynel;
+        private static Identity useItem;
+
+        private static double posUpdateTimer;
+
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
@@ -52,14 +58,9 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UseItem, OnUseItemMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.CharStatus, OnCharStatusMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.CharLeft, OnCharLeftMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.UseNoviRing, OnUseNoviRingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.UseSangRing, OnUseSangRingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.UseRimyRing, OnUseRimyRingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.UseAchromRing, OnUseAchromRingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.UseCaligRing, OnUseCaligRingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.UseFGrid, OnUseFGridMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatOpen, OnNpcChatOpenMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
@@ -91,6 +92,15 @@ namespace MultiboxHelper
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (Time.NormalTime > posUpdateTimer + 0.1)
+            {
+                if (!IsActiveWindow)
+                {
+                    ListenerUseSync();
+                }
+                posUpdateTimer = Time.NormalTime;
+            }
+
             if (Time.NormalTime > _lastUpdateTime + 0.5f)
             {
                 IPCChannel.Broadcast(new CharStatusMessage
@@ -242,94 +252,38 @@ namespace MultiboxHelper
             }
             else if (n3Msg.N3MessageType == N3MessageType.GenericCmd)
             {
-                if (!settings["SyncUse"].AsBool())
-                    return;
-
                 GenericCmdMessage genericCmdMsg = (GenericCmdMessage)n3Msg;
 
-                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
-                {
-                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
-                    {
-                        if (item.Name.StartsWith("Pure Novictum"))
-                        {
-                            IPCChannel.Broadcast(new UseNoviRingMessage()
-                            {
-                                Target = genericCmdMsg.Target
-                            });
-                        }
-                    }
-                }
-                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
-                {
-                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
-                    {
-                        if (item.Name.StartsWith("Sanguine Ring "))
-                        {
-                            IPCChannel.Broadcast(new UseSangRingMessage()
-                            {
-                                Target = genericCmdMsg.Target
-                            });
-                        }
-                    }
-                }
-                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
-                {
-                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
-                    {
-                        if (item.Name.StartsWith("Rimy Ring for "))
-                        {
-                            IPCChannel.Broadcast(new UseRimyRingMessage()
-                            {
-                                Target = genericCmdMsg.Target
-                            });
-                        }
-                    }
-                }
-                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
-                {
-                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
-                    {
-                        if (item.Name.StartsWith("Achromic Ring "))
-                        {
-                            IPCChannel.Broadcast(new UseAchromRingMessage()
-                            {
-                                Target = genericCmdMsg.Target
-                            });
-                        }
-                    }
-                }
-                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
-                {
-                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
-                    {
-                        if (item.Name.StartsWith("Caliginous Ring "))
-                        {
-                            IPCChannel.Broadcast(new UseCaligRingMessage()
-                            {
-                                Target = genericCmdMsg.Target
-                            });
-                        }
-                    }
-                }
-                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
-                {
-                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
-                    {
-                        if (item.Name.StartsWith("Data Receptacle"))
-                        {
-                            IPCChannel.Broadcast(new UseDataReceptacle()
-                            {
-                                Target = genericCmdMsg.Target
-                            });
-                        }
-                    }
-                }
+                Dynel target = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == genericCmdMsg.Target);
+
                 if (genericCmdMsg.Action == GenericCmdAction.Use && genericCmdMsg.Target.Type == IdentityType.Terminal)
                 {
                     IPCChannel.Broadcast(new UseMessage()
                     {
+                        Target = genericCmdMsg.Target,
+                        PfId = Playfield.ModelIdentity.Instance
+                    });
+                }
+                else if (genericCmdMsg.Action == GenericCmdAction.Use)
+                {
+                    Inventory.Find(genericCmdMsg.Target, out Item item);
+
+                    IPCChannel.Broadcast(new UsableMessage()
+                    {
+                        ItemLowId = item.LowId,
+                        ItemHighId = item.HighId,
+                    });
+                }
+                else if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
+                {
+                    Inventory.Find(genericCmdMsg.Source, out Item item);
+
+                    IPCChannel.Broadcast(new UsableMessage()
+                    {
+                        ItemLowId = item.LowId,
+                        ItemHighId = item.HighId,
                         Target = genericCmdMsg.Target
+
                     });
                 }
             }
@@ -376,7 +330,7 @@ namespace MultiboxHelper
         {
 
             //Only followers will act on commands
-            if (/*!Team.IsInTeam || */IsActiveWindow)
+            if (IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -395,7 +349,7 @@ namespace MultiboxHelper
         private void OnTargetMessage(int sender, IPCMessage msg)
         {
 
-            if (/*!Team.IsInTeam || */IsActiveWindow)
+            if (IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -408,7 +362,7 @@ namespace MultiboxHelper
         private void OnAttackMessage(int sender, IPCMessage msg)
         {
 
-            if (/*!Team.IsInTeam || */IsActiveWindow)
+            if (IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -421,13 +375,52 @@ namespace MultiboxHelper
         private void OnStopAttackMessage(int sender, IPCMessage msg)
         {
 
-            if (/*!Team.IsInTeam || */IsActiveWindow)
+            if (IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
                 return;
 
             DynelManager.LocalPlayer.StopAttack();
+        }
+
+        private void ListenerUseSync()
+        {
+            Vector3 playerPos = DynelManager.LocalPlayer.Position;
+
+            // delayed dynel use
+            if (useDynel != Identity.None)
+            {
+                Dynel usedynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useDynel);
+
+                if (usedynel != null && Vector3.Distance(playerPos, usedynel.Position) < 5)
+                {
+                    DynelManager.GetDynel<SimpleItem>(useDynel)?.Use();
+                    useDynel = Identity.None;
+                }
+            }
+            // delayed itemonitem dynel use
+            if (useOnDynel != Identity.None)
+            {
+                Dynel _useOnDynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useOnDynel);
+                if (_useOnDynel != null && Vector3.Distance(playerPos, _useOnDynel.Position) < 5)
+                {
+                    Network.Send(new GenericCmdMessage()
+                    {
+                        Unknown = 1,
+                        Action = GenericCmdAction.UseItemOnItem,
+                        Temp1 = 0,
+                        Temp4 = 0,
+                        Identity = DynelManager.LocalPlayer.Identity,
+                        User = DynelManager.LocalPlayer.Identity,
+                        Target = useOnDynel,
+                        Source = useItem
+
+                    });
+                    useOnDynel = Identity.None;
+                    useItem = Identity.None;
+                }
+            }
         }
 
         private void OnUseMessage(int sender, IPCMessage msg)
@@ -440,121 +433,11 @@ namespace MultiboxHelper
                 return;
 
             UseMessage useMsg = (UseMessage)msg;
-            DynelManager.GetDynel<SimpleItem>(useMsg.Target)?.Use();
-        }
-
-        private void OnUseFGridMessage(int sender, IPCMessage msg)
-        {
-            if (/*!Team.IsInTeam || */IsActiveWindow)
+            //DynelManager.GetDynel<SimpleItem>(useMsg.Target)?.Use();
+            if (useMsg.PfId != Playfield.ModelIdentity.Instance)
                 return;
 
-            if (Game.IsZoning)
-                return;
-
-            Item Fgrid = Inventory.Items
-                .Where(item => item.Name.Contains("Data Receptacle"))
-                .FirstOrDefault();
-
-            if (Fgrid != null)
-            {
-                UseDataReceptacle useDataReceptacle = (UseDataReceptacle)msg;
-                Fgrid.UseOn(useDataReceptacle.Target);
-            }
-        }
-
-        private void OnUseNoviRingMessage(int sender, IPCMessage msg)
-        {
-            if (/*!Team.IsInTeam || */IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            Item noviRing = Inventory.Items
-                .Where(item => item.Name.Contains("Pure Novictum"))
-                .FirstOrDefault();
-
-            if (noviRing != null)
-            {
-                UseNoviRingMessage useNoviRingMessage = (UseNoviRingMessage)msg;
-                noviRing.UseOn(useNoviRingMessage.Target);
-            }
-        }
-
-        private void OnUseSangRingMessage(int sender, IPCMessage msg)
-        {
-            if (/*!Team.IsInTeam || */IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            Item SangRing = Inventory.Items
-                .Where(item => item.Name.Contains("Sanguine Ring "))
-                .FirstOrDefault();
-
-            if (SangRing != null)
-            {
-                UseSangRingMessage useSangRingMessage = (UseSangRingMessage)msg;
-                SangRing.UseOn(useSangRingMessage.Target);
-            }
-        }
-
-        private void OnUseRimyRingMessage(int sender, IPCMessage msg)
-        {
-            if (/*!Team.IsInTeam || */IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            Item RimyRing = Inventory.Items
-                .Where(item => item.Name.Contains("Rimy Ring "))
-                .FirstOrDefault();
-
-            if (RimyRing != null)
-            {
-                UseRimyRingMessage useRimyRingMessage = (UseRimyRingMessage)msg;
-                RimyRing.UseOn(useRimyRingMessage.Target);
-            }
-        }
-
-        private void OnUseAchromRingMessage(int sender, IPCMessage msg)
-        {
-            if (/*!Team.IsInTeam || */IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            Item AchromRing = Inventory.Items
-                .Where(item => item.Name.Contains("Achromic Ring "))
-                .FirstOrDefault();
-
-            if (AchromRing != null)
-            {
-                UseAchromRingMessage useAchromRingMessage = (UseAchromRingMessage)msg;
-                AchromRing.UseOn(useAchromRingMessage.Target);
-            }
-        }
-
-        private void OnUseCaligRingMessage(int sender, IPCMessage msg)
-        {
-            if (/*!Team.IsInTeam || */IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            Item CaligRing = Inventory.Items
-                .Where(item => item.Name.Contains("Caliginous Ring "))
-                .FirstOrDefault();
-
-            if (CaligRing != null)
-            {
-                UseCaligRingMessage useCaligRingMessage = (UseCaligRingMessage)msg;
-                CaligRing.UseOn(useCaligRingMessage.Target);
-            }
+            useDynel = useMsg.Target;
         }
 
         private void OnNpcChatOpenMessage(int sender, IPCMessage msg)
@@ -606,6 +489,108 @@ namespace MultiboxHelper
             IPCChannel.Broadcast(new CharLeftMessage());
         }
 
+        private void OnUseItemMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            UsableMessage usableMsg = (UsableMessage)msg;
+
+
+            if (usableMsg.ItemLowId == 226308 || usableMsg.ItemLowId == 226290 || usableMsg.ItemLowId == 226291 || usableMsg.ItemLowId == 226307 || usableMsg.ItemLowId == 226288)
+            {
+                Item NoviRings = Inventory.Items
+                .Where(c => c.Name.Contains("Pure Novictum Ring"))
+                .FirstOrDefault();
+
+                if (NoviRings != null)
+                {
+                    useItem = new Identity(IdentityType.Inventory, NoviRings.Slot.Instance);
+                    useOnDynel = usableMsg.Target;
+                    usableMsg.Target = Identity.None;
+                }
+            }
+            if (usableMsg.ItemLowId == 226188 || usableMsg.ItemLowId == 226189 || usableMsg.ItemLowId == 226190 || usableMsg.ItemLowId == 226191 || usableMsg.ItemLowId == 226192)
+            {
+                Item RimyRings = Inventory.Items
+                .Where(c => c.Name.Contains("Rimy Ring for"))
+                .FirstOrDefault();
+
+                if (RimyRings != null)
+                {
+                    useItem = new Identity(IdentityType.Inventory, RimyRings.Slot.Instance);
+                    useOnDynel = usableMsg.Target;
+                    usableMsg.Target = Identity.None;
+                }
+            }
+            if (usableMsg.ItemLowId == 226065 || usableMsg.ItemLowId == 226066 || usableMsg.ItemLowId == 226067 || usableMsg.ItemLowId == 226068 || usableMsg.ItemLowId == 226069)
+            {
+                Item AchromRings = Inventory.Items
+                .Where(c => c.Name.Contains("Achromic Ring for"))
+                .FirstOrDefault();
+
+                if (AchromRings != null)
+                {
+                    useItem = new Identity(IdentityType.Inventory, AchromRings.Slot.Instance);
+                    useOnDynel = usableMsg.Target;
+                    usableMsg.Target = Identity.None;
+                }
+            }
+            if (usableMsg.ItemLowId == 226287 || usableMsg.ItemLowId == 226293 || usableMsg.ItemLowId == 226294 || usableMsg.ItemLowId == 226295 || usableMsg.ItemLowId == 226306)
+            {
+                Item SangRings = Inventory.Items
+                .Where(c => c.Name.Contains("Sanguine Ring for"))
+                .FirstOrDefault();
+
+                if (SangRings != null)
+                {
+                    useItem = new Identity(IdentityType.Inventory, SangRings.Slot.Instance);
+                    useOnDynel = usableMsg.Target;
+                    usableMsg.Target = Identity.None;
+                }
+            }
+            if (usableMsg.ItemLowId == 226125 || usableMsg.ItemLowId == 226127 || usableMsg.ItemLowId == 226126 || usableMsg.ItemLowId == 226023 || usableMsg.ItemLowId == 226005)
+            {
+                Item CaligRings = Inventory.Items
+                .Where(c => c.Name.Contains("Caliginous Ring "))
+                .FirstOrDefault();
+
+                if (CaligRings != null)
+                {
+                    useItem = new Identity(IdentityType.Inventory, CaligRings.Slot.Instance);
+                    useOnDynel = usableMsg.Target;
+                    usableMsg.Target = Identity.None;
+                }
+            }
+
+            else
+            {
+                if (Inventory.Find(usableMsg.ItemLowId, usableMsg.ItemHighId, out Item item))
+                {
+                    if (usableMsg.Target == Identity.None)
+                    {
+                        Network.Send(new GenericCmdMessage()
+                        {
+                            Unknown = 1,
+                            Action = GenericCmdAction.Use,
+                            User = DynelManager.LocalPlayer.Identity,
+                            Target = new Identity(IdentityType.Inventory, item.Slot.Instance)
+                        });
+                    }
+                    else
+                    {
+
+                        useItem = new Identity(IdentityType.Inventory, item.Slot.Instance);
+                        useOnDynel = usableMsg.Target;
+                        usableMsg.Target = Identity.None;
+                    }
+                }
+            }
+        }
+
         private void PrintCommandUsage(ChatWindow chatWindow)
         {
             string help = "Usage:\nStatus - toggles status window";
@@ -643,12 +628,6 @@ namespace MultiboxHelper
 
         private void LeadFollow(string command, string[] param, ChatWindow chatWindow)
         {
-            //if (settings["OSFollow"].AsBool())
-            //{
-            //    settings["OSFollow"] = false;
-            //    Chat.WriteLine($"Named Following is on, turning off.");
-            //}
-
             if (param.Length == 0 && settings["Follow"].AsBool())
             {
                 settings["Follow"] = false;
@@ -665,12 +644,6 @@ namespace MultiboxHelper
 
         private void Allfollow(string command, string[] param, ChatWindow chatWindow)
         {
-            //if (settings["Follow"].AsBool())
-            //{
-            //    settings["Follow"] = false;
-            //    Chat.WriteLine($"Lead Following is on, turning off.");
-            //}
-
             if (param.Length == 0 && settings["OSFollow"].AsBool())
             {
                 Chat.WriteLine($"Stopped following.");
@@ -730,6 +703,11 @@ namespace MultiboxHelper
             {
                 Chat.WriteLine(e.Message);
             }
+        }
+
+        private static class RelevantItems
+        {
+            public static int[] CaligRings = new[] { 226005, 226023, 226127, 226126, 226125 };
         }
 
         private void OnFollowMessage(int sender, IPCMessage msg)

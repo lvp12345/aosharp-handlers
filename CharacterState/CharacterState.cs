@@ -6,8 +6,10 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
 using CombatHandler.Generic.IPCMessages;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Character.State
@@ -32,8 +34,6 @@ namespace Character.State
             ReportingIPCChannel.RegisterCallback((int)IPCOpcode.CharacterState, OnCharacterStateMessage);
             ReportingIPCChannel.RegisterCallback((int)IPCOpcode.CharacterSpecials, OnCharacterSpecialsMessage);
             ReportingIPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
-            ReportingIPCChannel.RegisterCallback((int)IPCOpcode.UseGrid, OnUseGrid);
-            ReportingIPCChannel.RegisterCallback((int)IPCOpcode.UseFGrid, OnUseFGrid);
             Game.OnUpdate += ReportCharacterState;
             new TeamCommands().RegisterCommands();
         }
@@ -192,24 +192,6 @@ namespace Character.State
             Team.Leave();
         }
 
-        private static void OnUseGrid(int sender, IPCMessage msg)
-        {
-            Item GridCan = null;
-
-            Inventory.Find(288822, out GridCan);
-
-            GridCan.Use();
-        }
-
-        private static void OnUseFGrid(int sender, IPCMessage msg)
-        {
-            Item FGridCan = null;
-
-            Inventory.Find(296805, out FGridCan);
-
-            FGridCan.Use();
-        }
-
         private static void ReportCharacterState(object sender, float deltaTime)
         {
             if (Time.NormalTime - _lastUpdateTime > 1)
@@ -222,6 +204,7 @@ namespace Character.State
 
                 OnCharacterSpecialsMessage(0, specialsMessage);
                 OnCharacterStateMessage(0, stateMessage);
+
 
                 if (!Team.IsInCombat && !DynelManager.LocalPlayer.IsAttacking && !DynelManager.LocalPlayer.IsAttackPending && AutoSitSwitch == true && !DynelManager.LocalPlayer.IsMoving)
                 {

@@ -60,6 +60,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.FlurryOfBlows25, RelevantItems.FlurryOfBlows200, UseFlurry);
             RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
             RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
+
             RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit1, RelevantItems.SitKit100, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
@@ -177,8 +178,8 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
                 return false;
 
-            if (DynelManager.LocalPlayer.HealthPercent > 65 && DynelManager.LocalPlayer.NanoPercent > 65)
-                return false;
+            //if (DynelManager.LocalPlayer.HealthPercent > 65 && DynelManager.LocalPlayer.NanoPercent > 65)
+            //    return false;
 
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;

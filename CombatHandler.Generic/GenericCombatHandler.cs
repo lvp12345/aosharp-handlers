@@ -178,8 +178,8 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
                 return false;
 
-            //if (DynelManager.LocalPlayer.HealthPercent > 65 && DynelManager.LocalPlayer.NanoPercent > 65)
-            //    return false;
+            if (DynelManager.LocalPlayer.HealthPercent > 65 && DynelManager.LocalPlayer.NanoPercent > 65)
+                return false;
 
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;

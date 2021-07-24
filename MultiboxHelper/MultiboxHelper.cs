@@ -60,8 +60,8 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
 
-            settings.AddVariable("UseFollow", false);
-            settings.AddVariable("UseOSFollow", false);
+            settings.AddVariable("Follow", false);
+            settings.AddVariable("OSFollow", false);
             settings.AddVariable("SyncMove", false);
             settings.AddVariable("SyncUse", true);
             settings.AddVariable("SyncAttack", true);
@@ -72,7 +72,9 @@ namespace MultiboxHelper
 
             Chat.RegisterCommand("mb", MbCommand);
 
-            Chat.RegisterCommand("allfollow", FollowName);
+            Chat.RegisterCommand("followplayer", FollowName);
+            Chat.RegisterCommand("allfollow", Allfollow);
+            Chat.RegisterCommand("leadfollow", LeadFollow);
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
@@ -95,7 +97,7 @@ namespace MultiboxHelper
                 _lastUpdateTime = Time.NormalTime;
             }
 
-            if(IsActiveCharacter() && settings["UseFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 3)
+            if(IsActiveCharacter() && settings["Follow"].AsBool() && Time.NormalTime - _lastFollowTime > 3)
             {
                 IPCChannel.Broadcast(new FollowMessage()
                 {
@@ -104,12 +106,12 @@ namespace MultiboxHelper
                 _lastFollowTime = Time.NormalTime;
             }
 
-            if (settings["UseOSFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 3)
+            if (settings["OSFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 3)
             {
-                if (playername[0] == null)
+                if (playername == null)
                 {
-                    Chat.WriteLine($"Use the command /allfollow playername to set the name of the person to follow.");
-                    settings["UseOSFollow"] = false;
+                    Chat.WriteLine($"Cannot find player.");
+                    settings["OSFollow"] = false;
                     return;
                 }
 
@@ -117,25 +119,38 @@ namespace MultiboxHelper
 
                 if (npc != null)
                 {
-                    if (DynelManager.LocalPlayer.IsInTeam())
-                    {
-                        OnSelfFollowMessage(npc);
+                    OnSelfFollowMessage(npc);
 
-                        IPCChannel.Broadcast(new FollowMessage()
-                        {
-                            Target = npc.Identity // change this to the new target with selection param
-                        });
-                        _lastFollowTime = Time.NormalTime;
-                    }
-                    else
+                    IPCChannel.Broadcast(new FollowMessage()
                     {
-                        OnSelfFollowMessage(npc);
-                    }
+                        Target = npc.Identity // change this to the new target with selection param
+                    });
+                    _lastFollowTime = Time.NormalTime;
+                    //if (DynelManager.LocalPlayer.IsInTeam())
+                    //{
+                    //    OnSelfFollowMessage(npc);
+
+                    //    IPCChannel.Broadcast(new FollowMessage()
+                    //    {
+                    //        Target = npc.Identity // change this to the new target with selection param
+                    //    });
+                    //    _lastFollowTime = Time.NormalTime;
+                    //}
+                    //else
+                    //{
+                    //    OnSelfFollowMessage(npc);
+
+                    //    IPCChannel.Broadcast(new FollowMessage()
+                    //    {
+                    //        Target = npc.Identity // change this to the new target with selection param
+                    //    });
+                    //    _lastFollowTime = Time.NormalTime;
+                    //}
                 }
                 else
                 {
                     Chat.WriteLine($"Cannot find {playername[0]}, turning off toggle.");
-                    settings["UseOSFollow"] = false;
+                    settings["OSFollow"] = false;
                     return;
                 }
             }
@@ -143,7 +158,7 @@ namespace MultiboxHelper
 
         private bool IsActiveCharacter()
         {
-            return Team.IsInTeam && IsActiveWindow;
+            return IsActiveWindow;
         }
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
@@ -306,7 +321,7 @@ namespace MultiboxHelper
                 return;
 
             //Only followers will act on commands
-            if (!Team.IsInTeam || IsActiveWindow)
+            if (/*!Team.IsInTeam || */IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -327,7 +342,7 @@ namespace MultiboxHelper
             if (IsSyncDisabled())
                 return;
 
-            if (!Team.IsInTeam || IsActiveWindow)
+            if (/*!Team.IsInTeam || */IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -342,7 +357,7 @@ namespace MultiboxHelper
             if (IsSyncDisabled())
                 return;
 
-            if (!Team.IsInTeam || IsActiveWindow)
+            if (/*!Team.IsInTeam || */IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -357,7 +372,7 @@ namespace MultiboxHelper
             if (IsSyncDisabled())
 
                 return;
-            if (!Team.IsInTeam || IsActiveWindow)
+            if (/*!Team.IsInTeam || */IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -371,7 +386,7 @@ namespace MultiboxHelper
             if (IsSyncDisabled())
                 return;
 
-            if (!Team.IsInTeam || IsActiveWindow)
+            if (/*!Team.IsInTeam || */IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -383,7 +398,7 @@ namespace MultiboxHelper
 
         private void OnUseFGridMessage(int sender, IPCMessage msg)
         {
-            if (!Team.IsInTeam || IsActiveWindow)
+            if (/*!Team.IsInTeam || */IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -402,7 +417,7 @@ namespace MultiboxHelper
 
         private void OnUseNoviRingMessage(int sender, IPCMessage msg)
         {
-            if (!Team.IsInTeam || IsActiveWindow)
+            if (/*!Team.IsInTeam || */IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
@@ -478,7 +493,60 @@ namespace MultiboxHelper
         private void FollowName(string command, string[] param, ChatWindow chatWindow)
         {
             playername = param;
+
+            if (param[0] == "clear")
+            {
+                playername = null;
+                Chat.WriteLine($"Player name cleared.");
+                return;
+            };
+
             Chat.WriteLine($"All will follow {playername[0]} when OS Follow is enabled.");
+        }
+
+        private void LeadFollow(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0 && settings["Follow"].AsBool())
+            {
+                settings["Follow"] = false;
+                Chat.WriteLine($"Stopped following.");
+                return;
+            }
+            if (param.Length == 0 && !settings["Follow"].AsBool())
+            {
+                settings["Follow"] = true;
+                Chat.WriteLine($"Following active window.");
+                return;
+            }
+        }
+
+        private void Allfollow(string command, string[] param, ChatWindow chatWindow)
+        {
+            playername = param;
+
+            if (param.Length == 0)
+            {
+                Chat.WriteLine($"Stopping follow");
+                settings["OSFollow"] = false;
+                return;
+            }
+
+            if (playername == null && settings["OSFollow"].AsBool())
+            {
+                Chat.WriteLine($"Cannot find player.");
+                settings["OSFollow"] = false;
+            }
+
+            if (settings["OSFollow"].AsBool() && playername != null)
+            {
+                settings["OSFollow"] = false;
+                Chat.WriteLine($"Stopped following.");
+            }
+            else if (playername != null)
+            {
+                settings["OSFollow"] = true;
+                Chat.WriteLine($"Following {playername[0]}.");
+            }
         }
 
         private void MbCommand(string command, string[] param, ChatWindow chatWindow)

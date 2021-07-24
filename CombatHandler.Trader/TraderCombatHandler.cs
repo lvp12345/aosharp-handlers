@@ -24,8 +24,6 @@ namespace Desu
             settings.AddVariable("VolunteerSelection", 0);
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
-            Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
-
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcTraderRigidLiquidation, LEProc);
             RegisterPerkProcessor(PerkHash.LEProcTraderDebtCollection, LEProc);

@@ -55,6 +55,10 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.CharStatus, OnCharStatusMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.CharLeft, OnCharLeftMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UseNoviRing, OnUseNoviRingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UseSangRing, OnUseSangRingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UseRimyRing, OnUseRimyRingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UseAchromRing, OnUseAchromRingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UseCaligRing, OnUseCaligRingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UseFGrid, OnUseFGridMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatOpen, OnNpcChatOpenMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
@@ -260,6 +264,58 @@ namespace MultiboxHelper
                 {
                     if (Inventory.Find(genericCmdMsg.Source, out Item item))
                     {
+                        if (item.Name.StartsWith("Sanguine Ring "))
+                        {
+                            IPCChannel.Broadcast(new UseSangRingMessage()
+                            {
+                                Target = genericCmdMsg.Target
+                            });
+                        }
+                    }
+                }
+                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
+                {
+                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
+                    {
+                        if (item.Name.StartsWith("Rimy Ring for "))
+                        {
+                            IPCChannel.Broadcast(new UseRimyRingMessage()
+                            {
+                                Target = genericCmdMsg.Target
+                            });
+                        }
+                    }
+                }
+                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
+                {
+                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
+                    {
+                        if (item.Name.StartsWith("Achromic Ring "))
+                        {
+                            IPCChannel.Broadcast(new UseAchromRingMessage()
+                            {
+                                Target = genericCmdMsg.Target
+                            });
+                        }
+                    }
+                }
+                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
+                {
+                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
+                    {
+                        if (item.Name.StartsWith("Caliginous Ring "))
+                        {
+                            IPCChannel.Broadcast(new UseCaligRingMessage()
+                            {
+                                Target = genericCmdMsg.Target
+                            });
+                        }
+                    }
+                }
+                if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
+                {
+                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
+                    {
                         if (item.Name.StartsWith("Data Receptacle"))
                         {
                             IPCChannel.Broadcast(new UseDataReceptacle()
@@ -422,6 +478,82 @@ namespace MultiboxHelper
             {
                 UseNoviRingMessage useNoviRingMessage = (UseNoviRingMessage)msg;
                 noviRing.UseOn(useNoviRingMessage.Target);
+            }
+        }
+
+        private void OnUseSangRingMessage(int sender, IPCMessage msg)
+        {
+            if (/*!Team.IsInTeam || */IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            Item SangRing = Inventory.Items
+                .Where(item => item.Name.Contains("Sanguine Ring "))
+                .FirstOrDefault();
+
+            if (SangRing != null)
+            {
+                UseSangRingMessage useSangRingMessage = (UseSangRingMessage)msg;
+                SangRing.UseOn(useSangRingMessage.Target);
+            }
+        }
+
+        private void OnUseRimyRingMessage(int sender, IPCMessage msg)
+        {
+            if (/*!Team.IsInTeam || */IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            Item RimyRing = Inventory.Items
+                .Where(item => item.Name.Contains("Rimy Ring "))
+                .FirstOrDefault();
+
+            if (RimyRing != null)
+            {
+                UseRimyRingMessage useRimyRingMessage = (UseRimyRingMessage)msg;
+                RimyRing.UseOn(useRimyRingMessage.Target);
+            }
+        }
+
+        private void OnUseAchromRingMessage(int sender, IPCMessage msg)
+        {
+            if (/*!Team.IsInTeam || */IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            Item AchromRing = Inventory.Items
+                .Where(item => item.Name.Contains("Achromic Ring "))
+                .FirstOrDefault();
+
+            if (AchromRing != null)
+            {
+                UseAchromRingMessage useAchromRingMessage = (UseAchromRingMessage)msg;
+                AchromRing.UseOn(useAchromRingMessage.Target);
+            }
+        }
+
+        private void OnUseCaligRingMessage(int sender, IPCMessage msg)
+        {
+            if (/*!Team.IsInTeam || */IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            Item CaligRing = Inventory.Items
+                .Where(item => item.Name.Contains("Caliginous Ring "))
+                .FirstOrDefault();
+
+            if (CaligRing != null)
+            {
+                UseCaligRingMessage useCaligRingMessage = (UseCaligRingMessage)msg;
+                CaligRing.UseOn(useCaligRingMessage.Target);
             }
         }
 

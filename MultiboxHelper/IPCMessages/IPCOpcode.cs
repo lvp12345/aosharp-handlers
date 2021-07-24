@@ -21,5 +21,9 @@ namespace MultiboxHelper.IPCMessages
         NpcChatAnswer,
         Follow,
         UseFGrid,
+        UseSangRing,
+        UseRimyRing,
+        UseAchromRing,
+        UseCaligRing,
     }
 }

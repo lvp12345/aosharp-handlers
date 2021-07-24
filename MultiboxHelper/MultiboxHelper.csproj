@@ -58,6 +58,10 @@
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\AttackIPCMessage.cs" />
     <Compile Include="IPCMessages\UseDataReceptacle.cs" />
+    <Compile Include="IPCMessages\UseRimyRingMessage.cs" />
+    <Compile Include="IPCMessages\UseCaligRingMessage.cs" />
+    <Compile Include="IPCMessages\UseAchromRingMessage.cs" />
+    <Compile Include="IPCMessages\UseSangRingMessage.cs" />
     <Compile Include="IPCMessages\UseNoviRingMessage.cs" />
     <Compile Include="IPCMessages\CharStatusMessage.cs" />
     <Compile Include="IPCMessages\UseMessage.cs" />

@@ -3,8 +3,8 @@
 <View h_alignment="LEFT" view_layout="vertical" name="parent">
 	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 		<TextView value="Debuffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Initiative Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitDebuff" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="OS Initiative Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__OSInitDebuff" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Init Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitDebuff" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="OS Init Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__OSInitDebuff" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Damage over Time A" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotA" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Damage over Time B" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotB" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Damage over Time C" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotC" layout_borders="Rect(10,1,5,1)"/>
@@ -16,9 +16,9 @@
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		
 		<TextView value="Healing" layout_borders="Rect(5,5,5,5)"/>	
-		<OptionCheckBox label="Complete Healing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CH" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="SL Heal" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLHeal" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="RK Heal" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RKHeal" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Heals" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Heal" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="OS Heals" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__OSHeal" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Complete Healing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CH" layout_borders="Rect(10,1,5,1)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 
 		<TextView value="Helpers" layout_borders="Rect(5,5,5,5)"/>

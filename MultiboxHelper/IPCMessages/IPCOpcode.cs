@@ -15,15 +15,11 @@ namespace MultiboxHelper.IPCMessages
         Use,
         CharStatus,
         CharLeft,
-        UseNoviRing,
         NpcChatOpen,
         NpcChatClose,
         NpcChatAnswer,
         Follow,
         UseFGrid,
-        UseSangRing,
-        UseRimyRing,
-        UseAchromRing,
-        UseCaligRing,
+        UseItem,
     }
 }

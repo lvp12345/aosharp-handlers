@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
 using AOSharp.Character;
 using CombatHandler.Generic;
+using System.Xml.Linq;
 
 namespace MultiboxHelper
 {
@@ -32,6 +33,8 @@ namespace MultiboxHelper
         private static extern IntPtr GetForegroundWindow();
 
         private Settings settings = new Settings("MultiboxHelper");
+
+        private string[] playername = null;
 
         private double _lastFollowTime = Time.NormalTime;
 
@@ -58,14 +61,18 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
 
             settings.AddVariable("UseFollow", false);
+            settings.AddVariable("UseOSFollow", false);
             settings.AddVariable("SyncMove", false);
             settings.AddVariable("SyncUse", true);
             settings.AddVariable("SyncAttack", true);
             settings.AddVariable("SyncChat", false);
             settings.AddVariable("Disabled", false);
+
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
 
             Chat.RegisterCommand("mb", MbCommand);
+
+            Chat.RegisterCommand("allfollow", FollowName);
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
@@ -95,6 +102,42 @@ namespace MultiboxHelper
                     Target = DynelManager.LocalPlayer.Identity
                 });
                 _lastFollowTime = Time.NormalTime;
+            }
+
+            if (settings["UseOSFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 3)
+            {
+                if (playername[0] == null)
+                {
+                    Chat.WriteLine($"Use the command /allfollow playername to set the name of the person to follow.");
+                    settings["UseOSFollow"] = false;
+                    return;
+                }
+
+                Dynel npc = DynelManager.AllDynels.Where(x => x.Name.Contains(playername[0])).FirstOrDefault();
+
+                if (npc != null)
+                {
+                    if (DynelManager.LocalPlayer.IsInTeam())
+                    {
+                        OnSelfFollowMessage(npc);
+
+                        IPCChannel.Broadcast(new FollowMessage()
+                        {
+                            Target = npc.Identity // change this to the new target with selection param
+                        });
+                        _lastFollowTime = Time.NormalTime;
+                    }
+                    else
+                    {
+                        OnSelfFollowMessage(npc);
+                    }
+                }
+                else
+                {
+                    Chat.WriteLine($"Cannot find {playername[0]}, turning off toggle.");
+                    settings["UseOSFollow"] = false;
+                    return;
+                }
             }
         }
 
@@ -432,6 +475,12 @@ namespace MultiboxHelper
             chatWindow.WriteLine(help, ChatColor.LightBlue);
         }
 
+        private void FollowName(string command, string[] param, ChatWindow chatWindow)
+        {
+            playername = param;
+            Chat.WriteLine($"All will follow {playername[0]} when OS Follow is enabled.");
+        }
+
         private void MbCommand(string command, string[] param, ChatWindow chatWindow)
         {
             try
@@ -464,6 +513,22 @@ namespace MultiboxHelper
             FollowTargetMessage n3Msg = new FollowTargetMessage()
             {
                 Target = followMessage.Target,
+                Unknown1 = 0,
+                Unknown2 = 0,
+                Unknown3 = 0,
+                Unknown4 = 0,
+                Unknown5 = 0,
+                Unknown6 = 0,
+                Unknown7 = 0
+            };
+            Network.Send(n3Msg);
+        }
+
+        private void OnSelfFollowMessage(Dynel dynel)
+        {
+            FollowTargetMessage n3Msg = new FollowTargetMessage()
+            {
+                Target = dynel.Identity,
                 Unknown1 = 0,
                 Unknown2 = 0,
                 Unknown3 = 0,

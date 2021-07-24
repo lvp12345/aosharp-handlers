@@ -223,7 +223,7 @@ namespace Character.State
                 OnCharacterSpecialsMessage(0, specialsMessage);
                 OnCharacterStateMessage(0, stateMessage);
 
-                if (!Team.IsInCombat && !DynelManager.LocalPlayer.IsAttacking && !DynelManager.LocalPlayer.IsAttackPending && AutoSitSwitch == true)
+                if (!Team.IsInCombat && !DynelManager.LocalPlayer.IsAttacking && !DynelManager.LocalPlayer.IsAttackPending && AutoSitSwitch == true && !DynelManager.LocalPlayer.IsMoving)
                 {
                     if ((DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65) && justusedsitkit == false && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
                     {

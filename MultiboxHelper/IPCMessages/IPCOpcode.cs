@@ -19,7 +19,6 @@ namespace MultiboxHelper.IPCMessages
         NpcChatClose,
         NpcChatAnswer,
         Follow,
-        UseFGrid,
         UseItem,
     }
 }

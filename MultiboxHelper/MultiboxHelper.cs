@@ -92,7 +92,7 @@ namespace MultiboxHelper
 
         private void OnUpdate(object s, float deltaTime)
         {
-            if (Time.NormalTime > posUpdateTimer + 0.1)
+            if (Time.NormalTime > posUpdateTimer + 0.1 && settings["SyncUse"].AsBool())
             {
                 if (!IsActiveWindow)
                 {
@@ -491,6 +491,9 @@ namespace MultiboxHelper
 
         private void OnUseItemMessage(int sender, IPCMessage msg)
         {
+            if (!settings["SyncUse"].AsBool())
+                return;
+
             if (IsActiveWindow)
                 return;
 
@@ -499,6 +502,10 @@ namespace MultiboxHelper
 
             UsableMessage usableMsg = (UsableMessage)msg;
 
+            if (usableMsg.ItemLowId == 291043 || usableMsg.ItemLowId == 291043 || usableMsg.ItemLowId == 204103 || usableMsg.ItemLowId == 204104 || 
+                usableMsg.ItemLowId == 204105 || usableMsg.ItemLowId == 204106 || usableMsg.ItemLowId == 204107 || usableMsg.ItemHighId == 204107 ||
+                usableMsg.ItemLowId == 303138 || usableMsg.ItemLowId == 303141 || usableMsg.ItemLowId == 303137 || usableMsg.ItemHighId == 303136)
+                return;
 
             if (usableMsg.ItemLowId == 226308 || usableMsg.ItemLowId == 226290 || usableMsg.ItemLowId == 226291 || usableMsg.ItemLowId == 226307 || usableMsg.ItemLowId == 226288)
             {
@@ -703,11 +710,6 @@ namespace MultiboxHelper
             {
                 Chat.WriteLine(e.Message);
             }
-        }
-
-        private static class RelevantItems
-        {
-            public static int[] CaligRings = new[] { 226005, 226023, 226127, 226126, 226125 };
         }
 
         private void OnFollowMessage(int sender, IPCMessage msg)

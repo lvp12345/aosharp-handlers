@@ -18,6 +18,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Character;
 using CombatHandler.Generic;
 using System.Xml.Linq;
+using Character.State;
 
 namespace MultiboxHelper
 {
@@ -66,6 +67,7 @@ namespace MultiboxHelper
             settings.AddVariable("SyncUse", true);
             settings.AddVariable("SyncAttack", true);
             settings.AddVariable("SyncChat", false);
+            settings.AddVariable("AutoSit", false);
             settings.AddVariable("Disabled", false);
 
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
@@ -97,7 +99,13 @@ namespace MultiboxHelper
                 _lastUpdateTime = Time.NormalTime;
             }
 
-            if(IsActiveCharacter() && settings["Follow"].AsBool() && Time.NormalTime - _lastFollowTime > 3)
+            if (settings["AutoSit"].AsBool())
+                CharacterState.AutoSitSwitch = true;
+
+            if (!settings["AutoSit"].AsBool())
+                CharacterState.AutoSitSwitch = false;
+
+            if (IsActiveCharacter() && settings["Follow"].AsBool() && Time.NormalTime - _lastFollowTime > 3)
             {
                 IPCChannel.Broadcast(new FollowMessage()
                 {
@@ -160,6 +168,8 @@ namespace MultiboxHelper
         {
             return IsActiveWindow;
         }
+
+
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {

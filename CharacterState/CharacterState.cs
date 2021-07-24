@@ -3,6 +3,7 @@ using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
+using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
 using CombatHandler.Generic.IPCMessages;
 using System;
@@ -20,6 +21,10 @@ namespace Character.State
         private static IPCChannel ReportingIPCChannel;
 
         private static double _lastUpdateTime = 0;
+
+        private static bool justusedsitkit = false;
+
+        public static bool AutoSitSwitch = false;
         public override void Run(string pluginDir)
         {
             ReportingIPCChannel = new IPCChannel(112);
@@ -217,6 +222,21 @@ namespace Character.State
 
                 OnCharacterSpecialsMessage(0, specialsMessage);
                 OnCharacterStateMessage(0, stateMessage);
+
+                if (!Team.IsInCombat && !DynelManager.LocalPlayer.IsAttacking && !DynelManager.LocalPlayer.IsAttackPending && AutoSitSwitch == true)
+                {
+                    if ((DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65) && justusedsitkit == false && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                    {
+                        MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                        justusedsitkit = true;
+                    }
+
+                    if (justusedsitkit == true && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                    {
+                        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                        justusedsitkit = false;
+                    }
+                }
 
                 _lastUpdateTime = Time.NormalTime;
             }

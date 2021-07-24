@@ -303,6 +303,7 @@ namespace Desu
             // Try to keep our teammates alive if we're in a team
             SimpleChar dyingTeamMember = DynelManager.Characters
                 .Where(c => c.HealthPercent <= healthPercentTreshold)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 25f)
                 .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                 .FirstOrDefault();
 

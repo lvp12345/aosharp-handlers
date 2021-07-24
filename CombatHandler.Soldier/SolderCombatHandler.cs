@@ -98,7 +98,7 @@ namespace Desu
             if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
                 return false;
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 50 && spell.IsReady)
+            if (DynelManager.LocalPlayer.HealthPercent <= 75 && spell.IsReady)
                 return true;
 
             return false;

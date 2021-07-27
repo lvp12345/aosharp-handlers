@@ -69,7 +69,7 @@ namespace MultiboxHelper
             settings.AddVariable("Follow", false);
             settings.AddVariable("OSFollow", false);
             settings.AddVariable("SyncMove", false);
-            settings.AddVariable("SyncUse", true);
+            settings.AddVariable("SyncUse", false);
             settings.AddVariable("SyncAttack", true);
             settings.AddVariable("SyncChat", false);
             settings.AddVariable("AutoSit", false);
@@ -84,6 +84,7 @@ namespace MultiboxHelper
             Chat.RegisterCommand("followplayer", FollowName);
             Chat.RegisterCommand("allfollow", Allfollow);
             Chat.RegisterCommand("leadfollow", LeadFollow);
+            Chat.RegisterCommand("sync", SyncSwitch);
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
@@ -92,7 +93,7 @@ namespace MultiboxHelper
 
         private void OnUpdate(object s, float deltaTime)
         {
-            if (Time.NormalTime > posUpdateTimer + 0.1 && settings["SyncUse"].AsBool())
+            if (Time.NormalTime > posUpdateTimer + 0.1)
             {
                 if (!IsActiveWindow)
                 {
@@ -179,8 +180,6 @@ namespace MultiboxHelper
             return IsActiveWindow;
         }
 
-
-
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
             //Only the active window will issue commands
@@ -264,7 +263,7 @@ namespace MultiboxHelper
                         PfId = Playfield.ModelIdentity.Instance
                     });
                 }
-                else if (genericCmdMsg.Action == GenericCmdAction.Use)
+                else if (genericCmdMsg.Action == GenericCmdAction.Use && settings["SyncUse"].AsBool())
                 {
                     Inventory.Find(genericCmdMsg.Target, out Item item);
 
@@ -632,6 +631,23 @@ namespace MultiboxHelper
                 Chat.WriteLine($"Follow player name set to - {playername[0]}");
             }
         }
+
+        private void SyncSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0 && settings["SyncMove"].AsBool())
+            {
+                settings["SyncMove"] = false;
+                Chat.WriteLine($"Sync move stopped.");
+                return;
+            }
+            if (param.Length == 0 && !settings["SyncMove"].AsBool())
+            {
+                settings["SyncMove"] = true;
+                Chat.WriteLine($"Sync move started.");
+                return;
+            }
+        }
+
 
         private void LeadFollow(string command, string[] param, ChatWindow chatWindow)
         {

@@ -24,6 +24,8 @@ namespace Character.State
 
         private static double _lastUpdateTime = 0;
 
+        private static (Spell Spell, double Timeout) _pendingCast;
+
         private static bool justusedsitkit = false;
 
         public static bool AutoSitSwitch = false;
@@ -88,13 +90,22 @@ namespace Character.State
                 return CharacterWieldedWeapon.Edged2H;
             if (local.GetStat(Stat.EquippedWeapons) == 34)
                 return CharacterWieldedWeapon.Edged1H;
-
-            //if (local.GetStat(Stat.EquippedWeapons) == )
-            //    return CharacterWieldedWeapon.Grenade;
-            //if (local.GetStat(Stat.EquippedWeapons) == )
-            //    return CharacterWieldedWeapon.HeavyWeapons;
-            //if (local.GetStat(Stat.EquippedWeapons) == )
-            //    return CharacterWieldedWeapon.Piercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 514)
+                return CharacterWieldedWeapon.Piercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 546)
+                return CharacterWieldedWeapon.Edged1HAndPiercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 98)
+                return CharacterWieldedWeapon.Blunt1HAndEdged1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 16450)
+                return CharacterWieldedWeapon.Blunt1HAndEnergy;
+            if (local.GetStat(Stat.EquippedWeapons) == 578)
+                return CharacterWieldedWeapon.Blunt1HAndPiercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 32772)
+                return CharacterWieldedWeapon.Grenade;
+            if (local.GetStat(Stat.EquippedWeapons) == 65540)
+                return CharacterWieldedWeapon.HeavyWeapons;
+            if (local.GetStat(Stat.EquippedWeapons) == 16386)
+                return CharacterWieldedWeapon.Energy;
 
             return CharacterWieldedWeapon.Invalid;
         }
@@ -124,13 +135,22 @@ namespace Character.State
                 return CharacterWieldedWeapon.Edged2H;
             if (local.GetStat(Stat.EquippedWeapons) == 34)
                 return CharacterWieldedWeapon.Edged1H;
-
-            //if (local.GetStat(Stat.EquippedWeapons) == )
-            //    return CharacterWieldedWeapon.Grenade;
-            //if (local.GetStat(Stat.EquippedWeapons) == )
-            //    return CharacterWieldedWeapon.HeavyWeapons;
-            //if (local.GetStat(Stat.EquippedWeapons) == )
-            //    return CharacterWieldedWeapon.Piercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 514)
+                return CharacterWieldedWeapon.Piercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 546)
+                return CharacterWieldedWeapon.Edged1HAndPiercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 98)
+                return CharacterWieldedWeapon.Blunt1HAndEdged1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 16450)
+                return CharacterWieldedWeapon.Blunt1HAndEnergy;
+            if (local.GetStat(Stat.EquippedWeapons) == 578)
+                return CharacterWieldedWeapon.Blunt1HAndPiercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 32772)
+                return CharacterWieldedWeapon.Grenade;
+            if (local.GetStat(Stat.EquippedWeapons) == 65540)
+                return CharacterWieldedWeapon.HeavyWeapons;
+            if (local.GetStat(Stat.EquippedWeapons) == 16386)
+                return CharacterWieldedWeapon.Energy;
 
             return CharacterWieldedWeapon.Invalid;
         }

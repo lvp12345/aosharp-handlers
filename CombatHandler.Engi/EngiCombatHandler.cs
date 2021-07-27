@@ -27,6 +27,7 @@ namespace CombatHandler.Engi
         {
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
+            settings.AddVariable("HealPets", false);
             settings.AddVariable("UseDivertTrimmer", true);
             settings.AddVariable("UseTauntTrimmer", true);
             settings.AddVariable("UseAggDefTrimmer", true);
@@ -39,10 +40,6 @@ namespace CombatHandler.Engi
             settings.AddVariable("AuraArmor", false);
             settings.AddVariable("SpamSnareAura", false);
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
-
-            //Chat.WriteLine("" + CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer));
-
-            Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, LEProc, CombatActionPriority.Low);
@@ -80,6 +77,10 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPPetInitiativeBuffs).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), PetTargetBuff);
+
+            RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing);
+            RegisterSpellProcessor(RelevantNanos.PetHealing10, PetHealing10);
+
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, GadgeteerBox);
 
@@ -262,6 +263,42 @@ namespace CombatHandler.Engi
             return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
         }
 
+        private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone())
+            {
+                return false;
+            }
+
+            Pet pettoheal = FindPetNeedsHeal(90);
+            if (pettoheal != null)
+            {
+                actionTarget.Target = pettoheal.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool PetHealing10(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone())
+            {
+                return false;
+            }
+
+            Pet pettoheal = FindPetNeedsHeal(90);
+            if (pettoheal != null)
+            {
+                actionTarget.Target = pettoheal.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
         private bool GadgeteerBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
@@ -436,6 +473,8 @@ namespace CombatHandler.Engi
             public static readonly int[] AuraShield = { 154550, 154551, 154552, 154553 };
             public static readonly int[] AuraDamage = { 154560, 154561 };
             public static readonly int[] AuraArmor = { 154562, 154563, 154564, 154565, 154566, 154567 };
+            public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
+            public static readonly int PetHealing10 = 270351;
             public static readonly int[] AuraReflect = { 154557, 154558, 154559 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
         }

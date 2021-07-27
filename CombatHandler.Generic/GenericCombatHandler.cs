@@ -69,6 +69,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.FreeStim1, RelevantItems.FreeStim50, UseFreeStim);
             RegisterItemProcessor(RelevantItems.FreeStim50, RelevantItems.FreeStim100, UseFreeStim);
             RegisterItemProcessor(RelevantItems.FreeStim100, RelevantItems.FreeStim200, UseFreeStim);
+            RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim200, UseFreeStim);
             RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim300, UseFreeStim);
 
 
@@ -848,12 +849,6 @@ namespace CombatHandler.Generic
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (fightingTarget == null)
-            //    return false;
-
-            //if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)))
-            //    return false;
-
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null;
         }
 
@@ -1008,6 +1003,15 @@ namespace CombatHandler.Generic
                 .FirstOrDefault();
         }
 
+        protected Pet FindPetNeedsHeal(int percent)
+        {
+            return DynelManager.LocalPlayer.Pets
+                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
+                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
+                .Where(pet => pet.Character.HealthPercent <= percent)
+                .FirstOrDefault();
+        }
+
         protected bool CanLookupPetsAfterZone()
         {
             return Time.NormalTime > _lastZonedTime + PostZonePetCheckBuffer;
@@ -1071,15 +1075,6 @@ namespace CombatHandler.Generic
 
         private bool UseRezCan(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            //Item flurry = Inventory.Items
-            //.Where(c => c.Name.Contains("Blows"))
-            //.FirstOrDefault();
-
-            //Chat.WriteLine("" + flurry.HighId + flurry.LowId);
-            //Chat.WriteLine("Nope");
-
-            //return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
-
             actiontarget.ShouldSetTarget = false;
 
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
@@ -1096,7 +1091,7 @@ namespace CombatHandler.Generic
         {
             actiontarget.ShouldSetTarget = true;
 
-            return (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStatFirstAid());
+            return (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item));
 
         }
 
@@ -1155,6 +1150,8 @@ namespace CombatHandler.Generic
                 case RelevantItems.HSR1:
                 case RelevantItems.HSR2:
                     return Stat.Grenade;
+                case RelevantItems.FreeStim200:
+                    return Stat.FirstAid;
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }

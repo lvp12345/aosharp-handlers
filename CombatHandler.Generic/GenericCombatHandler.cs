@@ -739,7 +739,7 @@ namespace CombatHandler.Generic
 
             //int approximateHealing = item.QualityLevel * 12;
 
-            return !DynelManager.LocalPlayer.Buffs.Contains(258231) && DynelManager.LocalPlayer.HealthPercent < 80 || DynelManager.LocalPlayer.NanoPercent < 80/* || DynelManager.LocalPlayer.MissingHealth > (approximateHealing * 2) || DynelManager.LocalPlayer.MissingNano > (approximateHealing * 2)*/;
+            return !DynelManager.LocalPlayer.Buffs.Contains(258231) && !DynelManager.LocalPlayer.Buffs.Contains(280470) && DynelManager.LocalPlayer.HealthPercent < 80 || DynelManager.LocalPlayer.NanoPercent < 80/* || DynelManager.LocalPlayer.MissingHealth > (approximateHealing * 2) || DynelManager.LocalPlayer.MissingNano > (approximateHealing * 2)*/;
         }
 
         private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)

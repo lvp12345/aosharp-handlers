@@ -45,6 +45,26 @@ namespace MultiboxHelper
 
         private double _lastFollowTime = Time.NormalTime;
 
+        List<Vector3> birdy = new List<Vector3>
+        {
+            new Vector3(75.5, 29.0, 58.6),
+            new Vector3(37.3, 29.0, 59.0),
+            new Vector3(35.6, 29.3, 30.5),
+            new Vector3(37.3, 29.0, 59.0),
+            new Vector3(75.5, 29.0, 58.6),
+            new Vector3(76.1, 29.0, 28.3)
+        };
+
+        List<Vector3> horsey = new List<Vector3>
+        {
+            new Vector3(128.4, 29.0, 59.6),
+            new Vector3(161.9, 29.0, 59.5),
+            new Vector3(163.9, 29.4, 29.6),
+            new Vector3(161.9, 29.0, 59.5),
+            new Vector3(128.4, 29.0, 59.6),
+            new Vector3(76.1, 29.0, 28.3)
+        };
+
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public override void Run(string pluginDir)
@@ -96,6 +116,16 @@ namespace MultiboxHelper
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281109))
+            {
+                MovementController.Instance.SetPath(birdy);
+            }
+
+            if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281108))
+            {
+                MovementController.Instance.SetPath(horsey);
+            }
+
             if (Time.NormalTime > posUpdateTimer + 0.1)
             {
                 if (!IsActiveWindow)

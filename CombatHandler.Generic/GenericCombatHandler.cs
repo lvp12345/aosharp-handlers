@@ -734,12 +734,15 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 8)
                 return false;
 
+            if (DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231))
+                return false;
+
             actiontarget.ShouldSetTarget = true;
             actiontarget.Target = DynelManager.LocalPlayer;
 
             //int approximateHealing = item.QualityLevel * 12;
 
-            return !DynelManager.LocalPlayer.Buffs.Contains(258231) && !DynelManager.LocalPlayer.Buffs.Contains(280470) && DynelManager.LocalPlayer.HealthPercent < 80 || DynelManager.LocalPlayer.NanoPercent < 80/* || DynelManager.LocalPlayer.MissingHealth > (approximateHealing * 2) || DynelManager.LocalPlayer.MissingNano > (approximateHealing * 2)*/;
+            return DynelManager.LocalPlayer.HealthPercent < 80 || DynelManager.LocalPlayer.NanoPercent < 80/* || DynelManager.LocalPlayer.MissingHealth > (approximateHealing * 2) || DynelManager.LocalPlayer.MissingNano > (approximateHealing * 2)*/;
         }
 
         private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)

@@ -1239,13 +1239,39 @@ namespace CombatHandler.Generic
 
         protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
         {
-             "Unicorn Service Tower Alpha",
-             "Unicorn Service Tower Delta",
-             "Unicorn Service Tower Gamma",
-             "Rookie Alien Hunter",
-             "Altar of Torture",
-             "Altar of Purification",
-             "Guardian Spirit of Purification"
+                    "Altar of Torture",
+                    "Altar of Purification",
+                    "Unicorn Coordinator Magnum Blaine",
+                    "Xan Spirit",
+                    "Watchful Spirit",
+                    "Amesha Vizaresh",
+                    "Guardian Spirit of Purification",
+                    "Tibor 'Rocketman' Nagy",
+                    "One Who Obeys Precepts",
+                    "The Retainer Of Ergo",
+                    "Outzone Supplier",
+                    "Hollow Island Weed",
+                    "Sheila Marlene",
+                    "Unicorn Advance Sentry",
+                    "Unicorn Technician",
+                    "Basic Tools Merchant",
+                    "Container Supplier",
+                    "Basic Quality Pharmacist",
+                    "Basic Quality Armorer",
+                    "Basic Quality Weaponsdealer",
+                    "Tailor",
+                    "Unicorn Commander Rufus",
+                    "Ergo, Inferno Guardian of Shadows",
+                    "Unicorn Trooper",
+                    "Unicorn Squadleader",
+                    "Rookie Alien Hunter",
+                    "Unicorn Service Tower Alpha",
+                    "Unicorn Service Tower Delta",
+                    "Unicorn Service Tower Gamma",
+                    "Sean Powell",
+                    "Xan Spirit",
+                    "Unicorn Guard",
+                    "Essence Fragment"
         };
 
         private static readonly List<string> AoeRootSnareSpamTargets = new List<string>() { "Flaming Vengeance", "Hand of the Colonel" };

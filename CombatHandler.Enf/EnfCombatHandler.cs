@@ -112,6 +112,11 @@ namespace Desu
                 return false;
             }
 
+            if (!IsSettingEnabled("UseAOETaunt"))
+            {
+                return true;
+            }
+
             if (Time.NormalTime < _absorbsused + absorbsrefresh && DynelManager.LocalPlayer.FightingTarget != null && !mongobuff.FirstOrDefault().IsReady)
             {
                 return true;
@@ -195,6 +200,9 @@ namespace Desu
             {
                 return false;
             }
+
+            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
+                return false;
 
             if (IsSettingEnabled("IsOST") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _absorbsused + absorbsrefreshos)
             {

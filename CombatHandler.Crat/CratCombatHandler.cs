@@ -25,18 +25,24 @@ namespace Desu
 
         public CratCombatHandler(string pluginDir) : base(pluginDir)
         {
+            settings.AddVariable("BuffCrit", false);
+            settings.AddVariable("BuffAAOAAD", false);
+            settings.AddVariable("BuffNanoResist", false);
+            settings.AddVariable("DebuffCrit", false);
+            settings.AddVariable("DebuffNanoResist", false);
+            settings.AddVariable("DebuffNanoDrain", false);
+
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
-            settings.AddVariable("UseMalaise", true);
-            settings.AddVariable("UseLEInitDebuffs", true);
-            settings.AddVariable("UseMalaiseOnOthers", false);
+            settings.AddVariable("MalaiseTarget", true);
+            settings.AddVariable("LEInitDebuffs", true);
+            settings.AddVariable("MalaiseOnOthers", false);
             settings.AddVariable("DivertTrimmer", true);
             settings.AddVariable("TauntTrimmer", true);
             settings.AddVariable("AggDefTrimmer", true);
             settings.AddVariable("UseNukes", true);
             settings.AddVariable("UseAoeRoot", false);
-            settings.AddVariable("BuffAuraSelection", (int)BuffAuraType.AAD);
-            settings.AddVariable("DebuffAuraSelection", (int)DebuffAuraType.NONE);
+            settings.AddVariable("Calm12Man", false);
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
             //LE Procs
@@ -51,23 +57,19 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.AoeRoots, AoeRoot, CombatActionPriority.High);
 
             //Debuff Aura
-            RegisterSpellProcessor(RelevantNanos.DeadMenWalking, NanoPointsDebuffAura);
-            RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, NanoPointsDebuffAura);
-
-            RegisterSpellProcessor(RelevantNanos.DeadMenWalking, NanoResDebuffAura);
-            RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, NanoResDebuffAura);
-            
-            RegisterSpellProcessor(RelevantNanos.DeadMenWalking, CritDebuffAura);
-            RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, CritDebuffAura);
+            RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, DebuffNanoDrainAura);
+            RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, DebuffNanoResistAura);
+            RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, DebuffCritAura);
 
             //Spells
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff);
+            RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man);
 
             //Buff Aura
-            RegisterSpellProcessor(RelevantNanos.AadBuffAuras, AadBuffAura);
-            RegisterSpellProcessor(RelevantNanos.CritBuffAuras, CritBuffAura);
-            RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, NanoResBuffAura);
+            RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
+            RegisterSpellProcessor(RelevantNanos.CritBuffAuras, BuffCritAura);
+            RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, BuffNanoResistAura);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), TeamBuff);
@@ -107,50 +109,59 @@ namespace Desu
 
             Game.TeleportEnded += OnZoned;
         }
-
-        private bool NanoPointsDebuffAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return DebuffAura(DebuffAuraType.NANO_PTS, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool CritDebuffAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return DebuffAura(DebuffAuraType.CRIT, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool NanoResDebuffAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return DebuffAura(DebuffAuraType.NANO_RES, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool AadBuffAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return BuffAura(BuffAuraType.AAD, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool CritBuffAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return BuffAura(BuffAuraType.CRIT, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool NanoResBuffAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return BuffAura(BuffAuraType.NANO_RES, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool BuffAura(BuffAuraType auraType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsBuffAuraSelected(auraType))
+            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffAAOAAD"))
             {
-            return false;
+                return false;
             }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool DebuffAura(DebuffAuraType auraType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !IsDebuffAuraSelected(auraType))
+            if (IsSettingEnabled("BuffCrit") || IsSettingEnabled("BuffAAOAAD"))
+            {
+                return false;
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffCrit"))
+            {
+                return false;
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffNanoDrain"))
+            {
+                return false;
+            }
+
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("DebuffCrit") || IsSettingEnabled("DebuffNanoDrain"))
+            {
+                return false;
+            }
+
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffCrit"))
             {
                 return false;
             }
@@ -205,7 +216,7 @@ namespace Desu
 
         private bool MalaiseTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(!IsSettingEnabled("UseMalaise"))
+            if(!IsSettingEnabled("MalaiseTarget"))
             {
                 return false;
             }
@@ -220,9 +231,29 @@ namespace Desu
             return NeedsDebuffRefresh(spell, fightingTarget);
         }
 
+        private bool Calm12Man(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            List<SimpleChar> targets = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                .ToList();
+
+            if (!IsSettingEnabled("Calm12Man"))
+            {
+                return false;
+            }
+
+            actionTarget.Target = targets.FirstOrDefault();
+            actionTarget.ShouldSetTarget = true;
+
+            return true;
+        }
+
         private bool LEInitTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseLEInitDebuffs"))
+            if (!IsSettingEnabled("LEInitDebuffs"))
             {
                 return false;
             }
@@ -255,12 +286,12 @@ namespace Desu
                 return false;
             }
 
-            return ToggledDebuffOthersInCombat("UseMalaiseOnOthers", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffOthersInCombat("MalaiseOnOthers", spell, fightingTarget, ref actionTarget);
         }
 
         private bool NeedsDebuffRefresh(Spell spell, SimpleChar target)
         {
-            if(target == null)
+            if (target == null)
             {
                 return false;
             }
@@ -336,6 +367,8 @@ namespace Desu
         {
             SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
 
+            Spell workplace = Spell.List.Where(x => x.Name == "Workplace Depression").FirstOrDefault();
+
             if (fightingTarget == null || !IsSettingEnabled("UseNukes"))
             {
                 return false;
@@ -344,6 +377,50 @@ namespace Desu
             if (IsSettingEnabled("UseAoeRoot") && target != null)
             {
                 return false;
+            }
+
+            if (workplace != null && (!fightingTarget.Buffs.Contains(301842) || !fightingTarget.Buffs.Contains(222687)))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("MalaiseTarget"))
+            {
+                SimpleChar targets = DynelManager.NPCs
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.IsAttacking)
+                    .Where(x => Team.Members.Any(c => x.FightingTarget.Identity == c.Character.Identity))
+                    .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
+                    .FirstOrDefault();
+
+                if (targets != null)
+                    return false;
+            }
+
+            if (IsSettingEnabled("MalaiseOnOthers"))
+            {
+                List<SimpleChar> targets = DynelManager.NPCs
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.IsAttacking)
+                    .Where(x => Team.Members.Any(c => x.FightingTarget.Identity == c.Character.Identity))
+                    .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
+                    .ToList();
+
+                if (targets.Count >= 1)
+                    return false;
+            }
+
+            if (IsSettingEnabled("LEInitDebuffs"))
+            {
+                List<SimpleChar> targetss = DynelManager.NPCs
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.IsAttacking)
+                    .Where(x => Team.Members.Any(c => x.FightingTarget.Identity == c.Character.Identity))
+                    .Where(x => !x.Buffs.Contains(NanoLine.GeneralRadiationACDebuff) && !x.Buffs.Contains(NanoLine.GeneralProjectileACDebuff))
+                    .ToList();
+
+                if (targetss.Count >= 1)
+                    return false;
             }
 
             return true;
@@ -481,15 +558,15 @@ namespace Desu
 
         private void CancelBuffAurasIfNeeded()
         {
-            if (!IsBuffAuraSelected(BuffAuraType.AAD))
+            if (!IsSettingEnabled("BuffAAOAAD"))
             {
                 CancelBuffs(RelevantNanos.AadBuffAuras);
             }
-            if (!IsBuffAuraSelected(BuffAuraType.CRIT))
+            if (!IsSettingEnabled("BuffCrit"))
             {
                 CancelBuffs(RelevantNanos.CritBuffAuras);
             }
-            if (!IsBuffAuraSelected(BuffAuraType.NANO_RES))
+            if (!IsSettingEnabled("BuffNanoResist"))
             {
                 CancelBuffs(RelevantNanos.NanoResBuffAuras);
             }
@@ -497,37 +574,22 @@ namespace Desu
 
         private void CancelDebuffAurasIfNeeded()
         {
-            CancelHostileAuras(RelevantNanos.DeadMenWalking);
             CancelHostileAuras(RelevantNanos.CritDebuffAuras);
             CancelHostileAuras(RelevantNanos.NanoPointsDebuffAuras);
             CancelHostileAuras(RelevantNanos.NanoResDebuffAuras);
 
-            if(IsDebuffAuraSelected(DebuffAuraType.NONE))
-            {
-                CancelBuffs(RelevantNanos.DeadMenWalking);
-            }
-            if (!IsDebuffAuraSelected(DebuffAuraType.CRIT))
+            if (!IsSettingEnabled("DebuffCrit"))
             {
                 CancelBuffs(RelevantNanos.CritDebuffAuras);
             }
-            if (!IsDebuffAuraSelected(DebuffAuraType.NANO_PTS))
+            if (!IsSettingEnabled("DebuffNanoDrain"))
             {
                 CancelBuffs(RelevantNanos.NanoPointsDebuffAuras);
             }
-            if (!IsDebuffAuraSelected(DebuffAuraType.NANO_RES))
+            if (!IsSettingEnabled("DebuffNanoResist"))
             {
                 CancelBuffs(RelevantNanos.NanoResDebuffAuras);
             }
-        }
-
-        private bool IsBuffAuraSelected(BuffAuraType auraType)
-        {
-            return auraType.Equals((BuffAuraType)settings["BuffAuraSelection"].AsInt32());
-        }
-
-        private bool IsDebuffAuraSelected(DebuffAuraType auraType)
-        {
-            return auraType.Equals((DebuffAuraType)settings["DebuffAuraSelection"].AsInt32());
         }
 
         private static class RelevantNanos
@@ -536,14 +598,14 @@ namespace Desu
             public const int DroidDamageMatrix = 267916;
             public const int DroidPressureMatrix = 302247;
             public const int CorporateStrategy = 267611;
+            public const int LastMinNegotiations = 267535;
             public static readonly int[] SingleTargetNukes = { 273307, WorkplaceDepression, 270250, 78400, 30082, 78394, 78395, 82000, 78396, 78397, 30091, 78399, 81996, 30083, 81997, 30068, 81998, 78398, 81999, 29618 };
-            public static readonly int[] DeadMenWalking = { 275826 };
             public static readonly int[] AoeRoots = { 224129, 224127, 224125, 224123, 224121, 224119, 82166, 82164, 82163, 82161, 82160, 82159, 82158, 82157, 82156 };
             public static readonly int[] AoeRootDebuffs = { 82137, 244634, 244633, 244630, 244631, 244632, 82138, 82139, 244629, 82140, 82141, 82142, 82143, 82144, 82145 };
             public static readonly int[] AadBuffAuras = { 270783, 155807, 155806, 155805, 155809, 155808 };
             public static readonly int[] CritBuffAuras = { 157503, 157499 };
             public static readonly int[] NanoResBuffAuras = { 157504, 157500, 157501, 157502 };
-            public static readonly int[] NanoPointsDebuffAuras = { 157524, 157534, 157533, 157532, 157531 };
+            public static readonly int[] NanoPointsDebuffAuras = { 275826, 157524, 157534, 157533, 157532, 157531 };
             public static readonly int[] CritDebuffAuras = { 157530, 157529, 157528 };
             public static readonly int[] NanoResDebuffAuras = { 157527, 157526, 157525, 157535 };
             public static readonly int[] GeneralRadACDebuff = { 302143, 302142 };

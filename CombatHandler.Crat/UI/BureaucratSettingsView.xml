@@ -2,41 +2,53 @@
 <root>
 <View h_alignment="LEFT" view_layout="vertical" name="parent">
 	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-		<TextView value="Buffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionRadioButtonGroup label="Aura selection" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__BuffAuraSelection">
-			<RadioButton label="AAD/AAO" value="0"/>
-			<RadioButton label="Critical Chance" value="1"/>
-			<RadioButton label="Nano Resistance" value="2"/>
-		</OptionRadioButtonGroup>
-		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-
-		<TextView value="Debuffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Use Malaise" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseMalaise" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use LE Init Debuffs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseLEInitDebuffs" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Malaise on others in combat" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseMalaiseOnOthers" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use nukes" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseNukes" layout_borders="Rect(10,1,5,1)"/>
-		<OptionRadioButtonGroup label="Aura selection (Dead Men Walking takes priority)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DebuffAuraSelection">
-			<RadioButton label="None" value="0"/>
-			<RadioButton label="Nano Drain" value="1"/>
-			<RadioButton label="Critical Chance" value="2"/>
-			<RadioButton label="Nano Resistance" value="3"/>
-		</OptionRadioButtonGroup>
-		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    
-		<TextView value="Pets" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="         Debuffs" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Nuking" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseNukes" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Malaise" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MalaiseTarget" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Malaise on others in combat" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MalaiseOnOthers" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="LE Init Debuffs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LEInitDebuffs" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="         Auras" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="Buffing" layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="AAO/AAD" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffAAOAAD" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Crit" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffCrit" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Nano Resist" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffNanoResist" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="Debuffing" layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Nano Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffNanoDrain" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Crit" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffCrit" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Nano Resist" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffNanoResist" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="           Pets" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<OptionCheckBox label="Spawn pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Buff pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-
-    <TextView value="Trimmers" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="         Trimmers" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Use Divert to Offense Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertTrimmer" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Use Taunt Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TauntTrimmer" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Use Aggressive-Defensive Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PetAggDefTrimmer" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-
-		<TextView value="Helpers" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="          Helpers" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<OptionCheckBox label="(POH/DB3) Root Colonels Hands/Fireballs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseAoeRoot" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<VLayoutSpacer/>
 	</BorderView>
 </View>

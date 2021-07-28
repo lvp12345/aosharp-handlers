@@ -193,12 +193,26 @@ namespace Desu
                 return false;
             }
 
+            SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+
+            if (IsSettingEnabled("UseAoeRoot") && target != null)
+            {
+                return false;
+            }
+
             return NeedsDebuffRefresh(spell, fightingTarget);
         }
 
         private bool MalaiseTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if(!IsSettingEnabled("UseMalaise"))
+            {
+                return false;
+            }
+
+            SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+
+            if (IsSettingEnabled("UseAoeRoot") && target != null)
             {
                 return false;
             }
@@ -213,17 +227,45 @@ namespace Desu
                 return false;
             }
 
+            SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+
+            if (IsSettingEnabled("UseAoeRoot") && target != null)
+            {
+                return false;
+            }
+
+            List<SimpleChar> targets = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.IsAttacking)
+                .Where(x => Team.Members.Any(c => x.FightingTarget.Identity == c.Character.Identity))
+                .ToList();
+
+            if (targets.Count >= 2)
+                return false;
+
             return NeedsDebuffRefresh(spell, fightingTarget);
         }
 
         private bool CratDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
         {
+            SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+
+            if (IsSettingEnabled("UseAoeRoot") && target != null)
+            {
+                return false;
+            }
+
             return ToggledDebuffOthersInCombat("UseMalaiseOnOthers", spell, fightingTarget, ref actionTarget);
         }
 
         private bool NeedsDebuffRefresh(Spell spell, SimpleChar target)
         {
-            if(target == null || target.Buffs.Contains(301844))
+            if(target == null)
+            {
+                return false;
+            }
+
+            if (spell.Nanoline == NanoLine.InitiativeDebuffs && target.Buffs.Contains(301844))
             {
                 return false;
             }
@@ -292,7 +334,14 @@ namespace Desu
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+
             if (fightingTarget == null || !IsSettingEnabled("UseNukes"))
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("UseAoeRoot") && target != null)
             {
                 return false;
             }

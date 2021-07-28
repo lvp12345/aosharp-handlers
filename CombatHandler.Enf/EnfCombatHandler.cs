@@ -13,6 +13,10 @@ namespace Desu
 {
     class EnfCombatHandler : GenericCombatHandler
     {
+        public const double absorbsrefresh = 13f;
+        public const double absorbsrefreshos = 19f;
+        private double _absorbsused;
+
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("UseSingleTaunt", false);
@@ -101,13 +105,20 @@ namespace Desu
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
+
             if (!IsSettingEnabled("UseSingleTaunt") || fightingTarget == null)
             {
                 return false;
             }
 
+            if (Time.NormalTime < _absorbsused + absorbsrefresh && DynelManager.LocalPlayer.FightingTarget != null && !mongobuff.FirstOrDefault().IsReady)
+            {
+                return true;
+            }
+
             //If our target has a different target than us we need to make sure we taunt
-            if (IsNotFightingMe(fightingTarget))
+            if (IsNotFightingMe(fightingTarget) && !mongobuff.FirstOrDefault().IsReady)
             {
                 return true;
             }
@@ -117,7 +128,7 @@ namespace Desu
                 return false;
             }
 
-            return true;
+            return false;
         }
 
         private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -173,15 +184,29 @@ namespace Desu
 
         private bool Fortify(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF))
+            List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
+
+            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF))
             {
                 return false;
             }
 
-            if (IsSettingEnabled("IsOST") && DynelManager.LocalPlayer.NanoPercent > 30)
+            if (DynelManager.LocalPlayer.NanoPercent < 30)
+            {
+                return false;
+            }
+
+            if (IsSettingEnabled("IsOST") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _absorbsused + absorbsrefreshos)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;
+                _absorbsused = Time.NormalTime;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _absorbsused + absorbsrefresh)
+            {
+                _absorbsused = Time.NormalTime;
                 return true;
             }
 
@@ -190,7 +215,9 @@ namespace Desu
 
         private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsSettingEnabled("IsOST") || IsSettingEnabled("SpamMongo"))
+            List<Spell> absorbbuff = Spell.List.Where(x => x.Nanoline == NanoLine.AbsorbACBuff).OrderBy(x => x.StackingOrder).ToList();
+
+            if (IsSettingEnabled("IsOST") || IsSettingEnabled("SpamMongo"))
             {
                 return true;
             }
@@ -205,26 +232,36 @@ namespace Desu
                 return false;
             }
 
-            //If our target has a different target than us we need to make sure we taunt
-            if (fightingTarget.FightingTarget != null && (fightingTarget.FightingTarget.Identity != DynelManager.LocalPlayer.Identity))
+            if (absorbbuff.FirstOrDefault() == null && DynelManager.LocalPlayer.FightingTarget != null)
             {
                 return true;
             }
+
+            if (Time.NormalTime < _absorbsused + absorbsrefresh && DynelManager.LocalPlayer.FightingTarget != null)
+            {
+                return true;
+            }
+
+            //If our target has a different target than us we need to make sure we taunt
+            //if (fightingTarget.FightingTarget != null && (fightingTarget.FightingTarget.Identity != DynelManager.LocalPlayer.Identity))
+            //{
+            //    return true;
+            //}
 
             //If there is a target in range, that is not fighting us, we need to make sure we taunt
-            if(DynelManager.Characters.Where(ShouldBeTaunted).Any(IsNotFightingMe))
-            {
-                return true;
-            }
+            //if(DynelManager.Characters.Where(ShouldBeTaunted).Any(IsNotFightingMe))
+            //{
+            //    return true;
+            //}
 
             //Check if we still have the mongo hot 
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
-            {
-                if ((buff.Name == spell.Name && buff.RemainingTime > 5))
-                {
-                    return false;
-                }
-            }
+            //foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            //{
+            //    if ((buff.Name == spell.Name && buff.RemainingTime > 5))
+            //    {
+            //        return false;
+            //    }
+            //}
 
             //Make sure we have plenty of nano for spamming mongo
             if (DynelManager.LocalPlayer.NanoPercent < 30)
@@ -232,7 +269,7 @@ namespace Desu
                 return false;
             }
 
-            return true;
+            return false;
         }
 
         private bool ShouldBeTaunted(SimpleChar target)

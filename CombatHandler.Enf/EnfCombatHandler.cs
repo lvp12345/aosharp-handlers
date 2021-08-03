@@ -47,40 +47,6 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleePierceBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeEnergyBuffWeapon);
 
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H)
-            //    RegisterSpellProcessor(RelevantNanos.Melee1HB, MeleeBuffWeapon);
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H)
-            //    RegisterSpellProcessor(RelevantNanos.Melee1HB, MeleeBuffWeapon);
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy)
-            //    RegisterSpellProcessor(RelevantNanos.Melee1HB, MeleeBuffWeapon);
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing)
-            //    RegisterSpellProcessor(RelevantNanos.Melee1HB, MeleeBuffWeapon);
-
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1H)
-            //    RegisterSpellProcessor(RelevantNanos.Melee1HE, MeleeBuffWeapon);
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H)
-            //    RegisterSpellProcessor(RelevantNanos.Melee1HE, MeleeBuffWeapon);
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing)
-            //    RegisterSpellProcessor(RelevantNanos.Melee1HE, MeleeBuffWeapon);
-
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing)
-            //    RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleeBuffWeapon);
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing)
-            //    RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleeBuffWeapon);
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing)
-            //    RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleeBuffWeapon);
-
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy)
-            //    RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeBuffWeapon);
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Energy)
-            //    RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeBuffWeapon);
-
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H)
-            //    RegisterSpellProcessor(RelevantNanos.Melee2HB, MeleeBuffWeapon);
-
-            //if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H)
-            //    RegisterSpellProcessor(RelevantNanos.Melee2HE, MeleeBuffWeapon);
-
             //Team buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), MeleeTeamBuff);
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, TeamBuff);

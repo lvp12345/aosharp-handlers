@@ -33,9 +33,9 @@ namespace Desu
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.HEALS, Heals, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.Medium);
             //RegisterSpellProcessor(RelevantNanos.RK_HEALS, RubiKaHeal, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.IMPROVED_LC, TeamHeal, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.IMPROVED_LC, TeamHealing, CombatActionPriority.High);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeamBuff);
@@ -166,18 +166,7 @@ namespace Desu
 
         private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.HealOverTime) || DynelManager.LocalPlayer.HealthPercent <= 90 || !HasNCU(spell, DynelManager.LocalPlayer))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool DocToggledDebuffTarget(String settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //Check if you are low hp dont debuff
-            if (DynelManager.LocalPlayer.HealthPercent <= 90)
+            if (DynelManager.LocalPlayer.HealthPercent <= 85)
             {
                 return false;
             }
@@ -188,7 +177,39 @@ namespace Desu
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent < 90)
+                    .Where(c => c.HealthPercent <= 85)
+                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
+                    .FirstOrDefault();
+
+                if (dyingTeamMember != null)
+                {
+                    return false;
+                }
+            }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.HealOverTime) || !HasNCU(spell, DynelManager.LocalPlayer))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool DocToggledDebuffTarget(String settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            //Check if you are low hp dont debuff
+            if (DynelManager.LocalPlayer.HealthPercent <= 85)
+            {
+                return false;
+            }
+
+            //Check if we're in a team and someone is low hp , dont debuff
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 85)
                     .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .FirstOrDefault();
 
@@ -210,7 +231,7 @@ namespace Desu
             return FindMemberWithHealthBelow(50, ref actionTarget);
         }
 
-        private bool TeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Heal"))
             {
@@ -222,13 +243,16 @@ namespace Desu
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 90)
+                    .Where(c => c.HealthPercent <= 60)
                     .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .ToList();
 
-                if (dyingTeamMember.Count >= 2)
+                if (dyingTeamMember.Count <= 2)
                 {
-                    actionTarget.Target = dyingTeamMember.FirstOrDefault();
+                    return false;
+                }
+                else
+                {
                     return true;
                 }
             }
@@ -236,32 +260,40 @@ namespace Desu
             return false;
         }
 
-        private bool Heals(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
+            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
             {
                 return false;
             }
 
-            if (IsSettingEnabled("Heal") && IsSettingEnabled("OSHeal"))
+            // Try to keep our teammates alive if we're in a team
+            if (DynelManager.LocalPlayer.IsInTeam() && IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
             {
-                return false;
-            }
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 60)
+                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
+                    .ToList();
 
-            if (IsSettingEnabled("OSHeal"))
+                if (dyingTeamMember.Count >= 3)
+                {
+                    return false;
+                }
+                else
+                {
+                    return FindMemberWithHealthBelow(85, ref actionTarget);
+                }
+            }
+            if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
+            {
                 return FindPlayerWithHealthBelow(90, ref actionTarget);
+            }
             else
-                return FindMemberWithHealthBelow(90, ref actionTarget);
+            {
+                return FindMemberWithHealthBelow(85, ref actionTarget);
+            }
         }
-
-        //private bool RubiKaHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("RKHeal"))
-        //    {
-        //        return false;
-        //    }
-        //    return FindMemberWithHealthBelow(90, ref actionTarget);
-        //}
 
         private bool FindMemberWithHealthBelow(int healthPercentTreshold, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -302,6 +334,7 @@ namespace Desu
 
             // Try to keep our teammates alive if we're in a team
             SimpleChar dyingTeamMember = DynelManager.Characters
+                .Where(c => c.IsPlayer)
                 .Where(c => c.HealthPercent <= healthPercentTreshold)
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 25f)
                 .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))

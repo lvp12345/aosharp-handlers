@@ -201,6 +201,9 @@ namespace CombatHandler.Generic
 
         protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.IsFalling)
+                return false;
+
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Name == perk.Name)

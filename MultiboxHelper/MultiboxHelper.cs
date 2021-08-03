@@ -72,7 +72,7 @@ namespace MultiboxHelper
             PluginDir = pluginDir;
             _statusWindow = new StatusWindow();
 
-            IPCChannel = new IPCChannel(111);
+            IPCChannel = new IPCChannel(116);
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnTargetMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
@@ -235,7 +235,6 @@ namespace MultiboxHelper
                     Position = charDCMoveMsg.Position,
                     Rotation = charDCMoveMsg.Heading
                 });
-
             }
             else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
             {

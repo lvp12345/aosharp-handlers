@@ -20,5 +20,6 @@ namespace MultiboxHelper.IPCMessages
         NpcChatAnswer,
         Follow,
         UseItem,
+        SetStat,
     }
 }

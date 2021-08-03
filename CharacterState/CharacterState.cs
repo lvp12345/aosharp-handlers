@@ -29,9 +29,15 @@ namespace Character.State
         private static bool justusedsitkit = false;
 
         public static bool AutoSitSwitch = false;
+
+        public const double satdowntoontimer = 0.9f;
+        public static double _satdowntoontime;
+
+        public const double satdowntoontimer2 = 15f;
+        public static double _satdowntoontime2;
         public override void Run(string pluginDir)
         {
-            ReportingIPCChannel = new IPCChannel(112);
+            ReportingIPCChannel = new IPCChannel(117);
 
             ReportingIPCChannel.RegisterCallback((int)IPCOpcode.CharacterState, OnCharacterStateMessage);
             ReportingIPCChannel.RegisterCallback((int)IPCOpcode.CharacterSpecials, OnCharacterSpecialsMessage);
@@ -212,6 +218,34 @@ namespace Character.State
             Team.Leave();
         }
 
+        private static bool IsFightingAny()
+        {
+            SimpleChar target = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.FightingTarget != null)
+                .Where(x => x.FightingTarget.Identity == DynelManager.LocalPlayer.Identity)
+                .FirstOrDefault();
+
+            if (target == null)
+
+            if (target != null)
+            {
+                if (Team.IsInTeam)
+                {
+                    // maybe some sort of assist function??
+                    return (target.IsAttacking && Team.Members.Any(x => target.FightingTarget.Identity == x.Character.Identity)) ||
+                        (target.IsAttacking && Team.Members.Where(x => x.Character.FightingTarget != null).Any(x => x.Character.FightingTarget.Identity == target.Identity));
+                }
+                else
+                {
+                    return target.IsAttacking && target.FightingTarget.Identity == DynelManager.LocalPlayer.Identity ||
+                        target.IsAttacking && DynelManager.LocalPlayer.Pets.Any(pet => target.FightingTarget.Identity == pet.Identity);
+                }
+            }
+
+            return false;
+        }
+
         private static void ReportCharacterState(object sender, float deltaTime)
         {
             if (Time.NormalTime - _lastUpdateTime > 1)
@@ -225,16 +259,15 @@ namespace Character.State
                 OnCharacterSpecialsMessage(0, specialsMessage);
                 OnCharacterStateMessage(0, stateMessage);
 
-
-                if (!Team.IsInCombat && !DynelManager.LocalPlayer.IsAttacking && !DynelManager.LocalPlayer.IsAttackPending && AutoSitSwitch == true && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && !DynelManager.LocalPlayer.Buffs.Contains(280488))
+                if (!IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 && !Team.IsInCombat && !DynelManager.LocalPlayer.IsAttacking && !DynelManager.LocalPlayer.IsAttackPending && AutoSitSwitch == true && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && !DynelManager.LocalPlayer.Buffs.Contains(280488))
                 {
-                    if ((DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65) && justusedsitkit == false && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && justusedsitkit == false && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
                     {
                         MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
                         justusedsitkit = true;
                     }
 
-                    if (justusedsitkit == true && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit && justusedsitkit == true)
                     {
                         MovementController.Instance.SetMovement(MovementAction.LeaveSit);
                         justusedsitkit = false;

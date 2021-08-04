@@ -23,6 +23,12 @@ namespace AOSharp.Character
             settingsToSave.Add(settings);
         }
 
+        public static void RegisterSettings(Settings settings)
+        {
+            RegisterChatCommandIfNotRegistered();
+            settingsToSave.Add(settings);
+        }
+
         public static void CleanUp()
         {
             settingsToSave.ForEach(settings => settings.Save());

@@ -39,7 +39,7 @@ namespace MultiboxHelper
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        private Settings settings = new Settings("MultiboxHelper");
+        private static Settings settings = new Settings("MultiboxHelper");
 
         private string[] playername = null;
 
@@ -64,7 +64,7 @@ namespace MultiboxHelper
             new Vector3(128.4, 29.0, 59.6),
             new Vector3(76.1, 29.0, 28.3)
         };
-        private byte _channelId = 12;
+        public byte _channelId;
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
@@ -73,7 +73,24 @@ namespace MultiboxHelper
             PluginDir = pluginDir;
             _statusWindow = new StatusWindow();
 
+            settings.AddVariable("ChannelID", 10);
+            settings.AddVariable("Follow", false);
+            settings.AddVariable("OSFollow", false);
+            settings.AddVariable("SyncMove", false);
+            settings.AddVariable("SyncUse", false);
+            settings.AddVariable("SyncAttack", true);
+            settings.AddVariable("SyncChat", false);
+            settings.AddVariable("AutoSit", false);
+
+            settings["Follow"] = false;
+            settings["OSFollow"] = false;
+
+            _channelId = Convert.ToByte(settings["ChannelID"].AsInt32());
+
             IPCChannel = new IPCChannel(_channelId);
+
+            Chat.WriteLine($"IPC Channel for MultiboxHelper - {_channelId}");
+
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnTargetMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
@@ -86,17 +103,6 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
-
-            settings.AddVariable("Follow", false);
-            settings.AddVariable("OSFollow", false);
-            settings.AddVariable("SyncMove", false);
-            settings.AddVariable("SyncUse", false);
-            settings.AddVariable("SyncAttack", true);
-            settings.AddVariable("SyncChat", false);
-            settings.AddVariable("AutoSit", false);
-
-            settings["Follow"] = false;
-            settings["OSFollow"] = false;
 
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
 
@@ -795,7 +801,7 @@ namespace MultiboxHelper
                 {
                     if (param.Length == 0)
                     {
-                        Chat.WriteLine($"IPC for MultiboxHelper Channel is now - {_channelId}");
+                        Chat.WriteLine($"IPC for MultiboxHelper Channel is - {_channelId}");
                     }
 
                     if (param.Length > 0)
@@ -803,6 +809,7 @@ namespace MultiboxHelper
                         _channelId = Convert.ToByte(param[0]);
 
                         IPCChannel.SetChannelId(_channelId);
+                        settings["ChannelID"] = _channelId;
 
                         Chat.WriteLine($"IPC for MultiboxHelper Channel is now - {_channelId}");
                     }

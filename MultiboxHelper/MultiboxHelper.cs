@@ -795,7 +795,7 @@ namespace MultiboxHelper
                 {
                     if (param.Length == 0)
                     {
-                        Chat.WriteLine($"IPC Channel is now - {_channelId}");
+                        Chat.WriteLine($"IPC for MultiboxHelper Channel is now - {_channelId}");
                     }
 
                     if (param.Length > 0)
@@ -804,7 +804,7 @@ namespace MultiboxHelper
 
                         IPCChannel.SetChannelId(_channelId);
 
-                        Chat.WriteLine($"IPC Channel is now - {_channelId}");
+                        Chat.WriteLine($"IPC for MultiboxHelper Channel is now - {_channelId}");
                     }
                 }
             }

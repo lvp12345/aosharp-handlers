@@ -64,6 +64,7 @@ namespace MultiboxHelper
             new Vector3(128.4, 29.0, 59.6),
             new Vector3(76.1, 29.0, 28.3)
         };
+        private byte _channelId = 12;
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
@@ -72,7 +73,7 @@ namespace MultiboxHelper
             PluginDir = pluginDir;
             _statusWindow = new StatusWindow();
 
-            IPCChannel = new IPCChannel(116);
+            IPCChannel = new IPCChannel(_channelId);
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnTargetMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
@@ -100,6 +101,8 @@ namespace MultiboxHelper
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
 
             Chat.RegisterCommand("mb", MbCommand);
+
+            Chat.RegisterCommand("mbchannel", channelcommand);
 
             Chat.RegisterCommand("followplayer", FollowName);
             Chat.RegisterCommand("allfollow", Allfollow);
@@ -782,6 +785,32 @@ namespace MultiboxHelper
                 settings["OSFollow"] = true;
                 Chat.WriteLine($"Following {playername[0]}.");
 
+            }
+        }
+        private void channelcommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            try
+            {
+                if (IPCChannel != null)
+                {
+                    if (param.Length == 0)
+                    {
+                        Chat.WriteLine($"IPC Channel is now - {_channelId}");
+                    }
+
+                    if (param.Length > 0)
+                    {
+                        _channelId = Convert.ToByte(param[0]);
+
+                        IPCChannel.SetChannelId(_channelId);
+
+                        Chat.WriteLine($"IPC Channel is now - {_channelId}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e.Message);
             }
         }
 

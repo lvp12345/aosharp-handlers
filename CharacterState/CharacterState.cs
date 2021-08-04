@@ -24,7 +24,7 @@ namespace Character.State
 
         private static double _lastUpdateTime = 0;
 
-        private static (Spell Spell, double Timeout) _pendingCast;
+        private static Settings settings = new Settings("CharacterState");
 
         private static bool justusedsitkit = false;
 
@@ -36,16 +36,24 @@ namespace Character.State
         public const double satdowntoontimer2 = 15f;
         public static double _satdowntoontime2;
 
-        private byte _channelId = 11;
+        private byte _channelId;
         public override void Run(string pluginDir)
         {
+            settings.AddVariable("ChannelID", 11);
+
+            _channelId = Convert.ToByte(settings["ChannelID"].AsInt32());
+
             IPCChannel = new IPCChannel(_channelId);
+
+            Chat.WriteLine($"IPC Channel for CharacterState - {_channelId}");
 
             IPCChannel.RegisterCallback((int)IPCOpcode.CharacterState, OnCharacterStateMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.CharacterSpecials, OnCharacterSpecialsMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Chat.RegisterCommand("statechannel", channelcommand);
+
+            SettingsController.RegisterSettings(settings);
 
             Game.OnUpdate += ReportCharacterState;
             new TeamCommands().RegisterCommands();
@@ -79,7 +87,7 @@ namespace Character.State
 
                     if (param.Length == 0)
                     {
-                        Chat.WriteLine($"IPC for CharacterState Channel is now - {_channelId}");
+                        Chat.WriteLine($"IPC Channel for CharacterState is - {_channelId}");
                     }
 
                     if (param.Length > 0)
@@ -87,8 +95,9 @@ namespace Character.State
                         _channelId = Convert.ToByte(param[0]);
 
                         IPCChannel.SetChannelId(_channelId);
+                        settings["ChannelID"] = _channelId;
 
-                        Chat.WriteLine($"IPC for CharacterState Channel is now - {_channelId}");
+                        Chat.WriteLine($"IPC Channel for CharacterState is now - {_channelId}");
                     }
                 }
             }

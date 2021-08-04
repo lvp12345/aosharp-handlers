@@ -20,7 +20,7 @@ namespace Character.State
         private static Dictionary<Identity, CharacterWeaponType> WeaponType = new Dictionary<Identity, CharacterWeaponType>();
         private static Dictionary<Identity, SpecialAttacks> SupportedSpecialAttacks = new Dictionary<Identity, SpecialAttacks>();
 
-        private static IPCChannel ReportingIPCChannel;
+        private static IPCChannel IPCChannel;
 
         private static double _lastUpdateTime = 0;
 
@@ -35,13 +35,18 @@ namespace Character.State
 
         public const double satdowntoontimer2 = 15f;
         public static double _satdowntoontime2;
+
+        private byte _channelId = 11;
         public override void Run(string pluginDir)
         {
-            ReportingIPCChannel = new IPCChannel(117);
+            IPCChannel = new IPCChannel(_channelId);
 
-            ReportingIPCChannel.RegisterCallback((int)IPCOpcode.CharacterState, OnCharacterStateMessage);
-            ReportingIPCChannel.RegisterCallback((int)IPCOpcode.CharacterSpecials, OnCharacterSpecialsMessage);
-            ReportingIPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+            IPCChannel.RegisterCallback((int)IPCOpcode.CharacterState, OnCharacterStateMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.CharacterSpecials, OnCharacterSpecialsMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+
+            Chat.RegisterCommand("statechannel", channelcommand);
+
             Game.OnUpdate += ReportCharacterState;
             new TeamCommands().RegisterCommands();
         }
@@ -53,16 +58,44 @@ namespace Character.State
 
         public static void BroadcastDisband()
         {
-            ReportingIPCChannel.Broadcast(new DisbandMessage());
+            IPCChannel.Broadcast(new DisbandMessage());
         }
         public static void BroadcastUseGrid()
         {
-            ReportingIPCChannel.Broadcast(new UseGrid());
+            IPCChannel.Broadcast(new UseGrid());
         }
 
         public static void BroadcastUseFGrid()
         {
-            ReportingIPCChannel.Broadcast(new UseFGrid());
+            IPCChannel.Broadcast(new UseFGrid());
+        }
+
+        private void channelcommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            try
+            {
+                if (IPCChannel != null)
+                {
+
+                    if (param.Length == 0)
+                    {
+                        Chat.WriteLine($"IPC Channel is now - {_channelId}");
+                    }
+
+                    if (param.Length > 0)
+                    {
+                        _channelId = Convert.ToByte(param[0]);
+
+                        IPCChannel.SetChannelId(_channelId);
+
+                        Chat.WriteLine($"IPC Channel is now - {_channelId}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e.Message);
+            }
         }
 
         public static int GetRemainingNCU(Identity target)
@@ -253,8 +286,8 @@ namespace Character.State
                 CharacterStateMessage stateMessage = CharacterStateMessage.ForLocalPlayer();
                 CharacterSpecialsMessage specialsMessage = CharacterSpecialsMessage.ForLocalPlayer();
 
-                ReportingIPCChannel.Broadcast(stateMessage);
-                ReportingIPCChannel.Broadcast(specialsMessage);
+                IPCChannel.Broadcast(stateMessage);
+                IPCChannel.Broadcast(specialsMessage);
 
                 OnCharacterSpecialsMessage(0, specialsMessage);
                 OnCharacterStateMessage(0, stateMessage);
@@ -266,12 +299,12 @@ namespace Character.State
                         MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
                         justusedsitkit = true;
                     }
+                }
 
-                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit && justusedsitkit == true)
-                    {
-                        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                        justusedsitkit = false;
-                    }
+                if (DynelManager.LocalPlayer.MovementState == MovementState.Sit && justusedsitkit == true)
+                {
+                    MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                    justusedsitkit = false;
                 }
 
                 _lastUpdateTime = Time.NormalTime;

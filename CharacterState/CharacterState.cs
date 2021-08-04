@@ -79,7 +79,7 @@ namespace Character.State
 
                     if (param.Length == 0)
                     {
-                        Chat.WriteLine($"IPC Channel is now - {_channelId}");
+                        Chat.WriteLine($"IPC for CharacterState Channel is now - {_channelId}");
                     }
 
                     if (param.Length > 0)
@@ -88,7 +88,7 @@ namespace Character.State
 
                         IPCChannel.SetChannelId(_channelId);
 
-                        Chat.WriteLine($"IPC Channel is now - {_channelId}");
+                        Chat.WriteLine($"IPC for CharacterState Channel is now - {_channelId}");
                     }
                 }
             }

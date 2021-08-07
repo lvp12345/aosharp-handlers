@@ -69,7 +69,7 @@ namespace Desu
             {
                 return false;
             }
-            return PerkCondtionProcessors.TeamHealPerk(perk, fightingTarget, ref actionTarget);
+            return PerkCondtionProcessors.HealPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

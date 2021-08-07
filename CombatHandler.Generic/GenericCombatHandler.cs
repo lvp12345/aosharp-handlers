@@ -26,14 +26,15 @@ namespace CombatHandler.Generic
         private string pluginDir = "";
         protected Settings settings;
 
+        //public static List<SimpleChar> dyingTeamMember = new List<SimpleChar>
+        //{
+        //};
+
         public GenericCombatHandler(string pluginDir)
         {
             this.pluginDir = pluginDir;
             Game.TeleportEnded += TeleportEnded;
             settings = new Settings("CombatHandler");
-
-
-            //Chat.RegisterCommand("grid", UseGridCanCommand);
 
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
@@ -855,7 +856,7 @@ namespace CombatHandler.Generic
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null;
+            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null && fightingTarget.IsInAttackRange();
         }
 
         protected virtual bool Coffee(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

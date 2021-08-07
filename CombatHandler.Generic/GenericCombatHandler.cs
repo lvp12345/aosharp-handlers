@@ -51,6 +51,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.WitheredFlesh, RelevantItems.WitheredFlesh, DescFlesh, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.DesecratedFlesh, RelevantItems.DesecratedFlesh, WithFlesh, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.AssaultClassTank, RelevantItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
             RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
@@ -900,8 +901,6 @@ namespace CombatHandler.Generic
 
         private bool DescFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            Inventory.Find(204698, 204698, out Item absorbwithflesh);
-
             if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
             {
                 if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))

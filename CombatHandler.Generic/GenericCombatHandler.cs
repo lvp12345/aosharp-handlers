@@ -42,20 +42,26 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(RelevantItems.FlurryOfBlowsLow, RelevantItems.FlurryOfBlowsLow, DamageItem);
             RegisterItemProcessor(RelevantItems.FlurryOfBlowsHigh, RelevantItems.FlurryOfBlowsHigh, DamageItem);
+
             RegisterItemProcessor(RelevantItems.StrengthOfTheImmortal, RelevantItems.StrengthOfTheImmortal, DamageItem);
             RegisterItemProcessor(RelevantItems.MightOfTheRevenant, RelevantItems.MightOfTheRevenant, DamageItem);
             RegisterItemProcessor(RelevantItems.BarrowStrength, RelevantItems.BarrowStrength, DamageItem);
+
+            RegisterItemProcessor(RelevantItems.DreadlochEnduranceBooster, RelevantItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.WitheredFlesh, RelevantItems.WitheredFlesh, DescFlesh, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.DesecratedFlesh, RelevantItems.DesecratedFlesh, WithFlesh, CombatActionPriority.High);
+
             RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.HSR1, RelevantItems.HSR2, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.SteamingHotCupOfEnhancedCoffee, RelevantItems.SteamingHotCupOfEnhancedCoffee, Coffee);
             RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
+
             RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.BlessedWithThunderLow, RelevantItems.BlessedWithThunderHigh, TargetedDamageItem);
 
-            RegisterItemProcessor(RelevantItems.DreadlochEnduranceBooster, RelevantItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
-            RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.HealthAndNanoStimLow, RelevantItems.HealthAndNanoStimHigh, HealthAndNanoStim, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.RezCan, RelevantItems.RezCan, UseRezCan);
             RegisterItemProcessor(RelevantItems.FlurryOfBlows25, RelevantItems.FlurryOfBlows200, UseFlurry);
@@ -828,12 +834,34 @@ namespace CombatHandler.Generic
 
         private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
+            if (Inventory.Find(305476, 305476, out Item absorbdesflesh))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(204698, 204698, out Item absorbwithflesh))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp))
+                {
+                    return false;
+                }
+            }
+
             // don't use if skill is locked (we will add this dynamically later)
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
                 return false;
 
             // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent > 40)
+            if (DynelManager.LocalPlayer.HealthPercent >= 65)
                 return false;
 
             // don't use if nothing is fighting us
@@ -843,6 +871,123 @@ namespace CombatHandler.Generic
             // don't use if we have another major absorb running
             // we could check remaining absorb stat to be slightly more effective
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
+                return false;
+
+            return true;
+        }
+
+        private bool AssaultClass(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            // don't use if skill is locked (we will add this dynamically later)
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp))
+                return false;
+
+            // don't use if we're above 40%
+            if (DynelManager.LocalPlayer.HealthPercent >= 65)
+                return false;
+
+            // don't use if nothing is fighting us
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
+                return false;
+
+            // don't use if we have another major absorb running
+            // we could check remaining absorb stat to be slightly more effective
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
+                return false;
+
+            return true;
+        }
+
+        private bool DescFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            Inventory.Find(204698, 204698, out Item absorbwithflesh);
+
+            if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp))
+                {
+                    return false;
+                }
+            }
+
+            // don't use if skill is locked (we will add this dynamically later)
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
+                return false;
+
+            // don't use if we're above 40%
+            if (DynelManager.LocalPlayer.HealthPercent >= 65)
+                return false;
+
+            // don't use if nothing is fighting us
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
+                return false;
+
+            // don't use if we have another major absorb running
+            // we could check remaining absorb stat to be slightly more effective
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
+                return false;
+
+            return true;
+        }
+
+        private bool WithFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            Inventory.Find(305476, 305476, out Item absorbdesflesh);
+
+            if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp))
+                {
+                    return false;
+                }
+            }
+
+            // don't use if skill is locked (we will add this dynamically later)
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
+                return false;
+
+            // don't use if we're above 40%
+            if (DynelManager.LocalPlayer.HealthPercent >= 65)
+                return false;
+
+            // don't use if nothing is fighting us
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
+                return false;
+
+            // don't use if we have another major absorb running
+            // we could check remaining absorb stat to be slightly more effective
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
+                return false;
+
+            if (absorbdesflesh != null)
                 return false;
 
             return true;
@@ -1172,6 +1317,9 @@ namespace CombatHandler.Generic
             public const int MightOfTheRevenant = 206013;
             public const int BarrowStrength = 204653;
             public const int LavaCapsule = 245990;
+            public const int WitheredFlesh = 204698;
+            public const int DesecratedFlesh = 305476;
+            public const int AssaultClassTank = 156576;
             public const int HSR1 = 164780;
             public const int HSR2 = 164781;
             public const int KizzermoleGumboil = 245323;
@@ -1248,6 +1396,11 @@ namespace CombatHandler.Generic
         {
                     "Altar of Torture",
                     "Altar of Purification",
+                    "Calan-Cur",
+                    "Spirit of Judgement",
+                    "Wandering Spirit",
+                    "Altar of Torture",
+                    "Altar of Purification",
                     "Unicorn Coordinator Magnum Blaine",
                     "Xan Spirit",
                     "Watchful Spirit",
@@ -1256,6 +1409,9 @@ namespace CombatHandler.Generic
                     "Tibor 'Rocketman' Nagy",
                     "One Who Obeys Precepts",
                     "The Retainer Of Ergo",
+                    "Green Tower",
+                    "Blue Tower",
+                    "Alien Cocoon",
                     "Outzone Supplier",
                     "Hollow Island Weed",
                     "Sheila Marlene",
@@ -1278,7 +1434,11 @@ namespace CombatHandler.Generic
                     "Sean Powell",
                     "Xan Spirit",
                     "Unicorn Guard",
-                    "Essence Fragment"
+                    "Essence Fragment",
+                    "Scalding Flames",
+                    "Guide",
+                    "Guard",
+                    "Awakened Xan"
         };
 
         private static readonly List<string> AoeRootSnareSpamTargets = new List<string>() { "Flaming Vengeance", "Hand of the Colonel" };

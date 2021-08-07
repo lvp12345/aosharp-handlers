@@ -13,8 +13,8 @@ namespace Desu
 {
     class EnfCombatHandler : GenericCombatHandler
     {
-        public const double absorbsrefresh = 13f;
-        public const double absorbsrefreshos = 19f;
+        public const double absorbsrefresh = 10f;
+        public const double absorbsrefreshos = 10f;
         private double _absorbsused;
 
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
@@ -83,7 +83,7 @@ namespace Desu
                 return true;
             }
 
-            if (Time.NormalTime < _absorbsused + absorbsrefresh && DynelManager.LocalPlayer.FightingTarget != null && !mongobuff.FirstOrDefault().IsReady)
+            if (Time.NormalTime < _absorbsused + absorbsrefresh && DynelManager.LocalPlayer.FightingTarget != null && !mongobuff.FirstOrDefault().IsReady && DynelManager.LocalPlayer.FightingTarget.Name != "Technomaster Sinuh")
             {
                 return true;
             }
@@ -195,6 +195,9 @@ namespace Desu
             {
                 return true;
             }
+
+            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
+                return false;
 
             if (!IsSettingEnabled("UseAOETaunt"))
             {

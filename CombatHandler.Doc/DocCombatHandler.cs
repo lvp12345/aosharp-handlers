@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.UI;
 using Character.State;
 using CombatHandler.Generic;
 using System;
@@ -231,6 +232,37 @@ namespace Desu
             return FindMemberWithHealthBelow(50, ref actionTarget);
         }
 
+        //private bool PlayerNeedingHeals()
+        //{
+        //    SimpleChar dyingTeamMemberoutlist = DynelManager.Characters
+        //        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+        //        .Where(c => c.HealthPercent >= 100)
+        //        .Where(c => GenericCombatHandler.dyingTeamMember.Contains(c))
+        //        .First();
+
+        //    SimpleChar dyingTeamMemberinlist = DynelManager.Characters
+        //        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+        //        .Where(c => c.HealthPercent <= 99)
+        //        .Where(c => !GenericCombatHandler.dyingTeamMember.Contains(c))
+        //        .First();
+
+        //    if (dyingTeamMemberoutlist != null)
+        //    {
+        //        GenericCombatHandler.dyingTeamMember.Remove(dyingTeamMemberoutlist);
+        //        Chat.WriteLine($"player removed from list {dyingTeamMemberoutlist.Name}");
+        //    }
+
+        //    if (dyingTeamMemberinlist != null)
+        //    {
+        //        GenericCombatHandler.dyingTeamMember.Add(dyingTeamMemberinlist);
+        //        Chat.WriteLine($"player added to list {dyingTeamMemberinlist.Name}");
+        //        return true;
+        //    }
+
+        //    Chat.WriteLine($"returning false in bool");
+        //    return false;
+        //}
+
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Heal"))
@@ -337,7 +369,6 @@ namespace Desu
                 .Where(c => c.IsPlayer)
                 .Where(c => c.HealthPercent <= healthPercentTreshold)
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 25f)
-                .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                 .FirstOrDefault();
 
             if (dyingTeamMember != null)

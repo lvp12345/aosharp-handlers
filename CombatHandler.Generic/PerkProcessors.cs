@@ -26,10 +26,8 @@ namespace CombatHandler.Generic
                     return CUSTOM_PROCESSORS[perkHash];
                 case PerkType.TARGETED_DAMAGE:
                     return TargetedDamagePerk;
-                case PerkType.TEAM_HEAL:
-                    return TeamHealPerk;
-                case PerkType.SELF_HEAL:
-                    return SelfHealPerk;
+                case PerkType.HEAL:
+                    return HealPerk;
                 case PerkType.SELF_BUFF:
                     return SelfBuffPerk;
                 case PerkType.DAMAGE_BUFF:
@@ -55,8 +53,32 @@ namespace CombatHandler.Generic
             {PerkHash.InstallExplosiveDevice, InstallExplosiveDevice },
             {PerkHash.InstallNotumDepletionDevice, InstallNotumDepletionDevice },
             {PerkHash.QuickShot, QuickShot },
-            //{PerkHash.UnhallowedWrath, UnhallowedWrath }
+            {PerkHash.LegShot, LegShot },
+            {PerkHash.BattlegroupHeal1, BattleGroupHealPerk1 },
+            {PerkHash.BattlegroupHeal2, BattleGroupHealPerk2 },
+            {PerkHash.BattlegroupHeal3, BattleGroupHealPerk3 },
+            {PerkHash.BattlegroupHeal4, BattleGroupHealPerk4 },
+            {PerkHash.WitOfTheAtrox, WitOfTheAtrox },
+            {PerkHash.BioCocoon, BioCocoon },
         };
+
+        private static bool WitOfTheAtrox(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        private static bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return SelfAbsorbPerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        private static bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PerkAction.Find("Leg Shot", out PerkAction legshot) && !legshot.IsAvailable)
+                return false;
+
+            return LegShotPerk(perk, fightingTarget, ref actionTarget);
+        }
 
         private static bool QuickShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -65,14 +87,6 @@ namespace CombatHandler.Generic
 
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
-
-        //private static bool UnhallowedWrath(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (PerkAction.Find("Unhallowed Wrath", out PerkAction unhallowedwrath) && !unhallowedwrath.IsAvailable)
-        //        return false;
-
-        //    return DamagePerk(perk, fightingTarget, ref actionTarget);
-        //}
 
         public static bool DamageBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -129,8 +143,213 @@ namespace CombatHandler.Generic
             return true;
         }
 
+        public static bool BattleGroupHealPerk1(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!Team.IsInCombat)
+                return false;
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 100)
+                    .ToList();
+
+                List<SimpleChar> dyingTeamMemberindivid = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 35)
+                    .Where(c => c.Profession == Profession.Enforcer || c.Profession == Profession.Doctor)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 4 || dyingTeamMemberindivid.Count >= 1)
+                {
+                    PerkAction.Find("Battlegroup Heal 1", out PerkAction battlegroupheal1);
+
+                    if (battlegroupheal1.IsAvailable)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool BattleGroupHealPerk2(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!Team.IsInCombat)
+                return false;
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 100)
+                    .ToList();
+
+                List<SimpleChar> dyingTeamMemberindivid = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 35)
+                    .Where(c => c.Profession == Profession.Enforcer || c.Profession == Profession.Doctor)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 4 || dyingTeamMemberindivid.Count >= 1)
+                {
+                    PerkAction.Find("Battlegroup Heal 1", out PerkAction battlegroupheal1);
+                    PerkAction.Find("Battlegroup Heal 2", out PerkAction battlegroupheal2);
+
+                    if (battlegroupheal2.IsAvailable && !battlegroupheal1.IsAvailable)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool BattleGroupHealPerk3(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!Team.IsInCombat)
+                return false;
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 100)
+                    .ToList();
+
+                List<SimpleChar> dyingTeamMemberindivid = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 35)
+                    .Where(c => c.Profession == Profession.Enforcer || c.Profession == Profession.Doctor)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 4 || dyingTeamMemberindivid.Count >= 1)
+                {
+                    PerkAction.Find("Battlegroup Heal 1", out PerkAction battlegroupheal1);
+                    PerkAction.Find("Battlegroup Heal 2", out PerkAction battlegroupheal2);
+                    PerkAction.Find("Battlegroup Heal 3", out PerkAction battlegroupheal3);
+
+                    if (battlegroupheal3.IsAvailable && !battlegroupheal2.IsAvailable && !battlegroupheal1.IsAvailable)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool BattleGroupHealPerk4(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!Team.IsInCombat)
+                return false;
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 40)
+                    .ToList();
+
+                List<SimpleChar> dyingTeamMemberindivid = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 35)
+                    .Where(c => c.Profession == Profession.Enforcer || c.Profession == Profession.Doctor)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 4 || dyingTeamMemberindivid.Count >= 1)
+                {
+                    PerkAction.Find("Battlegroup Heal 1", out PerkAction battlegroupheal1);
+                    PerkAction.Find("Battlegroup Heal 2", out PerkAction battlegroupheal2);
+                    PerkAction.Find("Battlegroup Heal 3", out PerkAction battlegroupheal3);
+                    PerkAction.Find("Battlegroup Heal 4", out PerkAction battlegroupheal4);
+
+                    if (battlegroupheal4.IsAvailable && !battlegroupheal3.IsAvailable && !battlegroupheal2.IsAvailable && !battlegroupheal1.IsAvailable)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool SelfAbsorbPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.IsAttacking)
+                return false;
+
+            if (!perkAction.IsAvailable)
+                return false;
+
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            {
+                if (buff.Name == perkAction.Name)
+                {
+                    return false;
+                }
+                if (buff.Name == "Endurance Skin" || buff.Name == "Flesh of the Believer" || buff.Name == "Skin of the Believer" || buff.Name == "Assault Screen")
+                    return false;
+            }
+
+            if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(305476, 305476, out Item absorbdesflesh))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(204698, 204698, out Item absorbwithflesh))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
+                {
+                    return false;
+                }
+            }
+            if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp))
+                {
+                    return false;
+                }
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent >= 65)
+                return false;
+
+            return true;
+        }
+
         public static bool SelfBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perkAction.IsAvailable)
+                return false;
+
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Name == perkAction.Name)
@@ -139,24 +358,14 @@ namespace CombatHandler.Generic
                     return false;
                 }
             }
+
+            if (!DynelManager.LocalPlayer.IsAttacking && (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox"))
+                return false;
+
             return true;
         }
 
-        public static bool SelfHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!DynelManager.LocalPlayer.IsAttacking)
-                return false;
-
-            // Prioritize keeping ourself alive
-            if (DynelManager.LocalPlayer.HealthPercent <= 35)//We should consider making this a slider value in the options
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-            return false;
-        }
-
-        public static bool TeamHealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool HealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
             if (!DynelManager.LocalPlayer.IsAttacking)
@@ -195,7 +404,7 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            return DynelManager.LocalPlayer.NanoPercent < 50;
+            return DynelManager.LocalPlayer.NanoPercent < 75;
         }
 
         public static bool TargetedDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -204,11 +413,28 @@ namespace CombatHandler.Generic
             return DamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
 
+        public static bool LegShotPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null)
+                return false;
+
+            if (fightingTarget.MaxHealth >= 1000000)
+            {
+                if (fightingTarget.Name != "Technological Officer Darwelsi" || fightingTarget.Name != "Collector")
+                    return false;
+            }
+
+            if (fightingTarget.HealthPercent < 5)
+                return false;
+
+            return true;
+        }
+
         public static bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (perkAction.Name == "Unhallowed Wrath" || perkAction.Name == "Spectator Wrath" || perkAction.Name == "Righteous Wrath")
             {
-                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat()))
+                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Skill2hEdged))
                 {
                     return false;
                 }
@@ -227,11 +453,6 @@ namespace CombatHandler.Generic
         }
 
         public delegate bool GenericPerkConditionProcessor(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget);
-
-        private static Stat GetSkillLockStat()
-        {
-            return Stat.Skill2hEdged;
-        }
 
         private static class RelevantEffects
         {

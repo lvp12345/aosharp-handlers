@@ -880,6 +880,7 @@ namespace MultiboxHelper
                 Unknown7 = 0
             };
             Network.Send(n3Msg);
+            MovementController.Instance.SetMovement(MovementAction.Update);
         }
 
         private void OnSelfFollowMessage(Dynel dynel)
@@ -896,6 +897,7 @@ namespace MultiboxHelper
                 Unknown7 = 0
             };
             Network.Send(n3Msg);
+            MovementController.Instance.SetMovement(MovementAction.Update);
         }
     }
 }

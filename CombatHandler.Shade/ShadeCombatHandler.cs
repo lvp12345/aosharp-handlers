@@ -105,7 +105,7 @@ namespace Desu
             {
                 return false;
             }
-            return ToggledTeamBuff("UseFasterThanYourShadow", spell, fightingTarget, target => HasBuffNanoLine(NanoLine.RunspeedBuffs, target) || HasGsfNanoLine(target), ref actionTarget);
+            return ToggledTeamBuff("UseFasterThanYourShadow", spell, fightingTarget, ref actionTarget);
         }
 
         private bool HasGsfNanoLine(SimpleChar target)

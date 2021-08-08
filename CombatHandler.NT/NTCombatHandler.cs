@@ -82,12 +82,14 @@ namespace Desu
                 return false;
             }
 
+            if (!SpellChecksPlayer(spell))
+                return false;
+
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => HasNCU(spell, c))
-                    .Where(c => !HasBuff(spell, c))
+                    .Where(c => SpellChecksOther(spell, c))
                     .Where(c => c.Profession != Profession.Keeper)
                     .FirstOrDefault();
 

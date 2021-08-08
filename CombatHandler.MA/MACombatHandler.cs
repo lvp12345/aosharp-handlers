@@ -25,8 +25,6 @@ namespace Desu
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), GenericBuff);
@@ -38,6 +36,10 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistBuff).OrderByStackingOrder(), GenericBuff);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
+
 
             //Items
             RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
@@ -56,6 +58,38 @@ namespace Desu
                 return false;
 
             return true;
+        }
+
+        protected bool TeamBuffSpecialCheck(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (SpellChecksPlayer(spell))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => SpellChecksOther(spell, c))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -167,8 +201,7 @@ namespace Desu
             return DynelManager.Characters
                 .Where(c => c.IsAlive)
                 .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                .Where(c => c.MissingHealth >= missingHealthThreshold)
-                .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents));
+                .Where(c => c.MissingHealth >= missingHealthThreshold);
         }
 
         private Stat GetSkillLockStat(Item item)

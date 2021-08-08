@@ -145,12 +145,12 @@ namespace CombatHandler.Engi
 
         protected bool PistolGrenadeTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffWeaponCheck(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.GrenadeBuffs, target), CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.Grenade, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun);
+            return TeamBuffWeaponCheck(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.Grenade, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffInitEngi(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.InitiativeBuffs, target), CharacterWeaponType.RANGED);
+            return TeamBuffInitEngi(spell, fightingTarget, ref actionTarget, CharacterWeaponType.RANGED);
         }
 
         private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

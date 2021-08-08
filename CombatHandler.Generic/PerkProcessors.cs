@@ -372,7 +372,7 @@ namespace CombatHandler.Generic
                 return false;
 
             // Prioritize keeping ourself alive
-            if (DynelManager.LocalPlayer.HealthPercent <= 60)
+            if (DynelManager.LocalPlayer.HealthPercent <= 70)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
@@ -384,8 +384,7 @@ namespace CombatHandler.Generic
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 60)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
+                    .Where(c => c.HealthPercent <= 70)
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)

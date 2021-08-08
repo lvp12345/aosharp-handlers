@@ -106,12 +106,12 @@ namespace Desu
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffInitSol(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.InitiativeBuffs, target));
+            return TeamBuffInitSol(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool TeamBuffAAONoMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.AAOBuffs, target) || HasBuffNanoLine(NanoLine.Polymorph, target));
+            return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private static class RelevantNanos

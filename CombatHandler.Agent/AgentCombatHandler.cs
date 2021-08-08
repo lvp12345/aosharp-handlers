@@ -153,17 +153,17 @@ namespace CombatHandler.Agent
                 return false;
             }
 
-            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.ConcentrationCriticalLine, target));
+            return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool TeamBuffCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.CriticalIncreaseBuff, target) || HasBuffNanoLine(NanoLine.AAOBuffs, target));
+            return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool DamageTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.DamageBuffs_LineA, target));
+            return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DotStrainA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -191,7 +191,6 @@ namespace CombatHandler.Agent
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent <= healthPercentTreshold)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)

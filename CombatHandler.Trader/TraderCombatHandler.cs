@@ -190,7 +190,6 @@ namespace Desu
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.Identity != DynelManager.LocalPlayer.Identity)
                     .Where(c => c.NanoPercent <= 30)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .FirstOrDefault();
 
                 if (lowNanoTeamMember != null)

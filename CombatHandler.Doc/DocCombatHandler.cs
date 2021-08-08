@@ -79,7 +79,7 @@ namespace Desu
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffInitDoc(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.InitiativeBuffs, target));
+            return TeamBuffInitDoc(spell, fightingTarget, ref actionTarget);
         }
 
         private bool LifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -92,7 +92,7 @@ namespace Desu
 
         private bool NanoResistanceBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuff(spell, fightingTarget, ref actionTarget, hasBuffCheck: target => HasBuffNanoLine(NanoLine.NanoResistanceBuffs, target) || HasBuffNanoLine(NanoLine.Rage, target));
+            return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -114,7 +114,6 @@ namespace Desu
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent < 90)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
@@ -172,25 +171,22 @@ namespace Desu
                 return false;
             }
 
+            if (!SpellChecksPlayer(spell))
+                return false;
+
             //Check if we're in a team and someone is low hp , dont debuff
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 85)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
+                    .Where(c => SpellChecksOther(spell, c))
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
                 {
                     return false;
                 }
-            }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.HealOverTime) || !HasNCU(spell, DynelManager.LocalPlayer))
-            {
-                return false;
             }
 
             return true;
@@ -211,7 +207,6 @@ namespace Desu
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent <= 85)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
@@ -276,7 +271,6 @@ namespace Desu
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent <= 60)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .ToList();
 
                 if (dyingTeamMember.Count <= 2)
@@ -305,7 +299,6 @@ namespace Desu
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent <= 60)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .ToList();
 
                 if (dyingTeamMember.Count >= 3)
@@ -342,7 +335,6 @@ namespace Desu
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent <= healthPercentTreshold)
-                    .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents))
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)

@@ -59,7 +59,7 @@ namespace Desu
 
         private bool LongHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledTeamBuff("UseLongHoT", spell, fightingTarget, target => HasBuffNanoLine(NanoLine.FixerLongHoT, target), ref actionTarget);
+            return ToggledTeamBuff("UseLongHoT", spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -88,7 +88,7 @@ namespace Desu
             {
                 return false;
             }
-            return ToggledTeamBuff("UseRKRunspeed", spell, fightingTarget, target => HasBuffNanoLine(NanoLine.MajorEvasionBuffs, target) || HasBuffNanoLine(NanoLine.RunspeedBuffs, target), ref actionTarget);
+            return ToggledTeamBuff("UseRKRunspeed", spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShadowlandsSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

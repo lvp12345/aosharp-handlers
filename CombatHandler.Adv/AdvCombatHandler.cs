@@ -157,8 +157,7 @@ namespace Desu
             return DynelManager.Characters
                 .Where(c => c.IsAlive)
                 .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                .Where(c => c.MissingHealth >= missingHealthThreshold)
-                .OrderByDescending(c => c.GetStat(Stat.NumFightingOpponents));
+                .Where(c => c.MissingHealth >= missingHealthThreshold);
         }
 
         //private Stat GetSkillLockStat(Item item)

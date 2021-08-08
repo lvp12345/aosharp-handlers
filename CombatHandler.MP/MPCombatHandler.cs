@@ -122,7 +122,7 @@ namespace Desu
         }
 
         private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) {
-            return ToggledDebuffTarget("UseNukes", spell, fightingTarget, NanoLine.MetaphysicistMindDamageNanoDebuffs, ref actionTarget);
+            return ToggledDebuffTarget("UseNukes", spell, fightingTarget, ref actionTarget);
         }
 
         private bool MPCompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -131,7 +131,7 @@ namespace Desu
             {
                 return false;
             }
-            return TeamBuff(spell, fightingTarget,  ref actionTarget, target => !spell.MeetsUseReqs(target) || HasAnyMPNanoLineBuff(target));
+            return TeamBuff(spell, fightingTarget,  ref actionTarget);
         }
 
         private bool MPNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -152,7 +152,7 @@ namespace Desu
 
         private bool InterruptModifierBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledTeamBuff("BuffInterruptChance", spell, fightingTarget, target => HasBuff(spell, target), ref actionTarget);
+            return ToggledTeamBuff("BuffInterruptChance", spell, fightingTarget, ref actionTarget);
         }
 
         private bool MPDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 

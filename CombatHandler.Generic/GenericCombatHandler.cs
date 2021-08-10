@@ -1252,10 +1252,10 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksOther(Spell spell, SimpleChar fightingTarget)
         {
-            if (!CharacterState.IsCharacterRegistered(fightingTarget.Identity))
+            if (fightingTarget.IsPlayer && !CharacterState.IsCharacterRegistered(fightingTarget.Identity))
                 return false;
 
-            if (!HasNCU(spell, fightingTarget))
+            if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))
                 return false;
 
             if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))

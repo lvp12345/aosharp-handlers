@@ -203,7 +203,7 @@ namespace Desu
 
         private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!SpellChecksPlayer(spell))
+            if (SpellChecksPlayer(spell))
                 return false;
 
             return true;

@@ -277,7 +277,7 @@ namespace Desu
                 return false;
             }
 
-            if (!SpellChecksOther(spell, fightingTarget))
+            if (SpellChecksOther(spell, fightingTarget))
                 return false;
 
             return true;
@@ -301,7 +301,7 @@ namespace Desu
                     return false;
             }
 
-            if (!SpellChecksOther(spell, fightingTarget))
+            if (SpellChecksOther(spell, fightingTarget))
                 return false;
 
             return true;
@@ -355,7 +355,7 @@ namespace Desu
             if (targets.Count >= 2)
                 return false;
 
-            if (!SpellChecksOther(spell, fightingTarget))
+            if (SpellChecksOther(spell, fightingTarget))
                 return false;
 
             return true;

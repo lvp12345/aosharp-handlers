@@ -423,7 +423,7 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (!SpellChecksPlayer(spell))
+            if (SpellChecksPlayer(spell))
                 return false;
 
             actionTarget.ShouldSetTarget = true;
@@ -439,7 +439,7 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (!SpellChecksOther(spell, fightingTarget))
+            if (SpellChecksOther(spell, fightingTarget))
                 return false;
 
             actionTarget.ShouldSetTarget = true;
@@ -521,7 +521,7 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => !SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, c))
                     .Where(c => specialAttackCheck == null || specialAttackCheck.Invoke(CharacterState.GetSpecialAttacks(c.Identity)))
                     .FirstOrDefault();
 
@@ -531,6 +531,15 @@ namespace CombatHandler.Generic
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
+            }
+            else
+            {
+                if (SpellChecksPlayer(spell))
+                    return false;
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
             }
 
             return false;
@@ -557,14 +566,17 @@ namespace CombatHandler.Generic
                     return true;
                 }
             }
+            else
+            {
+                if (SpellChecksPlayer(spell))
+                    return false;
 
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
 
-            if (!SpellChecksPlayer(spell))
-                return false;
-
-            actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = DynelManager.LocalPlayer;
-            return true;
+            return false;
         }
 
         protected bool BuffAttackType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWeaponType supportedWeaponType)
@@ -572,13 +584,6 @@ namespace CombatHandler.Generic
             if (fightingTarget != null || !CanCast(spell))
             {
                 return false;
-            }
-
-            if (SpellChecksPlayer(spell) && CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == supportedWeaponType)
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
             }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -596,6 +601,15 @@ namespace CombatHandler.Generic
                     return true;
                 }
             }
+            else
+            {
+                if (SpellChecksPlayer(spell) && CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == supportedWeaponType)
+                {
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
 
             return false;
         }
@@ -605,13 +619,6 @@ namespace CombatHandler.Generic
             if (fightingTarget != null || !CanCast(spell))
             {
                 return false;
-            }
-
-            if (SpellChecksPlayer(spell) && (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType1 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType2 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType3 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType4))
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
             }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -625,6 +632,15 @@ namespace CombatHandler.Generic
                 if (teamMemberWithoutBuff != null)
                 {
                     actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+            else
+            {
+                if (SpellChecksPlayer(spell) && (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType1 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType2 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType3 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType4))
+                {
+                    actionTarget.Target = DynelManager.LocalPlayer;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
@@ -1113,7 +1129,7 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (!SpellChecksPlayer(spell))
+            if (SpellChecksPlayer(spell))
                 return false;
 
             if (DynelManager.LocalPlayer.IsInTeam())

@@ -277,7 +277,7 @@ namespace Desu
                 return false;
             }
 
-            if (SpellChecksOther(spell, fightingTarget))
+            if (!SpellChecksOther(spell, fightingTarget))
                 return false;
 
             return true;
@@ -301,7 +301,7 @@ namespace Desu
                     return false;
             }
 
-            if (SpellChecksOther(spell, fightingTarget))
+            if (!SpellChecksOther(spell, fightingTarget))
                 return false;
 
             return true;
@@ -336,7 +336,8 @@ namespace Desu
             List<SimpleChar> targets = DynelManager.NPCs
                 .Where(x => x.IsAlive)
                 .Where(x => x.IsAttacking)
-                .Where(x => Team.Members.Any(c => x.FightingTarget.Identity == c.Character.Identity))
+                .Where(x => Team.Members.Where(c => x.FightingTarget.Identity == c.Character.Identity).Any())
+                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                 .ToList();
 
             if (!IsSettingEnabled("LEInitDebuffs"))
@@ -355,7 +356,7 @@ namespace Desu
             if (targets.Count >= 2)
                 return false;
 
-            if (SpellChecksOther(spell, fightingTarget))
+            if (!SpellChecksOther(spell, fightingTarget))
                 return false;
 
             return true;

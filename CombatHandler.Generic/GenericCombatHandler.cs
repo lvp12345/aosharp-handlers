@@ -569,11 +569,11 @@ namespace CombatHandler.Generic
             else
             {
                 if (SpellChecksPlayer(spell))
-                    return false;
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
             }
 
             return false;
@@ -1278,7 +1278,6 @@ namespace CombatHandler.Generic
                 //Don't cast if greater than 10% time remaining
                 if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1)
                 {
-
                     return false;
                 }
 

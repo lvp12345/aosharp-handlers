@@ -568,22 +568,13 @@ namespace CombatHandler.Generic
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
-
-                if (SpellChecksPlayer(spell))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    return true;
-                }
             }
-            else
+
+            if (SpellChecksPlayer(spell))
             {
-                if (SpellChecksPlayer(spell))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    return true;
-                }
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
             }
 
             return false;

@@ -28,17 +28,22 @@ namespace CombatHandler.Engi
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
             settings.AddVariable("HealPets", false);
-            settings.AddVariable("UseDivertTrimmer", true);
-            settings.AddVariable("UseTauntTrimmer", true);
-            settings.AddVariable("UseAggDefTrimmer", true);
-            settings.AddVariable("UseShieldRipper", false);
-            settings.AddVariable("UseSnareAura", false);
-            settings.AddVariable("SpamDebuffAura", false);
+
+            settings.AddVariable("DivertTrimmer", true);
+            settings.AddVariable("TauntTrimmer", true);
+            settings.AddVariable("AggDefTrimmer", true);
+
+            settings.AddVariable("ShieldRipper", false);
+            settings.AddVariable("SnareAura", false);
+
             settings.AddVariable("AuraShield", false);
             settings.AddVariable("AuraDamage", false);
             settings.AddVariable("AuraReflect", false);
             settings.AddVariable("AuraArmor", false);
+
+            settings.AddVariable("SpamDebuffAura", false);
             settings.AddVariable("SpamSnareAura", false);
+
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
 
             //LE Procs
@@ -46,7 +51,7 @@ namespace CombatHandler.Engi
             RegisterPerkProcessor(PerkHash.LEProcEngineerDroneMissiles, LEProc, CombatActionPriority.Low);
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), PistolGrenadeTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GenericBuff);
@@ -55,8 +60,8 @@ namespace CombatHandler.Engi
             {
                 RegisterSpellProcessor(boostedTendons, GenericBuff);
             }
-            RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, TeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
             RegisterSpellProcessor(RelevantNanos.ShieldRippers, ShieldRipperAura);
             RegisterSpellProcessor(RelevantNanos.AuraArmor, AuraArmor);
@@ -107,7 +112,7 @@ namespace CombatHandler.Engi
 
             Pet petWithSnareAura = FindPetThat(pet => HasBuffNanoLine(NanoLine.EngineerPetAOESnareBuff, pet.Character));
 
-            if(petWithSnareAura != null)
+            if (petWithSnareAura != null)
             {
                 actionTarget.Target = petWithSnareAura.Character;
                 actionTarget.ShouldSetTarget = true;
@@ -130,7 +135,7 @@ namespace CombatHandler.Engi
                 }
             }
 
-            if (!IsSettingEnabled("UseSnareAura") || fightingTarget == null)
+            if (!IsSettingEnabled("SnareAura") || fightingTarget == null)
             {
                 return false;
             }
@@ -145,17 +150,17 @@ namespace CombatHandler.Engi
 
         protected bool PistolGrenadeTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffWeaponCheck(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.Grenade, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.Grenade, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffInitEngi(spell, fightingTarget, ref actionTarget, CharacterWeaponType.RANGED);
+            return BuffInitEngi(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseShieldRipper") || fightingTarget == null)
+            if (!IsSettingEnabled("ShieldRipper") || fightingTarget == null)
             {
                 return false;
             }
@@ -250,7 +255,7 @@ namespace CombatHandler.Engi
 
         private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsSettingEnabled("UseShieldRipper") || fightingTarget == null)
+            if(IsSettingEnabled("ShieldRipper") || fightingTarget == null)
             {
                 return false;
             }
@@ -318,7 +323,7 @@ namespace CombatHandler.Engi
 
         protected bool PetDivertTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("UseDivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
             {
                 return false;
             }
@@ -337,7 +342,7 @@ namespace CombatHandler.Engi
 
         protected bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("UseAggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            if (!IsSettingEnabled("AggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
             {
                 return false;
             }
@@ -356,7 +361,7 @@ namespace CombatHandler.Engi
 
         protected bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("UseTauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
+            if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
             {
                 return false;
             }
@@ -447,7 +452,7 @@ namespace CombatHandler.Engi
 
             base.OnUpdate(deltaTime);
 
-            CancelBuffs(IsSettingEnabled("UseShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
+            CancelBuffs(IsSettingEnabled("ShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
             CancelHostileAuras(RelevantNanos.Blinds);
             CancelHostileAuras(RelevantNanos.ShieldRippers);
         }

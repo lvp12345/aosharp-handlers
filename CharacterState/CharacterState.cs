@@ -301,7 +301,7 @@ namespace Character.State
                 OnCharacterSpecialsMessage(0, specialsMessage);
                 OnCharacterStateMessage(0, stateMessage);
 
-                if (!IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 && !Team.IsInCombat && !DynelManager.LocalPlayer.IsAttacking && !DynelManager.LocalPlayer.IsAttackPending && AutoSitSwitch == true && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && !DynelManager.LocalPlayer.Buffs.Contains(280488))
+                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 && !Team.IsInCombat && !DynelManager.LocalPlayer.IsAttacking && !DynelManager.LocalPlayer.IsAttackPending && AutoSitSwitch == true && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && !DynelManager.LocalPlayer.Buffs.Contains(280488))
                 {
                     if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && justusedsitkit == false && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
                     {
@@ -310,7 +310,7 @@ namespace Character.State
                     }
                 }
 
-                if (DynelManager.LocalPlayer.MovementState == MovementState.Sit && justusedsitkit == true)
+                if (DynelManager.LocalPlayer.IsAlive && DynelManager.LocalPlayer.MovementState == MovementState.Sit && justusedsitkit == true)
                 {
                     MovementController.Instance.SetMovement(MovementAction.LeaveSit);
                     justusedsitkit = false;

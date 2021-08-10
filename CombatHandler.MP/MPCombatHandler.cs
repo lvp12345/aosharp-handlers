@@ -47,7 +47,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MPNanoBuff);
             RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MPNanoBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifierBuff);
-            RegisterSpellProcessor(RelevantNanos.CostBuffs, TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.CostBuffs, GenericBuff);
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
@@ -131,7 +131,7 @@ namespace Desu
             {
                 return false;
             }
-            return TeamBuff(spell, fightingTarget,  ref actionTarget);
+            return GenericBuff(spell, fightingTarget,  ref actionTarget);
         }
 
         private bool MPNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -140,7 +140,7 @@ namespace Desu
             {
                 return false;
             }
-            return TeamBuff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool HasAnyMPNanoLineBuff(SimpleChar target)
@@ -152,7 +152,7 @@ namespace Desu
 
         private bool InterruptModifierBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledTeamBuff("BuffInterruptChance", spell, fightingTarget, ref actionTarget);
+            return ToggledBuff("BuffInterruptChance", spell, fightingTarget, ref actionTarget);
         }
 
         private bool MPDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 

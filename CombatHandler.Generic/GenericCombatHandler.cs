@@ -424,11 +424,13 @@ namespace CombatHandler.Generic
             }
 
             if (SpellChecksPlayer(spell))
-                return false;
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
 
-            actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = DynelManager.LocalPlayer;
-            return true;
+            return false;
         }
 
         protected bool ToggledDebuffTarget(string settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -440,12 +442,13 @@ namespace CombatHandler.Generic
             }
 
             if (SpellChecksOther(spell, fightingTarget))
-                return false;
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = fightingTarget;
+                return true;
+            }
 
-            actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = fightingTarget;
-            return true;
-
+            return false;
             //return !fightingTarget.Buffs.Any(buff => ShouldRefreshBuff(spell, buff));
         }
 
@@ -535,11 +538,11 @@ namespace CombatHandler.Generic
             else
             {
                 if (SpellChecksPlayer(spell))
-                    return false;
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
             }
 
             return false;

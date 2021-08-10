@@ -49,8 +49,8 @@ namespace Desu
 
             //Team buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), MeleeBuff);
-            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TeamBuff);
             RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GenericBuff);
 
             if (TauntTools.CanUseTauntTool())

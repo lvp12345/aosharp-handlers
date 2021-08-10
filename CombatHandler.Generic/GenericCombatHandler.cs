@@ -548,7 +548,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran"))
             {
@@ -568,6 +568,16 @@ namespace CombatHandler.Generic
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
+            }
+
+            return false;
+        }
+
+        protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran"))
+            {
+                return false;
             }
 
             if (SpellChecksPlayer(spell))
@@ -1287,12 +1297,10 @@ namespace CombatHandler.Generic
                     return false;
                 }
             }
-            else
+
+            if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
             {
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;

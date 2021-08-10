@@ -79,10 +79,16 @@ namespace CombatHandler.Agent
 
         private bool RifleBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.AssassinsAimedShot, out Buff buff))
+            if(DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.AssassinsAimedShot, out Buff AAS))
             {
                 return false;
             }
+
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.SteadyNerves, out Buff SN))
+            {
+                return false;
+            }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
@@ -224,6 +230,7 @@ namespace CombatHandler.Agent
             public static int[] DotProcs = { 226425, 226423, 226421, 226419, 226417, 226415, 226413, 226410 };
             public static int[] TeamCritBuffs = { 160791, 160789, 160787 };
             public static int AssassinsAimedShot = 275007;
+            public static int SteadyNerves = 160795;
             public static int[] RK_HEALS = new[]
             { 43885, 43887, 43890, 43884 , 43808 , 43888 , 43889 ,43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,

@@ -18,6 +18,7 @@ namespace Desu
             settings.AddVariable("UseSpiritSiphon", true);
             settings.AddVariable("UseFasterThanYourShadow", false);
             settings.AddVariable("ProcSelection", 0);
+
             RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
             RegisterPerkProcessor(PerkHash.LEProcShadeSiphonBeing, LEProc);
@@ -105,7 +106,7 @@ namespace Desu
             {
                 return false;
             }
-            return ToggledTeamBuff("UseFasterThanYourShadow", spell, fightingTarget, ref actionTarget);
+            return ToggledBuff("UseFasterThanYourShadow", spell, fightingTarget, ref actionTarget);
         }
 
         private bool HasGsfNanoLine(SimpleChar target)

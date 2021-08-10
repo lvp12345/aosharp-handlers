@@ -64,7 +64,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperStr_Stam_AgiBuff).OrderByStackingOrder(), GenericBuff);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, GenericBuff);
 
             //I'm defining health and nano auras statically since they added new versions with lower stacking order.
             RegisterSpellProcessor(_hpAuras, HpAura);

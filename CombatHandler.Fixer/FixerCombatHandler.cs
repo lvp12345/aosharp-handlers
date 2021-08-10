@@ -59,12 +59,12 @@ namespace Desu
 
         private bool LongHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledTeamBuff("UseLongHoT", spell, fightingTarget, ref actionTarget);
+            return ToggledBuff("UseLongHoT", spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return HealOverTimeTeamBuff("UseShortHoT", spell, fightingTarget, ref actionTarget);
+            return HealOverTimeBuff("UseShortHoT", spell, fightingTarget, ref actionTarget);
         }
 
         private bool SummonShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -88,7 +88,7 @@ namespace Desu
             {
                 return false;
             }
-            return ToggledTeamBuff("UseRKRunspeed", spell, fightingTarget, ref actionTarget);
+            return ToggledBuff("UseRKRunspeed", spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShadowlandsSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

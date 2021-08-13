@@ -23,10 +23,9 @@ namespace Desu
             settings.AddVariable("IndividualHOT", false);
             settings.AddVariable("ShortHPBuff", false);
 
-            settings.AddVariable("CH", true);
-
             settings.AddVariable("Heal", true);
             settings.AddVariable("OSHeal", false);
+            settings.AddVariable("CH", true);
 
             settings.AddVariable("LockCH", false);
 

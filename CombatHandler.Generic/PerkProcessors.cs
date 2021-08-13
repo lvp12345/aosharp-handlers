@@ -359,7 +359,7 @@ namespace CombatHandler.Generic
                 }
             }
 
-            if (!DynelManager.LocalPlayer.IsAttacking && (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox"))
+            if (!DynelManager.LocalPlayer.IsAttacking && (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox" || perkAction.Name == "Dodge the Blame"))
                 return false;
 
             return true;

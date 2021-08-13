@@ -1,10 +1,8 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
-using AOSharp.Core.UI.Options;
 using CombatHandler.Generic;
 using Character.State;
-using System;
 using AOSharp.Core.UI;
 
 namespace Desu
@@ -14,19 +12,21 @@ namespace Desu
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("UseSingleTaunt", false);
-            settings.AddVariable("UseTauntTool", true);
+            settings.AddVariable("UseTauntTool", false);
+
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
 
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcSoldierGrazeJugularVein, LEProc);
             RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc);
 
-            //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
+            // Leave in to get the ID of SMG and Shotgun
+            Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
-            RegisterSpellProcessor(RelevantNanos.AdrenalineRush, AdrenalineRush);
-            RegisterSpellProcessor(RelevantNanos.Distinctvictim, SingleTargetTaunt);//TODO: Generate soldier taunt line to support lower ql taunt use
+            RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
+            RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), TeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
@@ -34,17 +34,16 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AssaultRifleBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.ArBuffs, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.HeavyComp, HeavyCompBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GenericBuff);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), TeamBuffAAONoMorph);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), TeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RangedBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), BurstBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
-            //Items
-            RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
-
+            // Needs work for 2nd tanking Abmouth and Ayjous
             if (TauntTools.CanUseTauntTool()) 
             {
                 Item tauntTool = TauntTools.GetBestTauntTool();
@@ -52,42 +51,27 @@ namespace Desu
             }
         }
 
-        private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        #region Instanced Logic
+
+        private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            // don't use if skill is locked (we will add this dynamically later)
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
-                return false;
-
-            // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent > 40)
-                return false;
-
-            // don't use if nothing is fighting us
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
-            //    return false;
-
-            // don't use if we have another major absorb running
-            // we could check remaining absorb stat to be slightly more effective
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
-                return false;
-
-            return true;
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg, CharacterWieldedWeapon.AssaultRifle, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.Bandaid);
         }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseSingleTaunt") || !DynelManager.LocalPlayer.IsAttacking || fightingTarget == null || DynelManager.LocalPlayer.Nano < spell.Cost)
+            if (!IsSettingEnabled("UseSingleTaunt") || !DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
                 return false;
 
             return true;
         }
 
-        private bool AdrenalineRush(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SolDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
-            //    return false;
+            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
+                return false;
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 30)
+            if (DynelManager.LocalPlayer.HealthPercent <= 40)
                 return true;
 
             return false;
@@ -98,7 +82,7 @@ namespace Desu
             if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
                 return false;
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 75 && spell.IsReady)
+            if (DynelManager.LocalPlayer.HealthPercent <= 75)
                 return true;
 
             return false;
@@ -114,10 +98,17 @@ namespace Desu
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
+        #endregion
+
+        #region Misc
+
         private static class RelevantNanos
         {
-            public const int AdrenalineRush = 301897;
-            public const int Distinctvictim = 223205;
+            public static readonly int[] SolDrainHeal = { 29241, 301897 };
+            public static readonly int[] TauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
+            29218, 100205, 100206, 100208, 29228};
+            public const int HeavyComp = 269482;
+            public static readonly int[] ArBuffs = { 275027, 203119, 29220, 203121 };
         }
 
         private static class RelevantItems
@@ -125,5 +116,7 @@ namespace Desu
             public const int DreadlochEnduranceBooster = 267168;
             public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
         }
+
+        #endregion
     }
 }

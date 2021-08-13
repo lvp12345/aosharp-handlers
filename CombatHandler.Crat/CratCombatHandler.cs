@@ -43,8 +43,8 @@ namespace Desu
             settings.AddVariable("TauntTrimmer", false);
             settings.AddVariable("AggDefTrimmer", false);
 
-            settings.AddVariable("UseNukes", false);
-            settings.AddVariable("UseAoeRoot", false);
+            settings.AddVariable("Nukes", false);
+            settings.AddVariable("AoeRoot", false);
             settings.AddVariable("Calm12Man", false);
 
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
@@ -203,17 +203,12 @@ namespace Desu
 
             Spell workplace = Spell.List.Where(x => x.Name == "Workplace Depression").FirstOrDefault();
 
-            if (fightingTarget == null || !IsSettingEnabled("UseNukes"))
+            if (fightingTarget == null || !IsSettingEnabled("Nukes"))
             {
                 return false;
             }
 
-            if (IsSettingEnabled("UseAoeRoot") && target != null)
-            {
-                return false;
-            }
-
-            if (workplace != null && (!fightingTarget.Buffs.Contains(301842) || !fightingTarget.Buffs.Contains(222687)))
+            if (IsSettingEnabled("AoeRoot") && target != null)
             {
                 return false;
             }
@@ -265,19 +260,19 @@ namespace Desu
             if (fightingTarget == null)
                 return false;
 
-            if (!IsSettingEnabled("UseNukes"))
+            if (!IsSettingEnabled("Nukes"))
             {
                 return false;
             }
 
             SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
 
-            if (IsSettingEnabled("UseAoeRoot") && target != null)
+            if (IsSettingEnabled("AoeRoot") && target != null)
             {
                 return false;
             }
 
-            if (!SpellChecksOther(spell, fightingTarget))
+            if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842))
                 return false;
 
             return true;
@@ -293,7 +288,7 @@ namespace Desu
                 return false;
             }
 
-            if (IsSettingEnabled("UseAoeRoot"))
+            if (IsSettingEnabled("AoeRoot"))
             {
                 SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
 
@@ -345,7 +340,7 @@ namespace Desu
                 return false;
             }
 
-            if (IsSettingEnabled("UseAoeRoot"))
+            if (IsSettingEnabled("AoeRoot"))
             {
                 SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
 
@@ -364,7 +359,7 @@ namespace Desu
 
         private bool CratDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("UseAoeRoot"))
+            if (IsSettingEnabled("AoeRoot"))
             {
                 SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
 
@@ -377,7 +372,7 @@ namespace Desu
 
         private bool AoeRoot(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseAoeRoot"))
+            if (!IsSettingEnabled("AoeRoot"))
             {
                 return false;
             }

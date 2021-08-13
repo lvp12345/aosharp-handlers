@@ -206,6 +206,11 @@ namespace CombatHandler.Generic
             {PerkHash.LEProcAgentLaserAim , PerkType.LE_PROC},
             {PerkHash.LEProcAgentMinorNanobotEnhance , PerkType.LE_PROC},
             {PerkHash.LEProcAgentPlasteelPiercingRounds , PerkType.LE_PROC},
+
+            {PerkHash.LEProcAgentNanoEnhancedTargeting , PerkType.LE_PROC},
+            {PerkHash.LEProcAgentNoEscape , PerkType.LE_PROC},
+            {PerkHash.LEProcAgentNotumChargedRounds , PerkType.LE_PROC},
+
             {PerkHash.LEProcBureaucratDeflation , PerkType.LE_PROC},
             {PerkHash.LEProcBureaucratFormsInTriplicate , PerkType.LE_PROC},
             {PerkHash.LEProcBureaucratInflationAdjustment , PerkType.LE_PROC},
@@ -495,7 +500,7 @@ namespace CombatHandler.Generic
             {PerkHash.VitalShock , PerkType.TARGETED_DAMAGE},
             {PerkHash.WeaponBash , PerkType.TARGETED_DAMAGE},
             {PerkHash.WitOfTheAtrox , PerkType.CUSTOM},
-            {PerkHash.ZapNano , PerkType.TARGETED_DAMAGE}
+            {PerkHash.ZapNano , PerkType.TARGETED_DAMAGE},
         };
     }
 

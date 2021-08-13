@@ -436,7 +436,8 @@ namespace MultiboxHelper
             {
                 Dynel usedynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useDynel);
 
-                if (usedynel != null && Vector3.Distance(playerPos, usedynel.Position) < 5)
+                if (usedynel != null && Vector3.Distance(playerPos, usedynel.Position) < 8 && 
+                    usedynel.Name != "Rubi-Ka Banking Service Terminal" && usedynel.Name != "Mail Terminal") //Add more
                 {
                     DynelManager.GetDynel<SimpleItem>(useDynel)?.Use();
                     useDynel = Identity.None;
@@ -446,7 +447,7 @@ namespace MultiboxHelper
             if (useOnDynel != Identity.None)
             {
                 Dynel _useOnDynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useOnDynel);
-                if (_useOnDynel != null && Vector3.Distance(playerPos, _useOnDynel.Position) < 5)
+                if (_useOnDynel != null && Vector3.Distance(playerPos, _useOnDynel.Position) < 8)
                 {
                     Network.Send(new GenericCmdMessage()
                     {

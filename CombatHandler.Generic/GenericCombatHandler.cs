@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using AOSharp.Character;
 using AOSharp.Common.GameData;
-using AOSharp.Common.Unmanaged.DataTypes;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
-using AOSharp.Core.IPC;
-using AOSharp.Core.Movement;
-using AOSharp.Core.UI;
 using Character.State;
+
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
 namespace CombatHandler.Generic
@@ -19,11 +14,14 @@ namespace CombatHandler.Generic
     public class GenericCombatHandler : AOSharp.Core.Combat.CombatHandler
     {
         private const float PostZonePetCheckBuffer = 5;
+        public int EvadeCycleTimeoutSeconds = 180;
+
         private double _lastPetSyncTime = Time.NormalTime;
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
-        public int EvadeCycleTimeoutSeconds = 180;
+
         private string pluginDir = "";
+
         protected Settings settings;
 
 

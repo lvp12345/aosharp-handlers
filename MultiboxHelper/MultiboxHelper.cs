@@ -81,6 +81,7 @@ namespace MultiboxHelper
             settings.AddVariable("SyncAttack", true);
             settings.AddVariable("SyncChat", false);
             settings.AddVariable("AutoSit", false);
+            settings.AddVariable("SyncTrade", false);
 
             settings["Follow"] = false;
             settings["OSFollow"] = false;
@@ -95,6 +96,7 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnTargetMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Trade, TradeMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UseItem, OnUseItemMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.CharStatus, OnCharStatusMessage);
@@ -117,9 +119,11 @@ namespace MultiboxHelper
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("autosit", AutoSitSwitch);
+            Chat.RegisterCommand("synctrade", SyncTradeSwitch);
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
+
             Chat.WriteLine("Multibox Helper Loaded!");
         }
 
@@ -244,6 +248,35 @@ namespace MultiboxHelper
                     Position = charDCMoveMsg.Position,
                     Rotation = charDCMoveMsg.Heading
                 });
+            }
+            else if (n3Msg.N3MessageType == N3MessageType.Trade)
+            {
+                if (!settings["SyncTrade"].AsBool())
+                    return;
+
+                TradeMessage charTradeIpcMsg = (TradeMessage)n3Msg;
+
+                if (charTradeIpcMsg.Action == SmokeLounge.AOtomation.Messaging.Messages.N3Messages.TradeAction.Confirm)
+                {
+                    IPCChannel.Broadcast(new TradeHandleMessage()
+                    {
+                        Unknown1 = charTradeIpcMsg.Unknown1,
+                        Action = charTradeIpcMsg.Action,
+                        Target = charTradeIpcMsg.Target,
+                        Container = charTradeIpcMsg.Container,
+                    });
+                }
+
+                if (charTradeIpcMsg.Action == SmokeLounge.AOtomation.Messaging.Messages.N3Messages.TradeAction.Accept)
+                {
+                    IPCChannel.Broadcast(new TradeHandleMessage()
+                    {
+                        Unknown1 = charTradeIpcMsg.Unknown1,
+                        Action = charTradeIpcMsg.Action,
+                        Target = charTradeIpcMsg.Target,
+                        Container = charTradeIpcMsg.Container,
+                    });
+                }
             }
             else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
             {
@@ -413,6 +446,22 @@ namespace MultiboxHelper
             AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
             Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
             DynelManager.LocalPlayer.Attack(targetDynel, true);
+        }
+
+        private void TradeMessage(int sender, IPCMessage msg)
+        {
+            if (Game.IsZoning)
+                return;
+
+            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
+            TradeMessage charTradeMsg = new TradeMessage()
+            {
+                Unknown1 = charTradeIpcMsg.Unknown1,
+                Action = charTradeIpcMsg.Action,
+                Target = charTradeIpcMsg.Target,
+                Container = charTradeIpcMsg.Container,
+            };
+            Network.Send(charTradeMsg);
         }
 
         private void OnStopAttackMessage(int sender, IPCMessage msg)
@@ -705,6 +754,22 @@ namespace MultiboxHelper
             {
                 settings["SyncChat"] = true;
                 Chat.WriteLine($"Sync chat started.");
+                return;
+            }
+        }
+
+        private void SyncTradeSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0 && settings["SyncTrade"].AsBool())
+            {
+                settings["SyncTrade"] = false;
+                Chat.WriteLine($"Sync trading disabled.");
+                return;
+            }
+            if (param.Length == 0 && !settings["SyncTrade"].AsBool())
+            {
+                settings["SyncTrade"] = true;
+                Chat.WriteLine($"Sync trading enabled.");
                 return;
             }
         }

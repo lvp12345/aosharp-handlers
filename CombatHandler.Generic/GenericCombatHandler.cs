@@ -142,7 +142,18 @@ namespace CombatHandler.Generic
             RegisterSpellProcessor(RelevantNanos.CompositeUtility, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, GenericBuff);
 
-            if (CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == CharacterWeaponType.MELEE)
+            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Energy ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1H ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Fists)
             {
                 //We are melee
                 RegisterSpellProcessor(RelevantNanos.CompositeMartial, GenericBuffExcludeInnerSanctum);
@@ -151,7 +162,17 @@ namespace CombatHandler.Generic
             }
 
 
-            if (CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == CharacterWeaponType.RANGED)
+            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Pistol ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndAssaultRifle ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndShotgun ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Smg ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Bow ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Shotgun ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndShotgun ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.HeavyWeapons ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Grenade ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.AssaultRifle ||
+                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Rifle)
             {
                 //We are ranged
                 RegisterSpellProcessor(RelevantNanos.CompositeRanged, GenericBuff);
@@ -1138,9 +1159,6 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (SpellChecksPlayer(spell))
-                return false;
-
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
@@ -1269,6 +1287,11 @@ namespace CombatHandler.Generic
                 {
                     return false;
                 }
+
+                //if (fightingTarget.Buffs.Contains(buff))
+                //{
+                //    return false;
+                //}
             }
 
             return true;
@@ -1294,6 +1317,11 @@ namespace CombatHandler.Generic
                 {
                     return false;
                 }
+
+                //if (DynelManager.LocalPlayer.Buffs.Contains(buff))
+                //{
+                //    return false;
+                //}
             }
 
             if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)

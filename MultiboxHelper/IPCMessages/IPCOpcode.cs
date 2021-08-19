@@ -21,5 +21,6 @@ namespace MultiboxHelper.IPCMessages
         Follow,
         UseItem,
         SetStat,
+        Trade,
     }
 }

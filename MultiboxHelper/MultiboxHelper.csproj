@@ -57,6 +57,7 @@
     <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\AttackIPCMessage.cs" />
+    <Compile Include="IPCMessages\TradeHandleMessage.cs" />
     <Compile Include="IPCMessages\UsableMessage.cs" />
     <Compile Include="IPCMessages\CharStatusMessage.cs" />
     <Compile Include="IPCMessages\UseMessage.cs" />

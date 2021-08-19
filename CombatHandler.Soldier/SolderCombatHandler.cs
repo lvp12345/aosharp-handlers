@@ -32,9 +32,10 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.ArBuffs, GenericBuff);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), ShotgunBuff);
+            RegisterSpellProcessor(RelevantNanos.ArBuffs, ARBuff);
             RegisterSpellProcessor(RelevantNanos.HeavyComp, HeavyCompBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GenericBuff);
 
@@ -57,6 +58,16 @@ namespace Desu
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg, CharacterWieldedWeapon.AssaultRifle, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.Bandaid);
         }
+        private bool ShotgunBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.PistolAndShotgun, CharacterWieldedWeapon.Shotgun, CharacterWieldedWeapon.Bandaid, CharacterWieldedWeapon.Bandaid);
+        }
+
+        private bool ARBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.AssaultRifle, CharacterWieldedWeapon.Bandaid, CharacterWieldedWeapon.Bandaid);
+        }
+
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

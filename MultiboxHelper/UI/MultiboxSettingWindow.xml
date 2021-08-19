@@ -13,6 +13,7 @@
     <OptionCheckBox label="Sync using items" opt_category="AOSharp" opt_type="variant" opt_variable="MultiboxHelper__SyncUse" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Sync fighting target" opt_category="AOSharp" opt_type="variant" opt_variable="MultiboxHelper__SyncAttack" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Sync chat" opt_category="AOSharp" opt_type="variant" opt_variable="MultiboxHelper__SyncChat" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Sync trade" opt_category="AOSharp" opt_type="variant" opt_variable="MultiboxHelper__SyncTrade" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="          Helpers" layout_borders="Rect(5,5,5,5)"/>

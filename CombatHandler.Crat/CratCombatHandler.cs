@@ -165,7 +165,7 @@ namespace Desu
 
         private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffNanoDrain"))
+            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffNanoDrain") || !IsSettingEnabled("DebuffCrit"))
             {
                 return false;
             }
@@ -175,7 +175,7 @@ namespace Desu
 
         private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffCrit") || IsSettingEnabled("DebuffNanoDrain"))
+            if (IsSettingEnabled("DebuffCrit") || IsSettingEnabled("DebuffNanoDrain") || !IsSettingEnabled("DebuffNanoResist"))
             {
                 return false;
             }
@@ -185,7 +185,7 @@ namespace Desu
 
         private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffCrit"))
+            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffCrit") || !IsSettingEnabled("DebuffNanoDrain"))
             {
                 return false;
             }

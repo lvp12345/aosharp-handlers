@@ -17,7 +17,7 @@ namespace MultiboxHelper.IPCMessages
         [AoMember(0)]
         public int Unknown1 { get; set; }
         [AoMember(1)]
-        public SmokeLounge.AOtomation.Messaging.Messages.N3Messages.TradeAction Action { get; set; }
+        public TradeAction Action { get; set; }
         [AoMember(2)]
         public Identity Target { get; set; }
         [AoMember(3)]

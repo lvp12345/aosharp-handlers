@@ -256,7 +256,7 @@ namespace MultiboxHelper
 
                 TradeMessage charTradeIpcMsg = (TradeMessage)n3Msg;
 
-                if (charTradeIpcMsg.Action == SmokeLounge.AOtomation.Messaging.Messages.N3Messages.TradeAction.Confirm)
+                if (charTradeIpcMsg.Action == TradeAction.Confirm)
                 {
                     IPCChannel.Broadcast(new TradeHandleMessage()
                     {
@@ -267,7 +267,7 @@ namespace MultiboxHelper
                     });
                 }
 
-                if (charTradeIpcMsg.Action == SmokeLounge.AOtomation.Messaging.Messages.N3Messages.TradeAction.Accept)
+                if (charTradeIpcMsg.Action == TradeAction.Accept)
                 {
                     IPCChannel.Broadcast(new TradeHandleMessage()
                     {

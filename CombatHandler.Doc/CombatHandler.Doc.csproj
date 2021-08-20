@@ -54,10 +54,6 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CharacterState\CharacterState.csproj">
-      <Project>{CECC3096-FF39-4BD7-B65C-420718048D44}</Project>
-      <Name>CharacterState</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CombatHandler.Generic\CombatHandler.Generic.csproj">
       <Project>{8CB8419F-3914-49C1-ABA3-78C5D26E8E48}</Project>
       <Name>CombatHandler.Generic</Name>

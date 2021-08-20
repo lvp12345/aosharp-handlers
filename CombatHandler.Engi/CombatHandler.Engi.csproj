@@ -55,10 +55,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CharacterState\CharacterState.csproj">
-      <Project>{CECC3096-FF39-4BD7-B65C-420718048D44}</Project>
-      <Name>CharacterState</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CombatHandler.Generic\CombatHandler.Generic.csproj">
       <Project>{8cb8419f-3914-49c1-aba3-78c5d26e8e48}</Project>
       <Name>CombatHandler.Generic</Name>

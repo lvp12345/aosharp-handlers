@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CombatHandler.Generic.IPCMessages
+namespace MultiboxHelper.IPCMessages
 {
-    [AoContract((int)IPCOpcode.UseGrid)]
-    public class UseGrid : IPCMessage
+    [AoContract((int)IPCOpcode.Disband)]
+    public class DisbandMessage : IPCMessage
     {
-        public override short Opcode => (short)IPCOpcode.UseGrid;
+        public override short Opcode => (short)IPCOpcode.Disband;
     }
 }

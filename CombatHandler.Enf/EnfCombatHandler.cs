@@ -3,11 +3,11 @@ using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
 using AOSharp.Core.UI.Options;
-using Character.State;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MultiboxHelper;
 
 namespace Desu
 {
@@ -104,8 +104,8 @@ namespace Desu
 
         private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1H || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H
-                || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing)
+            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1H || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H
+                || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing)
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -113,8 +113,8 @@ namespace Desu
 
         private bool Melee1HBBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H
-                || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing)
+            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H
+                || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing)
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -122,7 +122,7 @@ namespace Desu
 
         private bool Melee2HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H)
+            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H)
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -130,7 +130,7 @@ namespace Desu
 
         private bool Melee2HBBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H)
+            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H)
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -138,8 +138,8 @@ namespace Desu
 
         private bool MeleePierceBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing
-                || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing)
+            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing
+                || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing)
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -147,7 +147,7 @@ namespace Desu
 
         private bool MeleeEnergyBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Energy)
+            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Energy)
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
 
             return false;

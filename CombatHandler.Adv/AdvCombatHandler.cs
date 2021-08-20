@@ -5,7 +5,6 @@ using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
-using Character.State;
 
 namespace Desu
 {

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AOSharp.Common.GameData.UI;
 
-namespace AOSharp.Character
+namespace MultiboxHelper
 {
     public static class SettingsController
     {

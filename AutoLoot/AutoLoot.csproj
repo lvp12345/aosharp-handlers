@@ -38,6 +38,9 @@
     <Reference Include="AOSharp.Core">
       <HintPath>..\..\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="MultiboxHelper">
+      <HintPath>..\bin\Debug\MultiboxHelper.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -50,12 +53,6 @@
     <Compile Include="AutoLootCommand.cs" />
     <Compile Include="LootingRules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CharacterState\CharacterState.csproj">
-      <Project>{cecc3096-ff39-4bd7-b65c-420718048d44}</Project>
-      <Name>CharacterState</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="UI\AutoLootSettingsView.xml">

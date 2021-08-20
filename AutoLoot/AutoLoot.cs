@@ -5,7 +5,7 @@ using System.Linq;
 using AOSharp.Common.GameData;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
-using AOSharp.Character;
+using MultiboxHelper;
 
 namespace AutoLoot
 {

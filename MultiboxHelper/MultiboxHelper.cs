@@ -15,10 +15,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
-using AOSharp.Character;
-using CombatHandler.Generic;
-using System.Xml.Linq;
-using Character.State;
 
 namespace MultiboxHelper
 {
@@ -26,15 +22,19 @@ namespace MultiboxHelper
     {
         public static string PluginDir;
 
-        private IPCChannel IPCChannel;
+        private static IPCChannel IPCChannel;
         private StatusWindow _statusWindow;
         private double _lastUpdateTime = 0;
+        private double _ncuUpdateTime = 0;
 
         private static Identity useDynel;
         private static Identity useOnDynel;
         private static Identity useItem;
 
         private static double posUpdateTimer;
+        private static double sitUpdateTimer;
+
+        private static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -65,6 +65,8 @@ namespace MultiboxHelper
             new Vector3(76.1, 29.0, 28.3)
         };
         public byte _channelId;
+
+        private static bool justusedsitkit = false;
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
@@ -105,6 +107,9 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+
 
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
 
@@ -121,14 +126,46 @@ namespace MultiboxHelper
             Chat.RegisterCommand("autosit", AutoSitSwitch);
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
 
+            Chat.RegisterCommand("reform", ReformCommand);
+            Chat.RegisterCommand("form", FormCommand);
+            Chat.RegisterCommand("disband", DisbandCommand);
+
+
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
+            Team.TeamRequest += Team_TeamRequest;
 
             Chat.WriteLine("Multibox Helper Loaded!");
         }
 
+        public static int GetRemainingNCU(Identity target)
+        {
+            return RemainingNCU.ContainsKey(target) ? RemainingNCU[target] : 0;
+        }
+
+        public static Identity[] GetRegisteredCharacters()
+        {
+            return RemainingNCU.Keys.ToArray();
+        }
+
+        public static bool IsCharacterRegistered(Identity target)
+        {
+            return RemainingNCU.ContainsKey(target);
+        }
+
         private void OnUpdate(object s, float deltaTime)
         {
+            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            {
+                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+                IPCChannel.Broadcast(ncuMessage);
+
+                OnRemainingNCUMessage(0, ncuMessage);
+
+                _ncuUpdateTime = Time.NormalTime;
+            }
+
             if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281109))
             {
                 MovementController.Instance.SetPath(birdy);
@@ -137,6 +174,13 @@ namespace MultiboxHelper
             if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281108))
             {
                 MovementController.Instance.SetPath(horsey);
+            }
+
+            if (Time.NormalTime > sitUpdateTimer + 0.1)
+            {
+                ListenerSit();
+
+                sitUpdateTimer = Time.NormalTime;
             }
 
             if (Time.NormalTime > posUpdateTimer + 0.1)
@@ -161,12 +205,6 @@ namespace MultiboxHelper
 
                 _lastUpdateTime = Time.NormalTime;
             }
-
-            if (settings["AutoSit"].AsBool())
-                CharacterState.AutoSitSwitch = true;
-
-            if (!settings["AutoSit"].AsBool())
-                CharacterState.AutoSitSwitch = false;
 
             if (IsActiveCharacter() && settings["Follow"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
             {
@@ -476,6 +514,66 @@ namespace MultiboxHelper
             DynelManager.LocalPlayer.StopAttack();
         }
 
+        private void ListenerSit()
+        {
+            Spell spell = Spell.List.First();
+
+            if (spell != null && spell.IsReady && settings["AutoSit"].AsBool())
+            {
+                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && !DynelManager.LocalPlayer.Buffs.Contains(280488))
+                {
+                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && justusedsitkit == false && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
+                    {
+                        MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                        justusedsitkit = true;
+                    }
+                }
+
+                if (DynelManager.LocalPlayer.IsAlive && DynelManager.LocalPlayer.MovementState == MovementState.Sit && justusedsitkit == true && DynelManager.LocalPlayer.NanoPercent > 65 && DynelManager.LocalPlayer.HealthPercent > 65)
+                {
+                    MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                    justusedsitkit = false;
+                }
+            }
+        }
+
+        private bool IsFightingAny()
+        {
+            SimpleChar target = DynelManager.NPCs
+                .Where(c => c.IsAlive)
+                .Where(c => c.IsInLineOfSight)
+                .Where(c => c.FightingTarget != null)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                .FirstOrDefault();
+
+            if (target == null)
+                return false;
+
+            if (Team.IsInTeam)
+            {
+                if (Team.Members.Where(c => target.FightingTarget == c.Character).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
+                    return true;
+                if (target.FightingTarget.IsPet && Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any())
+                    return true;
+                else
+                    return false;
+                // maybe some sort of assist function??
+                //return target.IsAttacking && (Team.Members.Where(c => target.FightingTarget == c.Character).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f || target.FightingTarget.IsPet);
+                //Team.Members.Any(x => target.FightingTarget.Identity == x.Character.Identity) || (target.IsAttacking && Team.Members.Where(x => x.Character.FightingTarget != null).Any(x => x.Character.FightingTarget.Identity == target.Identity));
+            }
+            else
+            {
+                if (target.FightingTarget.Identity == DynelManager.LocalPlayer.Identity || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
+                    return true;
+                if (DynelManager.LocalPlayer.Pets.Where(c => target.FightingTarget.Name == c.Character.Name).Any())
+                    return true;
+                else
+                    return false;
+
+                //return target.IsAttacking && (target.FightingTarget.Identity == DynelManager.LocalPlayer.Identity || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f || target.FightingTarget.IsPet);
+            }
+        }
+
         private void ListenerUseSync()
         {
             Vector3 playerPos = DynelManager.LocalPlayer.Position;
@@ -513,6 +611,22 @@ namespace MultiboxHelper
                     useOnDynel = Identity.None;
                     useItem = Identity.None;
                 }
+            }
+        }
+
+        private static void OnRemainingNCUMessage(int sender, IPCMessage msg)
+        {
+            try
+            {
+                if (Game.IsZoning)
+                    return;
+
+                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
+                    RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e);
             }
         }
 
@@ -579,7 +693,94 @@ namespace MultiboxHelper
 
         public override void Teardown()
         {
+            SettingsController.CleanUp();
+
             IPCChannel.Broadcast(new CharLeftMessage());
+        }
+
+        private void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            Team.Disband();
+            MultiboxHelper.BroadcastDisband();
+        }
+
+        private void ReformCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            Team.Disband();
+            MultiboxHelper.BroadcastDisband();
+            Task task = new Task(() =>
+            {
+                Thread.Sleep(1000);
+                FormCommand("form", param, chatWindow);
+            });
+            task.Start();
+        }
+
+        private void FormCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (!DynelManager.LocalPlayer.IsInTeam())
+            {
+                SendTeamInvite(GetRegisteredCharactersInvite());
+
+                if (IsRaidEnabled(param))
+                {
+                    Task task = new Task(() =>
+                    {
+                        Thread.Sleep(1000);
+                        Team.ConvertToRaid();
+                        Thread.Sleep(1000);
+                        SendTeamInvite(GetRemainingRegisteredCharacters());
+                    });
+                    task.Start();
+                }
+            }
+            else
+            {
+                Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
+            }
+        }
+
+        private bool IsRaidEnabled(string[] param)
+        {
+            return param.Length > 0 && "raid".Equals(param[0]);
+        }
+
+        private Identity[] GetRegisteredCharactersInvite()
+        {
+            Identity[] registeredCharacters = MultiboxHelper.GetRegisteredCharacters();
+            int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
+            Identity[] firstTeamCharacters = new Identity[firstTeamCount];
+            Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
+            return firstTeamCharacters;
+        }
+
+        private Identity[] GetRemainingRegisteredCharacters()
+        {
+            Identity[] registeredCharacters = MultiboxHelper.GetRegisteredCharacters();
+            int characterCount = registeredCharacters.Length - 6;
+            Identity[] remainingCharacters = new Identity[characterCount];
+            if (characterCount > 0)
+            {
+                Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
+            }
+            return remainingCharacters;
+        }
+
+        private void SendTeamInvite(Identity[] targets)
+        {
+            foreach (Identity target in targets)
+            {
+                if (target != DynelManager.LocalPlayer.Identity)
+                    Team.Invite(target);
+            }
+        }
+
+        private void Team_TeamRequest(object s, TeamRequestEventArgs e)
+        {
+            if (MultiboxHelper.IsCharacterRegistered(e.Requester))
+            {
+                e.Accept();
+            }
         }
 
         private void OnUseItemMessage(int sender, IPCMessage msg)
@@ -724,6 +925,16 @@ namespace MultiboxHelper
                 playername = param;
                 Chat.WriteLine($"Follow player name set to - {playername[0]}");
             }
+        }
+
+        public static void BroadcastDisband()
+        {
+            IPCChannel.Broadcast(new DisbandMessage());
+        }
+
+        private static void OnDisband(int sender, IPCMessage msg)
+        {
+            Team.Leave();
         }
 
         private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)

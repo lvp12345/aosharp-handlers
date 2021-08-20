@@ -2,7 +2,6 @@
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
-using Character.State;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;

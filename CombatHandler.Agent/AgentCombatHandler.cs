@@ -1,7 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
 using CombatHandler.Generic;
-using Character.State;
 using AOSharp.Core.UI;
 using System.Linq;
 using System.Collections.Generic;

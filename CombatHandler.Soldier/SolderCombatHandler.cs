@@ -2,8 +2,8 @@
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
-using Character.State;
 using AOSharp.Core.UI;
+using MultiboxHelper;
 
 namespace Desu
 {
@@ -41,7 +41,7 @@ namespace Desu
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), TeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), BurstBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RangedBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             // Needs work for 2nd tanking Abmouth and Ayjous

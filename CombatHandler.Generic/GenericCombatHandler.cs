@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOSharp.Character;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
-using Character.State;
+using AOSharp.Core.UI;
+using MultiboxHelper;
 
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
@@ -77,6 +77,42 @@ namespace CombatHandler.Generic
                     "Awakened Xan"
         };
 
+        //public static bool IsCharacterRegistered(Identity target)
+        //{
+        //    return RemainingNCU.ContainsKey(target);
+        //}
+
+        protected bool CheckingRanged()
+        {
+            return GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Pistol ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndAssaultRifle ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndShotgun ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Smg ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Bow ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Shotgun ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndShotgun ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.HeavyWeapons ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Grenade ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.AssaultRifle ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Rifle;
+        }
+
+        protected bool CheckingMelee()
+        {
+            return GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Energy ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1H ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing ||
+                GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Fists;
+        }
+
 
         public GenericCombatHandler(string pluginDir)
         {
@@ -141,18 +177,7 @@ namespace CombatHandler.Generic
             RegisterSpellProcessor(RelevantNanos.CompositeUtility, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, GenericBuff);
 
-            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Energy ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1H ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Fists)
+            if (CheckingMelee())
             {
                 //We are melee
                 RegisterSpellProcessor(RelevantNanos.CompositeMartial, GenericBuffExcludeInnerSanctum);
@@ -161,17 +186,7 @@ namespace CombatHandler.Generic
             }
 
 
-            if (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Pistol ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndAssaultRifle ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndShotgun ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Smg ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Bow ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Shotgun ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.PistolAndShotgun ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.HeavyWeapons ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Grenade ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.AssaultRifle ||
-                CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Rifle)
+            if (CheckingRanged())
             {
                 //We are ranged
                 RegisterSpellProcessor(RelevantNanos.CompositeRanged, GenericBuff);
@@ -195,14 +210,14 @@ namespace CombatHandler.Generic
 
         //.Where(c => spell.StackingOrder > c.Buffs.FirstOrDefault(x => x.Nanoline == spell.Nanoline).StackingOrder)
 
-        protected void RegisterSettingsWindow(string settingsName, string xmlName)
-        {
-            SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, settings);
-        }
-
         private void OnZoned(object s, EventArgs e)
         {
             _lastZonedTime = Time.NormalTime;
+        }
+
+        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        {
+            SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, settings);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -345,9 +360,9 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => CheckingRanged())
                     .Where(c => SpellChecksOther(spell, c))
                     .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
-                    .Where(c => CharacterState.GetWeaponType(c.Identity) == CharacterWeaponType.RANGED)
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -531,40 +546,40 @@ namespace CombatHandler.Generic
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool BuffSpecialAttack(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SpecialAttacks, bool> specialAttackCheck)
-        {
-            if (fightingTarget != null || !CanCast(spell))
-            {
-                return false;
-            }
+        //private bool BuffSpecialAttack(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SpecialAttacks, bool> specialAttackCheck)
+        //{
+        //    if (fightingTarget != null || !CanCast(spell))
+        //    {
+        //        return false;
+        //    }
 
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
-                    .Where(c => specialAttackCheck == null || specialAttackCheck.Invoke(CharacterState.GetSpecialAttacks(c.Identity)))
-                    .FirstOrDefault();
+        //    if (DynelManager.LocalPlayer.IsInTeam())
+        //    {
+        //        SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+        //            .Where(c => SpellChecksOther(spell, c))
+        //            .Where(c => specialAttackCheck == null || specialAttackCheck.Invoke(CharacterState.GetSpecialAttacks(c.Identity)))
+        //            .FirstOrDefault();
 
-                if (teamMemberWithoutBuff != null)
-                {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-            else
-            {
-                if (SpellChecksPlayer(spell))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    return true;
-                }
-            }
+        //        if (teamMemberWithoutBuff != null)
+        //        {
+        //            actionTarget.Target = teamMemberWithoutBuff;
+        //            actionTarget.ShouldSetTarget = true;
+        //            return true;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (SpellChecksPlayer(spell))
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = DynelManager.LocalPlayer;
+        //            return true;
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -584,6 +599,15 @@ namespace CombatHandler.Generic
                 {
                     actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+            else
+            {
+                if (SpellChecksPlayer(spell))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
                     return true;
                 }
             }
@@ -608,8 +632,11 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool BuffAttackType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWeaponType supportedWeaponType)
+        protected bool BuffRanged(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!CheckingMelee())
+                return false;
+
             if (fightingTarget != null || !CanCast(spell))
             {
                 return false;
@@ -619,8 +646,8 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => CheckingRanged())
                     .Where(c => SpellChecksOther(spell, c))
-                    .Where(c => supportedWeaponType == CharacterWeaponType.UNAVAILABLE || CharacterState.GetWeaponType(c.Identity) == supportedWeaponType)
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -632,7 +659,42 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (SpellChecksPlayer(spell) && CharacterState.GetWeaponType(DynelManager.LocalPlayer.Identity) == supportedWeaponType)
+                if (SpellChecksPlayer(spell) && CheckingRanged())
+                {
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool BuffMelee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || !CanCast(spell))
+            {
+                return false;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => CheckingMelee())
+                    .Where(c => SpellChecksOther(spell, c))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+            else
+            {
+                if (SpellChecksPlayer(spell) && CheckingMelee())
                 {
                     actionTarget.Target = DynelManager.LocalPlayer;
                     actionTarget.ShouldSetTarget = true;
@@ -655,7 +717,7 @@ namespace CombatHandler.Generic
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => SpellChecksOther(spell, c))
-                    .Where(c => CharacterState.GetWieldedWeaponOther(c) == supportedWeaponType1 || CharacterState.GetWieldedWeaponOther(c) == supportedWeaponType2 || CharacterState.GetWieldedWeaponOther(c) == supportedWeaponType3 || CharacterState.GetWieldedWeaponOther(c) == supportedWeaponType4)
+                    .Where(c => GetWieldedWeaponOther(c) == supportedWeaponType1 || GetWieldedWeaponOther(c) == supportedWeaponType2 || GetWieldedWeaponOther(c) == supportedWeaponType3 || GetWieldedWeaponOther(c) == supportedWeaponType4)
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -667,7 +729,7 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (SpellChecksPlayer(spell) && (CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType1 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType2 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType3 || CharacterState.GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType4))
+                if (SpellChecksPlayer(spell) && (GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType1 || GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType2 || GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType3 || GetWieldedWeapon(DynelManager.LocalPlayer) == supportedWeaponType4))
                 {
                     actionTarget.Target = DynelManager.LocalPlayer;
                     actionTarget.ShouldSetTarget = true;
@@ -680,12 +742,12 @@ namespace CombatHandler.Generic
 
         protected bool RangedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffAttackType(spell, fightingTarget, ref actionTarget, CharacterWeaponType.RANGED);
+            return BuffRanged(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool MeleeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffAttackType(spell, fightingTarget, ref actionTarget, CharacterWeaponType.MELEE);
+            return BuffMelee(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool PistolBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -693,10 +755,10 @@ namespace CombatHandler.Generic
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun, CharacterWieldedWeapon.Bandaid);
         }
 
-        protected bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return BuffSpecialAttack(spell, fightingTarget, ref actionTarget, specialAttacks => specialAttacks.HasBurst);
-        }
+        //protected bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    return BuffSpecialAttack(spell, fightingTarget, ref actionTarget, specialAttacks => specialAttacks.HasBurst);
+        //}
         #endregion
 
         #region Items
@@ -782,7 +844,7 @@ namespace CombatHandler.Generic
             actiontarget.Target = DynelManager.LocalPlayer;
 
 
-            return DynelManager.LocalPlayer.HealthPercent < 80 || DynelManager.LocalPlayer.NanoPercent < 80;
+            return (DynelManager.LocalPlayer.HealthPercent < 80 || DynelManager.LocalPlayer.NanoPercent < 80);
         }
 
         private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -1267,10 +1329,7 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksOther(Spell spell, SimpleChar fightingTarget)
         {
-            if (fightingTarget.IsPlayer && !CharacterState.IsCharacterRegistered(fightingTarget.Identity))
-                return false;
-
-            if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))
+            if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget) && !MultiboxHelper.MultiboxHelper.IsCharacterRegistered(fightingTarget.Identity))
                 return false;
 
             if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
@@ -1343,7 +1402,7 @@ namespace CombatHandler.Generic
 
         protected bool HasNCU(Spell spell, SimpleChar target)
         {
-            return CharacterState.GetRemainingNCU(target.Identity) > spell.NCU;
+            return MultiboxHelper.MultiboxHelper.GetRemainingNCU(target.Identity) > spell.NCU;
         }
 
         private void TeleportEnded(object sender, EventArgs e)
@@ -1418,6 +1477,97 @@ namespace CombatHandler.Generic
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
+        }
+
+        public static CharacterWieldedWeapon GetWieldedWeapon(LocalPlayer local)
+        {
+            if (local.GetStat(Stat.EquippedWeapons) == 1028)
+                return CharacterWieldedWeapon.Pistol;
+            if (local.GetStat(Stat.EquippedWeapons) == 8196)
+                return CharacterWieldedWeapon.Shotgun;
+            if (local.GetStat(Stat.EquippedWeapons) == 3076)
+                return CharacterWieldedWeapon.PistolAndAssaultRifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 4100)
+                return CharacterWieldedWeapon.Rifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 2052)
+                return CharacterWieldedWeapon.AssaultRifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 20)
+                return CharacterWieldedWeapon.Smg;
+            if (local.GetStat(Stat.EquippedWeapons) == 12)
+                return CharacterWieldedWeapon.Bow;
+            if (local.GetStat(Stat.EquippedWeapons) == 1)
+                return CharacterWieldedWeapon.Fists;
+            if (local.GetStat(Stat.EquippedWeapons) == 258)
+                return CharacterWieldedWeapon.Blunt2H;
+            if (local.GetStat(Stat.EquippedWeapons) == 66)
+                return CharacterWieldedWeapon.Blunt1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 130)
+                return CharacterWieldedWeapon.Edged2H;
+            if (local.GetStat(Stat.EquippedWeapons) == 34)
+                return CharacterWieldedWeapon.Edged1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 514)
+                return CharacterWieldedWeapon.Piercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 546)
+                return CharacterWieldedWeapon.Edged1HAndPiercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 98)
+                return CharacterWieldedWeapon.Blunt1HAndEdged1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 16450)
+                return CharacterWieldedWeapon.Blunt1HAndEnergy;
+            if (local.GetStat(Stat.EquippedWeapons) == 578)
+                return CharacterWieldedWeapon.Blunt1HAndPiercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 32772)
+                return CharacterWieldedWeapon.Grenade;
+            if (local.GetStat(Stat.EquippedWeapons) == 65540)
+                return CharacterWieldedWeapon.HeavyWeapons;
+            if (local.GetStat(Stat.EquippedWeapons) == 16386)
+                return CharacterWieldedWeapon.Energy;
+
+            return CharacterWieldedWeapon.Invalid;
+        }
+        public static CharacterWieldedWeapon GetWieldedWeaponOther(SimpleChar local)
+        {
+            if (local.GetStat(Stat.EquippedWeapons) == 1028)
+                return CharacterWieldedWeapon.Pistol;
+            if (local.GetStat(Stat.EquippedWeapons) == 8196)
+                return CharacterWieldedWeapon.Shotgun;
+            if (local.GetStat(Stat.EquippedWeapons) == 3076)
+                return CharacterWieldedWeapon.PistolAndAssaultRifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 4100)
+                return CharacterWieldedWeapon.Rifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 2052)
+                return CharacterWieldedWeapon.AssaultRifle;
+            if (local.GetStat(Stat.EquippedWeapons) == 20)
+                return CharacterWieldedWeapon.Smg;
+            if (local.GetStat(Stat.EquippedWeapons) == 12)
+                return CharacterWieldedWeapon.Bow;
+            if (local.GetStat(Stat.EquippedWeapons) == 1)
+                return CharacterWieldedWeapon.Fists;
+            if (local.GetStat(Stat.EquippedWeapons) == 258)
+                return CharacterWieldedWeapon.Blunt2H;
+            if (local.GetStat(Stat.EquippedWeapons) == 66)
+                return CharacterWieldedWeapon.Blunt1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 130)
+                return CharacterWieldedWeapon.Edged2H;
+            if (local.GetStat(Stat.EquippedWeapons) == 34)
+                return CharacterWieldedWeapon.Edged1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 514)
+                return CharacterWieldedWeapon.Piercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 546)
+                return CharacterWieldedWeapon.Edged1HAndPiercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 98)
+                return CharacterWieldedWeapon.Blunt1HAndEdged1H;
+            if (local.GetStat(Stat.EquippedWeapons) == 16450)
+                return CharacterWieldedWeapon.Blunt1HAndEnergy;
+            if (local.GetStat(Stat.EquippedWeapons) == 578)
+                return CharacterWieldedWeapon.Blunt1HAndPiercing;
+            if (local.GetStat(Stat.EquippedWeapons) == 32772)
+                return CharacterWieldedWeapon.Grenade;
+            if (local.GetStat(Stat.EquippedWeapons) == 65540)
+                return CharacterWieldedWeapon.HeavyWeapons;
+            if (local.GetStat(Stat.EquippedWeapons) == 16386)
+                return CharacterWieldedWeapon.Energy;
+
+            return CharacterWieldedWeapon.Invalid;
         }
 
         private static class RelevantItems

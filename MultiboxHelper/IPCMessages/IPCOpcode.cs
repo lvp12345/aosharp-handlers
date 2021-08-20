@@ -22,5 +22,7 @@ namespace MultiboxHelper.IPCMessages
         UseItem,
         SetStat,
         Trade,
+        RemainingNCU,
+        Disband,
     }
 }

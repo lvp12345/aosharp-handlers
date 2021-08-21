@@ -20,6 +20,7 @@ namespace MultiboxHelper.IPCMessages
         NpcChatAnswer,
         Follow,
         NavFollow,
+        Assist,
         UseItem,
         SetStat,
         Trade,

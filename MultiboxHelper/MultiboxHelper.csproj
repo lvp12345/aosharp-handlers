@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IPCMessages\DisbandMessage.cs" />
+    <Compile Include="IPCMessages\AssistMessage.cs" />
     <Compile Include="IPCMessages\NavFollowMessage.cs" />
     <Compile Include="IPCMessages\RemaingNCUMessage.cs" />
     <Compile Include="IPCMessages\FollowMessage.cs" />

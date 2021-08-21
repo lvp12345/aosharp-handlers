@@ -34,6 +34,7 @@ namespace MultiboxHelper
 
         public static string playersname = String.Empty;
         public static string identitiesname = String.Empty;
+        public static string assistersname = String.Empty;
 
 
         private static double posUpdateTimer;
@@ -48,8 +49,8 @@ namespace MultiboxHelper
         private static Settings settings = new Settings("MultiboxHelper");
 
         private string[] playername = null;
-
         private string[] identityname = null;
+        private string[] assistname = null;
 
         private double _lastFollowTime = Time.NormalTime;
 
@@ -94,10 +95,12 @@ namespace MultiboxHelper
             settings.AddVariable("AutoSit", false);
             settings.AddVariable("SyncTrade", false);
             settings.AddVariable("NavFollow", false);
+            settings.AddVariable("AssistPlayer", false);
 
             settings["Follow"] = false;
             settings["OSFollow"] = false;
             settings["NavFollow"] = false;
+            settings["SyncAttack"] = true;
 
             _channelId = Convert.ToByte(settings["ChannelID"].AsInt32());
 
@@ -121,6 +124,7 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
 
 
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
@@ -132,6 +136,7 @@ namespace MultiboxHelper
             Chat.RegisterCommand("allfollow", Allfollow);
             Chat.RegisterCommand("leadfollow", LeadFollow);
             Chat.RegisterCommand("navfollow", Navfollow);
+            Chat.RegisterCommand("assistplayer", AssistPlayer);
             Chat.RegisterCommand("sync", SyncSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
@@ -253,6 +258,80 @@ namespace MultiboxHelper
                 }
             }
 
+            if (!settings["AssistPlayer"].AsBool())
+            {
+                if (assistersname != String.Empty)
+                {
+                    assistersname = string.Empty;
+                    return;
+                }
+            }
+
+            if (settings["AssistPlayer"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
+            {
+                if (settings["SyncAttack"].AsBool())
+                {
+                    settings["SyncAttack"] = false;
+                    settings["AssistPlayer"] = false;
+                    Chat.WriteLine($"Can only have one form of sync attack active at once.");
+                }
+
+                if (assistersname == String.Empty)
+                {
+                    Window textboxwindow = SettingsController.settingsWindow;
+
+                    textboxwindow.FindView("AssistNamedCharacter", out TextInputView textinput);
+
+                    if (textinput.Text == String.Empty)
+                    {
+                        Chat.WriteLine("You must enter a characters name.");
+                        settings["AssistPlayer"] = false;
+                        return;
+                    }
+
+                    if (textinput.Text != String.Empty)
+                    {
+                        assistersname = textinput.Text;
+                        return;
+                    }
+                }
+
+                SimpleChar identity = DynelManager.Characters
+                    .Where(c => assistersname != String.Empty)
+                    .Where(c => c.IsAlive)
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => c.Name.Contains(assistersname))
+                    .FirstOrDefault();
+
+                if (identity != null && identity.FightingTarget == null &&
+                    DynelManager.LocalPlayer.FightingTarget != null)
+                {
+                    DynelManager.LocalPlayer.StopAttack();
+
+                    IPCChannel.Broadcast(new StopAttackIPCMessage());
+                    _lastFollowTime = Time.NormalTime;
+                }
+
+                if (identity != null && identity.FightingTarget != null && 
+                    (DynelManager.LocalPlayer.FightingTarget == null || 
+                    (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Identity != identity.FightingTarget.Identity)))
+                {
+                    DynelManager.LocalPlayer.Attack(identity.FightingTarget);
+
+                    IPCChannel.Broadcast(new AssistMessage()
+                    {
+                        Target = identity.Identity
+                    });
+                    _lastFollowTime = Time.NormalTime;
+                }
+                else if (identity == null)
+                {
+                    Chat.WriteLine($"Cannot find {assistersname}. Make sure to type captial first letter.");
+                    settings["AssistPlayer"] = false;
+                    return;
+                }
+            }
+
             if (settings["NavFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
             {
                 if (settings["Follow"].AsBool())
@@ -265,9 +344,9 @@ namespace MultiboxHelper
 
                 if (identitiesname == String.Empty)
                 {
-                    Window addItemWindow = SettingsController.settingsWindow;
+                    Window textboxwindow = SettingsController.settingsWindow;
 
-                    addItemWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
+                    textboxwindow.FindView("FollowNamedIdentity", out TextInputView textinput);
 
                     if (textinput.Text == String.Empty)
                     {
@@ -293,11 +372,9 @@ namespace MultiboxHelper
                     if (DynelManager.LocalPlayer.DistanceFrom(identity) > 6f)
                         MovementController.Instance.SetDestination(identity.Position);
 
-                    OnSelfFollowMessage(identity);
-
                     IPCChannel.Broadcast(new NavFollowMessage()
                     {
-                        Target = identity.Identity // change this to the new target with selection param
+                          Target = identity.Identity
                     });
                     _lastFollowTime = Time.NormalTime;
                 }
@@ -320,9 +397,9 @@ namespace MultiboxHelper
 
                 if (playersname == String.Empty)
                 {
-                    Window addItemWindow = SettingsController.settingsWindow;
+                    Window textboxwindow = SettingsController.settingsWindow;
 
-                    addItemWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+                    textboxwindow.FindView("FollowNamedCharacter", out TextInputView textinput);
 
                     if (textinput.Text == String.Empty)
                     {
@@ -1106,6 +1183,43 @@ namespace MultiboxHelper
             }
         }
 
+        private void AssistPlayer(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0 && settings["AssistPlayer"].AsBool())
+            {
+                Chat.WriteLine($"Stopped assisting.");
+                settings["AssistPlayer"] = false;
+                return;
+            }
+
+            if (param.Length == 0 && !settings["AssistPlayer"].AsBool() && assistname == null)
+            {
+                Chat.WriteLine($"Wrong syntax, /assistplayer name");
+                settings["AssistPlayer"] = false;
+                return;
+            }
+
+            if (param.Length == 0 && !settings["AssistPlayer"].AsBool() && assistname != null)
+            {
+                settings["AssistPlayer"] = true;
+                Chat.WriteLine($"Assisting {assistname[0]}.");
+            }
+
+            if (assistname == null && settings["AssistPlayer"].AsBool())
+            {
+                Chat.WriteLine($"Cannot find player.");
+                settings["AssistPlayer"] = false;
+            }
+
+            if (param.Length >= 1 && !settings["AssistPlayer"].AsBool())
+            {
+                assistname = param;
+                settings["AssistPlayer"] = true;
+                Chat.WriteLine($"Assisting {assistname[0]}.");
+
+            }
+        }
+
         private void Navfollow(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0 && settings["NavFollow"].AsBool())
@@ -1253,29 +1367,37 @@ namespace MultiboxHelper
 
         private void OnNavFollowMessage(int sender, IPCMessage msg)
         {
-            Dynel identity = DynelManager.AllDynels.Where(x => x.Name.Contains(identitiesname)).FirstOrDefault();
 
-            if (identity != null)
+            NavFollowMessage followMessage = (NavFollowMessage)msg;
+
+            Dynel targetDynel = DynelManager.GetDynel(followMessage.Target);
+
+            if (targetDynel != null)
             {
-                if (DynelManager.LocalPlayer.DistanceFrom(identity) <= 6f)
+                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) <= 6f)
                     MovementController.Instance.Halt();
 
-                if (DynelManager.LocalPlayer.DistanceFrom(identity) > 6f)
-                    MovementController.Instance.SetDestination(identity.Position);
-
-                OnSelfFollowMessage(identity);
-
-                IPCChannel.Broadcast(new FollowMessage()
-                {
-                    Target = identity.Identity // change this to the new target with selection param
-                });
+                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) > 6f)
+                    MovementController.Instance.SetDestination(targetDynel.Position);
                 _lastFollowTime = Time.NormalTime;
             }
             else
             {
-                Chat.WriteLine($"Cannot find {identitiesname}. Make sure to type captial first letter.");
+                Chat.WriteLine($"Cannot find {targetDynel.Name}. Make sure to type captial first letter.");
                 settings["NavFollow"] = false;
                 return;
+            }
+        }
+
+        private void OnAssistMessage(int sender, IPCMessage msg)
+        {
+            AssistMessage assistMessage = (AssistMessage)msg;
+
+            Dynel targetDynel = DynelManager.GetDynel(assistMessage.Target);
+
+            if (targetDynel != null && DynelManager.LocalPlayer.FightingTarget == null)
+            {
+                DynelManager.LocalPlayer.Attack(targetDynel);
             }
         }
 

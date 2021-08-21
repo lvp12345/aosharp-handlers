@@ -1355,7 +1355,7 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksOther(Spell spell, SimpleChar fightingTarget)
         {
-            if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget) && !MultiboxHelper.MultiboxHelper.IsCharacterRegistered(fightingTarget.Identity))
+            if (fightingTarget.IsPlayer && !MultiboxHelper.MultiboxHelper.IsCharacterRegistered(fightingTarget.Identity))
                 return false;
 
             if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
@@ -1378,7 +1378,7 @@ namespace CombatHandler.Generic
                 //}
             }
 
-            return true;
+            return HasNCU(spell, fightingTarget);
         }
 
         protected bool SpellChecksPlayer(Spell spell)

@@ -78,13 +78,30 @@ namespace AutoMission
             {
                 foreach (KeyValuePair<int, string> option in options)
                 {
-                    if (option.Value == "Yes I have." ||
+                    if (Team.IsInTeam)
+                    {
+                        if (option.Value == "Yes we have." ||
+                        option.Value == "Our talents are at your disposal." ||
+                        (option.Value == "I think we'll start off slowly and work our way up." && (ClanEasy || OmniEasy)) ||
+                        (option.Value == "I'm pretty confident we can do what you ask!" && (ClanMedium || OmniMedium)) ||
+                        (option.Value == "We will undertake the greatest challenge." && (ClanHard || OmniHard)) ||
+                        option.Value == "Goodbye")
+                        {
+                            NpcDialog.SelectAnswer(dialogNpc.Identity, option.Key);
+                        }
+                    }
+                    else
+                    {
+                        if (option.Value == "Yes I have." ||
                         option.Value == "My talents are at your disposal." ||
                         (option.Value == "I think I'll start off slowly and work my way up." && (ClanEasy || OmniEasy)) ||
                         (option.Value == "I'm pretty confident I can do what you ask!" && (ClanMedium || OmniMedium)) ||
                         (option.Value == "I will undertake the greatest challenge." && (ClanHard || OmniHard)) ||
                         option.Value == "Goodbye")
-                        NpcDialog.SelectAnswer(dialogNpc.Identity, option.Key);
+                        {
+                            NpcDialog.SelectAnswer(dialogNpc.Identity, option.Key);
+                        }
+                    }
                 }
             }
         }

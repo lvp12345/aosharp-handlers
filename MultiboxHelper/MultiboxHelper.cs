@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
+using AOSharp.Common.GameData.UI;
 
 namespace MultiboxHelper
 {
@@ -31,8 +32,13 @@ namespace MultiboxHelper
         private static Identity useOnDynel;
         private static Identity useItem;
 
+        public static string playersname = String.Empty;
+
+
         private static double posUpdateTimer;
         private static double sitUpdateTimer;
+
+        public static bool switches = false;
 
         private static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
@@ -64,6 +70,7 @@ namespace MultiboxHelper
             new Vector3(128.4, 29.0, 59.6),
             new Vector3(76.1, 29.0, 28.3)
         };
+
         public byte _channelId;
 
         private static bool justusedsitkit = false;
@@ -133,7 +140,7 @@ namespace MultiboxHelper
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
-            Team.TeamRequest += Team_TeamRequest;
+            Team.TeamRequest = Team_TeamRequest;
 
             Chat.WriteLine("Multibox Helper Loaded!");
         }
@@ -222,6 +229,15 @@ namespace MultiboxHelper
                 _lastFollowTime = Time.NormalTime;
             }
 
+            if (!settings["OSFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
+            {
+                if (playersname != String.Empty)
+                {
+                    playersname = string.Empty;
+                    return;
+                }
+            }
+
             if (settings["OSFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
             {
                 if (settings["Follow"].AsBool())
@@ -231,14 +247,27 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
 
-                if (playername == null)
+                if (playersname == String.Empty)
                 {
-                    Chat.WriteLine($"Cannot find player, try setting the name using /followplayer playername");
-                    settings["OSFollow"] = false;
-                    return;
+                    Window addItemWindow = SettingsController.settingsWindow;
+
+                    addItemWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+
+                    if (textinput.Text == String.Empty)
+                    {
+                        Chat.WriteLine("You must enter a characters name.");
+                        settings["OSFollow"] = false;
+                        return;
+                    }
+
+                    if (textinput.Text != String.Empty)
+                    {
+                        playersname = textinput.Text;
+                        return;
+                    }
                 }
 
-                Dynel npc = DynelManager.AllDynels.Where(x => x.Name.Contains(playername[0])).FirstOrDefault();
+                Dynel npc = DynelManager.AllDynels.Where(x => x.Name.Contains(playersname)).FirstOrDefault();
 
                 if (npc != null)
                 {
@@ -252,7 +281,7 @@ namespace MultiboxHelper
                 }
                 else
                 {
-                    Chat.WriteLine($"Cannot find {playername[0]}, turning off follow.");
+                    Chat.WriteLine($"Cannot find {playersname}. Make sure to type captial first letter.");
                     settings["OSFollow"] = false;
                     return;
                 }
@@ -516,7 +545,7 @@ namespace MultiboxHelper
 
         private void ListenerSit()
         {
-            Spell spell = Spell.List.First();
+            Spell spell = Spell.List.FirstOrDefault();
 
             if (spell != null && spell.IsReady && settings["AutoSit"].AsBool())
             {

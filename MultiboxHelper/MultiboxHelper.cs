@@ -125,6 +125,7 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
             IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
 
 
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
@@ -452,17 +453,29 @@ namespace MultiboxHelper
 
             if (n3Msg.N3MessageType == N3MessageType.CharDCMove)
             {
-                if (!settings["SyncMove"].AsBool())
-                    return;
-
                 CharDCMoveMessage charDCMoveMsg = (CharDCMoveMessage)n3Msg;
-                IPCChannel.Broadcast(new MoveMessage()
+
+                if (charDCMoveMsg.MoveType == MovementAction.JumpStart && !settings["SyncMove"].AsBool())
                 {
-                    MoveType = charDCMoveMsg.MoveType,
-                    PlayfieldId = Playfield.Identity.Instance,
-                    Position = charDCMoveMsg.Position,
-                    Rotation = charDCMoveMsg.Heading
-                });
+                    IPCChannel.Broadcast(new JumpMessage()
+                    {
+                        MoveType = charDCMoveMsg.MoveType,
+                        PlayfieldId = Playfield.Identity.Instance,
+                    });
+                }
+                else
+                {
+                    if (!settings["SyncMove"].AsBool())
+                        return;
+
+                    IPCChannel.Broadcast(new MoveMessage()
+                    {
+                        MoveType = charDCMoveMsg.MoveType,
+                        PlayfieldId = Playfield.Identity.Instance,
+                        Position = charDCMoveMsg.Position,
+                        Rotation = charDCMoveMsg.Heading
+                    });
+                }
             }
             else if (n3Msg.N3MessageType == N3MessageType.Trade)
             {
@@ -615,6 +628,24 @@ namespace MultiboxHelper
                     Answer = n3AnswerMsg.Answer
                 });
             }
+        }
+
+        private void OnJumpMessage(int sender, IPCMessage msg)
+        {
+
+            //Only followers will act on commands
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            JumpMessage jumpMsg = (JumpMessage)msg;
+
+            if (Playfield.Identity.Instance != jumpMsg.PlayfieldId)
+                return;
+
+            MovementController.Instance.SetMovement(jumpMsg.MoveType);
         }
 
         private void OnMoveMessage(int sender, IPCMessage msg)

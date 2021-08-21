@@ -50,12 +50,15 @@ namespace AutoMission
                             mission.Delete();
                         if (mission.DisplayName.Contains("Go into Stonecrown Dungeon a..."))
                             mission.Delete();
+                        if (mission.DisplayName.Contains("Go into Hidden Pass Hideout ..."))
+                            mission.Delete();
                     }
 
                     if (questGiver != null)
                     {
                         if (!Mission.List.Exists(x => x.DisplayName.Contains("Go into Notum Mine at 3192.8...")) &&
                             !Mission.List.Exists(x => x.DisplayName.Contains("Go into Cave of the Enlighte...")) &&
+                            !Mission.List.Exists(x => x.DisplayName.Contains("Go into Hidden Pass Hideout ...")) &&
                             !Mission.List.Exists(x => x.DisplayName.Contains("Go into Stonecrown Dungeon a...")))
                             NpcDialog.Open(questGiver);
                     }

@@ -19,6 +19,7 @@ namespace MultiboxHelper.IPCMessages
         NpcChatClose,
         NpcChatAnswer,
         Follow,
+        NavFollow,
         UseItem,
         SetStat,
         Trade,

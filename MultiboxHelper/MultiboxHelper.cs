@@ -33,12 +33,12 @@ namespace MultiboxHelper
         private static Identity useItem;
 
         public static string playersname = String.Empty;
+        public static string identitiesname = String.Empty;
 
 
         private static double posUpdateTimer;
         private static double sitUpdateTimer;
 
-        public static bool switches = false;
 
         private static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
@@ -48,6 +48,8 @@ namespace MultiboxHelper
         private static Settings settings = new Settings("MultiboxHelper");
 
         private string[] playername = null;
+
+        private string[] identityname = null;
 
         private double _lastFollowTime = Time.NormalTime;
 
@@ -91,9 +93,11 @@ namespace MultiboxHelper
             settings.AddVariable("SyncChat", false);
             settings.AddVariable("AutoSit", false);
             settings.AddVariable("SyncTrade", false);
+            settings.AddVariable("NavFollow", false);
 
             settings["Follow"] = false;
             settings["OSFollow"] = false;
+            settings["NavFollow"] = false;
 
             _channelId = Convert.ToByte(settings["ChannelID"].AsInt32());
 
@@ -114,6 +118,7 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
@@ -124,9 +129,9 @@ namespace MultiboxHelper
 
             Chat.RegisterCommand("mbchannel", channelcommand);
 
-            Chat.RegisterCommand("followplayer", FollowName);
             Chat.RegisterCommand("allfollow", Allfollow);
             Chat.RegisterCommand("leadfollow", LeadFollow);
+            Chat.RegisterCommand("navfollow", Navfollow);
             Chat.RegisterCommand("sync", SyncSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
@@ -215,10 +220,11 @@ namespace MultiboxHelper
 
             if (IsActiveCharacter() && settings["Follow"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
             {
-                if (settings["OSFollow"].AsBool())
+                if (settings["OSFollow"].AsBool() || settings["NavFollow"].AsBool())
                 {
                     settings["OSFollow"] = false;
                     settings["Follow"] = false;
+                    settings["NavFollow"] = false;
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
 
@@ -229,11 +235,76 @@ namespace MultiboxHelper
                 _lastFollowTime = Time.NormalTime;
             }
 
-            if (!settings["OSFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
+            if (!settings["OSFollow"].AsBool())
             {
                 if (playersname != String.Empty)
                 {
                     playersname = string.Empty;
+                    return;
+                }
+            }
+
+            if (!settings["NavFollow"].AsBool())
+            {
+                if (identitiesname != String.Empty)
+                {
+                    identitiesname = string.Empty;
+                    return;
+                }
+            }
+
+            if (settings["NavFollow"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
+            {
+                if (settings["Follow"].AsBool())
+                {
+                    settings["OSFollow"] = false;
+                    settings["Follow"] = false;
+                    settings["NavFollow"] = false;
+                    Chat.WriteLine($"Can only have one follow active at once.");
+                }
+
+                if (identitiesname == String.Empty)
+                {
+                    Window addItemWindow = SettingsController.settingsWindow;
+
+                    addItemWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
+
+                    if (textinput.Text == String.Empty)
+                    {
+                        Chat.WriteLine("You must enter a characters name.");
+                        settings["NavFollow"] = false;
+                        return;
+                    }
+
+                    if (textinput.Text != String.Empty)
+                    {
+                        identitiesname = textinput.Text;
+                        return;
+                    }
+                }
+
+                Dynel identity = DynelManager.AllDynels.Where(x => x.Name.Contains(identitiesname)).FirstOrDefault();
+
+                if (identity != null)
+                {
+                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= 6f)
+                        MovementController.Instance.Halt();
+
+                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > 6f)
+                        MovementController.Instance.SetDestination(identity.Position);
+
+                    OnSelfFollowMessage(identity);
+
+                    IPCChannel.Broadcast(new NavFollowMessage()
+                    {
+                        Target = identity.Identity // change this to the new target with selection param
+                    });
+                    _lastFollowTime = Time.NormalTime;
+                }
+                else
+                {
+                    Chat.WriteLine($"Cannot find {identitiesname}. Make sure to type captial first letter.");
+                    settings["NavFollow"] = false;
                     return;
                 }
             }
@@ -928,34 +999,6 @@ namespace MultiboxHelper
             chatWindow.WriteLine(help, ChatColor.LightBlue);
         }
 
-        private void FollowName(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0 && playername != null)
-            {
-                Chat.WriteLine($"Follow player name is - {playername[0]}");
-                return;
-            }
-
-            if (param.Length == 0)
-            {
-                Chat.WriteLine($"Wrong syntax, /followplayer playername");
-                return;
-            }
-
-            if (param[0] == "clear")
-            {
-                playername = null;
-                Chat.WriteLine($"Follow player name has been cleared.");
-                return;
-            }
-
-            if (param.Length >= 1)
-            {
-                playername = param;
-                Chat.WriteLine($"Follow player name set to - {playername[0]}");
-            }
-        }
-
         public static void BroadcastDisband()
         {
             IPCChannel.Broadcast(new DisbandMessage());
@@ -1060,6 +1103,43 @@ namespace MultiboxHelper
                 settings["Follow"] = true;
                 Chat.WriteLine($"Following active window.");
                 return;
+            }
+        }
+
+        private void Navfollow(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0 && settings["NavFollow"].AsBool())
+            {
+                Chat.WriteLine($"Stopped following.");
+                settings["NavFollow"] = false;
+                return;
+            }
+
+            if (param.Length == 0 && !settings["NavFollow"].AsBool() && identityname == null)
+            {
+                Chat.WriteLine($"Wrong syntax, /navfollow name");
+                settings["NavFollow"] = false;
+                return;
+            }
+
+            if (param.Length == 0 && !settings["NavFollow"].AsBool() && identityname != null)
+            {
+                settings["NavFollow"] = true;
+                Chat.WriteLine($"Following {identityname[0]}.");
+            }
+
+            if (identityname == null && settings["NavFollow"].AsBool())
+            {
+                Chat.WriteLine($"Cannot find player.");
+                settings["NavFollow"] = false;
+            }
+
+            if (param.Length >= 1 && !settings["NavFollow"].AsBool())
+            {
+                identityname = param;
+                settings["NavFollow"] = true;
+                Chat.WriteLine($"Following {identityname[0]}.");
+
             }
         }
 
@@ -1169,6 +1249,34 @@ namespace MultiboxHelper
                 item.LowId == 287447 || item.LowId == 287448 || item.LowId == 287609 || item.LowId == 287610 || item.LowId == 287611 ||
                 item.LowId == 287612 || item.LowId == 287613 || item.LowId == 287614 || item.LowId == 287615 || item.LowId == 287616 ||
                 item.LowId == 287617 || item.LowId == 287618 || item.LowId == 287619 || item.LowId == 287620;
+        }
+
+        private void OnNavFollowMessage(int sender, IPCMessage msg)
+        {
+            Dynel identity = DynelManager.AllDynels.Where(x => x.Name.Contains(identitiesname)).FirstOrDefault();
+
+            if (identity != null)
+            {
+                if (DynelManager.LocalPlayer.DistanceFrom(identity) <= 6f)
+                    MovementController.Instance.Halt();
+
+                if (DynelManager.LocalPlayer.DistanceFrom(identity) > 6f)
+                    MovementController.Instance.SetDestination(identity.Position);
+
+                OnSelfFollowMessage(identity);
+
+                IPCChannel.Broadcast(new FollowMessage()
+                {
+                    Target = identity.Identity // change this to the new target with selection param
+                });
+                _lastFollowTime = Time.NormalTime;
+            }
+            else
+            {
+                Chat.WriteLine($"Cannot find {identitiesname}. Make sure to type captial first letter.");
+                settings["NavFollow"] = false;
+                return;
+            }
         }
 
         private void OnFollowMessage(int sender, IPCMessage msg)

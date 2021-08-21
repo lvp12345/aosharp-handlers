@@ -58,6 +58,11 @@ namespace MultiboxHelper
                                         settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
                                         textinput.Text = MultiboxHelper.playersname;
                                     }
+                                    if (MultiboxHelper.identitiesname != String.Empty)
+                                    {
+                                        settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
+                                        textinput2.Text = MultiboxHelper.identitiesname;
+                                    }
                                 }
                             }
                         }

@@ -113,6 +113,37 @@ namespace CombatHandler.Generic
                 GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Fists;
         }
 
+        protected bool CheckingRangedOther(SimpleChar target)
+        {
+            return GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Pistol ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.PistolAndAssaultRifle ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.PistolAndShotgun ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Smg ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Bow ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Shotgun ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.PistolAndShotgun ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.HeavyWeapons ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Grenade ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.AssaultRifle ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Rifle;
+        }
+
+        protected bool CheckingMeleeOther(SimpleChar target)
+        {
+            return GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Blunt1H ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Blunt1HAndEdged1H ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Blunt1HAndEnergy ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Blunt1HAndPiercing ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Blunt2H ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Energy ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Edged1H ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Edged1HAndPiercing ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Edged2H ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Blunt1HAndEdged1H ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Piercing ||
+                GetWieldedWeaponOther(target) == CharacterWieldedWeapon.Fists;
+        }
+
 
         public GenericCombatHandler(string pluginDir)
         {
@@ -223,6 +254,7 @@ namespace CombatHandler.Generic
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
+
             if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
             {
                 _lastCombatTime = Time.NormalTime;
@@ -349,18 +381,11 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (SpellChecksPlayer(spell))
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => CheckingRanged())
+                    .Where(c => CheckingRangedOther(c))
                     .Where(c => SpellChecksOther(spell, c))
                     .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
                     .FirstOrDefault();
@@ -368,6 +393,15 @@ namespace CombatHandler.Generic
                 if (teamMemberWithoutBuff != null)
                 {
                     actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+            else
+            {
+                if (SpellChecksPlayer(spell))
+                {
+                    actionTarget.Target = DynelManager.LocalPlayer;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
@@ -634,9 +668,6 @@ namespace CombatHandler.Generic
 
         protected bool BuffRanged(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CheckingMelee())
-                return false;
-
             if (fightingTarget != null || !CanCast(spell))
             {
                 return false;
@@ -646,7 +677,7 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => CheckingRanged())
+                    .Where(c => CheckingRangedOther(c))
                     .Where(c => SpellChecksOther(spell, c))
                     .FirstOrDefault();
 
@@ -681,7 +712,7 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => CheckingMelee())
+                    .Where(c => CheckingRangedOther(c))
                     .Where(c => SpellChecksOther(spell, c))
                     .FirstOrDefault();
 
@@ -754,11 +785,6 @@ namespace CombatHandler.Generic
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun, CharacterWieldedWeapon.Bandaid);
         }
-
-        //protected bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    return BuffSpecialAttack(spell, fightingTarget, ref actionTarget, specialAttacks => specialAttacks.HasBurst);
-        //}
         #endregion
 
         #region Items

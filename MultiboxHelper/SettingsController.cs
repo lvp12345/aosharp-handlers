@@ -13,8 +13,9 @@ namespace MultiboxHelper
     public static class SettingsController
     {
         private static List<Settings> settingsToSave = new List<Settings>();
-        private static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
+        public static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
         private static bool IsCommandRegistered;
+        public static Window settingsWindow;
 
         public static void RegisterSettingsWindow(string settingsName, string settingsWindowPath, Settings settings)
         {
@@ -46,11 +47,17 @@ namespace MultiboxHelper
                         {
                             if ("settings" == param[0])
                             {
-                                Window settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "AOSharp", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+                                settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "AOSharp", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
                                 foreach (string settingsName in settingsWindows.Keys)
                                 {
                                     AppendSettingsTab(settingsName, settingsWindow);
+
+                                    if (MultiboxHelper.playersname != String.Empty)
+                                    {
+                                        settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+                                        textinput.Text = MultiboxHelper.playersname;
+                                    }
                                 }
                             }
                         }
@@ -65,7 +72,7 @@ namespace MultiboxHelper
             }
         }
 
-        private static void AppendSettingsTab(String settingsName, Window testWindow)
+        public static void AppendSettingsTab(String settingsName, Window testWindow)
         {
             String settingsWindowXmlPath = settingsWindows[settingsName];
             View settingsView = View.CreateFromXml(settingsWindowXmlPath);

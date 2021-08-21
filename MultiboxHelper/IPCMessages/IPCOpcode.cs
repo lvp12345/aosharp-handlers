@@ -9,6 +9,7 @@ namespace MultiboxHelper.IPCMessages
     public enum IPCOpcode
     {
         Move,
+        Jump,
         Target,
         Attack,
         StopAttack,

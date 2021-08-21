@@ -791,16 +791,24 @@ namespace CombatHandler.Generic
 
         private bool UseRezCan(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            actiontarget.ShouldSetTarget = false;
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid))
+                return false;
 
-            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid);
+
+            actiontarget.ShouldSetTarget = false;
+            return true;
         }
 
         private bool UseFreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            actiontarget.ShouldSetTarget = true;
+            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare))
+                return false;
 
-            return (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item));
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid))
+                return false;
+
+            actiontarget.ShouldSetTarget = true;
+            return true;
 
         }
 
@@ -1357,6 +1365,8 @@ namespace CombatHandler.Generic
         {
             if (fightingTarget.IsPlayer && !MultiboxHelper.MultiboxHelper.IsCharacterRegistered(fightingTarget.Identity))
                 return false;
+            if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))
+                return false;
 
             if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
             {
@@ -1378,7 +1388,7 @@ namespace CombatHandler.Generic
                 //}
             }
 
-            return HasNCU(spell, fightingTarget);
+            return true;
         }
 
         protected bool SpellChecksPlayer(Spell spell)

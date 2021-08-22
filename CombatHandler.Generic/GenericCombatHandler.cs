@@ -526,12 +526,12 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            SimpleChar debuffTarget = DynelManager.Characters
+            SimpleChar debuffTarget = DynelManager.NPCs
                 .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player or a pet
-                .Where(c => c.IsAttacking) //Is in combat
+                .Where(c => c.FightingTarget != null) //Is in combat
                 .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
-                .Where(c => c.IsValid).Where(c => c.IsInLineOfSight).Where(c => c.IsInAttackRange()) //Is in range for debuff (we assume weapon range == debuff range)
+                .Where(c => c.IsInLineOfSight)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
                 .Where(c => SpellChecksOther(spell, c)) //Needs debuff refreshed
                 .FirstOrDefault();
 
@@ -868,17 +868,22 @@ namespace CombatHandler.Generic
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 8)
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid))
+                return false;
+
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 8)
                 return false;
 
             if (DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231))
                 return false;
 
+            if (DynelManager.LocalPlayer.HealthPercent >= 80 && DynelManager.LocalPlayer.NanoPercent >= 80)
+                return false;
+
             actiontarget.ShouldSetTarget = true;
             actiontarget.Target = DynelManager.LocalPlayer;
 
-
-            return (DynelManager.LocalPlayer.HealthPercent < 80 || DynelManager.LocalPlayer.NanoPercent < 80);
+            return true;
         }
 
         private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)

@@ -40,6 +40,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), Fortify);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee2HE, Melee2HEBuffWeapon);

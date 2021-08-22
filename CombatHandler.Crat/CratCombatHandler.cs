@@ -54,8 +54,8 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.LEProcBureaucratFormsInTriplicate, LEProc, CombatActionPriority.Low);
 
             //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), CratDebuffOthersInCombat, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), MalaiseTargetDebuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), CratDebuffOthersInCombat, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), MalaiseTargetDebuff, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, LEInitTargetDebuff);
             RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, LEInitTargetDebuff);
             RegisterSpellProcessor(RelevantNanos.AoeRoots, AoeRoot, CombatActionPriority.High);
@@ -67,7 +67,7 @@ namespace Desu
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
-            RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff);
+            RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man);
 
             //Buff Aura
@@ -199,56 +199,82 @@ namespace Desu
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
-
             Spell workplace = Spell.List.Where(x => x.Name == "Workplace Depression").FirstOrDefault();
 
-            if (fightingTarget == null || !IsSettingEnabled("Nukes"))
+            if (fightingTarget == null)
             {
                 return false;
             }
 
-            if (IsSettingEnabled("AoeRoot") && target != null)
+            if (!IsSettingEnabled("Nukes"))
             {
                 return false;
+            }    
+
+            if (IsSettingEnabled("Calm12Man"))
+            {
+                List<SimpleChar> target = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                .ToList();
+
+                if (target != null)
+                    return false;
+            }
+
+            if (IsSettingEnabled("AoeRoot"))
+            {
+                SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+
+                if (target != null)
+                    return false;
             }
 
             if (IsSettingEnabled("MalaiseTarget"))
             {
-                SimpleChar targets = DynelManager.NPCs
+                SimpleChar target = DynelManager.NPCs
                     .Where(x => x.IsAlive)
-                    .Where(x => x.IsAttacking)
-                    .Where(x => Team.Members.Any(c => x.FightingTarget.Identity == c.Character.Identity))
+                    .Where(x => x.Identity == fightingTarget.Identity)
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                     .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
                     .FirstOrDefault();
 
-                if (targets != null)
+                if (target != null)
                     return false;
             }
 
             if (IsSettingEnabled("OSMalaise"))
             {
-                List<SimpleChar> targets = DynelManager.NPCs
+                List<SimpleChar> target = DynelManager.NPCs
                     .Where(x => x.IsAlive)
-                    .Where(x => x.IsAttacking)
-                    .Where(x => Team.Members.Any(c => x.FightingTarget.Identity == c.Character.Identity))
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(x => x.FightingTarget != null)
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                     .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
                     .ToList();
 
-                if (targets.Count >= 1)
+                if (target.Count >= 1)
                     return false;
             }
 
             if (IsSettingEnabled("LEInitDebuffs"))
             {
-                List<SimpleChar> targetss = DynelManager.NPCs
+                SimpleChar target = DynelManager.NPCs
                     .Where(x => x.IsAlive)
-                    .Where(x => x.IsAttacking)
-                    .Where(x => Team.Members.Any(c => x.FightingTarget.Identity == c.Character.Identity))
+                    .Where(x => x.Identity == fightingTarget.Identity)
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                     .Where(x => !x.Buffs.Contains(NanoLine.GeneralRadiationACDebuff) && !x.Buffs.Contains(NanoLine.GeneralProjectileACDebuff))
-                    .ToList();
+                    .FirstOrDefault();
 
-                if (targetss.Count >= 1)
+                if (target != null)
+                    return false;
+            }
+
+            if (workplace != null)
+            {
+                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842))
                     return false;
             }
 
@@ -265,11 +291,65 @@ namespace Desu
                 return false;
             }
 
-            SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
-
-            if (IsSettingEnabled("AoeRoot") && target != null)
+            if (IsSettingEnabled("Calm12Man"))
             {
-                return false;
+                List<SimpleChar> target = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                .ToList();
+
+                if (target != null)
+                    return false;
+            }
+
+            if (IsSettingEnabled("AoeRoot"))
+            {
+                SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+
+                if (target != null)
+                    return false;
+            }
+
+            if (IsSettingEnabled("MalaiseTarget"))
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.Identity == fightingTarget.Identity)
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
+                    .FirstOrDefault();
+
+                if (target != null)
+                    return false;
+            }
+
+            if (IsSettingEnabled("OSMalaise"))
+            {
+                List<SimpleChar> target = DynelManager.NPCs
+                    .Where(x => x.IsAlive)
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(x => x.FightingTarget != null)
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
+                    .ToList();
+
+                if (target.Count >= 1)
+                    return false;
+            }
+
+            if (IsSettingEnabled("LEInitDebuffs"))
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.Identity == fightingTarget.Identity)
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .Where(x => !x.Buffs.Contains(NanoLine.GeneralRadiationACDebuff) && !x.Buffs.Contains(NanoLine.GeneralProjectileACDebuff))
+                    .FirstOrDefault();
+
+                if (target != null)
+                    return false;
             }
 
             if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842))
@@ -286,6 +366,19 @@ namespace Desu
             if (!IsSettingEnabled("MalaiseTarget"))
             {
                 return false;
+            }
+
+            if (IsSettingEnabled("Calm12Man"))
+            {
+                List<SimpleChar> target = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                .ToList();
+
+                if (target != null)
+                    return false;
             }
 
             if (IsSettingEnabled("AoeRoot"))
@@ -305,22 +398,26 @@ namespace Desu
         // Needs work
         private bool Calm12Man(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            List<SimpleChar> targets = DynelManager.NPCs
-                .Where(x => x.IsAlive)
-                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-                .ToList();
-
             if (!IsSettingEnabled("Calm12Man"))
             {
                 return false;
             }
 
-            actionTarget.Target = targets.FirstOrDefault();
-            actionTarget.ShouldSetTarget = true;
+            List<SimpleChar> targets = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                .ToList();
 
-            return true;
+            if (targets.Count >= 1)
+            {
+                actionTarget.Target = targets.FirstOrDefault();
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
         }
 
         private bool LEInitTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -328,16 +425,22 @@ namespace Desu
             if (fightingTarget == null)
                 return false;
 
-            List<SimpleChar> targets = DynelManager.NPCs
-                .Where(x => x.IsAlive)
-                .Where(x => x.IsAttacking)
-                .Where(x => Team.Members.Where(c => x.FightingTarget.Identity == c.Character.Identity).Any())
-                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-                .ToList();
-
             if (!IsSettingEnabled("LEInitDebuffs"))
             {
                 return false;
+            }
+
+            if (IsSettingEnabled("Calm12Man"))
+            {
+                List<SimpleChar> target = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                .ToList();
+
+                if (target != null)
+                    return false;
             }
 
             if (IsSettingEnabled("AoeRoot"))
@@ -347,9 +450,6 @@ namespace Desu
                 if (target != null)
                     return false;
             }
-
-            if (targets.Count >= 2)
-                return false;
 
             if (!SpellChecksOther(spell, fightingTarget))
                 return false;
@@ -359,6 +459,24 @@ namespace Desu
 
         private bool CratDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            //if (!IsSettingEnabled("OSMalaise"))
+            //{
+            //    return false;
+            //}
+
+            if (IsSettingEnabled("Calm12Man"))
+            {
+                List<SimpleChar> target = DynelManager.NPCs
+                .Where(x => x.IsAlive)
+                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                .ToList();
+
+                if (target != null)
+                    return false;
+            }
+
             if (IsSettingEnabled("AoeRoot"))
             {
                 SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
@@ -366,6 +484,23 @@ namespace Desu
                 if (target != null)
                     return false;
             }
+
+            //SimpleChar targetdebuff = DynelManager.NPCs
+            //        .Where(x => x.IsAlive)
+            //        .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+            //        //.Where(x => x.FightingTarget != null)
+            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+            //        .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
+            //        .FirstOrDefault();
+
+            //if (targetdebuff != null)
+            //{
+            //    actionTarget.Target = targetdebuff;
+            //    actionTarget.ShouldSetTarget = true;
+            //    return true;
+            //}
+
+            //return false;
 
             return ToggledDebuffOthersInCombat("OSMalaise", spell, fightingTarget, ref actionTarget);
         }
@@ -378,6 +513,7 @@ namespace Desu
             }
 
             SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+
             if (target != null)
             {
                 actionTarget.Target = target;

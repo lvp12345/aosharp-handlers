@@ -147,7 +147,10 @@ namespace CombatHandler.Engi
 
         private bool ShouldSpamAoeSnare()
         {
-            return DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Any();
+            return DynelManager.NPCs
+                .Where(c => c.Name == "Flaming Vengeance" ||
+                    c.Name == "Hand of the Colonel")
+                .Any();
         }
 
         protected bool PistolGrenadeTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

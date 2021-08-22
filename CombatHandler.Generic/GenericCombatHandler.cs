@@ -1265,6 +1265,15 @@ namespace CombatHandler.Generic
                     return true;
                 }
             }
+            else
+            {
+                if (SpellChecksPlayer(spell))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
+            }
 
             return false;
         }

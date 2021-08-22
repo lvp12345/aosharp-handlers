@@ -24,9 +24,6 @@ namespace CombatHandler.Generic
 
         protected Settings settings;
 
-
-        public static readonly List<string> AoeRootSnareSpamTargets = new List<string>() { "Flaming Vengeance", "Hand of the Colonel" };
-
         protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
         {
                     "Awakened Xan",
@@ -1244,12 +1241,6 @@ namespace CombatHandler.Generic
         protected bool HasBuffNanoLine(NanoLine nanoLine, SimpleChar target)
         {
             return target.Buffs.Contains(nanoLine);
-        }
-
-
-        protected bool IsAoeRootSnareSpamTarget(SimpleChar target)
-        {
-            return AoeRootSnareSpamTargets.Contains(target.Name);
         }
 
         protected bool CheckNotKeeperBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

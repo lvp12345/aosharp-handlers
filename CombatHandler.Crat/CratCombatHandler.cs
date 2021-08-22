@@ -214,11 +214,11 @@ namespace Desu
             if (IsSettingEnabled("Calm12Man"))
             {
                 List<SimpleChar> target = DynelManager.NPCs
-                .Where(x => x.IsAlive)
-                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-                .ToList();
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                    .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                    .ToList();
 
                 if (target != null)
                     return false;
@@ -226,7 +226,12 @@ namespace Desu
 
             if (IsSettingEnabled("AoeRoot"))
             {
-                SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => c.Name == "Flaming Vengeance" ||
+                    c.Name == "Hand of the Colonel")
+                    .Where(c => DoesNotHaveAoeRootRunning(c))
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .FirstOrDefault();
 
                 if (target != null)
                     return false;
@@ -294,11 +299,11 @@ namespace Desu
             if (IsSettingEnabled("Calm12Man"))
             {
                 List<SimpleChar> target = DynelManager.NPCs
-                .Where(x => x.IsAlive)
-                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-                .ToList();
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                    .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                    .ToList();
 
                 if (target != null)
                     return false;
@@ -306,7 +311,12 @@ namespace Desu
 
             if (IsSettingEnabled("AoeRoot"))
             {
-                SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => c.Name == "Flaming Vengeance" ||
+                    c.Name == "Hand of the Colonel")
+                    .Where(c => DoesNotHaveAoeRootRunning(c))
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .FirstOrDefault();
 
                 if (target != null)
                     return false;
@@ -371,11 +381,11 @@ namespace Desu
             if (IsSettingEnabled("Calm12Man"))
             {
                 List<SimpleChar> target = DynelManager.NPCs
-                .Where(x => x.IsAlive)
-                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-                .ToList();
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                    .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                    .ToList();
 
                 if (target != null)
                     return false;
@@ -383,7 +393,12 @@ namespace Desu
 
             if (IsSettingEnabled("AoeRoot"))
             {
-                SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => c.Name == "Flaming Vengeance" ||
+                    c.Name == "Hand of the Colonel")
+                    .Where(c => DoesNotHaveAoeRootRunning(c))
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .FirstOrDefault();
 
                 if (target != null)
                     return false;
@@ -433,11 +448,11 @@ namespace Desu
             if (IsSettingEnabled("Calm12Man"))
             {
                 List<SimpleChar> target = DynelManager.NPCs
-                .Where(x => x.IsAlive)
-                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-                .ToList();
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                    .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                    .ToList();
 
                 if (target != null)
                     return false;
@@ -445,7 +460,12 @@ namespace Desu
 
             if (IsSettingEnabled("AoeRoot"))
             {
-                SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => c.Name == "Flaming Vengeance" ||
+                    c.Name == "Hand of the Colonel")
+                    .Where(c => DoesNotHaveAoeRootRunning(c))
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .FirstOrDefault();
 
                 if (target != null)
                     return false;
@@ -467,11 +487,11 @@ namespace Desu
             if (IsSettingEnabled("Calm12Man"))
             {
                 List<SimpleChar> target = DynelManager.NPCs
-                .Where(x => x.IsAlive)
-                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-                .ToList();
+                    .Where(x => x.IsAlive)
+                    .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
+                    .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
+                    .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                    .ToList();
 
                 if (target != null)
                     return false;
@@ -479,7 +499,12 @@ namespace Desu
 
             if (IsSettingEnabled("AoeRoot"))
             {
-                SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => c.Name == "Flaming Vengeance" ||
+                    c.Name == "Hand of the Colonel")
+                    .Where(c => DoesNotHaveAoeRootRunning(c))
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .FirstOrDefault();
 
                 if (target != null)
                     return false;
@@ -512,7 +537,12 @@ namespace Desu
                 return false;
             }
 
-            SimpleChar target = DynelManager.Characters.Where(IsAoeRootSnareSpamTarget).Where(DoesNotHaveAoeRootRunning).FirstOrDefault();
+            SimpleChar target = DynelManager.NPCs
+                .Where(c => c.Name == "Flaming Vengeance" ||
+                c.Name == "Hand of the Colonel")
+                .Where(c => DoesNotHaveAoeRootRunning(c))
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                .FirstOrDefault();
 
             if (target != null)
             {

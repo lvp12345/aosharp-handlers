@@ -1254,8 +1254,8 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
                     .Where(c => c.Profession != Profession.Keeper)
+                    .Where(c => SpellChecksOther(spell, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)

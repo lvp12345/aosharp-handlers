@@ -21,7 +21,7 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc);
 
             // Leave in to get the ID of SMG and Shotgun
-            Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
+            //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
@@ -56,16 +56,16 @@ namespace Desu
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg, CharacterWieldedWeapon.AssaultRifle, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.Bandaid);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg);
         }
         private bool ShotgunBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.PistolAndShotgun, CharacterWieldedWeapon.Shotgun, CharacterWieldedWeapon.Bandaid, CharacterWieldedWeapon.Bandaid);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun);
         }
 
         private bool ARBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.AssaultRifle, CharacterWieldedWeapon.Bandaid, CharacterWieldedWeapon.Bandaid);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
         }
 
 

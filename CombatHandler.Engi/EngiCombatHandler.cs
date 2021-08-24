@@ -155,7 +155,7 @@ namespace CombatHandler.Engi
 
         protected bool PistolGrenadeTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol, CharacterWieldedWeapon.Grenade, CharacterWieldedWeapon.PistolAndAssaultRifle, CharacterWieldedWeapon.PistolAndShotgun);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol | CharacterWieldedWeapon.Grenade);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

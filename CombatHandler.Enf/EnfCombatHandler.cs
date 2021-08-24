@@ -105,53 +105,62 @@ namespace Desu
 
         private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1H || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H
-                || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing)
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Edged1H);
 
-            return false;
+            //if (GetWieldedWeapon(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Edged1H))
+            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
+
+            //return false;
         }
 
         private bool Melee1HBBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEdged1H
-                || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing)
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Blunt1H);
 
-            return false;
+            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H)
+            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
+
+            //return false;
         }
 
         private bool Melee2HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H)
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Edged2H);
 
-            return false;
+            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H)
+            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
+
+            //return false;
         }
 
         private bool Melee2HBBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H)
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Blunt2H);
 
-            return false;
+            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H)
+            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
+
+            //return false;
         }
 
         private bool MeleePierceBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndPiercing
-                || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged1HAndPiercing)
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Piercing);
 
-            return false;
+            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing)
+            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
+
+            //return false;
         }
 
         private bool MeleeEnergyBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1HAndEnergy || GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Energy)
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.MeleeEnergy);
 
-            return false;
+            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.MeleeEnergy)
+            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
+
+            //return false;
         }
 
         private bool Fortify(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

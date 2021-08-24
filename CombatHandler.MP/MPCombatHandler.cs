@@ -18,14 +18,20 @@ namespace Desu
         {
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
+
             settings.AddVariable("BuffInterruptChance", false);
+
             settings.AddVariable("UseDamageDebuffs", true);
+            settings.AddVariable("UseDamageDebuffsOnOthers", false);
+
             settings.AddVariable("UseNanoResistanceDebuff", true);
             settings.AddVariable("UseNanoShutdownDebuff", true);
-            settings.AddVariable("UseDamageDebuffsOnOthers", false);
+
             settings.AddVariable("UseNukes", true);
+
             settings.AddVariable("NanoBuffsSelection", (int)NanoBuffsSelection.SL);
             settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
+
             RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
 
             //LE Procs

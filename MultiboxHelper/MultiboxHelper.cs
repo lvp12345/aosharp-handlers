@@ -722,6 +722,20 @@ namespace MultiboxHelper
             DynelManager.LocalPlayer.StopAttack();
         }
 
+        private Pet FindPetThat(Func<Pet, bool> Filter)
+        {
+            return DynelManager.LocalPlayer.Pets
+                .Where(pet => pet.Character != null)
+                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
+                .Where(pet => Filter.Invoke(pet))
+                .FirstOrDefault();
+        }
+
+        private bool NeedsHealing(Pet pet)
+        {
+            return pet.Character.NanoPercent <= 100 || pet.Character.HealthPercent <= 100;
+        }
+
         private void ListenerSit()
         {
             Spell spell = Spell.List.FirstOrDefault();
@@ -759,7 +773,7 @@ namespace MultiboxHelper
 
             if (Team.IsInTeam)
             {
-                if (Team.Members.Where(c => target.FightingTarget == c.Character).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
+                if (Team.Members.Where(c => target.FightingTarget.Name == c.Character.Name).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
                     return true;
                 if (target.FightingTarget.IsPet && Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any())
                     return true;

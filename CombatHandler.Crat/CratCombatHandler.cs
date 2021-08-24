@@ -111,6 +111,9 @@ namespace Desu
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressivenessHigh, RelevantTrimmers.IncreaseAggressivenessHigh, PetAggressiveTrimmer);
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, RelevantTrimmers.DivertEnergyToOffense, PetDivertTrimmer);
 
+            //Pet Perks
+            RegisterPerkProcessor(PerkHash.Puppeteer, Puppeteer);
+
             Game.TeleportEnded += OnZoned;
         }
 
@@ -133,6 +136,28 @@ namespace Desu
 
         #region Buffs
 
+        public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
+            {
+                return false;
+            }
+
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
+            {
+                return false;
+            }
+
+            Pet petToPerk = FindPetThat(CanPerkPuppeteer);
+            if (petToPerk != null)
+            {
+                actionTarget.Target = petToPerk.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
         private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffAAOAAD"))
@@ -279,7 +304,9 @@ namespace Desu
 
             if (workplace != null)
             {
-                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842))
+                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842) && 
+                    ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000) 
+                    || fightingTarget.MaxHealth > 1000000))
                     return false;
             }
 
@@ -363,6 +390,9 @@ namespace Desu
             }
 
             if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842))
+                return false;
+
+            if (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000)
                 return false;
 
             return true;
@@ -557,6 +587,15 @@ namespace Desu
         #endregion
 
         #region Logic
+
+        private bool CanPerkPuppeteer(Pet pet)
+        {
+            if (pet.Type != PetType.Attack)
+            {
+                return false;
+            }
+            return true;
+        }
 
         protected bool FindSpellNanoLineFallbackToId(Spell spell, Buff[] buffs, out Buff buff)
         {

@@ -759,6 +759,28 @@ namespace MultiboxHelper
             }
         }
 
+        //private bool IsFightingAny(SimpleChar target)
+        //{
+        //    if (Team.IsInTeam)
+        //    {
+        //        if (target.IsAttacking && (Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any() || AttackBuddy.OSHelpers.Where(c => target.FightingTarget.Name == c).Any()))
+        //            return true;
+        //        if (target.IsAttacking && (target.FightingTarget.IsPet && Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any()))
+        //            return true;
+        //        else
+        //            return false;
+        //    }
+        //    else
+        //    {
+        //        if (target.IsAttacking && (target.FightingTarget.Name == DynelManager.LocalPlayer.Name || AttackBuddy.OSHelpers.Where(c => target.FightingTarget.Name == c).Any()))
+        //            return true;
+        //        if (target.IsAttacking && (DynelManager.LocalPlayer.Pets.Where(c => target.FightingTarget.Name == c.Character.Name).Any()))
+        //            return true;
+        //        else
+        //            return false;
+        //    }
+        //}
+
         private bool IsFightingAny()
         {
             SimpleChar target = DynelManager.NPCs

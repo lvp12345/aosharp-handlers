@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPCMessages\IPCChannelAllMessage.cs" />
     <Compile Include="IPCMessages\DisbandMessage.cs" />
     <Compile Include="IPCMessages\AssistMessage.cs" />
     <Compile Include="IPCMessages\JumpMessage.cs" />
@@ -62,25 +63,19 @@
     <Compile Include="IPCMessages\NpcChatAnswerMessage.cs" />
     <Compile Include="IPCMessages\NpcChatCloseMessage.cs" />
     <Compile Include="IPCMessages\NpcChatOpenMessage.cs" />
-    <Compile Include="IPCMessages\CharLeftMessage.cs" />
     <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\AttackIPCMessage.cs" />
     <Compile Include="IPCMessages\TradeHandleMessage.cs" />
     <Compile Include="IPCMessages\UsableMessage.cs" />
-    <Compile Include="IPCMessages\CharStatusMessage.cs" />
     <Compile Include="IPCMessages\UseMessage.cs" />
     <Compile Include="IPCMessages\TargetMessage.cs" />
     <Compile Include="IPCMessages\MoveMessage.cs" />
     <Compile Include="MultiboxHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />
-    <Compile Include="StatusWindow.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CharStatusView.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="StatusWindow.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

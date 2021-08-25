@@ -71,7 +71,7 @@ namespace Desu
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseSingleTaunt") || !DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
+            if (!IsSettingEnabled("UseSingleTaunt") || DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null)
                 return false;
 
             return true;
@@ -79,7 +79,7 @@ namespace Desu
 
         private bool SolDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
+            if (DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null)
                 return false;
 
             if (DynelManager.LocalPlayer.HealthPercent <= 40)
@@ -90,7 +90,7 @@ namespace Desu
 
         private bool AugmentedMirrorShieldMKV(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
+            if (DynelManager.LocalPlayer.FightingTarget == null || fightingtarget == null)
                 return false;
 
             if (DynelManager.LocalPlayer.HealthPercent <= 75)

@@ -600,76 +600,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool BuffRanged(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || !CanCast(spell))
-            {
-                return false;
-            }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged))
-                    .Where(c => SpellChecksOther(spell, c))
-                    .FirstOrDefault();
-
-                if (teamMemberWithoutBuff != null)
-                {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-            else
-            {
-                if (SpellChecksPlayer(spell) && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged))
-                {
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        protected bool BuffMelee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || !CanCast(spell))
-            {
-                return false;
-            }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged))
-                    .Where(c => SpellChecksOther(spell, c))
-                    .FirstOrDefault();
-
-                if (teamMemberWithoutBuff != null)
-                {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-            else
-            {
-                if (SpellChecksPlayer(spell) && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged))
-                {
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         protected bool BuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
         {
             if (fightingTarget != null || !CanCast(spell))
@@ -706,17 +636,12 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public CharacterWieldedWeapon GetWieldedWeapons(SimpleChar local) => (GetWieldedPrimaryWeapon(local) | GetWieldedSecondaryWeapon(local));
+        // expression body method / inline method   
+        public static CharacterWieldedWeapon GetWieldedWeapons(SimpleChar local) => (CharacterWieldedWeapon)local.GetStat(Stat.EquippedWeapons);
 
-        protected bool RangedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return BuffRanged(spell, fightingTarget, ref actionTarget);
-        }
+        protected bool RangedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
 
-        protected bool MeleeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return BuffMelee(spell, fightingTarget, ref actionTarget);
-        }
+        protected bool MeleeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
 
         protected bool PistolBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         #endregion
@@ -1457,11 +1382,6 @@ namespace CombatHandler.Generic
             }
         }
 
-
-        // expression body method / inline method
-        public static CharacterWieldedWeapon GetWieldedPrimaryWeapon(SimpleChar local) => (CharacterWieldedWeapon) local.GetStat(Stat.PrimaryWeaponType);
-
-        public static CharacterWieldedWeapon GetWieldedSecondaryWeapon(SimpleChar local) => (CharacterWieldedWeapon)local.GetStat(Stat.SecondaryWeaponType);
 
         private static class RelevantItems
         {

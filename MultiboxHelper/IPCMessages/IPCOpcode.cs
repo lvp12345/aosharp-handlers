@@ -27,5 +27,6 @@ namespace MultiboxHelper.IPCMessages
         Trade,
         RemainingNCU,
         Disband,
+        ChannelAll
     }
 }

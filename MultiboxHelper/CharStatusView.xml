@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<root>
-  <BorderView h_alignment="LEFT" layout_borders="Rect(5,5,5,5)">
-    <TextView name="charNameLabel" layout_borders="Rect(5,5,5,5)"/>
-    <PowerBar name="charHPBar" bg_gfx="GFX_GUI_SHORT_HOR_BAR_EMPTY" full_gfx="GFX_GUI_SHORT_HOR_BAR_RED"/>
-    <PowerBar name="charNanoBar" bg_gfx="GFX_GUI_SHORT_THIN_HOR_BAR_EMPTY" full_gfx="GFX_GUI_SHORT_THIN_HOR_BAR_BLUE"/>
-  </BorderView>
-</root>

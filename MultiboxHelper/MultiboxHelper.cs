@@ -24,8 +24,7 @@ namespace MultiboxHelper
         public static string PluginDir;
 
         private static IPCChannel IPCChannel;
-        private StatusWindow _statusWindow;
-        private double _lastUpdateTime = 0;
+
         private double _ncuUpdateTime = 0;
 
         private static Identity useDynel;
@@ -83,16 +82,15 @@ namespace MultiboxHelper
         public override void Run(string pluginDir)
         {
             PluginDir = pluginDir;
-            _statusWindow = new StatusWindow();
 
             settings.AddVariable("ChannelID", 10);
             settings.AddVariable("Follow", false);
             settings.AddVariable("OSFollow", false);
             settings.AddVariable("SyncMove", false);
-            settings.AddVariable("SyncUse", false);
+            settings.AddVariable("SyncUse", true);
             settings.AddVariable("SyncAttack", true);
             settings.AddVariable("SyncChat", false);
-            settings.AddVariable("AutoSit", false);
+            settings.AddVariable("AutoSit", true);
             settings.AddVariable("SyncTrade", false);
             settings.AddVariable("NavFollow", false);
             settings.AddVariable("AssistPlayer", false);
@@ -115,8 +113,6 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Trade, TradeMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UseItem, OnUseItemMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.CharStatus, OnCharStatusMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.CharLeft, OnCharLeftMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatOpen, OnNpcChatOpenMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
@@ -126,13 +122,15 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
             IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ChannelAll, OnChannelAll);
 
 
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
 
-            Chat.RegisterCommand("mb", MbCommand);
+            Chat.RegisterCommand("mbhelp", HelpCommand);
 
-            Chat.RegisterCommand("mbchannel", channelcommand);
+            Chat.RegisterCommand("mbchannel", ChannelCommand);
+            Chat.RegisterCommand("mbchannelall", ChannelAllCommand);
 
             Chat.RegisterCommand("allfollow", Allfollow);
             Chat.RegisterCommand("leadfollow", LeadFollow);
@@ -147,6 +145,7 @@ namespace MultiboxHelper
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
+            Chat.RegisterCommand("raid", RaidCommand);
 
 
             Game.OnUpdate += OnUpdate;
@@ -208,20 +207,6 @@ namespace MultiboxHelper
                     ListenerUseSync();
                 }
                 posUpdateTimer = Time.NormalTime;
-            }
-
-            if (Time.NormalTime > _lastUpdateTime + 0.5f)
-            {
-                IPCChannel.Broadcast(new CharStatusMessage
-                {
-                    Name = DynelManager.LocalPlayer.Name,
-                    Health = DynelManager.LocalPlayer.Health,
-                    MaxHealth = DynelManager.LocalPlayer.MaxHealth,
-                    Nano = DynelManager.LocalPlayer.Nano,
-                    MaxNano = DynelManager.LocalPlayer.MaxNano,
-                });
-
-                _lastUpdateTime = Time.NormalTime;
             }
 
             if (IsActiveCharacter() && settings["Follow"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
@@ -722,20 +707,6 @@ namespace MultiboxHelper
             DynelManager.LocalPlayer.StopAttack();
         }
 
-        private Pet FindPetThat(Func<Pet, bool> Filter)
-        {
-            return DynelManager.LocalPlayer.Pets
-                .Where(pet => pet.Character != null)
-                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
-                .Where(pet => Filter.Invoke(pet))
-                .FirstOrDefault();
-        }
-
-        private bool NeedsHealing(Pet pet)
-        {
-            return pet.Character.NanoPercent <= 100 || pet.Character.HealthPercent <= 100;
-        }
-
         private void ListenerSit()
         {
             Spell spell = Spell.List.FirstOrDefault();
@@ -916,36 +887,23 @@ namespace MultiboxHelper
             NpcDialog.SelectAnswer(message.Target, message.Answer);
         }
 
-        private void OnCharStatusMessage(int sender, IPCMessage msg)
-        {
-            CharStatusMessage statusMsg = (CharStatusMessage)msg;
-
-            _statusWindow.SetCharStatus(sender, new CharacterStatus
-            {
-                Name = statusMsg.Name,
-                Health = statusMsg.Health,
-                MaxHealth = statusMsg.MaxHealth,
-                Nano = statusMsg.Nano,
-                MaxNano = statusMsg.MaxNano
-            });
-        }
-
-        private void OnCharLeftMessage(int sender, IPCMessage msg)
-        {
-            _statusWindow.RemoveChar(sender);
-        }
-
         public override void Teardown()
         {
             SettingsController.CleanUp();
-
-            IPCChannel.Broadcast(new CharLeftMessage());
         }
 
         private void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
         {
             Team.Disband();
             MultiboxHelper.BroadcastDisband();
+        }
+
+        private void RaidCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (Team.IsLeader)
+                Team.ConvertToRaid();
+            else
+                Chat.WriteLine("Needs to be used from leader.");
         }
 
         private void ReformCommand(string command, string[] param, ChatWindow chatWindow)
@@ -1134,13 +1092,6 @@ namespace MultiboxHelper
                     }
                 }
             }
-        }
-
-        private void PrintCommandUsage(ChatWindow chatWindow)
-        {
-            string help = "Usage:\nStatus - toggles status window";
-
-            chatWindow.WriteLine(help, ChatColor.LightBlue);
         }
 
         public static void BroadcastDisband()
@@ -1360,7 +1311,43 @@ namespace MultiboxHelper
 
             }
         }
-        private void channelcommand(string command, string[] param, ChatWindow chatWindow)
+
+        private void OnChannelAll(int sender, IPCMessage msg)
+        {
+            IPCChannelAllMessage channelMsg = (IPCChannelAllMessage)msg;
+
+            _channelId = Convert.ToByte(channelMsg.Channel);
+            IPCChannel.SetChannelId(_channelId);
+            settings["ChannelID"] = _channelId;
+
+            Chat.WriteLine($"IPC for MultiboxHelper Channel is - {_channelId}");
+        }
+
+        private void ChannelAllCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            try
+            {
+                if (IPCChannel != null)
+                {
+                    _channelId = Convert.ToByte(param[0]);
+                    IPCChannel.SetChannelId(_channelId);
+                    settings["ChannelID"] = _channelId;
+
+                    IPCChannel.Broadcast(new IPCChannelAllMessage()
+                    {
+                        Channel = Convert.ToUInt16(_channelId),
+                    });
+
+                    Chat.WriteLine($"IPC for MultiboxHelper Channel is - {_channelId}");
+                }
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e.Message);
+            }
+        }
+
+        private void ChannelCommand(string command, string[] param, ChatWindow chatWindow)
         {
             try
             {
@@ -1388,30 +1375,43 @@ namespace MultiboxHelper
             }
         }
 
-        private void MbCommand(string command, string[] param, ChatWindow chatWindow)
+        private void HelpCommand(string command, string[] param, ChatWindow chatWindow)
         {
-            try
-            {
-                if (param.Length < 1)
-                {
-                    PrintCommandUsage(chatWindow);
-                    return;
-                }
+            string help = "For team commands;\n" +
+                            "\n" +
+                            "/form and /form raid\n" +
+                            "\n" +
+                            "/disband\n" +
+                            "\n" +
+                            "/raid to convert to raid (must be done from leader)\n" +
+                            "\n" +
+                            "\n" +
+                            "For shortcuts to /aosharp settings;\n" +
+                            "\n" +
+                            "/syncchat syncs chat from current player to all\n" +
+                            "\n" +
+                            "/synctrade syncs trade from current player to all\n" +
+                            "\n" +
+                            "/syncuse for syncing items from current player to all\n" +
+                            "\n" +
+                            "/sync for syncing trade from current player to all\n" +
+                            "\n" +
+                            "/autosit auto sits to use kits\n" +
+                            "\n" +
+                            "/allfollow name to follow player\n" +
+                            "\n" +
+                            "/navfollow name to follow identity\n" +
+                            "\n" +
+                            "/assistplayer name to assist the player\n" +
+                            "(This is implemented to avoid KSing)\n" +
+                            "\n" +
+                            "\n" +
+                            "For IPC Channel;\n" +
+                            "\n" +
+                            "/mbchannel # or /mbchannelall #\n" +
+                            $"Currently: {_channelId}";
 
-                switch (param[0].ToLower())
-                {
-                    case "status":
-                        _statusWindow.Open();
-                        break;
-                    default:
-                        PrintCommandUsage(chatWindow);
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                Chat.WriteLine(e.Message);
-            }
+            Chat.WriteLine(help, ChatColor.LightBlue);
         }
 
         public static bool IsBackpack(Item item)

@@ -282,13 +282,6 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (SpellChecksPlayer(spell))
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
@@ -300,6 +293,15 @@ namespace CombatHandler.Generic
                 if (teamMemberWithoutBuff != null)
                 {
                     actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+            else
+            {
+                if (SpellChecksPlayer(spell))
+                {
+                    actionTarget.Target = DynelManager.LocalPlayer;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
@@ -350,13 +352,6 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (SpellChecksPlayer(spell))
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
@@ -368,6 +363,15 @@ namespace CombatHandler.Generic
                 if (teamMemberWithoutBuff != null)
                 {
                     actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+            else
+            {
+                if (SpellChecksPlayer(spell))
+                {
+                    actionTarget.Target = DynelManager.LocalPlayer;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
@@ -600,7 +604,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool BuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
+        protected bool TeamBuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
         {
             if (fightingTarget != null || !CanCast(spell))
             {
@@ -623,14 +627,22 @@ namespace CombatHandler.Generic
                     return true;
                 }
             }
-            else
+
+            return false;
+        }
+
+        protected bool BuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
+        {
+            if (fightingTarget != null || !CanCast(spell))
             {
-                if (SpellChecksPlayer(spell) && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(supportedWeaponType))
-                {
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+                return false;
+            }
+
+            if (SpellChecksPlayer(spell) && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(supportedWeaponType))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
             }
 
             return false;
@@ -643,7 +655,7 @@ namespace CombatHandler.Generic
 
         protected bool MeleeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
 
-        protected bool PistolBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        protected bool PistolBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         #endregion
 
         #region Items
@@ -660,7 +672,8 @@ namespace CombatHandler.Generic
 
         private bool UseFreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare))
+            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                && !DynelManager.LocalPlayer.Buffs.Contains(258231))
                 return false;
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid))
@@ -1230,6 +1243,8 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksOther(Spell spell, SimpleChar fightingTarget)
         {
+            if (DynelManager.LocalPlayer.Nano < spell.Cost)
+                return false;
             if (fightingTarget.IsPlayer && !MultiboxHelper.MultiboxHelper.IsCharacterRegistered(fightingTarget.Identity))
                 return false;
             if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))
@@ -1260,6 +1275,9 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksPlayer(Spell spell)
         {
+            if (DynelManager.LocalPlayer.Nano < spell.Cost)
+                return false;
+
             if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
             {
                 //Don't cast if weaker than existing

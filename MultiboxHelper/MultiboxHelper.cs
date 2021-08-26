@@ -104,8 +104,6 @@ namespace MultiboxHelper
 
             IPCChannel = new IPCChannel(_channelId);
 
-            Chat.WriteLine($"IPC Channel for MultiboxHelper - {_channelId}");
-
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnTargetMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
@@ -145,7 +143,7 @@ namespace MultiboxHelper
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
-            Chat.RegisterCommand("raid", RaidCommand);
+            Chat.RegisterCommand("convert", RaidCommand);
 
 
             Game.OnUpdate += OnUpdate;
@@ -153,6 +151,8 @@ namespace MultiboxHelper
             Team.TeamRequest = Team_TeamRequest;
 
             Chat.WriteLine("Multibox Helper Loaded!");
+            Chat.WriteLine("/mbhelp for a list of shortcut commands.");
+            Chat.WriteLine($"IPC Channel for MultiboxHelper - {_channelId}");
         }
 
         public static int GetRemainingNCU(Identity target)
@@ -1383,7 +1383,7 @@ namespace MultiboxHelper
                             "\n" +
                             "/disband\n" +
                             "\n" +
-                            "/raid to convert to raid (must be done from leader)\n" +
+                            "/convert to convert to raid (must be done from leader)\n" +
                             "\n" +
                             "\n" +
                             "For shortcuts to /aosharp settings;\n" +

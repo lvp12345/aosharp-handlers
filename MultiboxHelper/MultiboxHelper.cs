@@ -773,7 +773,7 @@ namespace MultiboxHelper
                     return true;
                 if (target.FightingTarget.IsPet && Team.Members.Where(c => c.Character != null).Where(c => c.Name == target.FightingTarget.Name).Any())
                     return true;
-                else
+
                     return false;
                 // maybe some sort of assist function??
                 //return target.IsAttacking && (Team.Members.Where(c => target.FightingTarget == c.Character).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f || target.FightingTarget.IsPet);
@@ -785,7 +785,7 @@ namespace MultiboxHelper
                     return true;
                 if (DynelManager.LocalPlayer.Pets.Where(c => target.FightingTarget.Name == c.Character.Name).Any())
                     return true;
-                else
+
                     return false;
 
                 //return target.IsAttacking && (target.FightingTarget.Identity == DynelManager.LocalPlayer.Identity || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f || target.FightingTarget.IsPet);

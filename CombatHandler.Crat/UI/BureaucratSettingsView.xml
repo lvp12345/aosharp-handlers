@@ -22,9 +22,9 @@
     <OptionCheckBox label="Nano Resist" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffNanoResist" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="Debuffing" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Nano Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffNanoDrain" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Crit" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffCrit" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Nano Resist" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffNanoResist" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Nano Resist (Mourner's March)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffNanoDrain" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Crit (Certainty of Defeat)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffCrit" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Max Nano (Dead Man Walking)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffNanoResist" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value="           Pets" layout_borders="Rect(5,5,5,5)"/>

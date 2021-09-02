@@ -6,16 +6,15 @@
 		<TextView value="          Taunts" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Use single-target taunts" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseSingleTaunt" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use area taunts" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseAOETaunt" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use taunt tool" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseTauntTool" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Single-target taunt" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SingleTaunt" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Area taunt" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AOETaunt" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Absorbs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Absorbs" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="          Helpers" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="(OST) Spam Mongo and Fortify" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__IsOST" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="(S35) Spam Mongo during combat" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamMongo" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(OST) Mongo and Absorbs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__OST" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<VLayoutSpacer/>

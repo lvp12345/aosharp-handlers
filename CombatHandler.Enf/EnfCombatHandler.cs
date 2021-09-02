@@ -13,21 +13,24 @@ namespace Desu
 {
     class EnfCombatHandler : GenericCombatHandler
     {
-        public const double absorbsrefresh = 10f;
-        public const double absorbsrefreshos = 10f;
-        public const double aoerefresh = 6f;
-        public const double singletauntrefresh = 7f;
+        public const double absorbsrefresh = 16f;
+        public const double aoerefresh = 13.5f;
+        public const double aoerefreshost = 10f;
+        public const double singletauntrefresh = 13.5f;
         private double _absorbsused;
         private double _aoeused;
+        private double _aoeusedost;
         private double _singletauntused;
 
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("UseSingleTaunt", false);
-            settings.AddVariable("UseAOETaunt", true);
-            settings.AddVariable("UseTauntTool", true);
-            settings.AddVariable("IsOST", false);
-            settings.AddVariable("SpamMongo", false);
+            settings.AddVariable("SingleTaunt", false);
+            settings.AddVariable("AOETaunt", false);
+            settings.AddVariable("Absorbs", false);
+            //settings.AddVariable("UseTauntTool", true);
+
+            settings.AddVariable("OST", false);
+
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
             //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
@@ -58,11 +61,11 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TeamBuff);
             RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GenericBuff);
 
-            if (TauntTools.CanUseTauntTool())
-            {
-                Item tauntTool = TauntTools.GetBestTauntTool();
-                RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
-            }
+            //if (TauntTools.CanUseTauntTool())
+            //{
+            //    Item tauntTool = TauntTools.GetBestTauntTool();
+            //    RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
+            //}
         }
 
         private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -78,24 +81,34 @@ namespace Desu
         {
             List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
 
-            if (!IsSettingEnabled("UseSingleTaunt") || fightingTarget == null)
+            if (!IsSettingEnabled("SingleTaunt") || fightingTarget == null)
             {
                 return false;
             }
 
-            if (!IsSettingEnabled("UseAOETaunt") && Time.NormalTime < _singletauntused + singletauntrefresh)
+            if (IsSettingEnabled("AOETaunt") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _singletauntused + singletauntrefresh)
             {
                 _singletauntused = Time.NormalTime;
+                actionTarget.Target = fightingTarget;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
-            if (Time.NormalTime < _absorbsused + absorbsrefresh && DynelManager.LocalPlayer.FightingTarget != null && !mongobuff.FirstOrDefault().IsReady && DynelManager.LocalPlayer.FightingTarget.Name != "Technomaster Sinuh")
+            if (!IsSettingEnabled("AOETaunt") && Time.NormalTime > _singletauntused + singletauntrefresh)
+            {
+                _singletauntused = Time.NormalTime;
+                actionTarget.Target = fightingTarget;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
             {
                 return true;
             }
 
             //If our target has a different target than us we need to make sure we taunt
-            if (IsNotFightingMe(fightingTarget) && !mongobuff.FirstOrDefault().IsReady)
+            if (IsNotFightingMe(fightingTarget))
             {
                 return true;
             }
@@ -111,66 +124,47 @@ namespace Desu
         private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Edged1H);
-
-            //if (GetWieldedWeapon(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Edged1H))
-            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
-
-            //return false;
         }
 
         private bool Melee1HBBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Blunt1H);
-
-            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt1H)
-            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
-
-            //return false;
         }
 
         private bool Melee2HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Edged2H);
-
-            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Edged2H)
-            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
-
-            //return false;
         }
 
         private bool Melee2HBBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Blunt2H);
-
-            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Blunt2H)
-            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
-
-            //return false;
         }
 
         private bool MeleePierceBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Piercing);
-
-            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.Piercing)
-            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
-
-            //return false;
         }
 
         private bool MeleeEnergyBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.MeleeEnergy);
-
-            //if (GetWieldedWeapon(DynelManager.LocalPlayer) == CharacterWieldedWeapon.MeleeEnergy)
-            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
-
-            //return false;
         }
 
         private bool Fortify(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
+
+            if (IsSettingEnabled("OST") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _absorbsused + absorbsrefresh)
+            {
+                _absorbsused = Time.NormalTime;
+                return true;
+            }
+
+            if (!IsSettingEnabled("Absorbs"))
+            {
+                return false;
+            }
 
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF))
             {
@@ -185,15 +179,7 @@ namespace Desu
             if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
                 return false;
 
-            if (IsSettingEnabled("IsOST") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _absorbsused + absorbsrefreshos)
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                _absorbsused = Time.NormalTime;
-                return true;
-            }
-
-            if (DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _absorbsused + absorbsrefresh)
+            if (!IsSettingEnabled("OST") && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _absorbsused + absorbsrefresh)
             {
                 _absorbsused = Time.NormalTime;
                 return true;
@@ -206,56 +192,35 @@ namespace Desu
         {
             List<Spell> absorbbuff = Spell.List.Where(x => x.Nanoline == NanoLine.AbsorbACBuff).OrderBy(x => x.StackingOrder).ToList();
 
-            if (IsSettingEnabled("IsOST") || IsSettingEnabled("SpamMongo"))
+            if (IsSettingEnabled("OST"))
             {
-                return true;
+                if (Time.NormalTime > _aoeusedost + aoerefreshost)
+                {
+                    _aoeusedost = Time.NormalTime;
+                    return true;
+                }
             }
 
             if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
                 return false;
 
-            if (!IsSettingEnabled("UseAOETaunt"))
+            if (!IsSettingEnabled("AOETaunt") || fightingTarget == null)
             {
                 return false;
             }
 
-            if (fightingTarget == null)
-            {
-                return false;
-            }
-
-            if (absorbbuff.FirstOrDefault() == null && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime < _aoeused + aoerefresh)
+            if (!IsSettingEnabled("Absorbs") && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _aoeused + aoerefresh)
             {
                 _aoeused = Time.NormalTime;
                 return true;
             }
 
-            if (Time.NormalTime < _absorbsused + absorbsrefresh && Time.NormalTime < _aoeused + aoerefresh && DynelManager.LocalPlayer.FightingTarget != null)
+            if (IsSettingEnabled("Absorbs") && absorbbuff.FirstOrDefault() != null && Time.NormalTime > _absorbsused + absorbsrefresh 
+                && Time.NormalTime > _aoeused + aoerefresh && DynelManager.LocalPlayer.FightingTarget != null)
             {
                 _aoeused = Time.NormalTime;
                 return true;
             }
-
-            //If our target has a different target than us we need to make sure we taunt
-            //if (fightingTarget.FightingTarget != null && (fightingTarget.FightingTarget.Identity != DynelManager.LocalPlayer.Identity))
-            //{
-            //    return true;
-            //}
-
-            //If there is a target in range, that is not fighting us, we need to make sure we taunt
-            //if(DynelManager.Characters.Where(ShouldBeTaunted).Any(IsNotFightingMe))
-            //{
-            //    return true;
-            //}
-
-            //Check if we still have the mongo hot 
-            //foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
-            //{
-            //    if ((buff.Name == spell.Name && buff.RemainingTime > 5))
-            //    {
-            //        return false;
-            //    }
-            //}
 
             //Make sure we have plenty of nano for spamming mongo
             if (DynelManager.LocalPlayer.NanoPercent < 30)

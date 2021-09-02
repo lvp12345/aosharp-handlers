@@ -138,7 +138,7 @@ namespace Desu
 
         public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null)
+            if (DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null)
             {
                 return false;
             }

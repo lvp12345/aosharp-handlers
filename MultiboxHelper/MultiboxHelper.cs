@@ -47,9 +47,9 @@ namespace MultiboxHelper
 
         private static Settings settings = new Settings("MultiboxHelper");
 
-        private string[] playername = null;
-        private string[] identityname = null;
-        private string[] assistname = null;
+        //private string[] playername = null;
+        //private string[] identityname = null;
+        //private string[] assistname = null;
 
         private double _lastFollowTime = Time.NormalTime;
 
@@ -381,6 +381,28 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
 
+                //if (playername.Length >= 1)
+                //{
+                //    Dynel npcfollow = DynelManager.AllDynels.Where(x => x.Name.Contains(playername[0])).FirstOrDefault();
+
+                //    if (npcfollow != null)
+                //    {
+                //        OnSelfFollowMessage(npcfollow);
+
+                //        IPCChannel.Broadcast(new FollowMessage()
+                //        {
+                //            Target = npcfollow.Identity // change this to the new target with selection param
+                //        });
+                //        _lastFollowTime = Time.NormalTime;
+                //    }
+                //    else
+                //    {
+                //        Chat.WriteLine($"Cannot find {playername[0]}. Make sure to type captial first letter.");
+                //        settings["OSFollow"] = false;
+                //        return;
+                //    }
+                //}
+
                 if (playersname == String.Empty)
                 {
                     Window textboxwindow = SettingsController.settingsWindow;
@@ -401,23 +423,26 @@ namespace MultiboxHelper
                     }
                 }
 
-                Dynel npc = DynelManager.AllDynels.Where(x => x.Name.Contains(playersname)).FirstOrDefault();
-
-                if (npc != null)
+                if (playersname != String.Empty)
                 {
-                    OnSelfFollowMessage(npc);
+                    Dynel npc = DynelManager.AllDynels.Where(x => x.Name.Contains(playersname)).FirstOrDefault();
 
-                    IPCChannel.Broadcast(new FollowMessage()
+                    if (npc != null)
                     {
-                        Target = npc.Identity // change this to the new target with selection param
-                    });
-                    _lastFollowTime = Time.NormalTime;
-                }
-                else
-                {
-                    Chat.WriteLine($"Cannot find {playersname}. Make sure to type captial first letter.");
-                    settings["OSFollow"] = false;
-                    return;
+                        OnSelfFollowMessage(npc);
+
+                        IPCChannel.Broadcast(new FollowMessage()
+                        {
+                            Target = npc.Identity // change this to the new target with selection param
+                        });
+                        _lastFollowTime = Time.NormalTime;
+                    }
+                    else
+                    {
+                        Chat.WriteLine($"Cannot find {playersname}. Make sure to type captial first letter.");
+                        settings["OSFollow"] = false;
+                        return;
+                    }
                 }
             }
         }
@@ -766,9 +791,9 @@ namespace MultiboxHelper
 
             if (Team.IsInTeam)
             {
-                if (Team.Members.Where(c => target.FightingTarget.Name == c.Character.Name).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
+                if (Team.Members.Where(c => c.Character != null).Where(c => target.FightingTarget.Name == c.Character.Name).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
                     return true;
-                if (target.FightingTarget.IsPet && Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any())
+                if (target.FightingTarget.IsPet && Team.Members.Where(c => c.Character != null).Where(c => c.Name == target.FightingTarget.Name).Any())
                     return true;
                 else
                     return false;
@@ -1210,20 +1235,20 @@ namespace MultiboxHelper
                 return;
             }
 
-            if (param.Length == 0 && !settings["AssistPlayer"].AsBool() && assistname == null)
+            if (param.Length == 0 && !settings["AssistPlayer"].AsBool() && assistersname == String.Empty)
             {
                 Chat.WriteLine($"Wrong syntax, /assistplayer name");
                 settings["AssistPlayer"] = false;
                 return;
             }
 
-            if (param.Length == 0 && !settings["AssistPlayer"].AsBool() && assistname != null)
+            if (param.Length == 0 && !settings["AssistPlayer"].AsBool() && assistersname != String.Empty)
             {
                 settings["AssistPlayer"] = true;
-                Chat.WriteLine($"Assisting {assistname[0]}.");
+                Chat.WriteLine($"Assisting {assistersname}.");
             }
 
-            if (assistname == null && settings["AssistPlayer"].AsBool())
+            if (assistersname == String.Empty && settings["AssistPlayer"].AsBool())
             {
                 Chat.WriteLine($"Cannot find player.");
                 settings["AssistPlayer"] = false;
@@ -1231,9 +1256,9 @@ namespace MultiboxHelper
 
             if (param.Length >= 1 && !settings["AssistPlayer"].AsBool())
             {
-                assistname = param;
+                assistersname = param[0];
                 settings["AssistPlayer"] = true;
-                Chat.WriteLine($"Assisting {assistname[0]}.");
+                Chat.WriteLine($"Assisting {assistersname}.");
 
             }
         }
@@ -1247,20 +1272,20 @@ namespace MultiboxHelper
                 return;
             }
 
-            if (param.Length == 0 && !settings["NavFollow"].AsBool() && identityname == null)
+            if (param.Length == 0 && !settings["NavFollow"].AsBool() && identitiesname == String.Empty)
             {
                 Chat.WriteLine($"Wrong syntax, /navfollow name");
                 settings["NavFollow"] = false;
                 return;
             }
 
-            if (param.Length == 0 && !settings["NavFollow"].AsBool() && identityname != null)
+            if (param.Length == 0 && !settings["NavFollow"].AsBool() && identitiesname != String.Empty)
             {
                 settings["NavFollow"] = true;
-                Chat.WriteLine($"Following {identityname[0]}.");
+                Chat.WriteLine($"Following {identitiesname}.");
             }
 
-            if (identityname == null && settings["NavFollow"].AsBool())
+            if (identitiesname == String.Empty && settings["NavFollow"].AsBool())
             {
                 Chat.WriteLine($"Cannot find player.");
                 settings["NavFollow"] = false;
@@ -1268,9 +1293,9 @@ namespace MultiboxHelper
 
             if (param.Length >= 1 && !settings["NavFollow"].AsBool())
             {
-                identityname = param;
+                identitiesname = param[0];
                 settings["NavFollow"] = true;
-                Chat.WriteLine($"Following {identityname[0]}.");
+                Chat.WriteLine($"Following {identitiesname}.");
 
             }
         }
@@ -1284,20 +1309,20 @@ namespace MultiboxHelper
                 return;
             }
 
-            if (param.Length == 0 && !settings["OSFollow"].AsBool() && playername == null)
+            if (param.Length == 0 && !settings["OSFollow"].AsBool() && playersname == String.Empty)
             {
                 Chat.WriteLine($"Wrong syntax, /allfollow playername");
                 settings["OSFollow"] = false;
                 return;
             }
 
-            if (param.Length == 0 && !settings["OSFollow"].AsBool() && playername != null)
+            if (param.Length == 0 && !settings["OSFollow"].AsBool() && playersname != String.Empty)
             {
                 settings["OSFollow"] = true;
-                Chat.WriteLine($"Following {playername[0]}.");
+                Chat.WriteLine($"Following {playersname}.");
             }
 
-            if (playername == null && settings["OSFollow"].AsBool())
+            if (playersname == String.Empty && settings["OSFollow"].AsBool())
             {
                 Chat.WriteLine($"Cannot find player.");
                 settings["OSFollow"] = false;
@@ -1305,9 +1330,9 @@ namespace MultiboxHelper
 
             if (param.Length >= 1 && !settings["OSFollow"].AsBool())
             {
-                playername = param;
+                playersname = param[0];
                 settings["OSFollow"] = true;
-                Chat.WriteLine($"Following {playername[0]}.");
+                Chat.WriteLine($"Following {playersname}.");
 
             }
         }

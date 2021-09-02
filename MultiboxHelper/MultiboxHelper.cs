@@ -226,32 +226,32 @@ namespace MultiboxHelper
                 _lastFollowTime = Time.NormalTime;
             }
 
-            if (!settings["OSFollow"].AsBool())
-            {
-                if (playersname != String.Empty)
-                {
-                    playersname = string.Empty;
-                    return;
-                }
-            }
+            //if (!settings["OSFollow"].AsBool())
+            //{
+            //    if (playersname != String.Empty)
+            //    {
+            //        playersname = String.Empty;
+            //        return;
+            //    }
+            //}
 
-            if (!settings["NavFollow"].AsBool())
-            {
-                if (identitiesname != String.Empty)
-                {
-                    identitiesname = string.Empty;
-                    return;
-                }
-            }
+            //if (!settings["NavFollow"].AsBool())
+            //{
+            //    if (identitiesname != String.Empty)
+            //    {
+            //        identitiesname = String.Empty;
+            //        return;
+            //    }
+            //}
 
-            if (!settings["AssistPlayer"].AsBool())
-            {
-                if (assistersname != String.Empty)
-                {
-                    assistersname = string.Empty;
-                    return;
-                }
-            }
+            //if (!settings["AssistPlayer"].AsBool())
+            //{
+            //    if (assistersname != String.Empty)
+            //    {
+            //        assistersname = String.Empty;
+            //        return;
+            //    }
+            //}
 
             if (settings["AssistPlayer"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
             {
@@ -380,28 +380,6 @@ namespace MultiboxHelper
                     settings["Follow"] = false;
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
-
-                //if (playername.Length >= 1)
-                //{
-                //    Dynel npcfollow = DynelManager.AllDynels.Where(x => x.Name.Contains(playername[0])).FirstOrDefault();
-
-                //    if (npcfollow != null)
-                //    {
-                //        OnSelfFollowMessage(npcfollow);
-
-                //        IPCChannel.Broadcast(new FollowMessage()
-                //        {
-                //            Target = npcfollow.Identity // change this to the new target with selection param
-                //        });
-                //        _lastFollowTime = Time.NormalTime;
-                //    }
-                //    else
-                //    {
-                //        Chat.WriteLine($"Cannot find {playername[0]}. Make sure to type captial first letter.");
-                //        settings["OSFollow"] = false;
-                //        return;
-                //    }
-                //}
 
                 if (playersname == String.Empty)
                 {
@@ -1228,24 +1206,26 @@ namespace MultiboxHelper
 
         private void AssistPlayer(string command, string[] param, ChatWindow chatWindow)
         {
-            if (param.Length == 0 && settings["AssistPlayer"].AsBool())
+            if (param.Length == 0)
             {
-                Chat.WriteLine($"Stopped assisting.");
-                settings["AssistPlayer"] = false;
-                return;
-            }
-
-            if (param.Length == 0 && !settings["AssistPlayer"].AsBool() && assistersname == String.Empty)
-            {
-                Chat.WriteLine($"Wrong syntax, /assistplayer name");
-                settings["AssistPlayer"] = false;
-                return;
-            }
-
-            if (param.Length == 0 && !settings["AssistPlayer"].AsBool() && assistersname != String.Empty)
-            {
-                settings["AssistPlayer"] = true;
-                Chat.WriteLine($"Assisting {assistersname}.");
+                if (assistersname == String.Empty)
+                {
+                    Chat.WriteLine($"Wrong syntax, /assistplayer playername");
+                    settings["AssistPlayer"] = false;
+                    return;
+                }
+                if (!settings["AssistPlayer"].AsBool() && assistersname != String.Empty)
+                {
+                    settings["AssistPlayer"] = true;
+                    Chat.WriteLine($"Following {assistersname}.");
+                    return;
+                }
+                if (settings["AssistPlayer"].AsBool() && assistersname != String.Empty)
+                {
+                    settings["AssistPlayer"] = false;
+                    Chat.WriteLine($"Stopped assisting.");
+                    return;
+                }
             }
 
             if (assistersname == String.Empty && settings["AssistPlayer"].AsBool())
@@ -1254,35 +1234,49 @@ namespace MultiboxHelper
                 settings["AssistPlayer"] = false;
             }
 
-            if (param.Length >= 1 && !settings["AssistPlayer"].AsBool())
+            if (param.Length >= 1)
             {
-                assistersname = param[0];
-                settings["AssistPlayer"] = true;
-                Chat.WriteLine($"Assisting {assistersname}.");
+                if (param[0].ToLower() == "clear")
+                {
+                    if (settings["AssistPlayer"].AsBool())
+                    {
+                        settings["AssistPlayer"] = false;
+                        Chat.WriteLine($"Disabled AssistPlayer.");
+                    }
 
+                    assistersname = String.Empty;
+                    Chat.WriteLine($"Assister cleared.");
+                }
+                else
+                {
+                    assistersname = param[0];
+                    Chat.WriteLine($"Assisting set to {assistersname}.");
+                }
             }
         }
 
         private void Navfollow(string command, string[] param, ChatWindow chatWindow)
         {
-            if (param.Length == 0 && settings["NavFollow"].AsBool())
+            if (param.Length == 0)
             {
-                Chat.WriteLine($"Stopped following.");
-                settings["NavFollow"] = false;
-                return;
-            }
-
-            if (param.Length == 0 && !settings["NavFollow"].AsBool() && identitiesname == String.Empty)
-            {
-                Chat.WriteLine($"Wrong syntax, /navfollow name");
-                settings["NavFollow"] = false;
-                return;
-            }
-
-            if (param.Length == 0 && !settings["NavFollow"].AsBool() && identitiesname != String.Empty)
-            {
-                settings["NavFollow"] = true;
-                Chat.WriteLine($"Following {identitiesname}.");
+                if (identitiesname == String.Empty)
+                {
+                    Chat.WriteLine($"Wrong syntax, /navfollow playername");
+                    settings["NavFollow"] = false;
+                    return;
+                }
+                if (!settings["NavFollow"].AsBool() && identitiesname != String.Empty)
+                {
+                    settings["NavFollow"] = true;
+                    Chat.WriteLine($"Following {identitiesname}.");
+                    return;
+                }
+                if (settings["NavFollow"].AsBool() && identitiesname != String.Empty)
+                {
+                    settings["NavFollow"] = false;
+                    Chat.WriteLine($"Stopped following.");
+                    return;
+                }
             }
 
             if (identitiesname == String.Empty && settings["NavFollow"].AsBool())
@@ -1291,35 +1285,49 @@ namespace MultiboxHelper
                 settings["NavFollow"] = false;
             }
 
-            if (param.Length >= 1 && !settings["NavFollow"].AsBool())
+            if (param.Length >= 1)
             {
-                identitiesname = param[0];
-                settings["NavFollow"] = true;
-                Chat.WriteLine($"Following {identitiesname}.");
+                if (param[0].ToLower() == "clear")
+                {
+                    if (settings["NavFollow"].AsBool())
+                    {
+                        settings["NavFollow"] = false;
+                        Chat.WriteLine($"Disabled NavFollow.");
+                    }
 
+                    identitiesname = String.Empty;
+                    Chat.WriteLine($"Follower cleared.");
+                }
+                else
+                {
+                    identitiesname = param[0];
+                    Chat.WriteLine($"Follower set to {identitiesname}.");
+                }
             }
         }
 
         private void Allfollow(string command, string[] param, ChatWindow chatWindow)
         {
-            if (param.Length == 0 && settings["OSFollow"].AsBool())
+            if (param.Length == 0)
             {
-                Chat.WriteLine($"Stopped following.");
-                settings["OSFollow"] = false;
-                return;
-            }
-
-            if (param.Length == 0 && !settings["OSFollow"].AsBool() && playersname == String.Empty)
-            {
-                Chat.WriteLine($"Wrong syntax, /allfollow playername");
-                settings["OSFollow"] = false;
-                return;
-            }
-
-            if (param.Length == 0 && !settings["OSFollow"].AsBool() && playersname != String.Empty)
-            {
-                settings["OSFollow"] = true;
-                Chat.WriteLine($"Following {playersname}.");
+                if (playersname == String.Empty)
+                {
+                    Chat.WriteLine($"Wrong syntax, /allfollow playername");
+                    settings["OSFollow"] = false;
+                    return;
+                }
+                if (!settings["OSFollow"].AsBool() && playersname != String.Empty)
+                {
+                    settings["OSFollow"] = true;
+                    Chat.WriteLine($"Following {playersname}.");
+                    return;
+                }
+                if (settings["OSFollow"].AsBool() && playersname != String.Empty)
+                {
+                    settings["OSFollow"] = false;
+                    Chat.WriteLine($"Stopped following.");
+                    return;
+                }
             }
 
             if (playersname == String.Empty && settings["OSFollow"].AsBool())
@@ -1328,12 +1336,24 @@ namespace MultiboxHelper
                 settings["OSFollow"] = false;
             }
 
-            if (param.Length >= 1 && !settings["OSFollow"].AsBool())
+            if (param.Length >= 1)
             {
-                playersname = param[0];
-                settings["OSFollow"] = true;
-                Chat.WriteLine($"Following {playersname}.");
+                if (param[0].ToLower() == "clear")
+                {
+                    if (settings["OSFollow"].AsBool())
+                    {
+                        settings["OSFollow"] = false;
+                        Chat.WriteLine($"Disabled OSFollow.");
+                    }
 
+                    playersname = String.Empty;
+                    Chat.WriteLine($"Follower cleared.");
+                }
+                else
+                {
+                    playersname = param[0];
+                    Chat.WriteLine($"Follower set to {playersname}.");
+                }
             }
         }
 
@@ -1423,12 +1443,15 @@ namespace MultiboxHelper
                             "\n" +
                             "/autosit auto sits to use kits\n" +
                             "\n" +
-                            "/allfollow name to follow player\n" +
+                            "/allfollow name then /allfollow to toggle\n" +
                             "\n" +
-                            "/navfollow name to follow identity\n" +
+                            "/navfollow name then /navfollow to toggle\n" +
+                            "(Follow the npc or player using waypoints)\n" +
                             "\n" +
-                            "/assistplayer name to assist the player\n" +
+                            "/assistplayer name then /assistplayer to toggle\n" +
                             "(This is implemented to avoid KSing)\n" +
+                            "\n" +
+                            "Add clear to the end of each of these to clear the name\n" +
                             "\n" +
                             "\n" +
                             "For IPC Channel;\n" +

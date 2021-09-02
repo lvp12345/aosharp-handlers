@@ -515,7 +515,7 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         //private bool BuffSpecialAttack(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, Func<SpecialAttacks, bool> specialAttackCheck)

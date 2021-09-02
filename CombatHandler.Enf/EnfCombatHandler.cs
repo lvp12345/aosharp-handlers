@@ -15,7 +15,11 @@ namespace Desu
     {
         public const double absorbsrefresh = 10f;
         public const double absorbsrefreshos = 10f;
+        public const double aoerefresh = 6f;
+        public const double singletauntrefresh = 7f;
         private double _absorbsused;
+        private double _aoeused;
+        private double _singletauntused;
 
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -79,8 +83,9 @@ namespace Desu
                 return false;
             }
 
-            if (!IsSettingEnabled("UseAOETaunt"))
+            if (!IsSettingEnabled("UseAOETaunt") && Time.NormalTime < _singletauntused + singletauntrefresh)
             {
+                _singletauntused = Time.NormalTime;
                 return true;
             }
 
@@ -219,13 +224,15 @@ namespace Desu
                 return false;
             }
 
-            if (absorbbuff.FirstOrDefault() == null && DynelManager.LocalPlayer.FightingTarget != null)
+            if (absorbbuff.FirstOrDefault() == null && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime < _aoeused + aoerefresh)
             {
+                _aoeused = Time.NormalTime;
                 return true;
             }
 
-            if (Time.NormalTime < _absorbsused + absorbsrefresh && DynelManager.LocalPlayer.FightingTarget != null)
+            if (Time.NormalTime < _absorbsused + absorbsrefresh && Time.NormalTime < _aoeused + aoerefresh && DynelManager.LocalPlayer.FightingTarget != null)
             {
+                _aoeused = Time.NormalTime;
                 return true;
             }
 

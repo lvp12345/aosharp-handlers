@@ -1133,7 +1133,7 @@ namespace CombatHandler.Generic
                     .Where(c => SpellChecksOther(spell, c))
                     .FirstOrDefault();
 
-                if (teamMemberWithoutBuff != null)
+                if (teamMemberWithoutBuff != null && teamMemberWithoutBuff.Profession != Profession.Keeper)
                 {
                     actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
@@ -1245,6 +1245,8 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Nano < spell.Cost)
                 return false;
+            if (Playfield.ModelIdentity.Instance == 152)
+                return false;
             if (fightingTarget.IsPlayer && !MultiboxHelper.MultiboxHelper.IsCharacterRegistered(fightingTarget.Identity))
                 return false;
             if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))
@@ -1263,11 +1265,6 @@ namespace CombatHandler.Generic
                 {
                     return false;
                 }
-
-                //if (fightingTarget.Buffs.Contains(buff))
-                //{
-                //    return false;
-                //}
             }
 
             return true;
@@ -1276,6 +1273,8 @@ namespace CombatHandler.Generic
         protected bool SpellChecksPlayer(Spell spell)
         {
             if (DynelManager.LocalPlayer.Nano < spell.Cost)
+                return false;
+            if (Playfield.ModelIdentity.Instance == 152)
                 return false;
 
             if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
@@ -1296,11 +1295,6 @@ namespace CombatHandler.Generic
                 {
                     return false;
                 }
-
-                //if (DynelManager.LocalPlayer.Buffs.Contains(buff))
-                //{
-                //    return false;
-                //}
             }
 
             if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)

@@ -81,10 +81,10 @@ namespace Desu
         {
             List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
 
-            if (!IsSettingEnabled("SingleTaunt") || fightingTarget == null)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("SingleTaunt") || fightingTarget == null) { return false; }
+
+            if (fightingTarget.MaxHealth < 1000000) { return false; }
+
 
             if (IsSettingEnabled("AOETaunt") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _singletauntused + singletauntrefresh)
             {

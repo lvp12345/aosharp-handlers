@@ -39,6 +39,10 @@ namespace MultiboxHelper
         private static double posUpdateTimer;
         private static double sitUpdateTimer;
 
+        public static bool YalmSwitch = false;
+
+        public static Spell yalmbuffs = null;
+
 
         private static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
@@ -121,6 +125,8 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ChannelAll, OnChannelAll);
+            IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmStart);
+            IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
 
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
@@ -144,6 +150,8 @@ namespace MultiboxHelper
             Chat.RegisterCommand("form", FormCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
             Chat.RegisterCommand("convert", RaidCommand);
+
+            Chat.RegisterCommand("yalm", YalmCommand);
 
 
             Game.OnUpdate += OnUpdate;
@@ -1155,6 +1163,46 @@ namespace MultiboxHelper
             }
         }
 
+        protected static void CancelBuffs(int[] buffsToCancel)
+        {
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
+            {
+                if (buffsToCancel.Contains(buff.Identity.Instance))
+                    buff.Remove();
+            }
+        }
+
+        private static void OnYalmStart(int sender, IPCMessage msg)
+        {
+            yalmbuffs = Spell.List.Where(x => RelevantNanos.Yalms.Contains(x.Identity.Instance)).FirstOrDefault();
+            YalmSwitch = true;
+            yalmbuffs.Cast(false);
+        }
+
+        private static void OnYalmCancel(int sender, IPCMessage msg)
+        {
+            YalmSwitch = false;
+            CancelBuffs(RelevantNanos.Yalms);
+        }
+
+        private void YalmCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (YalmSwitch)
+            {
+                YalmSwitch = false;
+                CancelBuffs(RelevantNanos.Yalms);
+                IPCChannel.Broadcast(new YalmOffMessage());
+            }
+            else
+            {
+                yalmbuffs = Spell.List.Where(x => RelevantNanos.Yalms.Contains(x.Identity.Instance)).FirstOrDefault();
+                YalmSwitch = true;
+                yalmbuffs.Cast(false);
+                IPCChannel.Broadcast(new YalmOnMessage());
+
+            }
+        }
+
         private void AutoSitSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0 && settings["AutoSit"].AsBool())
@@ -1549,6 +1597,16 @@ namespace MultiboxHelper
             };
             Network.Send(n3Msg);
             MovementController.Instance.SetMovement(MovementAction.Update);
+        }
+
+        private static class RelevantNanos
+        {
+            public static readonly int[] Yalms = {
+                270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982, 293619, 281569, 294781,
+                296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
+                270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 301672,
+                290473, 301669
+            };
         }
     }
 }

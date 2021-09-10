@@ -153,6 +153,11 @@ namespace Desu
 
         private bool SingleTargetHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("HealTeammates"))
+            {
+                return false;
+            }
+
             actionTarget.ShouldSetTarget = true;
 
             if (DynelManager.LocalPlayer.MissingHealth > 800) //TODO: Some kind of healing check to calc an optimal missing health value
@@ -179,6 +184,11 @@ namespace Desu
 
         private bool TeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
+            if (!IsSettingEnabled("HealTeammates"))
+            {
+                return false;
+            }
+
             actiontarget.ShouldSetTarget = false;
 
             if (DynelManager.LocalPlayer.MissingHealth > 1500) //TODO: Some kind of healing check to calc an optimal missing health value

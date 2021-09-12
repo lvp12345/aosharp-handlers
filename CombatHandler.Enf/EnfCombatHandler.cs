@@ -205,6 +205,8 @@ namespace Desu
                 return false;
             }
 
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
             return true;
 
             //return GenericBuff(spell, fightingTarget, ref actionTarget);

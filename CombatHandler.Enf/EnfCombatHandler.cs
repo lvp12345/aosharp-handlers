@@ -174,42 +174,16 @@ namespace Desu
             if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
                 return false;
 
-            if (DynelManager.LocalPlayer.Nano < spell.Cost)
-                return false;
-            if (Playfield.ModelIdentity.Instance == 152)
-                return false;
-
 
             if (!IsSettingEnabled("OST") && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _absorbsused + absorbsrefresh)
             {
                 _absorbsused = Time.NormalTime;
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
-            if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
-            {
-                //Don't cast if greater than 10% time remaining
-                if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1)
-                {
-                    return false;
-                }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
-                {
-                    return false;
-                }
-            }
-
-            if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
-            {
-                return false;
-            }
-
-            actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = DynelManager.LocalPlayer;
-            return true;
-
-            //return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

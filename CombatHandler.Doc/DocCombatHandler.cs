@@ -46,7 +46,7 @@ namespace Desu
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), TeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistanceBuff);
             
             RegisterSpellProcessor(RelevantNanos.HP_BUFFS, TeamHPBuff);
@@ -296,6 +296,8 @@ namespace Desu
             public const int IMPROVED_INSTINCTIVE_CONTROL = 222856;
             public const int IMPROVED_NANO_REPULSOR = 222823;
             public const int ALPHA_AND_OMEGA = 42409;
+            public const int TiredLimbs = 99578;
+            public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder().Where(spell => spell.Identity.Instance != TiredLimbs).ToArray();
             //HP buffs don't have a nano line and cannot be ordered dynamically. Need to hardcode list and order.
             public static int[] HP_BUFFS = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
             //RK Heals don't have a nano line and cannot be ordered dynamically. Need to hardcode list and order.

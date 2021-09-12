@@ -60,6 +60,7 @@ namespace CombatHandler.Generic
             {PerkHash.BattlegroupHeal4, BattleGroupHealPerk4 },
             {PerkHash.WitOfTheAtrox, WitOfTheAtrox },
             {PerkHash.BioCocoon, BioCocoon },
+            {PerkHash.EvasiveStance, EvasiveStance },
         };
 
         private static bool WitOfTheAtrox(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -70,6 +71,14 @@ namespace CombatHandler.Generic
         private static bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return SelfAbsorbPerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        private static bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.HealthPercent >= 75)
+                return false;
+
+            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private static bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -359,7 +368,9 @@ namespace CombatHandler.Generic
                 }
             }
 
-            if (!DynelManager.LocalPlayer.IsAttacking && (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox" || perkAction.Name == "Dodge the Blame"))
+            if (!DynelManager.LocalPlayer.IsAttacking && 
+                (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox" 
+                || perkAction.Name == "Dodge the Blame" || perkAction.Name == "Devotional Armor"))
                 return false;
 
             return true;

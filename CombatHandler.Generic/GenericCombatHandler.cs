@@ -418,6 +418,12 @@ namespace CombatHandler.Generic
             {
                 return false;
             }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs))
+            {
+                return false;
+            }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 

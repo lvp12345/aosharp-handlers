@@ -21,6 +21,7 @@ namespace Desu
 
             settings.AddVariable("IndividualHOT", false);
             settings.AddVariable("ShortHPBuff", false);
+            settings.AddVariable("Deathless", false);
 
             settings.AddVariable("Heal", true);
             settings.AddVariable("OSHeal", false);
@@ -201,6 +202,11 @@ namespace Desu
 
         private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Deathless"))
+            {
+                return false;
+            }
+
             if (SpellChecksPlayer(spell))
                 return false;
 

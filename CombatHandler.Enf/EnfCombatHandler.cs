@@ -44,7 +44,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AoeTaunt);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChangeBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), Fortify);
+            RegisterSpellProcessor(RelevantNanos.FortifyBuffs, Fortify);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
@@ -171,13 +171,14 @@ namespace Desu
                 return false;
             }
 
-            if (DynelManager.LocalPlayer.NanoPercent < 30)
-            {
-                return false;
-            }
-
             if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
                 return false;
+
+            if (DynelManager.LocalPlayer.Nano < spell.Cost)
+                return false;
+            if (Playfield.ModelIdentity.Instance == 152)
+                return false;
+
 
             if (!IsSettingEnabled("OST") && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _absorbsused + absorbsrefresh)
             {
@@ -185,7 +186,28 @@ namespace Desu
                 return true;
             }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+            {
+                //Don't cast if greater than 10% time remaining
+                if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1)
+                {
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                {
+                    return false;
+                }
+            }
+
+            if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+            {
+                return false;
+            }
+
+            return true;
+
+            //return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -251,6 +273,7 @@ namespace Desu
             public static readonly int[] MeleePierce = { 202858, 202860, 202862, 202864, 202866, 202868, 202870 };
             public static readonly int[] MeleeEnergy = { 203215, 203207, 203209, 203211, 203213 };
             public static readonly int[] TargetedHpBuff = { 273629, 95708, 95700, 95701, 95702, 95704, 95706, 95707 };
+            public static readonly int[] FortifyBuffs = { 273320, 270350, 117686, 117688, 117682, 117687, 117685, 117684, 117683, 117680, 117681 };
             public static readonly Spell[] TargetedDamageShields = Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder().Where(spell => spell.Identity.Instance != ICE_BURN).ToArray();
             public const int MONGO_KRAKEN = 273322;
             public const int MONGO_DEMOLISH = 270786;

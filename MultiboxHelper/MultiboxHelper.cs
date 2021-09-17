@@ -1174,7 +1174,9 @@ namespace MultiboxHelper
 
         private static void OnYalmStart(int sender, IPCMessage msg)
         {
-            yalmbuffs = Spell.List.Where(x => RelevantNanos.Yalms.Contains(x.Identity.Instance)).FirstOrDefault();
+            YalmOnMessage yalmMsg = (YalmOnMessage)msg;
+
+            yalmbuffs = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell);
             YalmSwitch = true;
             yalmbuffs.Cast(false);
         }
@@ -1195,11 +1197,13 @@ namespace MultiboxHelper
             }
             else
             {
-                yalmbuffs = Spell.List.Where(x => RelevantNanos.Yalms.Contains(x.Identity.Instance)).FirstOrDefault();
+                yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
                 YalmSwitch = true;
                 yalmbuffs.Cast(false);
-                IPCChannel.Broadcast(new YalmOnMessage());
-
+                IPCChannel.Broadcast(new YalmOnMessage()
+                {
+                    spell = yalmbuffs.Identity.Instance
+                });
             }
         }
 
@@ -1602,9 +1606,9 @@ namespace MultiboxHelper
         private static class RelevantNanos
         {
             public static readonly int[] Yalms = {
-                290473, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982, 293619, 281569,
+                290473, 281569, 301672, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982,
                 296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
-                270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 301672,
+                270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 293619,
                 294781, 301669
             };
         }

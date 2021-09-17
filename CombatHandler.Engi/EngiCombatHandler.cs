@@ -453,14 +453,6 @@ namespace CombatHandler.Engi
 
         protected override void OnUpdate(float deltaTime)
         {
-            //SimpleChar teammate = DynelManager.Characters
-            //    .Where(c => c.Name == "Zoopbuffhot")
-            //    .FirstOrDefault();
-
-
-
-            //Chat.WriteLine($"{GetWieldedWeapons(teammate)/*.HasFlag(CharacterWieldedWeapon.MartialArts)*/}");
-
             SynchronizePetCombatStateWithOwner();
 
             base.OnUpdate(deltaTime);

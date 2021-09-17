@@ -155,7 +155,7 @@ namespace CombatHandler.Engi
 
         protected bool PistolGrenadeTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol | CharacterWieldedWeapon.Grenade);
+            return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -453,6 +453,14 @@ namespace CombatHandler.Engi
 
         protected override void OnUpdate(float deltaTime)
         {
+            //SimpleChar teammate = DynelManager.Characters
+            //    .Where(c => c.Name == "Zoopbuffhot")
+            //    .FirstOrDefault();
+
+
+
+            //Chat.WriteLine($"{GetWieldedWeapons(teammate)/*.HasFlag(CharacterWieldedWeapon.MartialArts)*/}");
+
             SynchronizePetCombatStateWithOwner();
 
             base.OnUpdate(deltaTime);

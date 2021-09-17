@@ -12,5 +12,8 @@ namespace MultiboxHelper.IPCMessages
     public class YalmOnMessage : IPCMessage
     {
         public override short Opcode => (short)IPCOpcode.YalmOn;
+
+        [AoMember(0)]
+        public int spell { get; set; }
     }
 }

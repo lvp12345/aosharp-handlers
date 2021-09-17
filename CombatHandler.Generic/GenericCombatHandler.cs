@@ -142,6 +142,8 @@ namespace CombatHandler.Generic
             RegisterSpellProcessor(RelevantNanos.CompositeUtility, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, GenericBuff);
 
+            RegisterSpellProcessor(RelevantNanos.InsightIntoSL, GenericBuff);
+
             if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
             {
                 //We are melee
@@ -1462,6 +1464,7 @@ namespace CombatHandler.Generic
             public const int CompositeRanged = 223348;
             public const int CompositeRangedSpecial = 223364;
             public const int InnerSanctumDebuff = 206387;
+            public const int InsightIntoSL = 268610;
         }
 
         public class PetSpellData

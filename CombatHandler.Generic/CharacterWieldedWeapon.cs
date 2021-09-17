@@ -10,8 +10,8 @@ namespace MultiboxHelper
     [Flags]
     public enum CharacterWieldedWeapon
     {
-        Invalid = 0x0,            // 0x00000000000000000000b
-        Fists = 0x01,             // 0x00000000000000000001b
+        Fists = 0x0,            // 0x00000000000000000000b Fists / invalid
+        MartialArts = 0x01,             // 0x00000000000000000001b martialarts / fists
         Melee = 0x02,             // 0x00000000000000000010b
         Ranged = 0x04,            // 0x00000000000000000100b
         Bow = 0x08,               // 0x00000000000000001000b
@@ -25,10 +25,10 @@ namespace MultiboxHelper
         AssaultRifle = 0x800,     // 0x00000000100000000000b
         Rifle = 0x1000,           // 0x00000001000000000000b
         Shotgun = 0x2000,         // 0x00000010000000000000b
-        MartialArts = 0x8000,     // 0x00000100000000000000b // 0x00001000000000000000b
+        Grenade = 0x8000,     // 0x00000100000000000000b // 0x00001000000000000000b grenade / martial arts
         MeleeEnergy = 0x4000,     // 0x00001000000000000000b // 0x00000100000000000000b
         RangedEnergy = 0x10000,   // 0x00010000000000000000b
-        Grenade = 0x20000,        // 0x00100000000000000000b
+        Grenade2 = 0x20000,        // 0x00100000000000000000b
         HeavyWeapons = 0x40000,   // 0x01000000000000000000b
     }
 }

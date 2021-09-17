@@ -160,6 +160,7 @@ namespace MultiboxHelper
 
             Chat.WriteLine("Multibox Helper Loaded!");
             Chat.WriteLine("/mbhelp for a list of shortcut commands.");
+            Chat.WriteLine("/mbhelp for a list of shortcut commands.");
             Chat.WriteLine($"IPC Channel for MultiboxHelper - {_channelId}");
         }
 

@@ -137,7 +137,7 @@ namespace CombatHandler.Engi
                 }
             }
 
-            if (!IsSettingEnabled("SnareAura") || fightingTarget == null)
+            if (!IsSettingEnabled("SnareAura"))
             {
                 return false;
             }

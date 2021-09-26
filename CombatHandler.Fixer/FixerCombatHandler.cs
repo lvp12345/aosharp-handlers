@@ -88,6 +88,11 @@ namespace Desu
             {
                 return false;
             }
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs))
+            {
+                return false;
+            }
+
             return ToggledBuff("UseRKRunspeed", spell, fightingTarget, ref actionTarget);
         }
 

@@ -106,12 +106,11 @@ namespace Desu
             {
                 return false;
             }
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs))
+            {
+                return false;
+            }
             return ToggledBuff("UseFasterThanYourShadow", spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool HasGsfNanoLine(SimpleChar target)
-        {
-            return target.Buffs.Any(buff => buff.Name.Contains("Grid"));
         }
 
         private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)

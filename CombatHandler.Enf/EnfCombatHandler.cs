@@ -87,7 +87,9 @@ namespace Desu
 
             if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
+            if (DynelManager.LocalPlayer.FightingTarget != null 
+                && (DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh"
+                || DynelManager.LocalPlayer.FightingTarget.Name == "Collector"))
             {
                 return true;
             }

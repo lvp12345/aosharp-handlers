@@ -16,7 +16,7 @@ namespace Desu
         public const double absorbsrefresh = 16f;
         public const double aoerefresh = 13.5f;
         public const double aoerefreshost = 10f;
-        public const double singletauntrefresh = 13.5f;
+        public const double singletauntrefresh = 4.5f;
         private double _absorbsused;
         private double _aoeused;
         private double _aoeusedost;
@@ -85,6 +85,20 @@ namespace Desu
 
             if (fightingTarget.MaxHealth < 1000000) { return false; }
 
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
+            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
+            {
+                return true;
+            }
+
+            //If our target has a different target than us we need to make sure we taunt
+            if (IsNotFightingMe(fightingTarget))
+            {
+                actionTarget.Target = fightingTarget;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
             if (IsSettingEnabled("AOETaunt") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _singletauntused + singletauntrefresh)
             {
@@ -100,22 +114,6 @@ namespace Desu
                 actionTarget.Target = fightingTarget;
                 actionTarget.ShouldSetTarget = true;
                 return true;
-            }
-
-            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
-            {
-                return true;
-            }
-
-            //If our target has a different target than us we need to make sure we taunt
-            if (IsNotFightingMe(fightingTarget))
-            {
-                return true;
-            }
-
-            if (DynelManager.LocalPlayer.NanoPercent < 30)
-            {
-                return false;
             }
 
             return false;

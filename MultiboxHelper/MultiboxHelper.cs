@@ -1178,8 +1178,18 @@ namespace MultiboxHelper
             YalmOnMessage yalmMsg = (YalmOnMessage)msg;
 
             yalmbuffs = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell);
-            YalmSwitch = true;
-            yalmbuffs.Cast(false);
+
+            if (!Spell.List.Contains(yalmbuffs))
+            {
+                yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+                YalmSwitch = true;
+                yalmbuffs.Cast(false);
+            }
+            else
+            {
+                YalmSwitch = true;
+                yalmbuffs.Cast(false);
+            }
         }
 
         private static void OnYalmCancel(int sender, IPCMessage msg)

@@ -12,8 +12,10 @@ namespace Desu
     {
         public NTCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("UseAIDot", true);
-            settings.AddVariable("UseAoeBlind", false);
+            settings.AddVariable("AIDot", true);
+            settings.AddVariable("AoeBlind", false);
+            settings.AddVariable("OSNanoHoT", false);
+            settings.AddVariable("OSCost", false);
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
 
             //Buffs
@@ -28,8 +30,10 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), GenericBuff);
 
-            if(Spell.Find(RelevantNanos.SuperiorFleetingImmunity, out Spell immunity))
+            if (Spell.Find(RelevantNanos.SuperiorFleetingImmunity, out Spell immunity))
             {
                 RegisterSpellProcessor(immunity, GenericBuff);
             }
@@ -51,7 +55,7 @@ namespace Desu
 
         private bool AoeBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseAoeBlind") || fightingTarget == null)
+            if (!IsSettingEnabled("AoeBlind") || fightingTarget == null)
             {
                 return false;
             }
@@ -61,7 +65,7 @@ namespace Desu
 
         private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("UseAoeBlind") || fightingTarget == null)
+            if (IsSettingEnabled("AoeBlind") || fightingTarget == null)
             {
                 return false;
             }
@@ -104,7 +108,7 @@ namespace Desu
 
         private bool AiDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseAIDot"))
+            if (!IsSettingEnabled("AIDot"))
                 return false;
 
             if (fightingTarget == null)

@@ -1179,7 +1179,7 @@ namespace MultiboxHelper
 
             yalmbuffs = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell);
 
-            if (!Spell.List.Contains(yalmbuffs))
+            if (yalmbuffs != null)
             {
                 yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
                 YalmSwitch = true;

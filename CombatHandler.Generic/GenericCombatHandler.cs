@@ -1128,7 +1128,7 @@ namespace CombatHandler.Generic
 
         protected bool CheckNotKeeperBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("OSCost") && !IsSettingEnabled("OSNanoHoT")) { return false; }
+            if (DynelManager.LocalPlayer.Profession == Profession.NanoTechnician && !IsSettingEnabled("OSCost") && !IsSettingEnabled("OSNanoHoT")) { return false; }
 
             if (!CanCast(spell)) { return false; }
 

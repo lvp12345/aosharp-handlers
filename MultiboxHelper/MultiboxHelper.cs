@@ -292,8 +292,8 @@ namespace MultiboxHelper
 
                 SimpleChar identity = DynelManager.Characters
                     .Where(c => assistersname != String.Empty)
+                    .Where(c => c.IsValid)
                     .Where(c => c.IsAlive)
-                    .Where(c => c.IsInLineOfSight)
                     .Where(c => c.Name.Contains(assistersname))
                     .FirstOrDefault();
 
@@ -1177,16 +1177,15 @@ namespace MultiboxHelper
         {
             YalmOnMessage yalmMsg = (YalmOnMessage)msg;
 
-            yalmbuffs = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell);
-
-            if (yalmbuffs != null)
+            if (Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell) != null)
             {
-                yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+                yalmbuffs = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell);
                 YalmSwitch = true;
                 yalmbuffs.Cast(false);
             }
             else
             {
+                yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
                 YalmSwitch = true;
                 yalmbuffs.Cast(false);
             }

@@ -40,6 +40,7 @@ namespace MultiboxHelper
         private static double sitUpdateTimer;
 
         public static bool YalmSwitch = false;
+        public static bool Sitting = false;
 
         public static Spell yalmbuffs = null;
 
@@ -201,7 +202,7 @@ namespace MultiboxHelper
                 MovementController.Instance.SetPath(horsey);
             }
 
-            if (Time.NormalTime > sitUpdateTimer + 0.1)
+            if (Time.NormalTime > sitUpdateTimer + 0.1 && Sitting == false)
             {
                 ListenerSit();
 
@@ -731,11 +732,13 @@ namespace MultiboxHelper
                         Task.Factory.StartNew(
                         async () =>
                         {
+                            Sitting = true;
                             await Task.Delay(400);
                             MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
                             await Task.Delay(400);
                             MovementController.Instance.SetMovement(MovementAction.LeaveSit);
                             await Task.Delay(400);
+                            Sitting = false;
                         });
                     }
                 }

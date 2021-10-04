@@ -13,8 +13,8 @@ namespace Desu
 {
     class EnfCombatHandler : GenericCombatHandler
     {
-        public const double absorbsrefresh = 16f;
-        public const double aoerefresh = 13.5f;
+        public const double absorbsrefresh = 8f;
+        public const double aoerefresh = 7.5f;
         public const double aoerefreshost = 10f;
         public const double singletauntrefresh = 4.5f;
         private double _absorbsused;

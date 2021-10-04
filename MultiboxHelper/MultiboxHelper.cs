@@ -361,10 +361,10 @@ namespace MultiboxHelper
 
                 if (identity != null)
                 {
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= 6f)
+                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= 15f)
                         MovementController.Instance.Halt();
 
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > 6f)
+                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > 15f)
                         MovementController.Instance.SetDestination(identity.Position);
 
                     IPCChannel.Broadcast(new NavFollowMessage()
@@ -1554,10 +1554,10 @@ namespace MultiboxHelper
 
             if (targetDynel != null)
             {
-                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) <= 6f)
+                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) <= 15f)
                     MovementController.Instance.Halt();
 
-                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) > 6f)
+                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) > 15f)
                     MovementController.Instance.SetDestination(targetDynel.Position);
                 _lastFollowTime = Time.NormalTime;
             }

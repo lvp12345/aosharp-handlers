@@ -203,7 +203,10 @@ namespace MultiboxHelper
 
             if (Time.NormalTime > sitUpdateTimer + 0.1)
             {
-                ListenerSit();
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                {
+                    ListenerSit();
+                }
 
                 sitUpdateTimer = Time.NormalTime;
             }
@@ -728,15 +731,26 @@ namespace MultiboxHelper
                 {
                     if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
                     {
-                        Task.Factory.StartNew(
-                        async () =>
+                        if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
                         {
-                            await Task.Delay(100);
-                            MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                            await Task.Delay(500);
-                            MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                            await Task.Delay(100);
-                        });
+                            Task.Factory.StartNew(
+                            async () =>
+                            {
+                                await Task.Delay(300);
+                                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                                await Task.Delay(200);
+                            });
+                        }
+                        else
+                        {
+                            Task.Factory.StartNew(
+                            async () =>
+                            {
+                                await Task.Delay(200);
+                                MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                                await Task.Delay(200);
+                            });
+                        }
                     }
                 }
             }

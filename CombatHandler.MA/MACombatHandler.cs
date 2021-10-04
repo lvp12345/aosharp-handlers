@@ -16,6 +16,13 @@ namespace Desu
             settings.AddVariable("UseShortDamageBuffNanoShutdown", false);
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
+            //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, LEProc, CombatActionPriority.Low);
+            //Team Buffs
+            RegisterSpellProcessor(RelevantNanos.ReduceInertia, TeamBuffExcludeInnerSanctum);
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamBuff);
+
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), SingleTargetHeal, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHeal, CombatActionPriority.High);
@@ -230,6 +237,8 @@ namespace Desu
         {
             public const int FistsOfTheWinterFlame = 269470;
             public const int LimboMastery = 28894;
+            public const int ReduceInertia = 28903;
+            public static int[] TeamCritBuffs = { 160574, 160575, 160576 };
         }
 
         private static class RelevantItems

@@ -87,10 +87,7 @@ namespace Desu
 
         private bool ChannelRage(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetThat(CanPerkChannelRage);
             if (petToPerk != null)
@@ -104,10 +101,8 @@ namespace Desu
 
         private bool CanPerkChannelRage(Pet pet)
         {
-            if(pet.Type != PetType.Attack)
-            {
-                return false;
-            }
+            if(pet.Type != PetType.Attack) { return false; }
+
             return !pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.ChannelRage);
         }
 
@@ -132,19 +127,15 @@ namespace Desu
 
         private bool MPCompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(GetNanoBuffsSelection() != NanoBuffsSelection.SL)
-            {
-                return false;
-            }
+            if(GetNanoBuffsSelection() != NanoBuffsSelection.SL) { return false; }
+
             return GenericBuff(spell, fightingTarget,  ref actionTarget);
         }
 
         private bool MPNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (GetNanoBuffsSelection() != NanoBuffsSelection.RK)
-            {
-                return false;
-            }
+            if (GetNanoBuffsSelection() != NanoBuffsSelection.RK) { return false; }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
@@ -167,40 +158,28 @@ namespace Desu
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !IsSettingEnabled("UseNukes"))
-            {
-                return false;
-            }
+            if (fightingTarget == null || !IsSettingEnabled("UseNukes")) { return false; }
 
             return true;
         }
 
         private bool MezzPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !IsSettingEnabled("BuffPets"))
-            {
-                return false;
-            }
+            if (fightingTarget != null || !IsSettingEnabled("BuffPets")) { return false; }
 
             return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MesmerizationConstructEmpowerment);
         }
 
         private bool HealPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !IsSettingEnabled("BuffPets"))
-            {
-                return false;
-            }
+            if (fightingTarget != null || !IsSettingEnabled("BuffPets")) { return false; }
 
             return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.HealingConstructEmpowerment);
         }
 
         private bool AttackPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !IsSettingEnabled("BuffPets"))
-            {
-                return false;
-            }
+            if (fightingTarget != null || !IsSettingEnabled("BuffPets")) { return false; }
 
             return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.AggressiveConstructEmpowerment);
         }

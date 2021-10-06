@@ -65,19 +65,15 @@ namespace Desu
 
         private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSelected(VolunteerSelection.PURPLE_HEART))
-            {
-                return false;
-            }
+            if (!IsSelected(VolunteerSelection.PURPLE_HEART)) { return false; }
+
             return PerkCondtionProcessors.HealPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSelected(VolunteerSelection.SACRIFICE))
-            {
-                return false;
-            }
+            if (!IsSelected(VolunteerSelection.SACRIFICE)) { return false; }
+
             return PerkCondtionProcessors.DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
@@ -104,37 +100,25 @@ namespace Desu
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseMyEnemy") || fightingTarget == null || fightingTarget.FightingTarget == DynelManager.LocalPlayer)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("UseMyEnemy") || fightingTarget == null || fightingTarget.FightingTarget == DynelManager.LocalPlayer) { return false; }
 
             return true;
         }
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseGTH") || fightingTarget == null)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("UseGTH") || fightingTarget == null) { return false; }
 
             return true;
         }
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(!ToggledDebuff("UseRansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget))
-            {
-                return false;
-            }
+            if(!ToggledDebuff("UseRansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget)) { return false; }
 
             if(DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
             {
-                if(buff.RemainingTime > 5)
-                {
-                    return false;
-                }
+                if(buff.RemainingTime > 5) { return false; }
             }
 
             return true;
@@ -142,17 +126,11 @@ namespace Desu
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!ToggledDebuff("UseDepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget))
-            {
-                return false;
-            }
+            if (!ToggledDebuff("UseDepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
             {
-                if (buff.RemainingTime > 5)
-                {
-                    return false;
-                }
+                if (buff.RemainingTime > 5) { return false; }
             }
             return true;
         }
@@ -176,10 +154,7 @@ namespace Desu
         {
             foreach(Buff buff in DynelManager.LocalPlayer.Buffs)
             {
-                if(buff.Nanoline == NanoLine.NanoPointHeals)
-                {
-                    return false;
-                }
+                if(buff.Nanoline == NanoLine.NanoPointHeals) { return false; }
             }
 
             // Cast when any team mate is lower than 30% of nano
@@ -209,10 +184,7 @@ namespace Desu
 
         private bool ToggledDebuff(string settingName, Spell spell, NanoLine spellNanoLine , SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled(settingName) ||  fightingTarget == null)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled(settingName) ||  fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs
                 .Where(buff => buff.Nanoline == spellNanoLine) //Same nanoline as the spell nanoline

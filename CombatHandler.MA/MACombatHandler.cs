@@ -12,8 +12,11 @@ namespace Desu
     {
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("HealTeammates", true);
-            settings.AddVariable("UseShortDamageBuffNanoShutdown", false);
+            settings.AddVariable("Heal", false);
+            settings.AddVariable("OSHeal", false);
+
+            settings.AddVariable("ShortDamage", false);
+
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
             //LE Procs
@@ -24,8 +27,8 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamBuff);
 
             //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), SingleTargetHeal, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHeal, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHealing, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder >= 19).OrderByStackingOrder(), ControlledDestructionNoShutdown);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder < 19).OrderByStackingOrder(), ControlledDestructionWithShutdown);
             RegisterSpellProcessor(RelevantNanos.FistsOfTheWinterFlame, FistsOfTheWinterFlameNano);
@@ -43,7 +46,6 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistBuff).OrderByStackingOrder(), GenericBuff);
-
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
 
@@ -55,24 +57,35 @@ namespace Desu
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ControlledDestructionBuff))
-                return false;
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
 
-            if (fightingTarget == null)
-                return false;
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ControlledDestructionBuff)) { return false; }
 
-            if (DynelManager.LocalPlayer.NanoPercent < 30)
-                return false;
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
+            return true;
+        }
+
+        private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ShortDamage")) { return false; }
+
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ControlledDestructionBuff)) { return false; }
+
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
+
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 1) { return false; }
 
             return true;
         }
 
         protected bool TeamBuffSpecialCheck(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !CanCast(spell))
-            {
-                return false;
-            }
+            if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (SpellChecksPlayer(spell))
             {
@@ -99,52 +112,14 @@ namespace Desu
             return false;
         }
 
-        private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("UseShortDamageBuffNanoShutdown"))
-                return false;
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ControlledDestructionBuff))
-                return false;
-
-            if (DynelManager.LocalPlayer.HealthPercent < 100)
-                return false;
-
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 1)
-                return false;
-
-            if (fightingTarget == null)
-                return false;
-
-            if (DynelManager.LocalPlayer.NanoPercent < 30)
-                return false;
-
-            return true;
-        }
-
         private bool MartialArtsTeamHealAttack(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingtarget == null)
-                return false;
+            if (fightingtarget == null) { return false; }
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)))
-                return false;
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
-            int healingReceived = item.LowId == RelevantItems.TreeOfEnlightenment ? 290 : 1200;
+            return FindMemberWithHealthBelow(85, ref actionTarget);
 
-            if (DynelManager.LocalPlayer.MissingHealth > healingReceived * 2)
-                return true;
-
-            if (IsSettingEnabled("HealTeammates"))
-            {
-                SimpleChar dyingTeammate = GetTeammatesInNeedOfHealing(healingReceived * 2)
-                    .FirstOrDefault();
-
-                if (dyingTeammate != null)
-                    return true;
-            }
-
-            return false;
         }
 
         protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
@@ -158,30 +133,25 @@ namespace Desu
             return fightingtarget != null && fightingtarget.HealthPercent > 50;
         }
 
-        private bool SingleTargetHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("HealTeammates"))
+            if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
+
+            // Try to keep our teammates alive if we're in a team
+            if (DynelManager.LocalPlayer.IsInTeam())
             {
-                return false;
-            }
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 80)
+                    .Where(c => c.HealthPercent >= 50)
+                    .ToList();
 
-            actionTarget.ShouldSetTarget = true;
-
-            if (DynelManager.LocalPlayer.MissingHealth > 800) //TODO: Some kind of healing check to calc an optimal missing health value
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            if (IsSettingEnabled("HealTeammates"))
-            {
-                SimpleChar dyingTeammate = GetTeammatesInNeedOfHealing(800)
-                    .Where(target => target.IsInLineOfSight)
-                    .FirstOrDefault(target => target.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < 20); //TODO: make this dynamic when possible
-
-                if (dyingTeammate != null)
+                if (dyingTeamMember.Count < 4)
                 {
-                    actionTarget.Target = dyingTeammate;
+                    return false;
+                }
+                else
+                {
                     return true;
                 }
             }
@@ -189,47 +159,37 @@ namespace Desu
             return false;
         }
 
-        private bool TeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("HealTeammates"))
+            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+
+            if (!CanCast(spell)) { return false; }
+
+            // Try to keep our teammates alive if we're in a team
+            if (DynelManager.LocalPlayer.IsInTeam() && IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
             {
-                return false;
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 80)
+                    .Where(c => c.HealthPercent >= 50)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 4)
+                {
+                    return false;
+                }
+                else
+                {
+                    return FindMemberWithHealthBelow(85, ref actionTarget);
+                }
             }
-
-            actiontarget.ShouldSetTarget = false;
-
-            if (DynelManager.LocalPlayer.MissingHealth > 1500) //TODO: Some kind of healing check to calc an optimal missing health value
-                return true;
-
-            if (IsSettingEnabled("HealTeammates"))
+            if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
             {
-                SimpleChar dyingTeammate = GetTeammatesInNeedOfHealing(1500)
-                    .FirstOrDefault(target => target.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < spell.AttackRange); //TODO: factor in nano range increase
-
-                if (dyingTeammate != null)
-                    return true;
+                return FindPlayerWithHealthBelow(85, ref actionTarget);
             }
-
-            return false;
-        }
-
-        private IEnumerable<SimpleChar> GetTeammatesInNeedOfHealing(int missingHealthThreshold)
-        {
-            return DynelManager.Characters
-                .Where(c => c.IsAlive)
-                .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                .Where(c => c.MissingHealth >= missingHealthThreshold);
-        }
-
-        private Stat GetSkillLockStat(Item item)
-        {
-            switch (item.HighId)
+            else
             {
-                case RelevantItems.TheWizdomOfHuzzum:
-                case RelevantItems.TreeOfEnlightenment:
-                    return Stat.Dimach;
-                default:
-                    throw new Exception($"No skill lock stat defined for item id {item.HighId}");
+                return FindMemberWithHealthBelow(85, ref actionTarget);
             }
         }
 

@@ -55,20 +55,14 @@ namespace Desu
 
         private bool AoeBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AoeBlind") || fightingTarget == null)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AoeBlind") || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
 
         private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("AoeBlind") || fightingTarget == null)
-            {
-                return false;
-            }
+            if (IsSettingEnabled("AoeBlind") || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
@@ -87,38 +81,30 @@ namespace Desu
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
-                return false;
+            if (fightingTarget == null) { return false; }
 
             return true;
         }
 
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
+            if (DynelManager.LocalPlayer.MissingNano < 20000 && DynelManager.LocalPlayer.NanoPercent > 5) { return false; }
+
             actionTarget.ShouldSetTarget = false;
-
-            if (fightingTarget == null)
-                return false;
-
-            if (DynelManager.LocalPlayer.MissingNano < 20000 && DynelManager.LocalPlayer.NanoPercent > 5)
-                return false;
-
             return true;
         }
 
         private bool AiDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AIDot"))
-                return false;
+            if (!IsSettingEnabled("AIDot")) { return false; }
 
-            if (fightingTarget == null)
-                return false;
+            if (fightingTarget == null) { return false; }
 
-            if (fightingTarget.Health < 80000)
-                return false;
+            if (fightingTarget.Health < 80000) { return false; }
 
-            if (fightingTarget.Buffs.Find(spell.Identity.Instance, out Buff buff) && buff.RemainingTime > 5)
-                return false;
+            if (fightingTarget.Buffs.Find(spell.Identity.Instance, out Buff buff) && buff.RemainingTime > 5) { return false; }
 
             return true;
         }

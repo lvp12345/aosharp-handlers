@@ -82,10 +82,7 @@ namespace CombatHandler.Agent
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
 
             if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
             {
@@ -113,85 +110,52 @@ namespace CombatHandler.Agent
 
         private bool FalseProfDoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool RifleBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.AssassinsAimedShot, out Buff AAS))
-            {
-                return false;
-            }
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.AssassinsAimedShot, out Buff AAS)) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.SteadyNerves, out Buff SN))
-            {
-                return false;
-            }
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.SteadyNerves, out Buff SN)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool LaserAim(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("LazerAim"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("LazerAim")) { return false; }
 
-            if (IsSettingEnabled("NotumChargedRounds") && IsSettingEnabled("LazerAim"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("NotumChargedRounds") && IsSettingEnabled("LazerAim")) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool NotumChargedRounds(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NotumChargedRounds"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("NotumChargedRounds")) { return false; }
 
-            if (IsSettingEnabled("NotumChargedRounds") && IsSettingEnabled("LazerAim"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("NotumChargedRounds") && IsSettingEnabled("LazerAim")) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Detaunt"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Detaunt")) { return false; }
 
-            if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage")))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage"))) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DamageProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Damage"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Damage")) { return false; }
 
-            if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage")))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage"))) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }

@@ -42,10 +42,7 @@ namespace Desu
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
 
             // Try to keep our teammates alive if we're in a team
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -71,10 +68,9 @@ namespace Desu
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+
+            if (!CanCast(spell)) { return false; }
 
             // Try to keep our teammates alive if we're in a team
             if (DynelManager.LocalPlayer.IsInTeam() && IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))

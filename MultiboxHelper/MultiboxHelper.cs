@@ -776,8 +776,7 @@ namespace MultiboxHelper
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                 .FirstOrDefault();
 
-            if (target == null)
-                return false;
+            if (target == null) { return false; }
 
             if (Team.IsInTeam)
             {

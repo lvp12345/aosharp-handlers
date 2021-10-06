@@ -70,10 +70,8 @@ namespace Desu
 
         private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer))
-            {
-                return false;
-            }
+            if(HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer)) { return false; }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
@@ -155,24 +153,19 @@ namespace Desu
         {
             List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
 
+            if (!CanCast(spell)) { return false; }
+
             if (IsSettingEnabled("OST") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _absorbsused + absorbsrefresh)
             {
                 _absorbsused = Time.NormalTime;
                 return true;
             }
 
-            if (!IsSettingEnabled("Absorbs"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Absorbs")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF))
-            {
-                return false;
-            }
+            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF)) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
-                return false;
+            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
 
 
             if (!IsSettingEnabled("OST") && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _absorbsused + absorbsrefresh)
@@ -190,6 +183,8 @@ namespace Desu
         {
             List<Spell> absorbbuff = Spell.List.Where(x => x.Nanoline == NanoLine.AbsorbACBuff).OrderBy(x => x.StackingOrder).ToList();
 
+            if (!CanCast(spell)) { return false; }
+
             if (IsSettingEnabled("OST"))
             {
                 if (Time.NormalTime > _aoeusedost + aoerefreshost)
@@ -199,13 +194,9 @@ namespace Desu
                 }
             }
 
-            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh")
-                return false;
+            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
 
-            if (!IsSettingEnabled("AOETaunt") || fightingTarget == null)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AOETaunt") || fightingTarget == null) { return false; }
 
             if (!IsSettingEnabled("Absorbs") && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _aoeused + aoerefresh)
             {
@@ -221,10 +212,7 @@ namespace Desu
             }
 
             //Make sure we have plenty of nano for spamming mongo
-            if (DynelManager.LocalPlayer.NanoPercent < 30)
-            {
-                return false;
-            }
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
 
             return false;
         }

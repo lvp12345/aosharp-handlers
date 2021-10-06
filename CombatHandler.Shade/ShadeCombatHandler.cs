@@ -76,10 +76,7 @@ namespace Desu
 
         private bool ShadeProc(ProcType procType, Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsProcSelected(procType))
-            {
-                return false;
-            }
+            if (!IsProcSelected(procType)) { return false; }
 
             return GenericBuff(spell, fightingtarget, ref actiontarget);
         }
@@ -91,50 +88,39 @@ namespace Desu
 
         private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null)
-                return false;
+            if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 50 && fightingtarget.HealthPercent > 5)
-                return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= 50 && fightingtarget.HealthPercent > 5) { return true; }
 
             return false;
         }
 
         private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsInsideInnerSanctum())
-            {
-                return false;
-            }
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs))
-            {
-                return false;
-            }
+            if(IsInsideInnerSanctum()) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
+
             return ToggledBuff("UseFasterThanYourShadow", spell, fightingTarget, ref actionTarget);
         }
 
         private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             // don't use if BM is locked (we will add this dynamically later)
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis))
-                return false;
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
 
             // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent > 40)
-                return false;
+            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
             // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
-                return false;
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             // don't use if we have another major absorb (example: nanomage booster) running
             // we could check remaining absorb stat to be slightly more effective
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon))
-                return false;
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
             // don't use if our fighting target has caress running
-            if (fightingtarget.Buffs.Contains(275242))
-                return false;
+            if (fightingtarget.Buffs.Contains(275242)) { return false; }
 
             return true;
         }
@@ -143,77 +129,63 @@ namespace Desu
         {
             actionTarget.ShouldSetTarget = false;
 
-            if (DynelManager.LocalPlayer.HealthPercent <= MissingHealthCombatAbortPercentage)
-                return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= MissingHealthCombatAbortPercentage) { return true; }
 
             return false;
         }
 
         private bool SpiritSiphonNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseSpiritSiphon"))
-                return false;
+            if (!IsSettingEnabled("UseSpiritSiphon")) { return false; }
 
-            if (DynelManager.LocalPlayer.Nano < spell.Cost)
-                return false;
+            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
-            if (!DynelManager.LocalPlayer.IsAttacking)
-                return false;
+            if (!DynelManager.LocalPlayer.IsAttacking) { return false; }
 
             return true;
         }
 
         private bool HealthDrainNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Nano < spell.Cost)
-                return false;
+            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
-            if (!DynelManager.LocalPlayer.IsAttacking)
-                return false;
+            if (!DynelManager.LocalPlayer.IsAttacking) { return false; }
 
             // if we have caress, save enough nano to use it
             if (Spell.Find(RelevantNanos.ShadesCaress, out Spell caress))
             {
-                if (DynelManager.LocalPlayer.Nano - spell.Cost < caress.Cost)
-                    return false;
+                if (DynelManager.LocalPlayer.Nano - spell.Cost < caress.Cost) { return false; }
             }
 
             // only use it for dps if we have plenty of nano
-            if (IsSettingEnabled("UseDrainNanoForDps") && DynelManager.LocalPlayer.NanoPercent > 80)
-                return true;
+            if (IsSettingEnabled("UseDrainNanoForDps") && DynelManager.LocalPlayer.NanoPercent > 80) { return true; }
 
             // otherwise save it for if our health starts to drop
-            if (DynelManager.LocalPlayer.HealthPercent >= 85)
-                return false;
+            if (DynelManager.LocalPlayer.HealthPercent >= 85) { return false; }
 
             return true;
         }
 
         private bool PiercingMasteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
-                return false;
+            if (fightingTarget == null) { return false; }
 
             //Don't PM if there are TR/SP chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.SpiritPhylactery.Contains(action.Hash))))
-                return false;
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.SpiritPhylactery.Contains(action.Hash)))) { return false; }
 
             if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))
                 return true;
 
             if (perkAction.Hash == PerkHash.Perforate)
             {
-                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab)))
-                    return false;
+                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab))) { return false; }
             }
 
-            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction perforate) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction lacerate)))
-                return true;
+            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction perforate) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction lacerate))) { return true; }
 
             if (perkAction.Hash == PerkHash.Impale)
             {
-                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab || action == perforate || action == lacerate)))
-                    return false;
+                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab || action == perforate || action == lacerate))) { return false; }
             }
 
             return true;
@@ -221,24 +193,20 @@ namespace Desu
 
         private bool SpiritPhylacteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
-                return false;
+            if (fightingTarget == null) { return false; }
 
             //Don't SP if there are TR/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash))))
-                return false;
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
 
             return true;
         }
 
         private bool TotemicRitesPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
-                return false;
+            if (fightingTarget == null) { return false; }
 
             //Don't TR if there are SP/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash))))
-                return false;
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
 
             return true;
         }

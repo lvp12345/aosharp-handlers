@@ -57,9 +57,6 @@ namespace Desu
 
         private bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (fightingTarget.Profession == Profession.Fixer)
-            //    return false;
-
             return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg);
         }
 
@@ -77,33 +74,27 @@ namespace Desu
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
         }
 
-
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseSingleTaunt") || DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null)
-                return false;
+            if (!IsSettingEnabled("UseSingleTaunt") || DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null) { return false; }
 
             return true;
         }
 
         private bool SolDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null)
-                return false;
+            if (DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 40)
-                return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= 40) { return true; }
 
             return false;
         }
 
         private bool AugmentedMirrorShieldMKV(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget == null || fightingtarget == null)
-                return false;
+            if (DynelManager.LocalPlayer.FightingTarget == null || fightingtarget == null) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 75)
-                return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= 75) { return true; }
 
             return false;
         }

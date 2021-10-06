@@ -119,7 +119,6 @@ namespace Desu
 
         private void OnZoned(object s, EventArgs e)
         {
-
             ResetTrimmers();
         }
 
@@ -138,15 +137,9 @@ namespace Desu
 
         public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null)
-            {
-                return false;
-            }
+            if (DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null) { return false; }
 
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetThat(CanPerkPuppeteer);
             if (petToPerk != null)
@@ -160,60 +153,42 @@ namespace Desu
         }
         private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffAAOAAD"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffAAOAAD")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffCrit") || IsSettingEnabled("BuffAAOAAD"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("BuffCrit") || IsSettingEnabled("BuffAAOAAD")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffCrit"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffCrit")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffNanoDrain") || !IsSettingEnabled("DebuffCrit"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffNanoDrain") || !IsSettingEnabled("DebuffCrit")) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffCrit") || IsSettingEnabled("DebuffNanoDrain") || !IsSettingEnabled("DebuffNanoResist"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("DebuffCrit") || IsSettingEnabled("DebuffNanoDrain") || !IsSettingEnabled("DebuffNanoResist")) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffCrit") || !IsSettingEnabled("DebuffNanoDrain"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffCrit") || !IsSettingEnabled("DebuffNanoDrain")) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -226,15 +201,9 @@ namespace Desu
         {
             Spell workplace = Spell.List.Where(x => x.Name == "Workplace Depression").FirstOrDefault();
 
-            if (fightingTarget == null)
-            {
-                return false;
-            }
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
 
-            if (!IsSettingEnabled("Nukes"))
-            {
-                return false;
-            }    
+            if (!IsSettingEnabled("Nukes")) { return false; }
 
             if (IsSettingEnabled("Calm12Man"))
             {
@@ -315,13 +284,9 @@ namespace Desu
 
         private bool WorkplaceDepressionTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
-                return false;
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
 
-            if (!IsSettingEnabled("Nukes"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Nukes")) { return false; }
 
             if (IsSettingEnabled("Calm12Man"))
             {
@@ -389,24 +354,18 @@ namespace Desu
                     return false;
             }
 
-            if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842))
-                return false;
+            if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)) { return false; }
 
-            if (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000)
-                return false;
+            if (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000) { return false; }
 
             return true;
         }
 
         private bool MalaiseTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
-                return false;
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
 
-            if (!IsSettingEnabled("MalaiseTarget"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("MalaiseTarget")) { return false; }
 
             if (IsSettingEnabled("Calm12Man"))
             {
@@ -434,8 +393,7 @@ namespace Desu
                     return false;
             }
 
-            if (!SpellChecksOther(spell, fightingTarget))
-                return false;
+            if (!SpellChecksOther(spell, fightingTarget)) { return false; }
 
             return true;
         }
@@ -443,10 +401,7 @@ namespace Desu
         // Needs work
         private bool Calm12Man(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Calm12Man"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("Calm12Man") || !CanCast(spell)) { return false; }
 
             List<SimpleChar> targets = DynelManager.NPCs
                 .Where(x => x.IsAlive)
@@ -467,13 +422,9 @@ namespace Desu
 
         private bool LEInitTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
-                return false;
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
 
-            if (!IsSettingEnabled("LEInitDebuffs"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("LEInitDebuffs")) { return false; }
 
             if (IsSettingEnabled("Calm12Man"))
             {
@@ -501,19 +452,13 @@ namespace Desu
                     return false;
             }
 
-            if (!SpellChecksOther(spell, fightingTarget))
-                return false;
+            if (!SpellChecksOther(spell, fightingTarget)) { return false; }
 
             return true;
         }
 
         private bool CratDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (!IsSettingEnabled("OSMalaise"))
-            //{
-            //    return false;
-            //}
-
             if (IsSettingEnabled("Calm12Man"))
             {
                 List<SimpleChar> target = DynelManager.NPCs
@@ -540,32 +485,12 @@ namespace Desu
                     return false;
             }
 
-            //SimpleChar targetdebuff = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-            //        //.Where(x => x.FightingTarget != null)
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
-            //        .FirstOrDefault();
-
-            //if (targetdebuff != null)
-            //{
-            //    actionTarget.Target = targetdebuff;
-            //    actionTarget.ShouldSetTarget = true;
-            //    return true;
-            //}
-
-            //return false;
-
             return ToggledDebuffOthersInCombat("OSMalaise", spell, fightingTarget, ref actionTarget);
         }
 
         private bool AoeRoot(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AoeRoot"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AoeRoot") || !CanCast(spell)) { return false; }
 
             SimpleChar target = DynelManager.NPCs
                 .Where(c => c.Name == "Flaming Vengeance" ||
@@ -590,10 +515,8 @@ namespace Desu
 
         private bool CanPerkPuppeteer(Pet pet)
         {
-            if (pet.Type != PetType.Attack)
-            {
-                return false;
-            }
+            if (pet.Type != PetType.Attack) { return false; }
+
             return true;
         }
 
@@ -649,24 +572,15 @@ namespace Desu
 
         private bool RobotNeedsBuff(Spell spell, Pet pet)
         {
-            if (pet.Type != PetType.Attack)
-            {
-                return false;
-            }
+            if (pet.Type != PetType.Attack) { return false; }
 
             if (FindSpellNanoLineFallbackToId(spell, pet.Character.Buffs, out Buff buff))
             {
                 //Don't cast if weaker than existing
-                if (spell.StackingOrder < buff.StackingOrder)
-                {
-                    return false;
-                }
+                if (spell.StackingOrder < buff.StackingOrder) { return false; }
 
                 //Don't cast if greater than 10% time remaining
-                if (buff.RemainingTime / buff.TotalTime > 0.1)
-                {
-                    return false; ;
-                }
+                if (buff.RemainingTime / buff.TotalTime > 0.1) { return false; }
             }
 
             return true;
@@ -684,10 +598,7 @@ namespace Desu
 
         protected bool PetDivertTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             Pet petToTrim = FindPetThat(CanDivertTrim);
             if (petToTrim != null)
@@ -703,10 +614,7 @@ namespace Desu
 
         protected bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("AggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             Pet petToTrim = FindPetThat(CanAggDefTrim);
             if (petToTrim != null)
@@ -722,10 +630,7 @@ namespace Desu
 
         protected bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             Pet petToTrim = FindPetThat(CanTauntTrim);
             if (petToTrim != null)
@@ -741,10 +646,7 @@ namespace Desu
         protected bool DroidMatrixBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToBuff = FindPetThat(pet => RobotNeedsBuff(spell, pet));
             if (petToBuff != null)

@@ -107,10 +107,7 @@ namespace CombatHandler.Engi
 
         private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(fightingTarget != null)
-            {
-                return false;
-            }
+            if(fightingTarget != null) { return false; }
 
             Pet petWithSnareAura = FindPetThat(pet => HasBuffNanoLine(NanoLine.EngineerPetAOESnareBuff, pet.Character));
 
@@ -137,10 +134,7 @@ namespace CombatHandler.Engi
                 }
             }
 
-            if (!IsSettingEnabled("SnareAura") || fightingTarget == null)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("SnareAura") || fightingTarget == null) { return false; }
 
             return PetTargetBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -170,120 +164,69 @@ namespace CombatHandler.Engi
 
         private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ShieldRipper") || fightingTarget == null)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
 
-            if (IsSettingEnabled("SpamDebuffAura"))
-            {
-                return true;
-            }
+            if (IsSettingEnabled("SpamDebuffAura")) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
         }
 
         private bool AuraArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage")) { return false; }
 
-            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield")) { return false; }
 
-            if (IsSettingEnabled("AuraArmor") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer))
-            {
-                return true;
-            }
+            if (IsSettingEnabled("AuraArmor") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
 
         private bool AuraDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage")) { return false; }
 
-            if (IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield")) { return false; }
 
-            if (IsSettingEnabled("AuraDamage") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer))
-            {
-                return true;
-            }
+            if (IsSettingEnabled("AuraDamage") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
 
         private bool AuraReflect(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage")) { return false; }
 
-            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraShield"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraShield")) { return false; }
 
-            if (IsSettingEnabled("AuraReflect") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer))
-            {
-                return true;
-            }
+            if (IsSettingEnabled("AuraReflect") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
 
         private bool AuraShield(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage"))
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage")) { return false; }
 
-            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraArmor"))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraArmor")) { return false; }
 
-            if (IsSettingEnabled("AuraShield") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer))
-            {
-                return true;
-            }
+            if (IsSettingEnabled("AuraShield") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
 
         private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsSettingEnabled("ShieldRipper") || fightingTarget == null)
-            {
-                return false;
-            }
+            if(IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
 
-            if(IsSettingEnabled("SpamDebuffAura"))
-            {
-                return true;
-            }
-            
+            if (IsSettingEnabled("SpamDebuffAura")) { return false; }
+
             return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
         }
 
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone()) { return false; }
 
             Pet pettoheal = FindPetNeedsHeal(90);
             if (pettoheal != null)
@@ -298,10 +241,7 @@ namespace CombatHandler.Engi
 
         private bool PetHealing10(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone()) { return false; }
 
             Pet pettoheal = FindPetNeedsHeal(90);
             if (pettoheal != null)
@@ -316,10 +256,7 @@ namespace CombatHandler.Engi
 
         private bool GadgeteerBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetThat(CanPerkBox);
             if (petToPerk != null)
@@ -333,10 +270,7 @@ namespace CombatHandler.Engi
 
         protected bool PetDivertTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             Pet petToTrim = FindPetThat(CanDivertTrim);
             if (petToTrim != null)
@@ -352,10 +286,7 @@ namespace CombatHandler.Engi
 
         protected bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("AggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("AggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             Pet petToTrim = FindPetThat(CanAggDefTrim);                
             if (petToTrim != null)
@@ -371,10 +302,7 @@ namespace CombatHandler.Engi
 
         protected bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             Pet petToTrim = FindPetThat(CanTauntTrim);
             if (petToTrim != null)
@@ -410,10 +338,7 @@ namespace CombatHandler.Engi
 
         protected bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone())
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             return FindPetThat(pet => !HasBuffNanoLine(NanoLine.ShieldoftheObedientServant, pet.Character)) != null;
         }

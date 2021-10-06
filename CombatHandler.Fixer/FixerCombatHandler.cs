@@ -50,10 +50,8 @@ namespace Desu
 
         private bool NCUBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(HasBuffNanoLine(NanoLine.FixerNCUBuff, DynelManager.LocalPlayer))
-            {
-                return false;
-            }
+            if(HasBuffNanoLine(NanoLine.FixerNCUBuff, DynelManager.LocalPlayer)) { return false; }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
@@ -84,34 +82,23 @@ namespace Desu
 
         private bool GsfBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsInsideInnerSanctum())
-            {
-                return false;
-            }
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs))
-            {
-                return false;
-            }
+            if(IsInsideInnerSanctum()) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
 
             return ToggledBuff("UseRKRunspeed", spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShadowlandsSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsInsideInnerSanctum() || IsSettingEnabled("UseRKRunspeed"))
-            {
-                return false;
-            }
+            if(IsInsideInnerSanctum() || IsSettingEnabled("UseRKRunspeed")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SummonBackArmor(BackItemType backItemType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SummonBackArmor") || HasBackItemEquipped() || GetSelectedBackItem() != backItemType || FindBackItem(backItemType) != null)
-            {
-                return false;
-            }
+            if (!IsSettingEnabled("SummonBackArmor") || HasBackItemEquipped() || GetSelectedBackItem() != backItemType || FindBackItem(backItemType) != null) { return false; }
 
             return spell.Cost < DynelManager.LocalPlayer.Nano;
         }

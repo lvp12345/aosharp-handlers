@@ -14,6 +14,7 @@ namespace Desu
         {
             settings.AddVariable("AIDot", true);
             settings.AddVariable("AoeBlind", false);
+            settings.AddVariable("AOE", false);
             settings.AddVariable("OSNanoHoT", false);
             settings.AddVariable("OSCost", false);
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
@@ -47,6 +48,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
             RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
+            RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
 
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
@@ -55,6 +57,8 @@ namespace Desu
 
         private bool AoeBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsSettingEnabled("AOE")) { return false; }
+
             if (!IsSettingEnabled("AoeBlind") || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
@@ -62,6 +66,8 @@ namespace Desu
 
         private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsSettingEnabled("AOE")) { return false; }
+
             if (IsSettingEnabled("AoeBlind") || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
@@ -82,6 +88,16 @@ namespace Desu
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
+
+            if (IsSettingEnabled("AOE")) { return false; }
+
+            return true;
+        }
+        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+
+            if (!IsSettingEnabled("AOE")) { return false; }
 
             return true;
         }
@@ -115,6 +131,9 @@ namespace Desu
             public const int IzgimmersWealth = 275024;
             public const int IzgimmersUltimatum = 218168;
             public const int Garuk = 275692;
+            public static readonly int[] AOENukes = {28638,
+                266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
+                45917, 45937, 28599, 45894, 45943, 28633, 28631 };
             public const int SuperiorFleetingImmunity = 273386;
             public static readonly Spell[] AbsortAcTargetBuffs = Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder().Where(spell => spell.Identity.Instance != SuperiorFleetingImmunity).ToArray();
             public static readonly int[] AoeBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };

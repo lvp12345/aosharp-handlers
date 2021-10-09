@@ -11,8 +11,9 @@ namespace Desu
     {
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("UseSingleTaunt", false);
-            settings.AddVariable("UseTauntTool", false);
+            settings.AddVariable("SingleTaunt", false);
+            //settings.AddVariable("TauntTool", false);
+            settings.AddVariable("OSDamage", false);
 
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
 
@@ -27,7 +28,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), TeamBuffDamageLogic);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
@@ -46,11 +47,11 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             // Needs work for 2nd tanking Abmouth and Ayjous
-            if (TauntTools.CanUseTauntTool()) 
-            {
-                Item tauntTool = TauntTools.GetBestTauntTool();
-                RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
-            }
+            //if (TauntTools.CanTauntTool()) 
+            //{
+            //    Item tauntTool = TauntTools.GetBestTauntTool();
+            //    RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
+            //}
         }
 
         #region Instanced Logic
@@ -62,6 +63,8 @@ namespace Desu
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget.Buffs.Contains(NanoLine.GeneralSMGBuff)) { return false; }
+
             return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg);
         }
         private bool ShotgunBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -76,7 +79,7 @@ namespace Desu
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseSingleTaunt") || DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("SingleTaunt") || DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null) { return false; }
 
             return true;
         }
@@ -97,6 +100,14 @@ namespace Desu
             if (DynelManager.LocalPlayer.HealthPercent <= 75) { return true; }
 
             return false;
+        }
+
+        private bool TeamBuffDamageLogic(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("OSDamage"))
+                return TeamDamageABuff(spell, fightingTarget, ref actionTarget);
+            else
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

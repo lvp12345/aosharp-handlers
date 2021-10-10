@@ -57,8 +57,6 @@ namespace Desu
 
         private bool AoeBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("AOE")) { return false; }
-
             if (!IsSettingEnabled("AoeBlind") || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
@@ -66,8 +64,6 @@ namespace Desu
 
         private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("AOE")) { return false; }
-
             if (IsSettingEnabled("AoeBlind") || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);

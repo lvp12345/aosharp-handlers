@@ -324,27 +324,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool TeamDamageABuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
-                    .FirstOrDefault();
-
-                if (teamMemberWithoutBuff != null)
-                {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
         protected bool BuffInitSol(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || !CanCast(spell)) { return false; }
@@ -557,6 +536,9 @@ namespace CombatHandler.Generic
                     // Combines both together
                     .Where(c => GetWieldedWeapons(c).HasFlag(supportedWeaponType))
                     .FirstOrDefault();
+
+                if (spell.Nanoline == NanoLine.FixerSuppressorBuff &&
+                teamMemberWithoutBuff.Buffs.Contains(NanoLine.FixerSuppressorBuff)) { return false; }
 
                 if (teamMemberWithoutBuff != null)
                 {

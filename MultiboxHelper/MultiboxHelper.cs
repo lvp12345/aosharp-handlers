@@ -1509,6 +1509,8 @@ namespace MultiboxHelper
                             "\n" +
                             "/allfollow name then /allfollow to toggle\n" +
                             "\n" +
+                            "/yalm all will use yalm then /yalm to toggle\n" +
+                            "\n" +
                             "/navfollow name then /navfollow to toggle\n" +
                             "(Follow the npc or player using waypoints)\n" +
                             "\n" +

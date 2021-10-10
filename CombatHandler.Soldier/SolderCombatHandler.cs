@@ -21,9 +21,6 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.LEProcSoldierGrazeJugularVein, LEProc);
             RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc);
 
-            // Leave in to get the ID of SMG and Shotgun
-            //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
-
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
@@ -47,7 +44,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             // Needs work for 2nd tanking Abmouth and Ayjous
-            //if (TauntTools.CanTauntTool()) 
+            //if (TauntTools.CanTauntTool())
             //{
             //    Item tauntTool = TauntTools.GetBestTauntTool();
             //    RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
@@ -63,10 +60,9 @@ namespace Desu
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget.Buffs.Contains(NanoLine.GeneralSMGBuff)) { return false; }
-
             return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg);
         }
+
         private bool ShotgunBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun);
@@ -104,20 +100,15 @@ namespace Desu
 
         private bool TeamBuffDamageLogic(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("OSDamage"))
-                return TeamDamageABuff(spell, fightingTarget, ref actionTarget);
-            else
+            if (!IsSettingEnabled("OSDamage"))
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
+            else
+                return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffInitSol(spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool TeamBuffAAONoMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion

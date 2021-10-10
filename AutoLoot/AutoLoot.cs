@@ -14,6 +14,7 @@ namespace AutoLoot
         //private HashSet<Identity> _lootedCorpses = new HashSet<Identity>();
         private Dictionary<Identity, Corpse> _corpsesBeingLooted = new Dictionary<Identity, Corpse>();
         private double _lastCheckTime = Time.NormalTime;
+        private double _openedTimer = Time.NormalTime;
         private Settings settings = new Settings("AutoLoot");
         private string _pluginBaseDirectory;
 
@@ -40,11 +41,7 @@ namespace AutoLoot
 
         private void OnContainerOpened(object sender, Container container)
         {
-            List<Backpack> bags = Inventory.Backpacks
-                .Where(c => c.Identity == container.Identity)
-                .ToList();
-
-            if (container.Items.Count >= 0 && bags.Count == 0)
+            if (container.Identity.Type == IdentityType.Corpse && container.Items.Count >= 0)
             {
                 foreach (Item item in container.Items)
                 {
@@ -52,45 +49,47 @@ namespace AutoLoot
                     {
                         if (Inventory.NumFreeSlots >= 1)
                             item.MoveToInventory();
-
-                        else if (extrabag1 != null && extrabag1.Items.Count < 21)
+                        else
                         {
-                            foreach (Item itemtomove in Inventory.Items)
+                            if (extrabag1 != null && extrabag1.Items.Count < 21)
                             {
-                                if (LootingRules.Apply(itemtomove))
-                                    itemtomove.MoveToContainer(extrabag1);
+                                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory))
+                                {
+                                    if (LootingRules.Apply(itemtomove))
+                                        itemtomove.MoveToContainer(extrabag1);
+                                }
+                                item.MoveToInventory();
                             }
-                            item.MoveToInventory();
-                        }
-                        else if (extrabag2 != null && extrabag2.Items.Count < 21)
-                        {
-                            foreach (Item itemtomove in Inventory.Items)
+                            else if (extrabag2 != null && extrabag2.Items.Count < 21)
                             {
-                                if (LootingRules.Apply(itemtomove))
-                                    itemtomove.MoveToContainer(extrabag2);
+                                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory))
+                                {
+                                    if (LootingRules.Apply(itemtomove))
+                                        itemtomove.MoveToContainer(extrabag2);
+                                }
+                                item.MoveToInventory();
                             }
-                            item.MoveToInventory();
-                        }
-                        else if (extrabag3 != null && extrabag3.Items.Count < 21)
-                        {
-                            foreach (Item itemtomove in Inventory.Items)
+                            else if (extrabag3 != null && extrabag3.Items.Count < 21)
                             {
-                                if (LootingRules.Apply(itemtomove))
-                                    itemtomove.MoveToContainer(extrabag3);
+                                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory))
+                                {
+                                    if (LootingRules.Apply(itemtomove))
+                                        itemtomove.MoveToContainer(extrabag3);
+                                }
+                                item.MoveToInventory();
                             }
-                            item.MoveToInventory();
-                        }
-                        else if (extrabag4 != null && extrabag4.Items.Count < 21)
-                        {
-                            foreach (Item itemtomove in Inventory.Items)
+                            else if (extrabag4 != null && extrabag4.Items.Count < 21)
                             {
-                                if (LootingRules.Apply(itemtomove))
-                                    itemtomove.MoveToContainer(extrabag4);
+                                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory))
+                                {
+                                    if (LootingRules.Apply(itemtomove))
+                                        itemtomove.MoveToContainer(extrabag4);
+                                }
+                                item.MoveToInventory();
                             }
-                            item.MoveToInventory();
                         }
                     }
-                    else
+                    if (!LootingRules.Apply(item))
                         item.Delete();
 
                 }
@@ -106,12 +105,17 @@ namespace AutoLoot
         {
             try
             {
-                if (Time.NormalTime - _lastCheckTime > 5)
+                if (Time.NormalTime - _openedTimer > 1 && LootingCorpse == true)
+                {
+                    LootingCorpse = false;
+                }
+
+                if (Time.NormalTime - _lastCheckTime > 3)
                 {
                     _lastCheckTime = Time.NormalTime;
 
                     corpsesToLoot = DynelManager.Corpses
-                        .Where(corpse => corpse.DistanceFrom(DynelManager.LocalPlayer) < 6)
+                        .Where(corpse => corpse.DistanceFrom(DynelManager.LocalPlayer) < 7)
                         .ToList();
 
                     //if (corpsesToLoot.Count >= 1)
@@ -140,13 +144,23 @@ namespace AutoLoot
 
                 if (corpsefirst.IsOpen)
                 {
-                    corpseLooting = DynelManager.Corpses
-                        .Where(corpse => corpse.IsOpen)
-                        .FirstOrDefault();
+                    if (!LootingCorpse)
+                    {
+                        LootingCorpse = true;
+                    }
 
-                    LootingCorpse = true;
-                    //Chat.WriteLine($"Open corpse {LootingCorpse}");
+                    _openedTimer = Time.NormalTime;
                 }
+
+                //if (corpsefirst.IsOpen)
+                //{
+                //    corpseLooting = DynelManager.Corpses
+                //        .Where(corpse => corpse.IsOpen)
+                //        .FirstOrDefault();
+
+                //    LootingCorpse = true;
+                //    //Chat.WriteLine($"Open corpse {LootingCorpse}");
+                //}
             }
         }
 

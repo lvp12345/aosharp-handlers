@@ -131,7 +131,7 @@ namespace Desu
             public const int IzgimmersWealth = 275024;
             public const int IzgimmersUltimatum = 218168;
             public const int Garuk = 275692;
-            public static readonly int[] AOENukes = {28638,
+            public static readonly int[] AOENukes = {266293, 28638,
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };
             public const int SuperiorFleetingImmunity = 273386;

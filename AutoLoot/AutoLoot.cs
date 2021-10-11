@@ -134,6 +134,11 @@ namespace AutoLoot
         {
             try
             {
+                Random rnd = new Random();
+
+                int rand = rnd.Next(3, 6);
+
+
                 if (Start == true)
                 {
                     Start = false;
@@ -151,7 +156,7 @@ namespace AutoLoot
                     lootedCorpses.Clear();
                 }
 
-                if (Time.NormalTime - _lastCheckTime > 3)
+                if (Time.NormalTime - _lastCheckTime > rand)
                 {
                     _lastCheckTime = Time.NormalTime;
 

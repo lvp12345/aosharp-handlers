@@ -12,7 +12,9 @@ namespace AutoLoot
             try
             {
                 HandleCommand(command, param, chatWindow);
-            } catch(Exception e)
+
+            } 
+            catch(Exception e)
             {
                 Chat.WriteLine(e);
             }
@@ -31,6 +33,18 @@ namespace AutoLoot
                     break;
                 case "rules":
                     HandleRulesCommand(command, param, chatWindow);
+                    break;
+                case "single":
+                    if (Main.Single == true)
+                    {
+                        Main.Single = false;
+                        Chat.WriteLine($"Single item only = {Main.Single}");
+                    }
+                    else
+                    {
+                        Main.Single = true;
+                        Chat.WriteLine($"Single item only = {Main.Single}");
+                    }
                     break;
                 default:
                     chatWindow.WriteLine("Unsupported autoloot subcommand " + param[0]);
@@ -127,6 +141,7 @@ namespace AutoLoot
             chatWindow.WriteLine("This command allows you to configure auto looting.");
             chatWindow.WriteLine("Usage: ");
             chatWindow.WriteLine("Will automatically move items into bags named extra1 through to 4 when inv is full.");
+            chatWindow.WriteLine("     /autoloot single to toggle only pickup 1 of each item set in the rules.");
             chatWindow.WriteLine("     /autoloot rules list - lists all currently active looting rules.");
             chatWindow.WriteLine("     /autoloot rules remove - removes a rule with given ID (this WILL SHIFT the IDs of remaining rules to compensate).");
             chatWindow.WriteLine("     /autoloot rules add <qualifiers> <name>  - adds a rule to loot items with a given name and (optional) qualifiers.");

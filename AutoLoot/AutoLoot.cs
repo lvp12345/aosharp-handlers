@@ -15,6 +15,7 @@ namespace AutoLoot
         private Dictionary<Identity, Corpse> _corpsesBeingLooted = new Dictionary<Identity, Corpse>();
         private double _lastCheckTime = Time.NormalTime;
         private double _openedTimer = Time.NormalTime;
+        private double _wipedCorpseList = Time.NormalTime;
         private Settings settings = new Settings("AutoLoot");
         private string _pluginBaseDirectory;
 
@@ -22,9 +23,15 @@ namespace AutoLoot
         public static Container extrabag2 = Inventory.Backpacks.FirstOrDefault(x => x.Name == "extra2");
         public static Container extrabag3 = Inventory.Backpacks.FirstOrDefault(x => x.Name == "extra3");
         public static Container extrabag4 = Inventory.Backpacks.FirstOrDefault(x => x.Name == "extra4");
-        public static Corpse corpseLooting;
-        public static List<Corpse> corpsesToLoot;
+
+        public static List<Identity> corpseLootingIdentity = new List<Identity>();
+        public static List<Corpse> corpseLooting = new List<Corpse>();
+        public static List<Corpse> corpsesToLoot = new List<Corpse>();
+        public static List<Identity> lootedCorpses = new List<Identity>();
+
         public static bool LootingCorpse = false;
+        public static bool Single = false;
+        public static bool Start = true;
 
         public override void Run(string pluginDir)
         {
@@ -39,6 +46,16 @@ namespace AutoLoot
             Chat.WriteLine("Type /autoloot help for usage instructions");
         }
 
+        private bool ItemExists(Item item)
+        {
+            if (extrabag1 != null && !extrabag1.Items.Contains(item) || (extrabag2 != null && !extrabag2.Items.Contains(item))
+                 || (extrabag3 != null && !extrabag3.Items.Contains(item)) || (extrabag4 != null && !extrabag4.Items.Contains(item))
+                 || !Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Contains(item))
+                return false;
+            else
+                return true;
+        }
+
         private void OnContainerOpened(object sender, Container container)
         {
             if (container.Identity.Type == IdentityType.Corpse && container.Items.Count >= 0)
@@ -47,6 +64,9 @@ namespace AutoLoot
                 {
                     if (LootingRules.Apply(item))
                     {
+                        if (Single == true && !ItemExists(item))
+                            continue;
+
                         if (Inventory.NumFreeSlots >= 1)
                             item.MoveToInventory();
                         else
@@ -89,13 +109,22 @@ namespace AutoLoot
                             }
                         }
                     }
-                    if (!LootingRules.Apply(item))
-                        item.Delete();
-
+                    //if (!LootingRules.Apply(item))
+                    //    item.Delete();
                 }
+
                 LootingCorpse = false;
-                if (corpseLooting != null)
-                    corpseLooting.Open();
+
+                if (corpseLootingIdentity.Count >= 1)
+                {
+                    corpseLooting = DynelManager.Corpses
+                        .Where(corpse => corpseLootingIdentity.Contains(corpse.Identity))
+                        .Where(corpse => corpse.DistanceFrom(DynelManager.LocalPlayer) < 5)
+                        .ToList();
+
+                    corpseLooting.FirstOrDefault().Open();
+                    corpseLootingIdentity.Remove(corpseLooting.FirstOrDefault().Identity);
+                }
 
                 //Chat.WriteLine($"Closed corpse {LootingCorpse}");
             }
@@ -105,9 +134,21 @@ namespace AutoLoot
         {
             try
             {
+                if (Start == true)
+                {
+                    Start = false;
+                    _wipedCorpseList = Time.NormalTime;
+                }
+
                 if (Time.NormalTime - _openedTimer > 1 && LootingCorpse == true)
                 {
                     LootingCorpse = false;
+                }
+
+                if (Time.NormalTime - _wipedCorpseList > 7)
+                {
+                    _wipedCorpseList = Time.NormalTime;
+                    lootedCorpses.Clear();
                 }
 
                 if (Time.NormalTime - _lastCheckTime > 3)
@@ -115,16 +156,11 @@ namespace AutoLoot
                     _lastCheckTime = Time.NormalTime;
 
                     corpsesToLoot = DynelManager.Corpses
-                        .Where(corpse => corpse.DistanceFrom(DynelManager.LocalPlayer) < 7)
+                        .Where(corpse => !lootedCorpses.Contains(corpse.Identity))
+                        .Where(corpse => corpse.DistanceFrom(DynelManager.LocalPlayer) < 5)
                         .ToList();
 
-                    //if (corpsesToLoot.Count >= 1)
-                    //{
-                    //    Chat.WriteLine($"Corpse able to loot {corpsesToLoot.FirstOrDefault().Name}");
-                    //    Chat.WriteLine($"Setting {LootingCorpse}");
-                    //}
-
-                    if (LootingCorpse == false)
+                    if (LootingCorpse == false && corpsesToLoot.Count >= 1)
                     {
                         FindNextCorpseToLoot();
                     }
@@ -138,29 +174,21 @@ namespace AutoLoot
 
         private void FindNextCorpseToLoot()
         {
-            foreach (Corpse corpsefirst in corpsesToLoot)
+            foreach (Corpse corpse in corpsesToLoot)
             {
-                corpsefirst.Open();
+                corpse.Open();
 
-                if (corpsefirst.IsOpen)
+                if (corpse.IsOpen)
                 {
                     if (!LootingCorpse)
                     {
                         LootingCorpse = true;
+                        corpseLootingIdentity.Add(corpse.Identity);
+                        lootedCorpses.Add(corpse.Identity);
                     }
 
                     _openedTimer = Time.NormalTime;
                 }
-
-                //if (corpsefirst.IsOpen)
-                //{
-                //    corpseLooting = DynelManager.Corpses
-                //        .Where(corpse => corpse.IsOpen)
-                //        .FirstOrDefault();
-
-                //    LootingCorpse = true;
-                //    //Chat.WriteLine($"Open corpse {LootingCorpse}");
-                //}
             }
         }
 

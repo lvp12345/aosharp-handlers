@@ -109,11 +109,13 @@ namespace AutoLoot
                             }
                         }
                     }
-                    //if (!LootingRules.Apply(item))
-                    //    item.Delete();
+                    else
+                    {
+                        item.Delete();
+                    }
                 }
 
-                LootingCorpse = false;
+                //LootingCorpse = false;
 
                 if (corpseLootingIdentity.Count >= 1)
                 {
@@ -134,29 +136,24 @@ namespace AutoLoot
         {
             try
             {
-                Random rnd = new Random();
+                //if (Start == true)
+                //{
+                //    Start = false;
+                //    _wipedCorpseList = Time.NormalTime;
+                //}
 
-                int rand = rnd.Next(3, 6);
+                //if (Time.NormalTime - _openedTimer > 1 && LootingCorpse == true)
+                //{
+                //    LootingCorpse = false;
+                //}
 
+                //if (Time.NormalTime - _wipedCorpseList > 7)
+                //{
+                //    _wipedCorpseList = Time.NormalTime;
+                //    lootedCorpses.Clear();
+                //}
 
-                if (Start == true)
-                {
-                    Start = false;
-                    _wipedCorpseList = Time.NormalTime;
-                }
-
-                if (Time.NormalTime - _openedTimer > 1 && LootingCorpse == true)
-                {
-                    LootingCorpse = false;
-                }
-
-                if (Time.NormalTime - _wipedCorpseList > 7)
-                {
-                    _wipedCorpseList = Time.NormalTime;
-                    lootedCorpses.Clear();
-                }
-
-                if (Time.NormalTime - _lastCheckTime > rand)
+                if (Time.NormalTime - _lastCheckTime > 6)
                 {
                     _lastCheckTime = Time.NormalTime;
 
@@ -165,7 +162,7 @@ namespace AutoLoot
                         .Where(corpse => corpse.DistanceFrom(DynelManager.LocalPlayer) < 5)
                         .ToList();
 
-                    if (LootingCorpse == false && corpsesToLoot.Count >= 1)
+                    if (corpsesToLoot.Count >= 1)
                     {
                         FindNextCorpseToLoot();
                     }
@@ -185,14 +182,16 @@ namespace AutoLoot
 
                 if (corpse.IsOpen)
                 {
-                    if (!LootingCorpse)
-                    {
-                        LootingCorpse = true;
-                        corpseLootingIdentity.Add(corpse.Identity);
-                        lootedCorpses.Add(corpse.Identity);
-                    }
+                    corpseLootingIdentity.Add(corpse.Identity);
+                    lootedCorpses.Add(corpse.Identity);
+                    //if (!LootingCorpse)
+                    //{
+                    //    LootingCorpse = true;
+                    //    corpseLootingIdentity.Add(corpse.Identity);
+                    //    lootedCorpses.Add(corpse.Identity);
+                    //}
 
-                    _openedTimer = Time.NormalTime;
+                    //_openedTimer = Time.NormalTime;
                 }
             }
         }

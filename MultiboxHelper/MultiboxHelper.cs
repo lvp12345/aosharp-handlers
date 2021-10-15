@@ -1166,15 +1166,6 @@ namespace MultiboxHelper
             }
         }
 
-        protected static void CancelBuffs(int[] buffsToCancel)
-        {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
-            {
-                if (buffsToCancel.Contains(buff.Identity.Instance))
-                    buff.Remove();
-            }
-        }
-
         private static void OnYalmStart(int sender, IPCMessage msg)
         {
             YalmOnMessage yalmMsg = (YalmOnMessage)msg;
@@ -1197,6 +1188,15 @@ namespace MultiboxHelper
         {
             YalmSwitch = false;
             CancelBuffs(RelevantNanos.Yalms);
+        }
+
+        public static void CancelBuffs(int[] buffsToCancel)
+        {
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
+            {
+                if (buffsToCancel.Contains(buff.Identity.Instance))
+                    buff.Remove();
+            }
         }
 
         private void YalmCommand(string command, string[] param, ChatWindow chatWindow)

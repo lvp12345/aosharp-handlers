@@ -14,8 +14,6 @@ namespace AutoLoot
         //private HashSet<Identity> _lootedCorpses = new HashSet<Identity>();
         private Dictionary<Identity, Corpse> _corpsesBeingLooted = new Dictionary<Identity, Corpse>();
         private double _lastCheckTime = Time.NormalTime;
-        private double _openedTimer = Time.NormalTime;
-        private double _wipedCorpseList = Time.NormalTime;
         private Settings settings = new Settings("AutoLoot");
         private string _pluginBaseDirectory;
 
@@ -115,8 +113,6 @@ namespace AutoLoot
                     }
                 }
 
-                //LootingCorpse = false;
-
                 if (corpseLootingIdentity.Count >= 1)
                 {
                     corpseLooting = DynelManager.Corpses
@@ -127,8 +123,6 @@ namespace AutoLoot
                     corpseLooting.FirstOrDefault().Open();
                     corpseLootingIdentity.Remove(corpseLooting.FirstOrDefault().Identity);
                 }
-
-                //Chat.WriteLine($"Closed corpse {LootingCorpse}");
             }
         }
 
@@ -136,23 +130,6 @@ namespace AutoLoot
         {
             try
             {
-                //if (Start == true)
-                //{
-                //    Start = false;
-                //    _wipedCorpseList = Time.NormalTime;
-                //}
-
-                //if (Time.NormalTime - _openedTimer > 1 && LootingCorpse == true)
-                //{
-                //    LootingCorpse = false;
-                //}
-
-                //if (Time.NormalTime - _wipedCorpseList > 7)
-                //{
-                //    _wipedCorpseList = Time.NormalTime;
-                //    lootedCorpses.Clear();
-                //}
-
                 if (Time.NormalTime - _lastCheckTime > 6)
                 {
                     _lastCheckTime = Time.NormalTime;
@@ -184,14 +161,6 @@ namespace AutoLoot
                 {
                     corpseLootingIdentity.Add(corpse.Identity);
                     lootedCorpses.Add(corpse.Identity);
-                    //if (!LootingCorpse)
-                    //{
-                    //    LootingCorpse = true;
-                    //    corpseLootingIdentity.Add(corpse.Identity);
-                    //    lootedCorpses.Add(corpse.Identity);
-                    //}
-
-                    //_openedTimer = Time.NormalTime;
                 }
             }
         }

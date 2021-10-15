@@ -886,6 +886,22 @@ namespace CombatHandler.Generic
                 .FirstOrDefault();
         }
 
+        protected Pet FindPets()
+        {
+            return DynelManager.LocalPlayer.Pets
+                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
+                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
+                .FirstOrDefault();
+        }
+        protected Pet FindPetsWithoutBuff(int[] buff)
+        {
+            return DynelManager.LocalPlayer.Pets
+                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
+                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
+                .Where(pet => !pet.Character.Buffs.Contains(buff))
+                .FirstOrDefault();
+        }
+
         protected Pet FindPetNeedsHeal(int percent)
         {
             return DynelManager.LocalPlayer.Pets
@@ -1119,6 +1135,15 @@ namespace CombatHandler.Generic
             return spell.Cost < DynelManager.LocalPlayer.Nano;
         }
 
+        public static void CancelBuffs(int[] buffsToCancel)
+        {
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
+            {
+                if (buffsToCancel.Contains(buff.Identity.Instance))
+                    buff.Remove();
+            }
+        }
+
         protected bool IsSettingEnabled(string settingName)
         {
             return settings[settingName].AsBool();
@@ -1139,16 +1164,6 @@ namespace CombatHandler.Generic
             if (Time.NormalTime - _lastCombatTime > 5)
             {
                 CancelBuffs(auras);
-            }
-        }
-
-
-        protected static void CancelBuffs(int[] buffsToCancel)
-        {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
-            {
-                if (buffsToCancel.Contains(buff.Identity.Instance))
-                    buff.Remove();
             }
         }
 

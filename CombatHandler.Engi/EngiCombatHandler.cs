@@ -17,7 +17,12 @@ namespace CombatHandler.Engi
         private bool attackPetTrimmedAggressive = false;
         private double _lastTrimTime = 0;
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
-        private Dictionary<PetType, double> _lastPetTrimDivertTime = new Dictionary<PetType, double>()
+        private Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
+        {
+            { PetType.Attack, 0 },
+            { PetType.Support, 0 }
+        };
+        private Dictionary<PetType, double> _lastPetTrimDivertHpTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
             { PetType.Support, 0 }
@@ -29,7 +34,8 @@ namespace CombatHandler.Engi
             settings.AddVariable("BuffPets", true);
             settings.AddVariable("HealPets", false);
 
-            settings.AddVariable("DivertTrimmer", true);
+            settings.AddVariable("DivertHpTrimmer", true);
+            settings.AddVariable("DivertOffTrimmer", true);
             settings.AddVariable("TauntTrimmer", true);
             settings.AddVariable("AggDefTrimmer", true);
 
@@ -40,6 +46,9 @@ namespace CombatHandler.Engi
             settings.AddVariable("AuraDamage", false);
             settings.AddVariable("AuraReflect", false);
             settings.AddVariable("AuraArmor", false);
+
+            settings.AddVariable("Offperks", false);
+            settings.AddVariable("Defperks", false);
 
             settings.AddVariable("SpamDebuffAura", false);
             settings.AddVariable("SpamSnareAura", false);
@@ -89,12 +98,22 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(RelevantNanos.PetHealing10, PetHealing10);
 
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
-            RegisterPerkProcessor(PerkHash.ChaoticEnergy, GadgeteerBox);
+
+            RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticEnergyBox);
+            RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
+            RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
 
             ResetTrimmers();
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
+
+            RegisterItemProcessor(RelevantTrimmers.IncreaseAggressivenessLow, RelevantTrimmers.IncreaseAggressivenessLow, PetAggressiveTrimmer);
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressivenessHigh, RelevantTrimmers.IncreaseAggressivenessHigh, PetAggressiveTrimmer);
-            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, RelevantTrimmers.DivertEnergyToOffense, PetDivertTrimmer);
+
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffenseLow, RelevantTrimmers.DivertEnergyToOffenseLow, PetDivertOffTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffenseHigh, RelevantTrimmers.DivertEnergyToOffenseHigh, PetDivertOffTrimmer);
+
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpointsLow, RelevantTrimmers.DivertEnergyToHitpointsLow, PetDivertHpTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpointsHigh, RelevantTrimmers.DivertEnergyToHitpointsHigh, PetDivertHpTrimmer);
 
             //Pet Shells
             foreach (PetSpellData petData in PetsList.Pets.Values)
@@ -254,11 +273,15 @@ namespace CombatHandler.Engi
             return false;
         }
 
-        private bool GadgeteerBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ChaoticEnergyBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!IsSettingEnabled("Offperks") || !CanLookupPetsAfterZone()) { return false; }
 
-            Pet petToPerk = FindPetThat(CanPerkBox);
+            Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkChaoticEnergy);
+
+            CancelBuffs(RelevantNanos.PerkTauntBox);
+            CancelBuffs(RelevantNanos.PerkSiphonBox);
+
             if (petToPerk != null)
             {
                 actionTarget.Target = petToPerk.Character;
@@ -268,16 +291,77 @@ namespace CombatHandler.Engi
             return false;
         }
 
-        protected bool PetDivertTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool SiphonBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
+            if (!IsSettingEnabled("Defperks") || !CanLookupPetsAfterZone()) { return false; }
 
-            Pet petToTrim = FindPetThat(CanDivertTrim);
+            Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkSiphonBox);
+
+            CancelBuffs(RelevantNanos.PerkChaoticEnergy);
+
+            if (petToPerk != null)
+            {
+                if (petToPerk.Type == PetType.Attack) { return false; }
+
+                actionTarget.Target = petToPerk.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+            return false;
+        }
+
+        private bool TauntBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Defperks") || !CanLookupPetsAfterZone()) { return false; }
+
+            Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkTauntBox);
+
+            CancelBuffs(RelevantNanos.PerkChaoticEnergy);
+
+            if (petToPerk != null)
+            {
+                if (petToPerk.Type == PetType.Support) { return false; }
+
+                actionTarget.Target = petToPerk.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+            return false;
+        }
+
+        protected bool PetDivertHpTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsSettingEnabled("DivertHpTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
+
+            Pet petToTrim = FindPetThat(CanDivertHpTrim);
+
+            if (petToTrim.Type == PetType.Attack) { return false; }
+
             if (petToTrim != null)
             {
                 actiontarget.Target = petToTrim.Character;
                 actiontarget.ShouldSetTarget = true;
-                _lastPetTrimDivertTime[petToTrim.Type] = Time.NormalTime;
+                _lastPetTrimDivertHpTime[petToTrim.Type] = Time.NormalTime;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
+            return false;
+        }
+
+
+        protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!IsSettingEnabled("DivertOffTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
+
+            Pet petToTrim = FindPetThat(CanDivertOffTrim);
+
+            if (petToTrim != null)
+            {
+                if (IsSettingEnabled("DivertHpTrimmer") && petToTrim.Type == PetType.Social) { return false; }
+
+                actiontarget.Target = petToTrim.Character;
+                actiontarget.ShouldSetTarget = true;
+                _lastPetTrimDivertOffTime[petToTrim.Type] = Time.NormalTime;
                 _lastTrimTime = Time.NormalTime;
                 return true;
             }
@@ -305,8 +389,11 @@ namespace CombatHandler.Engi
             if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             Pet petToTrim = FindPetThat(CanTauntTrim);
+
             if (petToTrim != null)
             {
+                if (petToTrim.Type == PetType.Social) { return false; }
+
                 actiontarget = (petToTrim.Character, true);
                 attackPetTrimmedAggressive = true;
                 _lastTrimTime = Time.NormalTime;
@@ -348,10 +435,16 @@ namespace CombatHandler.Engi
             return _lastTrimTime + DelayBetweenTrims < Time.NormalTime;
         }
 
-        protected bool CanDivertTrim(Pet pet)
+        protected bool CanDivertOffTrim(Pet pet)
         {
-            return _lastPetTrimDivertTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime;
+            return _lastPetTrimDivertOffTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime;
         }
+
+        protected bool CanDivertHpTrim(Pet pet)
+        {
+            return _lastPetTrimDivertHpTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime;
+        }
+
 
         protected bool CanAggDefTrim(Pet pet)
         {
@@ -399,6 +492,9 @@ namespace CombatHandler.Engi
 
         private static class RelevantNanos
         {
+            public static readonly int[] PerkTauntBox = { 229131, 229130, 229129, 229128, 229127, 229126 };
+            public static readonly int[] PerkSiphonBox = { 229657, 229656, 229655, 229654 };
+            public static readonly int[] PerkChaoticEnergy = { 227787 };
             public const int CompositeAttribute = 223372;
             public const int CompositeNano = 223380;
             public const int CompositeUtility = 287046;
@@ -421,10 +517,13 @@ namespace CombatHandler.Engi
 
         private static class RelevantTrimmers
         {
-            public const int IncreaseAggressivenessLow = 154940;
+            public const int IncreaseAggressivenessLow = 154939;
             public const int IncreaseAggressivenessHigh = 154940;
-            public const int DivertEnergyToOffense = 88378;
+            public const int DivertEnergyToOffenseLow = 88377;
+            public const int DivertEnergyToOffenseHigh = 88378;
             public const int PositiveAggressiveDefensive = 88384;
+            public const int DivertEnergyToHitpointsLow = 88381;
+            public const int DivertEnergyToHitpointsHigh = 88382;
         }
     }
 }

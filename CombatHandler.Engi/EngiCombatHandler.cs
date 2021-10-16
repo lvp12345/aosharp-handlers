@@ -335,10 +335,10 @@ namespace CombatHandler.Engi
 
             Pet petToTrim = FindPetThat(CanDivertHpTrim);
 
-            if (petToTrim.Type == PetType.Attack) { return false; }
-
             if (petToTrim != null)
             {
+                if (petToTrim.Type == PetType.Attack) { return false; }
+
                 actiontarget.Target = petToTrim.Character;
                 actiontarget.ShouldSetTarget = true;
                 _lastPetTrimDivertHpTime[petToTrim.Type] = Time.NormalTime;

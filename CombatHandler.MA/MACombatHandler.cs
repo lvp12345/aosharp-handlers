@@ -55,6 +55,7 @@ namespace Desu
 
             //Items
             RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
+            RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
 
         }
 
@@ -116,6 +117,15 @@ namespace Desu
             return false;
         }
 
+        private bool TouchOfSaiFung(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingtarget == null) { return false; }
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
+
+            return true;
+        }
+
         private bool MartialArtsTeamHealAttack(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingtarget == null) { return false; }
@@ -123,7 +133,6 @@ namespace Desu
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
             return FindMemberWithHealthBelow(85, ref actionTarget);
-
         }
 
         protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
@@ -169,6 +178,7 @@ namespace Desu
         private static class RelevantItems
         {
             public const int TheWizdomOfHuzzum = 303056;
+            public const int TouchOfSaiFung = 275018;
             public const int TreeOfEnlightenment = 204607;
         }
     }

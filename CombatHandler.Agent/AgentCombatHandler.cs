@@ -88,10 +88,8 @@ namespace CombatHandler.Agent
             {
                 return FindPlayerWithHealthBelow(85, ref actionTarget);
             }
-            else
-            {
-                return FindMemberWithHealthBelow(85, ref actionTarget);
-            }
+
+            return FindMemberWithHealthBelow(85, ref actionTarget);
         }
 
         //private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

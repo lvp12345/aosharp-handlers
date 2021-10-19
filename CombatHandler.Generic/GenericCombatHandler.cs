@@ -1026,14 +1026,12 @@ namespace CombatHandler.Generic
 
         protected bool FindMemberWithHealthBelow(int healthPercentTreshold, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            // Prioritize keeping ourself alive
             if (DynelManager.LocalPlayer.HealthPercent <= healthPercentTreshold)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
-            // Try to keep our teammates alive if we're in a team
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
@@ -1050,32 +1048,34 @@ namespace CombatHandler.Generic
                     return true;
                 }
             }
+
             return false;
         }
 
         protected bool FindPlayerWithHealthBelow(int healthPercentTreshold, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            // Prioritize keeping ourself alive
             if (DynelManager.LocalPlayer.HealthPercent <= healthPercentTreshold)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
-            // Try to keep our teammates alive if we're in a team
-            SimpleChar dyingTeamMember = DynelManager.Characters
-                .Where(c => c.IsPlayer)
-                .Where(c => c.HealthPercent <= healthPercentTreshold)
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-                .OrderBy(c => c.Profession == Profession.Doctor)
-                .OrderBy(c => c.Profession == Profession.Enforcer)
-                .FirstOrDefault();
-
-            if (dyingTeamMember != null)
+            if (DynelManager.LocalPlayer.IsInTeam())
             {
-                actionTarget.Target = dyingTeamMember;
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                SimpleChar dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsPlayer)
+                    .Where(c => c.HealthPercent <= healthPercentTreshold)
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    .OrderBy(c => c.Profession == Profession.Doctor)
+                    .OrderBy(c => c.Profession == Profession.Enforcer)
+                    .FirstOrDefault();
+
+                if (dyingTeamMember != null)
+                {
+                    actionTarget.Target = dyingTeamMember;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;

@@ -61,7 +61,7 @@ namespace Desu
 
         private bool ZazenStance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Zazen")) { return false; }
+            if (fightingTarget != null || !CanCast(spell) || !IsSettingEnabled("Zazen")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }

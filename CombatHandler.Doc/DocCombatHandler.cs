@@ -101,7 +101,7 @@ namespace Desu
                 if (dyingTeamMember.Count < 4) { return false; }
             }
 
-            return true;
+            return FindMemberWithHealthBelow(85, ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

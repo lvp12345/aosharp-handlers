@@ -991,7 +991,7 @@ namespace CombatHandler.Generic
             return target.Buffs.Contains(nanoLine);
         }
 
-        protected bool CheckNotKeeperBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Profession == Profession.NanoTechnician && !IsSettingEnabled("OSCost") && !IsSettingEnabled("OSNanoHoT")) { return false; }
 
@@ -1002,6 +1002,7 @@ namespace CombatHandler.Generic
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.Profession != Profession.Keeper)
+                    .Where(c => c.Profession != Profession.Engineer)
                     .Where(c => SpellChecksOther(spell, c))
                     .FirstOrDefault();
 

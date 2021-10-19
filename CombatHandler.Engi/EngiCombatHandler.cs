@@ -17,6 +17,8 @@ namespace CombatHandler.Engi
         private bool attackPetTrimmedAggressive = false;
         private double _lastTrimTime = 0;
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
+        private Dictionary<PetType, bool> petTrimmedHpDiv = new Dictionary<PetType, bool>();
+        private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
         private Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
@@ -333,14 +335,13 @@ namespace CombatHandler.Engi
         {
             if (!IsSettingEnabled("DivertHpTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
-            Pet petToTrim = FindPetThat(CanDivertHpTrim);
+            Pet petToTrim = FindSupportPetThat(CanDivertHpTrim);
 
             if (petToTrim != null)
             {
-                if (petToTrim.Type == PetType.Attack) { return false; }
-
                 actiontarget.Target = petToTrim.Character;
                 actiontarget.ShouldSetTarget = true;
+                petTrimmedHpDiv[petToTrim.Type] = true;
                 _lastPetTrimDivertHpTime[petToTrim.Type] = Time.NormalTime;
                 _lastTrimTime = Time.NormalTime;
                 return true;
@@ -353,18 +354,62 @@ namespace CombatHandler.Engi
         {
             if (!IsSettingEnabled("DivertOffTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
-            Pet petToTrim = FindPetThat(CanDivertOffTrim);
+            Pet petToTrim;
 
-            if (petToTrim != null)
+            if (IsSettingEnabled("DivertHpTrimmer"))
             {
-                if (IsSettingEnabled("DivertHpTrimmer") && petToTrim.Type == PetType.Social) { return false; }
+                petToTrim = FindAttackPetThat(CanDivertOffTrim);
 
-                actiontarget.Target = petToTrim.Character;
-                actiontarget.ShouldSetTarget = true;
-                _lastPetTrimDivertOffTime[petToTrim.Type] = Time.NormalTime;
-                _lastTrimTime = Time.NormalTime;
-                return true;
+                if (petToTrim != null)
+                {
+                    Chat.WriteLine($"Using off trimmer on {petToTrim.Character.Name}");
+
+                    actiontarget.Target = petToTrim.Character;
+                    actiontarget.ShouldSetTarget = true;
+                    petTrimmedOffDiv[petToTrim.Type] = true;
+                    _lastPetTrimDivertOffTime[petToTrim.Type] = Time.NormalTime;
+                    _lastTrimTime = Time.NormalTime;
+                    return true;
+                }
             }
+            else
+            {
+                petToTrim = FindPetThat(CanDivertOffTrim);
+
+                if (petToTrim != null)
+                {
+                    Chat.WriteLine($"Using off trimmer on {petToTrim.Character.Name}");
+
+                    actiontarget.Target = petToTrim.Character;
+                    actiontarget.ShouldSetTarget = true;
+                    petTrimmedOffDiv[petToTrim.Type] = true;
+                    _lastPetTrimDivertOffTime[petToTrim.Type] = Time.NormalTime;
+                    _lastTrimTime = Time.NormalTime;
+                    return true;
+                }
+            }
+
+
+            //if (petToTrim != null)
+            //{
+            //    //if (IsSettingEnabled("DivertHpTrimmer") && petToTrim.Type == PetType.Attack)
+            //    //{
+            //    //    actiontarget.Target = petToTrim.Character;
+            //    //    actiontarget.ShouldSetTarget = true;
+            //    //    _lastPetTrimDivertOffTime[petToTrim.Type] = Time.NormalTime;
+            //    //    _lastTrimTime = Time.NormalTime;
+            //    //    return true;
+            //    //}
+
+            //    //if (!IsSettingEnabled("DivertHpTrimmer"))
+            //    //{
+            //    //    actiontarget.Target = petToTrim.Character;
+            //    //    actiontarget.ShouldSetTarget = true;
+            //    //    _lastPetTrimDivertOffTime[petToTrim.Type] = Time.NormalTime;
+            //    //    _lastTrimTime = Time.NormalTime;
+            //    //    return true;
+            //    //}
+            //}
             return false;
         }
 
@@ -392,7 +437,7 @@ namespace CombatHandler.Engi
 
             if (petToTrim != null)
             {
-                if (petToTrim.Type == PetType.Social) { return false; }
+                if (petToTrim.Type == PetType.Support) { return false; }
 
                 actiontarget = (petToTrim.Character, true);
                 attackPetTrimmedAggressive = true;
@@ -437,12 +482,12 @@ namespace CombatHandler.Engi
 
         protected bool CanDivertOffTrim(Pet pet)
         {
-            return _lastPetTrimDivertOffTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime;
+            return _lastPetTrimDivertOffTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime || !petTrimmedOffDiv[pet.Type];
         }
 
         protected bool CanDivertHpTrim(Pet pet)
         {
-            return _lastPetTrimDivertHpTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime;
+            return _lastPetTrimDivertHpTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime || !petTrimmedHpDiv[pet.Type];
         }
 
 
@@ -464,6 +509,10 @@ namespace CombatHandler.Engi
         private void ResetTrimmers()
         {
             attackPetTrimmedAggressive = false;
+            petTrimmedOffDiv[PetType.Attack] = false;
+            petTrimmedOffDiv[PetType.Support] = false;
+            petTrimmedHpDiv[PetType.Attack] = false;
+            petTrimmedHpDiv[PetType.Support] = false;
             petTrimmedAggDef[PetType.Attack] = false;
             petTrimmedAggDef[PetType.Support] = false;
         }

@@ -877,6 +877,24 @@ namespace CombatHandler.Generic
             return DynelManager.LocalPlayer.Pets.Any(x => (x.Type == PetType.Unknown || x.Type == petType));
         }
 
+        protected Pet FindAttackPetThat(Func<Pet, bool> Filter)
+        {
+            return DynelManager.LocalPlayer.Pets
+                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
+                .Where(pet => pet.Type == PetType.Attack)
+                .Where(pet => Filter.Invoke(pet))
+                .FirstOrDefault();
+        }
+
+        protected Pet FindSupportPetThat(Func<Pet, bool> Filter)
+        {
+            return DynelManager.LocalPlayer.Pets
+                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
+                .Where(pet => pet.Type == PetType.Support)
+                .Where(pet => Filter.Invoke(pet))
+                .FirstOrDefault();
+        }
+
         protected Pet FindPetThat(Func<Pet, bool> Filter)
         {
             return DynelManager.LocalPlayer.Pets

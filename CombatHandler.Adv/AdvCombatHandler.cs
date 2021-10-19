@@ -44,26 +44,7 @@ namespace Desu
         {
             if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
 
-            // Try to keep our teammates alive if we're in a team
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 80)
-                    .Where(c => c.HealthPercent >= 50)
-                    .ToList();
-
-                if (dyingTeamMember.Count < 4)
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return FindMemberWithHealthBelow(85, ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -72,33 +53,73 @@ namespace Desu
 
             if (!CanCast(spell)) { return false; }
 
-            // Try to keep our teammates alive if we're in a team
-            if (DynelManager.LocalPlayer.IsInTeam() && IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 80)
-                    .Where(c => c.HealthPercent >= 50)
-                    .ToList();
-
-                if (dyingTeamMember.Count >= 4)
-                {
-                    return false;
-                }
-                else
-                {
-                    return FindMemberWithHealthBelow(85, ref actionTarget);
-                }
-            }
             if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
             {
                 return FindPlayerWithHealthBelow(85, ref actionTarget);
             }
-            else
-            {
-                return FindMemberWithHealthBelow(85, ref actionTarget);
-            }
+
+            return FindMemberWithHealthBelow(85, ref actionTarget); ;
         }
+
+        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
+
+        //    // Try to keep our teammates alive if we're in a team
+        //    if (DynelManager.LocalPlayer.IsInTeam())
+        //    {
+        //        List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+        //            .Where(c => c.HealthPercent <= 80)
+        //            .Where(c => c.HealthPercent >= 50)
+        //            .ToList();
+
+        //        if (dyingTeamMember.Count < 4)
+        //        {
+        //            return false;
+        //        }
+        //        else
+        //        {
+        //            return true;
+        //        }
+        //    }
+
+        //    return false;
+        //}
+
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+
+        //    if (!CanCast(spell)) { return false; }
+
+        //    // Try to keep our teammates alive if we're in a team
+        //    if (DynelManager.LocalPlayer.IsInTeam() && IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
+        //    {
+        //        List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+        //            .Where(c => c.HealthPercent <= 80)
+        //            .Where(c => c.HealthPercent >= 50)
+        //            .ToList();
+
+        //        if (dyingTeamMember.Count >= 4)
+        //        {
+        //            return false;
+        //        }
+        //        else
+        //        {
+        //            return FindMemberWithHealthBelow(85, ref actionTarget);
+        //        }
+        //    }
+        //    if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
+        //    {
+        //        return FindPlayerWithHealthBelow(85, ref actionTarget);
+        //    }
+        //    else
+        //    {
+        //        return FindMemberWithHealthBelow(85, ref actionTarget);
+        //    }
+        //}
 
         #endregion
 

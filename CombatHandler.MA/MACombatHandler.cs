@@ -93,35 +93,6 @@ namespace Desu
             return true;
         }
 
-        protected bool TeamBuffSpecialCheck(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
-
-            if (SpellChecksPlayer(spell))
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
-                    .FirstOrDefault();
-
-                if (teamMemberWithoutBuff != null)
-                {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         protected bool TeamCritBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || !CanCast(spell)) { return false; }
@@ -170,21 +141,7 @@ namespace Desu
         {
             if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
 
-            // Try to keep our teammates alive if we're in a team
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 80)
-                    .ToList();
-
-                if (dyingTeamMember.Count >= 1)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return FindMemberWithHealthBelow(85, ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -193,15 +150,12 @@ namespace Desu
 
             if (!CanCast(spell)) { return false; }
 
-            // Try to keep our teammates alive if we're in a team
             if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
             {
                 return FindPlayerWithHealthBelow(85, ref actionTarget);
             }
-            else
-            {
-                return FindMemberWithHealthBelow(85, ref actionTarget);
-            }
+
+            return FindMemberWithHealthBelow(85, ref actionTarget); ;
         }
 
         private static class RelevantNanos

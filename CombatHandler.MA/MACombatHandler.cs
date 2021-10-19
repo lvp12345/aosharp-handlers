@@ -15,6 +15,8 @@ namespace Desu
             settings.AddVariable("Heal", false);
             settings.AddVariable("OSHeal", false);
 
+            settings.AddVariable("Zazen", false);
+
             settings.AddVariable("ShortDamage", false);
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
@@ -24,7 +26,7 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, LEProc, CombatActionPriority.Low);
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.ReduceInertia, TeamBuffExcludeInnerSanctum);
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCritBuff);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
@@ -44,6 +46,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).Where(s => s.Identity.Instance != 28879).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistZazenStance).OrderByStackingOrder(), ZazenStance);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GenericBuff);
@@ -53,6 +56,13 @@ namespace Desu
             //Items
             RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
 
+        }
+
+        private bool ZazenStance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Zazen")) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -112,6 +122,29 @@ namespace Desu
             return false;
         }
 
+        protected bool TeamCritBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => c.Identity != DynelManager.LocalPlayer.Identity)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => SpellChecksOther(spell, c))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private bool MartialArtsTeamHealAttack(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingtarget == null) { return false; }
@@ -143,14 +176,9 @@ namespace Desu
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent <= 80)
-                    .Where(c => c.HealthPercent >= 50)
                     .ToList();
 
-                if (dyingTeamMember.Count < 4)
-                {
-                    return false;
-                }
-                else
+                if (dyingTeamMember.Count >= 1)
                 {
                     return true;
                 }
@@ -166,23 +194,6 @@ namespace Desu
             if (!CanCast(spell)) { return false; }
 
             // Try to keep our teammates alive if we're in a team
-            if (DynelManager.LocalPlayer.IsInTeam() && IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 80)
-                    .Where(c => c.HealthPercent >= 50)
-                    .ToList();
-
-                if (dyingTeamMember.Count >= 4)
-                {
-                    return false;
-                }
-                else
-                {
-                    return FindMemberWithHealthBelow(85, ref actionTarget);
-                }
-            }
             if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
             {
                 return FindPlayerWithHealthBelow(85, ref actionTarget);

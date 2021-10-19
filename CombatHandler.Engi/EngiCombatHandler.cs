@@ -97,7 +97,7 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), PetTargetBuff);
 
             RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing);
-            RegisterSpellProcessor(RelevantNanos.PetHealing10, PetHealing10);
+            RegisterSpellProcessor(RelevantNanos.PetHealingCH, PetHealingCH);
 
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
 
@@ -260,7 +260,7 @@ namespace CombatHandler.Engi
             return false;
         }
 
-        private bool PetHealing10(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PetHealingCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone()) { return false; }
 
@@ -389,27 +389,6 @@ namespace CombatHandler.Engi
                 }
             }
 
-
-            //if (petToTrim != null)
-            //{
-            //    //if (IsSettingEnabled("DivertHpTrimmer") && petToTrim.Type == PetType.Attack)
-            //    //{
-            //    //    actiontarget.Target = petToTrim.Character;
-            //    //    actiontarget.ShouldSetTarget = true;
-            //    //    _lastPetTrimDivertOffTime[petToTrim.Type] = Time.NormalTime;
-            //    //    _lastTrimTime = Time.NormalTime;
-            //    //    return true;
-            //    //}
-
-            //    //if (!IsSettingEnabled("DivertHpTrimmer"))
-            //    //{
-            //    //    actiontarget.Target = petToTrim.Character;
-            //    //    actiontarget.ShouldSetTarget = true;
-            //    //    _lastPetTrimDivertOffTime[petToTrim.Type] = Time.NormalTime;
-            //    //    _lastTrimTime = Time.NormalTime;
-            //    //    return true;
-            //    //}
-            //}
             return false;
         }
 
@@ -559,7 +538,7 @@ namespace CombatHandler.Engi
             public static readonly int[] AuraDamage = { 154560, 154561 };
             public static readonly int[] AuraArmor = { 154562, 154563, 154564, 154565, 154566, 154567 };
             public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
-            public static readonly int PetHealing10 = 270351;
+            public static readonly int PetHealingCH = 270351;
             public static readonly int[] AuraReflect = { 154557, 154558, 154559 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
         }

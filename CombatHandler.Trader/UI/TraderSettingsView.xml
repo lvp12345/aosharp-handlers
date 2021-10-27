@@ -2,19 +2,25 @@
 <root>
 <View h_alignment="LEFT" view_layout="vertical" name="parent">
 	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-		<TextView value="Debuffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Use Theft Humidity" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseGTH" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use My Enemy" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseMyEnemy" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use AAO drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseAAODrain" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use AAD drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseAADDrain" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use damage drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseDamageDrain" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Ransack drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseRansackDrain" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Deprive drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseDepriveDrain" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use AC drains" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseACDrains" layout_borders="Rect(10,1,5,1)"/>
-		<OptionRadioButtonGroup label="Volunteer perk selection" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__VolunteerSelection">
-			<RadioButton label="Use Sacrifice" value="0"/>
-			<RadioButton label="Use Purple Heart" value="1"/>
-		</OptionRadioButtonGroup>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="      Debuffs" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Theft Humidity" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GTH" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="My Enemy" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MyEnemy" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="AAO drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AAODrain" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="AAD drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AADDrain" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="damage drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageDrain" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Ransack drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RansackDrain" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Deprive drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DepriveDrain" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="AC drains" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ACDrains" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="      Perks" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Sacrifice" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Sacrifice" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Purple Heart" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PurpleHeart" layout_borders="Rect(10,1,5,1)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<VLayoutSpacer/>
 	</BorderView>

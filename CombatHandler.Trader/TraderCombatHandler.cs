@@ -13,15 +13,23 @@ namespace Desu
     {
         public TraderCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("UseDamageDrain", true);
-            settings.AddVariable("UseAAODrain", true);
-            settings.AddVariable("UseAADDrain", true);
-            settings.AddVariable("UseMyEnemy", true);
-            settings.AddVariable("UseRansackDrain", true);
-            settings.AddVariable("UseDepriveDrain", true);
-            settings.AddVariable("UseACDrains", true);
-            settings.AddVariable("UseGTH", true);
-            settings.AddVariable("VolunteerSelection", 0);
+            settings.AddVariable("DamageDrain", true);
+
+            settings.AddVariable("AAODrain", true);
+            settings.AddVariable("AADDrain", true);
+
+            settings.AddVariable("MyEnemy", true);
+
+            settings.AddVariable("RansackDrain", true);
+            settings.AddVariable("DepriveDrain", true);
+
+            settings.AddVariable("ACDrains", true);
+
+            settings.AddVariable("GTH", true);
+
+            settings.AddVariable("Sacrifice", false);
+            settings.AddVariable("PurpleHeart", false);
+
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
             //LE Proc
@@ -65,21 +73,21 @@ namespace Desu
 
         private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSelected(VolunteerSelection.PURPLE_HEART)) { return false; }
+
+            if (!IsSettingEnabled("PurpleHeart")) { return false; }
+
+            if (IsSettingEnabled("PurpleHeart") && IsSettingEnabled("Sacrifice")) { return false; }
 
             return PerkCondtionProcessors.HealPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSelected(VolunteerSelection.SACRIFICE)) { return false; }
+            if (!IsSettingEnabled("Sacrifice")) { return false; }
+
+            if (IsSettingEnabled("Sacrifice") && IsSettingEnabled("PurpleHeart")) { return false; }
 
             return PerkCondtionProcessors.DamagePerk(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool IsSelected(VolunteerSelection requestedSelection)
-        {
-            return (VolunteerSelection)settings["VolunteerSelection"].AsInt32() == requestedSelection;
         }
 
         private static class RelevantNanos
@@ -100,26 +108,23 @@ namespace Desu
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseMyEnemy") || fightingTarget == null || fightingTarget.FightingTarget == DynelManager.LocalPlayer) { return false; }
+            if (!IsSettingEnabled("MyEnemy") || fightingTarget == null || fightingTarget.FightingTarget == DynelManager.LocalPlayer) { return false; }
 
             return true;
         }
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseGTH") || fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("GTH") || fightingTarget == null) { return false; }
 
             return true;
         }
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(!ToggledDebuff("UseRansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget)) { return false; }
+            if (!ToggledDebuff("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget)) { return false; }
 
-            if(DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
-            {
-                if(buff.RemainingTime > 5) { return false; }
-            }
+            if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff)) if (buff.RemainingTime > 5) { return false; }
 
             return true;
         }
@@ -128,26 +133,24 @@ namespace Desu
         {
             if (!ToggledDebuff("UseDepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget)) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
-            {
-                if (buff.RemainingTime > 5) { return false; }
-            }
+            if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff)) if (buff.RemainingTime > 5) { return false; }
+
             return true;
         }
 
         private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuff("UseDamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuff("UseAAODrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledDebuff("AAODrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
          private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuff("UseAADDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledDebuff("AADDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool TeamNanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -179,7 +182,7 @@ namespace Desu
 
         private bool TraderACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuff("UseACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool ToggledDebuff(string settingName, Spell spell, NanoLine spellNanoLine , SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -190,11 +193,6 @@ namespace Desu
                 .Where(buff => buff.Nanoline == spellNanoLine) //Same nanoline as the spell nanoline
                 .Where(buff => buff.RemainingTime > 1) //Remaining time on buff > 1 second
                 .Any(); ;
-        }
-
-        private enum VolunteerSelection
-        {
-            SACRIFICE, PURPLE_HEART
         }
     }
 }

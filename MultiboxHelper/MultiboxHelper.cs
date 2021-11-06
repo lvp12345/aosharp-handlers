@@ -80,8 +80,6 @@ namespace MultiboxHelper
 
         public byte _channelId;
 
-        private static bool justusedsitkit = false;
-
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public override void Run(string pluginDir)
@@ -126,6 +124,7 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ChannelAll, OnChannelAll);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmStart);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
@@ -138,6 +137,7 @@ namespace MultiboxHelper
             Chat.RegisterCommand("mbchannelall", ChannelAllCommand);
 
             Chat.RegisterCommand("allfollow", Allfollow);
+            Chat.RegisterCommand("rebuff", Rebuff);
             Chat.RegisterCommand("leadfollow", LeadFollow);
             Chat.RegisterCommand("navfollow", Navfollow);
             Chat.RegisterCommand("assistplayer", AssistPlayer);
@@ -1113,6 +1113,19 @@ namespace MultiboxHelper
             IPCChannel.Broadcast(new DisbandMessage());
         }
 
+        public static void CancelAllBuffs()
+        {
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
+            {
+                buff.Remove();
+            }
+        }
+
+        private static void OnClearBuffs(int sender, IPCMessage msg)
+        {
+            CancelAllBuffs();
+        }
+
         private static void OnDisband(int sender, IPCMessage msg)
         {
             Team.Leave();
@@ -1249,6 +1262,12 @@ namespace MultiboxHelper
                 Chat.WriteLine($"Sync move started.");
                 return;
             }
+        }
+
+        private void Rebuff(string command, string[] param, ChatWindow chatWindow)
+        {
+            CancelAllBuffs();
+            IPCChannel.Broadcast(new ClearBuffsMessage());
         }
 
 
@@ -1510,6 +1529,8 @@ namespace MultiboxHelper
                             "/allfollow name then /allfollow to toggle\n" +
                             "\n" +
                             "/yalm all will use yalm then /yalm to toggle\n" +
+                            "\n" +
+                            "/rebuff to clear buffs\n" +
                             "\n" +
                             "/navfollow name then /navfollow to toggle\n" +
                             "(Follow the npc or player using waypoints)\n" +

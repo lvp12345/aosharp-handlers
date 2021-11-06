@@ -29,6 +29,7 @@ namespace MultiboxHelper.IPCMessages
         Disband,
         ChannelAll,
         YalmOn,
-        YalmOff
+        YalmOff,
+        ClearBuffs
     }
 }

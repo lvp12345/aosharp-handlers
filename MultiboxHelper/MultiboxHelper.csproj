@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPCMessages\ClearBuffsMessage.cs" />
     <Compile Include="IPCMessages\YalmOnMessage.cs" />
     <Compile Include="IPCMessages\YalmOffMessage.cs" />
     <Compile Include="IPCMessages\IPCChannelAllMessage.cs" />

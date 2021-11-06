@@ -362,8 +362,6 @@ namespace CombatHandler.Engi
 
                 if (petToTrim != null)
                 {
-                    Chat.WriteLine($"Using off trimmer on {petToTrim.Character.Name}");
-
                     actiontarget.Target = petToTrim.Character;
                     actiontarget.ShouldSetTarget = true;
                     petTrimmedOffDiv[petToTrim.Type] = true;
@@ -378,8 +376,6 @@ namespace CombatHandler.Engi
 
                 if (petToTrim != null)
                 {
-                    Chat.WriteLine($"Using off trimmer on {petToTrim.Character.Name}");
-
                     actiontarget.Target = petToTrim.Character;
                     actiontarget.ShouldSetTarget = true;
                     petTrimmedOffDiv[petToTrim.Type] = true;

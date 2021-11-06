@@ -12,6 +12,8 @@ namespace Desu
     {
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
+            settings.AddVariable("SingleTaunt", false);
+
             settings.AddVariable("Heal", false);
             settings.AddVariable("OSHeal", false);
 
@@ -34,6 +36,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder >= 19).OrderByStackingOrder(), ControlledDestructionNoShutdown);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder < 19).OrderByStackingOrder(), ControlledDestructionWithShutdown);
             RegisterSpellProcessor(RelevantNanos.FistsOfTheWinterFlame, FistsOfTheWinterFlameNano);
+            RegisterSpellProcessor(RelevantNanos.Taunts, SingleTargetTaunt, CombatActionPriority.High);
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericBuff);
@@ -64,6 +67,23 @@ namespace Desu
             if (fightingTarget != null || !CanCast(spell) || !IsSettingEnabled("Zazen")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("SingleTaunt") || fightingTarget == null) { return false; }
+
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
+            //If our target has a different target than us we need to make sure we taunt
+            if (IsNotFightingMe(fightingTarget))
+            {
+                actionTarget.Target = fightingTarget;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
         }
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -173,6 +193,7 @@ namespace Desu
             public const int LimboMastery = 28894;
             public const int ReduceInertia = 28903;
             public static int[] TeamCritBuffs = { 160574, 160575, 160576 };
+            public static int[] Taunts = { 301936, 100214, 100216, 100215, 100217, 28866 };
         }
 
         private static class RelevantItems

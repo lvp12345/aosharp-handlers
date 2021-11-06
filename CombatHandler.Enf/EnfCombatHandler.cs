@@ -81,8 +81,6 @@ namespace Desu
 
             if (!IsSettingEnabled("SingleTaunt") || fightingTarget == null) { return false; }
 
-            if (fightingTarget.MaxHealth < 1000000) { return false; }
-
             if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
 
             if (DynelManager.LocalPlayer.FightingTarget != null 
@@ -220,11 +218,6 @@ namespace Desu
         private bool ShouldBeTaunted(SimpleChar target)
         {
             return !target.IsPlayer && !target.IsPet && target.IsValid && target.IsInLineOfSight;
-        }
-
-        private bool IsNotFightingMe(SimpleChar target)
-        {
-            return target.IsAttacking && target.FightingTarget.Identity != DynelManager.LocalPlayer.Identity;
         }
 
         private static class RelevantNanos

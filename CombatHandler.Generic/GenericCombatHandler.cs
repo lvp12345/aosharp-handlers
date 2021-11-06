@@ -565,6 +565,11 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        public bool IsNotFightingMe(SimpleChar target)
+        {
+            return target.IsAttacking && target.FightingTarget.Identity != DynelManager.LocalPlayer.Identity;
+        }
+
         // expression body method / inline method   
         public static CharacterWieldedWeapon GetWieldedWeapons(SimpleChar local) => (CharacterWieldedWeapon)local.GetStat(Stat.EquippedWeapons);
 

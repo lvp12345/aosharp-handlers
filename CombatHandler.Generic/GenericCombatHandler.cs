@@ -177,7 +177,7 @@ namespace CombatHandler.Generic
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsCore.SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, settings);
+            SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, settings);
         }
 
         protected override void OnUpdate(float deltaTime)

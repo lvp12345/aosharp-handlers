@@ -3,7 +3,6 @@ using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using AOSharp.Core.UI;
-using MultiboxHelper;
 
 namespace Desu
 {

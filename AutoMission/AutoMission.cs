@@ -220,7 +220,9 @@ namespace AutoMission
 
         private void PrintHelp(ChatWindow chatWindow)
         {
-            string help = "For starting omni;\n" +
+            string help = "Pulls old missions at trial.;\n" +
+                            "\n" +
+                            "For starting omni;\n" +
                             "\n" +
                             "/automission omni difficulty\n" +
                             "\n" +

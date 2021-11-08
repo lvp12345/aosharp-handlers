@@ -5,16 +5,17 @@ using System.Linq;
 using AOSharp.Common.GameData;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
-using MultiboxHelper;
+using SettingsCore;
 
 namespace AutoLoot
 {
     public class Main : AOPluginEntry
     {
         //private HashSet<Identity> _lootedCorpses = new HashSet<Identity>();
-        private Dictionary<Identity, Corpse> _corpsesBeingLooted = new Dictionary<Identity, Corpse>();
+        //private Dictionary<Identity, Corpse> _corpsesBeingLooted = new Dictionary<Identity, Corpse>();
+
         private double _lastCheckTime = Time.NormalTime;
-        private Settings settings = new Settings("AutoLoot");
+        private AOSharp.Core.Settings settings = new AOSharp.Core.Settings("AutoLoot");
         private string _pluginBaseDirectory;
 
         public static Container extrabag1 = Inventory.Backpacks.FirstOrDefault(x => x.Name == "extra1");
@@ -36,7 +37,7 @@ namespace AutoLoot
             _pluginBaseDirectory = pluginDir;
             LootingRules.Load(_pluginBaseDirectory);
             settings.AddVariable("Radius", 5);
-            SettingsController.RegisterSettingsWindow("Auto loot", pluginDir + "\\UI\\AutoLootSettingsView.xml", settings);
+            SettingsCore.SettingsController.RegisterSettingsWindow("Auto loot", pluginDir + "\\UI\\AutoLootSettingsView.xml", settings);
             Game.OnUpdate += OnUpdate;
             Inventory.ContainerOpened = OnContainerOpened;
             Chat.RegisterCommand("autoloot", AutoLootCommand.OnAutoLootCommand);

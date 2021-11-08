@@ -5,7 +5,7 @@ using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
-using MultiboxHelper;
+using SettingsCore;
 
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
@@ -22,7 +22,7 @@ namespace CombatHandler.Generic
 
         private string pluginDir = "";
 
-        protected Settings settings;
+        protected AOSharp.Core.Settings settings;
 
         protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
         {
@@ -78,7 +78,7 @@ namespace CombatHandler.Generic
         {
             this.pluginDir = pluginDir;
             Game.TeleportEnded += TeleportEnded;
-            settings = new Settings("CombatHandler");
+            settings = new AOSharp.Core.Settings("CombatHandler");
 
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
@@ -177,7 +177,7 @@ namespace CombatHandler.Generic
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, settings);
+            SettingsCore.SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, settings);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -1116,7 +1116,7 @@ namespace CombatHandler.Generic
 
             if (Playfield.ModelIdentity.Instance == 152) { return false; }
 
-            if (fightingTarget.IsPlayer && !MultiboxHelper.MultiboxHelper.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
+            if (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
 
             if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
 
@@ -1175,7 +1175,7 @@ namespace CombatHandler.Generic
 
         protected bool HasNCU(Spell spell, SimpleChar target)
         {
-            return MultiboxHelper.MultiboxHelper.GetRemainingNCU(target.Identity) > spell.NCU;
+            return SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
         }
 
         private void TeleportEnded(object sender, EventArgs e)
@@ -1199,6 +1199,31 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Misc
+
+        [Flags]
+        public enum CharacterWieldedWeapon
+        {
+            Fists = 0x0,            // 0x00000000000000000000b Fists / invalid
+            MartialArts = 0x01,             // 0x00000000000000000001b martialarts / fists
+            Melee = 0x02,             // 0x00000000000000000010b
+            Ranged = 0x04,            // 0x00000000000000000100b
+            Bow = 0x08,               // 0x00000000000000001000b
+            Smg = 0x10,               // 0x00000000000000010000b
+            Edged1H = 0x20,           // 0x00000000000000100000b
+            Blunt1H = 0x40,           // 0x00000000000001000000b
+            Edged2H = 0x80,           // 0x00000000000010000000b
+            Blunt2H = 0x100,          // 0x00000000000100000000b
+            Piercing = 0x200,         // 0x00000000001000000000b
+            Pistol = 0x400,           // 0x00000000010000000000b
+            AssaultRifle = 0x800,     // 0x00000000100000000000b
+            Rifle = 0x1000,           // 0x00000001000000000000b
+            Shotgun = 0x2000,         // 0x00000010000000000000b
+            Grenade = 0x8000,     // 0x00000100000000000000b // 0x00001000000000000000b grenade / martial arts
+            MeleeEnergy = 0x4000,     // 0x00001000000000000000b // 0x00000100000000000000b
+            RangedEnergy = 0x10000,   // 0x00010000000000000000b
+            Grenade2 = 0x20000,        // 0x00100000000000000000b
+            HeavyWeapons = 0x40000,   // 0x01000000000000000000b
+        }
 
         // This will eventually be done dynamically but for now I will implement
         // it statically so we can have it functional

@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
+using SettingsCore;
 
 namespace MultiboxHelper
 {
@@ -31,9 +32,9 @@ namespace MultiboxHelper
         private static Identity useOnDynel;
         private static Identity useItem;
 
-        public static string playersname = String.Empty;
-        public static string identitiesname = String.Empty;
-        public static string assistersname = String.Empty;
+        //public static string playersname = String.Empty;
+        //public static string identitiesname = String.Empty;
+        //public static string assistersname = String.Empty;
 
 
         private static double posUpdateTimer;
@@ -44,13 +45,12 @@ namespace MultiboxHelper
 
         public static Spell yalmbuffs = null;
 
-
-        private static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
+        //private static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        private static Settings settings = new Settings("MultiboxHelper");
+        private static AOSharp.Core.Settings settings = new AOSharp.Core.Settings("MultiboxHelper");
 
         //private string[] playername = null;
         //private string[] identityname = null;
@@ -87,6 +87,7 @@ namespace MultiboxHelper
             PluginDir = pluginDir;
 
             settings.AddVariable("ChannelID", 10);
+
             settings.AddVariable("Follow", false);
             settings.AddVariable("OSFollow", false);
             settings.AddVariable("SyncMove", false);
@@ -137,7 +138,6 @@ namespace MultiboxHelper
             Chat.RegisterCommand("mbchannelall", ChannelAllCommand);
 
             Chat.RegisterCommand("allfollow", Allfollow);
-            Chat.RegisterCommand("rebuff", Rebuff);
             Chat.RegisterCommand("leadfollow", LeadFollow);
             Chat.RegisterCommand("navfollow", Navfollow);
             Chat.RegisterCommand("assistplayer", AssistPlayer);
@@ -153,6 +153,7 @@ namespace MultiboxHelper
             Chat.RegisterCommand("convert", RaidCommand);
 
             Chat.RegisterCommand("yalm", YalmCommand);
+            Chat.RegisterCommand("rebuff", Rebuff);
 
 
             Game.OnUpdate += OnUpdate;
@@ -164,20 +165,20 @@ namespace MultiboxHelper
             Chat.WriteLine($"IPC Channel for MultiboxHelper - {_channelId}");
         }
 
-        public static int GetRemainingNCU(Identity target)
-        {
-            return RemainingNCU.ContainsKey(target) ? RemainingNCU[target] : 0;
-        }
+        //public static int GetRemainingNCU(Identity target)
+        //{
+        //    return RemainingNCU.ContainsKey(target) ? RemainingNCU[target] : 0;
+        //}
 
-        public static Identity[] GetRegisteredCharacters()
-        {
-            return RemainingNCU.Keys.ToArray();
-        }
+        //public static Identity[] GetRegisteredCharacters()
+        //{
+        //    return RemainingNCU.Keys.ToArray();
+        //}
 
-        public static bool IsCharacterRegistered(Identity target)
-        {
-            return RemainingNCU.ContainsKey(target);
-        }
+        //public static bool IsCharacterRegistered(Identity target)
+        //{
+        //    return RemainingNCU.ContainsKey(target);
+        //}
 
         private void OnUpdate(object s, float deltaTime)
         {
@@ -271,7 +272,7 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one form of sync attack active at once.");
                 }
 
-                if (assistersname == String.Empty)
+                if (SettingsController.assistersname == String.Empty)
                 {
                     Window textboxwindow = SettingsController.settingsWindow;
 
@@ -286,16 +287,16 @@ namespace MultiboxHelper
 
                     if (textinput.Text != String.Empty)
                     {
-                        assistersname = textinput.Text;
+                        SettingsController.assistersname = textinput.Text;
                         return;
                     }
                 }
 
                 SimpleChar identity = DynelManager.Characters
-                    .Where(c => assistersname != String.Empty)
+                    .Where(c => SettingsController.assistersname != String.Empty)
                     .Where(c => c.IsValid)
                     .Where(c => c.IsAlive)
-                    .Where(c => c.Name.Contains(assistersname))
+                    .Where(c => c.Name.Contains(SettingsController.assistersname))
                     .FirstOrDefault();
 
                 if (identity != null && identity.FightingTarget == null &&
@@ -321,7 +322,7 @@ namespace MultiboxHelper
                 }
                 else if (identity == null)
                 {
-                    Chat.WriteLine($"Cannot find {assistersname}. Make sure to type captial first letter.");
+                    Chat.WriteLine($"Cannot find {SettingsController.assistersname}. Make sure to type captial first letter.");
                     settings["AssistPlayer"] = false;
                     return;
                 }
@@ -337,9 +338,9 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
 
-                if (identitiesname == String.Empty)
+                if (SettingsController.identitiesname == String.Empty)
                 {
-                    Window textboxwindow = SettingsController.settingsWindow;
+                    Window textboxwindow = SettingsCore.SettingsController.settingsWindow;
 
                     textboxwindow.FindView("FollowNamedIdentity", out TextInputView textinput);
 
@@ -352,12 +353,12 @@ namespace MultiboxHelper
 
                     if (textinput.Text != String.Empty)
                     {
-                        identitiesname = textinput.Text;
+                        SettingsController.identitiesname = textinput.Text;
                         return;
                     }
                 }
 
-                Dynel identity = DynelManager.AllDynels.Where(x => x.Name.Contains(identitiesname)).FirstOrDefault();
+                Dynel identity = DynelManager.AllDynels.Where(x => x.Name.Contains(SettingsController.identitiesname)).FirstOrDefault();
 
                 if (identity != null)
                 {
@@ -375,7 +376,7 @@ namespace MultiboxHelper
                 }
                 else
                 {
-                    Chat.WriteLine($"Cannot find {identitiesname}. Make sure to type captial first letter.");
+                    Chat.WriteLine($"Cannot find {SettingsController.identitiesname}. Make sure to type captial first letter.");
                     settings["NavFollow"] = false;
                     return;
                 }
@@ -390,9 +391,9 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
 
-                if (playersname == String.Empty)
+                if (SettingsController.playersname == String.Empty)
                 {
-                    Window textboxwindow = SettingsController.settingsWindow;
+                    Window textboxwindow = SettingsCore.SettingsController.settingsWindow;
 
                     textboxwindow.FindView("FollowNamedCharacter", out TextInputView textinput);
 
@@ -405,14 +406,14 @@ namespace MultiboxHelper
 
                     if (textinput.Text != String.Empty)
                     {
-                        playersname = textinput.Text;
+                        SettingsController.playersname = textinput.Text;
                         return;
                     }
                 }
 
-                if (playersname != String.Empty)
+                if (SettingsController.playersname != String.Empty)
                 {
-                    Dynel npc = DynelManager.AllDynels.Where(x => x.Name.Contains(playersname)).FirstOrDefault();
+                    Dynel npc = DynelManager.AllDynels.Where(x => x.Name.Contains(SettingsController.playersname)).FirstOrDefault();
 
                     if (npc != null)
                     {
@@ -426,7 +427,7 @@ namespace MultiboxHelper
                     }
                     else
                     {
-                        Chat.WriteLine($"Cannot find {playersname}. Make sure to type captial first letter.");
+                        Chat.WriteLine($"Cannot find {SettingsController.playersname}. Make sure to type captial first letter.");
                         settings["OSFollow"] = false;
                         return;
                     }
@@ -851,7 +852,7 @@ namespace MultiboxHelper
                     return;
 
                 RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
-                    RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+                    SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
             }
             catch (Exception e)
             {
@@ -903,7 +904,7 @@ namespace MultiboxHelper
 
         public override void Teardown()
         {
-            SettingsController.CleanUp();
+            SettingsCore.SettingsController.CleanUp();
         }
 
         private void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
@@ -963,7 +964,7 @@ namespace MultiboxHelper
 
         private Identity[] GetRegisteredCharactersInvite()
         {
-            Identity[] registeredCharacters = MultiboxHelper.GetRegisteredCharacters();
+            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
             int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
             Identity[] firstTeamCharacters = new Identity[firstTeamCount];
             Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
@@ -972,7 +973,7 @@ namespace MultiboxHelper
 
         private Identity[] GetRemainingRegisteredCharacters()
         {
-            Identity[] registeredCharacters = MultiboxHelper.GetRegisteredCharacters();
+            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
             int characterCount = registeredCharacters.Length - 6;
             Identity[] remainingCharacters = new Identity[characterCount];
             if (characterCount > 0)
@@ -993,7 +994,7 @@ namespace MultiboxHelper
 
         private void Team_TeamRequest(object s, TeamRequestEventArgs e)
         {
-            if (MultiboxHelper.IsCharacterRegistered(e.Requester))
+            if (SettingsController.IsCharacterRegistered(e.Requester))
             {
                 e.Accept();
             }
@@ -1291,19 +1292,19 @@ namespace MultiboxHelper
         {
             if (param.Length == 0)
             {
-                if (assistersname == String.Empty)
+                if (SettingsController.assistersname == String.Empty)
                 {
                     Chat.WriteLine($"Wrong syntax, /assistplayer playername");
                     settings["AssistPlayer"] = false;
                     return;
                 }
-                if (!settings["AssistPlayer"].AsBool() && assistersname != String.Empty)
+                if (!settings["AssistPlayer"].AsBool() && SettingsController.assistersname != String.Empty)
                 {
                     settings["AssistPlayer"] = true;
-                    Chat.WriteLine($"Following {assistersname}.");
+                    Chat.WriteLine($"Following {SettingsController.assistersname}.");
                     return;
                 }
-                if (settings["AssistPlayer"].AsBool() && assistersname != String.Empty)
+                if (settings["AssistPlayer"].AsBool() && SettingsController.assistersname != String.Empty)
                 {
                     settings["AssistPlayer"] = false;
                     Chat.WriteLine($"Stopped assisting.");
@@ -1311,7 +1312,7 @@ namespace MultiboxHelper
                 }
             }
 
-            if (assistersname == String.Empty && settings["AssistPlayer"].AsBool())
+            if (SettingsController.assistersname == String.Empty && settings["AssistPlayer"].AsBool())
             {
                 Chat.WriteLine($"Cannot find player.");
                 settings["AssistPlayer"] = false;
@@ -1327,13 +1328,13 @@ namespace MultiboxHelper
                         Chat.WriteLine($"Disabled AssistPlayer.");
                     }
 
-                    assistersname = String.Empty;
+                    SettingsController.assistersname = String.Empty;
                     Chat.WriteLine($"Assister cleared.");
                 }
                 else
                 {
-                    assistersname = param[0];
-                    Chat.WriteLine($"Assisting set to {assistersname}.");
+                    SettingsController.assistersname = param[0];
+                    Chat.WriteLine($"Assisting set to {SettingsController.assistersname}.");
                 }
             }
         }
@@ -1342,19 +1343,19 @@ namespace MultiboxHelper
         {
             if (param.Length == 0)
             {
-                if (identitiesname == String.Empty)
+                if (SettingsController.identitiesname == String.Empty)
                 {
                     Chat.WriteLine($"Wrong syntax, /navfollow playername");
                     settings["NavFollow"] = false;
                     return;
                 }
-                if (!settings["NavFollow"].AsBool() && identitiesname != String.Empty)
+                if (!settings["NavFollow"].AsBool() && SettingsController.identitiesname != String.Empty)
                 {
                     settings["NavFollow"] = true;
-                    Chat.WriteLine($"Following {identitiesname}.");
+                    Chat.WriteLine($"Following {SettingsController.identitiesname}.");
                     return;
                 }
-                if (settings["NavFollow"].AsBool() && identitiesname != String.Empty)
+                if (settings["NavFollow"].AsBool() && SettingsController.identitiesname != String.Empty)
                 {
                     settings["NavFollow"] = false;
                     Chat.WriteLine($"Stopped following.");
@@ -1362,7 +1363,7 @@ namespace MultiboxHelper
                 }
             }
 
-            if (identitiesname == String.Empty && settings["NavFollow"].AsBool())
+            if (SettingsController.identitiesname == String.Empty && settings["NavFollow"].AsBool())
             {
                 Chat.WriteLine($"Cannot find player.");
                 settings["NavFollow"] = false;
@@ -1378,13 +1379,13 @@ namespace MultiboxHelper
                         Chat.WriteLine($"Disabled NavFollow.");
                     }
 
-                    identitiesname = String.Empty;
+                    SettingsController.identitiesname = String.Empty;
                     Chat.WriteLine($"Follower cleared.");
                 }
                 else
                 {
-                    identitiesname = param[0];
-                    Chat.WriteLine($"Follower set to {identitiesname}.");
+                    SettingsController.identitiesname = param[0];
+                    Chat.WriteLine($"Follower set to {SettingsController.identitiesname}.");
                 }
             }
         }
@@ -1393,19 +1394,19 @@ namespace MultiboxHelper
         {
             if (param.Length == 0)
             {
-                if (playersname == String.Empty)
+                if (SettingsController.playersname == String.Empty)
                 {
                     Chat.WriteLine($"Wrong syntax, /allfollow playername");
                     settings["OSFollow"] = false;
                     return;
                 }
-                if (!settings["OSFollow"].AsBool() && playersname != String.Empty)
+                if (!settings["OSFollow"].AsBool() && SettingsController.playersname != String.Empty)
                 {
                     settings["OSFollow"] = true;
-                    Chat.WriteLine($"Following {playersname}.");
+                    Chat.WriteLine($"Following {SettingsController.playersname}.");
                     return;
                 }
-                if (settings["OSFollow"].AsBool() && playersname != String.Empty)
+                if (settings["OSFollow"].AsBool() && SettingsController.playersname != String.Empty)
                 {
                     settings["OSFollow"] = false;
                     Chat.WriteLine($"Stopped following.");
@@ -1413,7 +1414,7 @@ namespace MultiboxHelper
                 }
             }
 
-            if (playersname == String.Empty && settings["OSFollow"].AsBool())
+            if (SettingsController.playersname == String.Empty && settings["OSFollow"].AsBool())
             {
                 Chat.WriteLine($"Cannot find player.");
                 settings["OSFollow"] = false;
@@ -1429,13 +1430,13 @@ namespace MultiboxHelper
                         Chat.WriteLine($"Disabled OSFollow.");
                     }
 
-                    playersname = String.Empty;
+                    SettingsController.playersname = String.Empty;
                     Chat.WriteLine($"Follower cleared.");
                 }
                 else
                 {
-                    playersname = param[0];
-                    Chat.WriteLine($"Follower set to {playersname}.");
+                    SettingsController.playersname = param[0];
+                    Chat.WriteLine($"Follower set to {SettingsController.playersname}.");
                 }
             }
         }

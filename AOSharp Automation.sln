@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Adv", "Combat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoMission", "AutoMission\AutoMission.csproj", "{DBCC03EA-D8EB-4B2B-9915-D8ABCD07F31D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SettingsCore", "Settings\SettingsCore.csproj", "{1112EFE9-D38C-4075-A4BF-EAC59047C5AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,10 @@ Global
 		{DBCC03EA-D8EB-4B2B-9915-D8ABCD07F31D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBCC03EA-D8EB-4B2B-9915-D8ABCD07F31D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBCC03EA-D8EB-4B2B-9915-D8ABCD07F31D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1112EFE9-D38C-4075-A4BF-EAC59047C5AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1112EFE9-D38C-4075-A4BF-EAC59047C5AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1112EFE9-D38C-4075-A4BF-EAC59047C5AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1112EFE9-D38C-4075-A4BF-EAC59047C5AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

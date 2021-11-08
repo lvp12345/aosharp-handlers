@@ -32,6 +32,7 @@ namespace Desu
             settings.AddVariable("ReaperAura", false);
             settings.AddVariable("SancAura", false);
             settings.AddVariable("SpamAntifear", false);
+
             RegisterSettingsWindow("Keeper Handler", "KeeperSettingsView.xml");
             RegisterPerkProcessors();
 

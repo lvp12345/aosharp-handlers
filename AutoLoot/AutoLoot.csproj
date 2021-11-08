@@ -38,9 +38,6 @@
     <Reference Include="AOSharp.Core">
       <HintPath>..\..\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="MultiboxHelper">
-      <HintPath>..\bin\Debug\MultiboxHelper.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -61,6 +58,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Settings\SettingsCore.csproj">
+      <Project>{1112efe9-d38c-4075-a4bf-eac59047c5ad}</Project>
+      <Name>SettingsCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

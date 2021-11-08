@@ -37,7 +37,7 @@ namespace AutoLoot
             _pluginBaseDirectory = pluginDir;
             LootingRules.Load(_pluginBaseDirectory);
             settings.AddVariable("Radius", 5);
-            SettingsCore.SettingsController.RegisterSettingsWindow("Auto loot", pluginDir + "\\UI\\AutoLootSettingsView.xml", settings);
+            SettingsController.RegisterSettingsWindow("Auto loot", pluginDir + "\\UI\\AutoLootSettingsView.xml", settings);
             Game.OnUpdate += OnUpdate;
             Inventory.ContainerOpened = OnContainerOpened;
             Chat.RegisterCommand("autoloot", AutoLootCommand.OnAutoLootCommand);

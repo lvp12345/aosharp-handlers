@@ -340,7 +340,7 @@ namespace MultiboxHelper
 
                 if (SettingsController.identitiesname == String.Empty)
                 {
-                    Window textboxwindow = SettingsCore.SettingsController.settingsWindow;
+                    Window textboxwindow = SettingsController.settingsWindow;
 
                     textboxwindow.FindView("FollowNamedIdentity", out TextInputView textinput);
 
@@ -393,7 +393,7 @@ namespace MultiboxHelper
 
                 if (SettingsController.playersname == String.Empty)
                 {
-                    Window textboxwindow = SettingsCore.SettingsController.settingsWindow;
+                    Window textboxwindow = SettingsController.settingsWindow;
 
                     textboxwindow.FindView("FollowNamedCharacter", out TextInputView textinput);
 
@@ -904,7 +904,7 @@ namespace MultiboxHelper
 
         public override void Teardown()
         {
-            SettingsCore.SettingsController.CleanUp();
+            SettingsController.CleanUp();
         }
 
         private void DisbandCommand(string command, string[] param, ChatWindow chatWindow)

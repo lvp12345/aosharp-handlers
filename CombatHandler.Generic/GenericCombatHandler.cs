@@ -1084,22 +1084,19 @@ namespace CombatHandler.Generic
                 return true;
             }
 
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsPlayer)
-                    .Where(c => c.HealthPercent <= healthPercentTreshold)
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .FirstOrDefault();
+            SimpleChar dyingTeamMember = DynelManager.Characters
+                .Where(c => c.IsPlayer)
+                .Where(c => c.HealthPercent <= healthPercentTreshold)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                .OrderBy(c => c.Profession == Profession.Doctor)
+                .OrderBy(c => c.Profession == Profession.Enforcer)
+                .FirstOrDefault();
 
-                if (dyingTeamMember != null)
-                {
-                    actionTarget.Target = dyingTeamMember;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+            if (dyingTeamMember != null)
+            {
+                actionTarget.Target = dyingTeamMember;
+                actionTarget.ShouldSetTarget = true;
+                return true;
             }
 
             return false;

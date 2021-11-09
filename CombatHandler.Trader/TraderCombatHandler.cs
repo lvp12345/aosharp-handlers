@@ -98,12 +98,12 @@ namespace Desu
             public const int DivestDamage = 273407;
             public const int UmbralWranglerPremium = 235291;
             public const int MyEnemiesEnemyIsMyFriend = 270714;
-            public static Dictionary<NanoLine, NanoLine> DebuffToDrainLine = new Dictionary<NanoLine, NanoLine>()
-            {
-                {NanoLine.TraderAADDrain, NanoLine.TraderNanoTheft2},
-                {NanoLine.TraderAAODrain, NanoLine.TraderNanoTheft1},
-                {NanoLine.NanoDrain_LineB, NanoLine.NanoOverTime_LineB}
-            };
+            //public static Dictionary<NanoLine, NanoLine> DebuffToDrainLine = new Dictionary<NanoLine, NanoLine>()
+            //{
+            //    {NanoLine.TraderAADDrain, NanoLine.TraderNanoTheft2},
+            //    {NanoLine.TraderAAODrain, NanoLine.TraderNanoTheft1},
+            //    {NanoLine.NanoDrain_LineB, NanoLine.NanoOverTime_LineB}
+            //};
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -140,24 +140,30 @@ namespace Desu
 
         private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.DamageBuffs_LineA, out Buff buff) && DynelManager.LocalPlayer.FightingTarget != null) { return true; }
+
             return ToggledDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuff("AAODrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AAOBuffs, out Buff buff) && DynelManager.LocalPlayer.FightingTarget != null) { return true; }
+
+            return ToggledDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
         }
 
-         private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuff("AADDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AADBuffs, out Buff buff) && DynelManager.LocalPlayer.FightingTarget != null) { return true; }
+
+            return ToggledDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
         }
 
         private bool TeamNanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            foreach(Buff buff in DynelManager.LocalPlayer.Buffs)
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {
-                if(buff.Nanoline == NanoLine.NanoPointHeals) { return false; }
+                if (buff.Nanoline == NanoLine.NanoPointHeals) { return false; }
             }
 
             // Cast when any team mate is lower than 30% of nano
@@ -187,11 +193,11 @@ namespace Desu
 
         private bool ToggledDebuff(string settingName, Spell spell, NanoLine spellNanoLine , SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled(settingName) ||  fightingTarget == null) { return false; }
+            if (!IsSettingEnabled(settingName) || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs
                 .Where(buff => buff.Nanoline == spellNanoLine) //Same nanoline as the spell nanoline
-                .Where(buff => buff.RemainingTime > 1) //Remaining time on buff > 1 second
+                .Where(buff => buff.RemainingTime > 3) //Remaining time on buff > 1 second
                 .Any(); ;
         }
     }

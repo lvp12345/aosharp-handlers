@@ -122,39 +122,55 @@ namespace Desu
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!ToggledDebuff("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget)) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff) && fightingTarget != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
-            if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff)) if (buff.RemainingTime > 5) { return false; }
-
-            return true;
+            return ToggledDebuff("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
         }
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!ToggledDebuff("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget)) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff) && fightingTarget != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
-            if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff)) if (buff.RemainingTime > 5) { return false; }
-
-            return true;
+            return ToggledDebuff("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
         }
 
         private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.DamageBuffs_LineA, out Buff buff) && DynelManager.LocalPlayer.FightingTarget != null) { return true; }
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.DamageBuffs_LineA, out Buff buff) && fightingTarget != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
             return ToggledDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AAOBuffs, out Buff buff) && DynelManager.LocalPlayer.FightingTarget != null) { return true; }
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AAOBuffs, out Buff buff) && fightingTarget != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
             return ToggledDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
         }
 
         private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AADBuffs, out Buff buff) && DynelManager.LocalPlayer.FightingTarget != null) { return true; }
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AADBuffs, out Buff buff) && fightingTarget != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
             return ToggledDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
         }
@@ -188,6 +204,12 @@ namespace Desu
 
         private bool TraderACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff) && fightingTarget != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
             return ToggledDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 

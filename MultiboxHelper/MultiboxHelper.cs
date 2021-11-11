@@ -203,7 +203,7 @@ namespace MultiboxHelper
                 MovementController.Instance.SetPath(horsey);
             }
 
-            if (Time.NormalTime > sitUpdateTimer + 0.1 && Sitting == false)
+            if (Time.NormalTime > sitUpdateTimer + 0.5)
             {
                 ListenerSit();
 
@@ -726,21 +726,32 @@ namespace MultiboxHelper
 
             if (spell != null && spell.IsReady && settings["AutoSit"].AsBool())
             {
-                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && !DynelManager.LocalPlayer.Buffs.Contains(280488))
+                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 
+                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning 
+                    && !DynelManager.LocalPlayer.Buffs.Contains(280488))
                 {
-                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
+                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && DynelManager.LocalPlayer.MovementState != MovementState.Sit
+                        && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
                     {
                         Task.Factory.StartNew(
-                        async () =>
-                        {
-                            Sitting = true;
-                            await Task.Delay(400);
-                            MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                            await Task.Delay(400);
-                            MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                            await Task.Delay(400);
-                            Sitting = false;
-                        });
+                            async () =>
+                            {
+                                Sitting = true;
+                                await Task.Delay(400);
+                                MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                            });
+                    }
+
+                    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && DynelManager.LocalPlayer.MovementState == MovementState.Sit
+                        && DynelManager.LocalPlayer.NanoPercent > 65 && DynelManager.LocalPlayer.HealthPercent > 65 && Sitting == true)
+                    {
+                        Task.Factory.StartNew(
+                            async () =>
+                            {
+                                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                                await Task.Delay(400);
+                                Sitting = false;
+                            });
                     }
                 }
             }

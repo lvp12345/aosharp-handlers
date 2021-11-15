@@ -12,6 +12,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Generic", "CombatHandler.Generic\CombatHandler.Generic.csproj", "{8CB8419F-3914-49C1-ABA3-78C5D26E8E48}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiboxHelper", "MultiboxHelper\MultiboxHelper.csproj", "{5B5488B2-FEC0-4C69-8933-98151C575220}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1112EFE9-D38C-4075-A4BF-EAC59047C5AD} = {1112EFE9-D38C-4075-A4BF-EAC59047C5AD}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Keeper", "CombatHandler.Keeper\CombatHandler.Keeper.csproj", "{5BD3F993-A8DE-4214-919E-B50220BC0962}"
 EndProject

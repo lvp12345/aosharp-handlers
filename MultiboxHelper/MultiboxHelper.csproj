@@ -39,10 +39,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\aosharp\AOSharp\bin\Debug\AOSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="SettingsCore, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Debug\SettingsCore.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -81,6 +77,12 @@
     <Content Include="UI\MultiboxSettingWindow.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SettingsCore\SettingsCore.csproj">
+      <Project>{1112efe9-d38c-4075-a4bf-eac59047c5ad}</Project>
+      <Name>SettingsCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

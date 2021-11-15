@@ -67,38 +67,61 @@ namespace SettingsCore
         {
             if (!IsCommandRegistered)
             {
-                Chat.RegisterCommand("aosharp", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("settings", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {
-                        if (param.Length > 0)
+                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "AOSharp", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                        foreach (string settingsName in settingsWindows.Keys)
                         {
-                            if ("settings" == param[0])
+                            AppendSettingsTab(settingsName, settingsWindow);
+
+                            if (playersname != String.Empty)
                             {
-                                settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "AOSharp", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
-
-                                foreach (string settingsName in settingsWindows.Keys)
-                                {
-                                    AppendSettingsTab(settingsName, settingsWindow);
-
-                                    if (playersname != String.Empty)
-                                    {
-                                        settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-                                        textinput.Text = playersname;
-                                    }
-                                    if (identitiesname != String.Empty)
-                                    {
-                                        settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                                        textinput2.Text = identitiesname;
-                                    }
-                                    if (assistersname != String.Empty)
-                                    {
-                                        settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput3);
-                                        textinput3.Text = assistersname;
-                                    }
-                                }
+                                settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+                                textinput.Text = playersname;
+                            }
+                            if (identitiesname != String.Empty)
+                            {
+                                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
+                                textinput2.Text = identitiesname;
+                            }
+                            if (assistersname != String.Empty)
+                            {
+                                settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput3);
+                                textinput3.Text = assistersname;
                             }
                         }
+
+                        //if (param.Length > 0)
+                        //{
+                        //    if ("settings" == param[0])
+                        //    {
+                        //        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "AOSharp", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                        //        foreach (string settingsName in settingsWindows.Keys)
+                        //        {
+                        //            AppendSettingsTab(settingsName, settingsWindow);
+
+                        //            if (playersname != String.Empty)
+                        //            {
+                        //                settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+                        //                textinput.Text = playersname;
+                        //            }
+                        //            if (identitiesname != String.Empty)
+                        //            {
+                        //                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
+                        //                textinput2.Text = identitiesname;
+                        //            }
+                        //            if (assistersname != String.Empty)
+                        //            {
+                        //                settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput3);
+                        //                textinput3.Text = assistersname;
+                        //            }
+                        //        }
+                        //    }
+                        //}
                     }
                     catch (Exception e)
                     {

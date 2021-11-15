@@ -21,6 +21,8 @@ namespace SettingsCore
         public static string identitiesname = String.Empty;
         public static string assistersname = String.Empty;
 
+        public static string MultiboxHelperChannel = String.Empty;
+
         public static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
 
@@ -77,6 +79,12 @@ namespace SettingsCore
                         {
                             AppendSettingsTab(settingsName, settingsWindow);
 
+                            if (MultiboxHelperChannel != String.Empty)
+                            {
+                                settingsWindow.FindView("ChannelBox", out TextInputView textinput);
+                                textinput.Text = MultiboxHelperChannel;
+                            }
+
                             if (playersname != String.Empty)
                             {
                                 settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
@@ -93,35 +101,6 @@ namespace SettingsCore
                                 textinput3.Text = assistersname;
                             }
                         }
-
-                        //if (param.Length > 0)
-                        //{
-                        //    if ("settings" == param[0])
-                        //    {
-                        //        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "AOSharp", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
-
-                        //        foreach (string settingsName in settingsWindows.Keys)
-                        //        {
-                        //            AppendSettingsTab(settingsName, settingsWindow);
-
-                        //            if (playersname != String.Empty)
-                        //            {
-                        //                settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-                        //                textinput.Text = playersname;
-                        //            }
-                        //            if (identitiesname != String.Empty)
-                        //            {
-                        //                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                        //                textinput2.Text = identitiesname;
-                        //            }
-                        //            if (assistersname != String.Empty)
-                        //            {
-                        //                settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput3);
-                        //                textinput3.Text = assistersname;
-                        //            }
-                        //        }
-                        //    }
-                        //}
                     }
                     catch (Exception e)
                     {

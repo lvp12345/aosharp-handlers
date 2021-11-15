@@ -26,6 +26,8 @@ namespace MultiboxHelper
 
         private static IPCChannel IPCChannel;
 
+        public static Config Config { get; private set; }
+
         private double _ncuUpdateTime = 0;
 
         private static Identity useDynel;
@@ -86,7 +88,9 @@ namespace MultiboxHelper
         {
             PluginDir = pluginDir;
 
-            settings.AddVariable("ChannelID", 10);
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\MultiboxHelper\\{Game.ClientInst}\\Config.json");
+
+            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             settings.AddVariable("Follow", false);
             settings.AddVariable("OSFollow", false);
@@ -104,10 +108,6 @@ namespace MultiboxHelper
             settings["NavFollow"] = false;
             settings["SyncAttack"] = true;
 
-            _channelId = Convert.ToByte(settings["ChannelID"].AsInt32());
-
-            IPCChannel = new IPCChannel(_channelId);
-
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnTargetMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
@@ -119,12 +119,11 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);  
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
             IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.ChannelAll, OnChannelAll);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmStart);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
@@ -134,13 +133,6 @@ namespace MultiboxHelper
 
             Chat.RegisterCommand("mbhelp", HelpCommand);
 
-            Chat.RegisterCommand("mbchannel", ChannelCommand);
-            Chat.RegisterCommand("mbchannelall", ChannelAllCommand);
-
-            Chat.RegisterCommand("allfollow", Allfollow);
-            Chat.RegisterCommand("leadfollow", LeadFollow);
-            Chat.RegisterCommand("navfollow", Navfollow);
-            Chat.RegisterCommand("assistplayer", AssistPlayer);
             Chat.RegisterCommand("sync", SyncSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
@@ -236,32 +228,29 @@ namespace MultiboxHelper
                 _lastFollowTime = Time.NormalTime;
             }
 
-            //if (!settings["OSFollow"].AsBool())
-            //{
-            //    if (playersname != String.Empty)
-            //    {
-            //        playersname = String.Empty;
-            //        return;
-            //    }
-            //}
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput);
 
-            //if (!settings["NavFollow"].AsBool())
-            //{
-            //    if (identitiesname != String.Empty)
-            //    {
-            //        identitiesname = String.Empty;
-            //        return;
-            //    }
-            //}
+                if (textinput != null && textinput.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput.Text, out int channelValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        {
+                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
+                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
+                            SettingsController.MultiboxHelperChannel = channelValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+            }
 
-            //if (!settings["AssistPlayer"].AsBool())
-            //{
-            //    if (assistersname != String.Empty)
-            //    {
-            //        assistersname = String.Empty;
-            //        return;
-            //    }
-            //}
+            if (SettingsController.MultiboxHelperChannel == String.Empty)
+            {
+                SettingsController.MultiboxHelperChannel = Config.IPCChannel.ToString();
+            }
 
             if (settings["AssistPlayer"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
             {
@@ -757,28 +746,6 @@ namespace MultiboxHelper
             }
         }
 
-        //private bool IsFightingAny(SimpleChar target)
-        //{
-        //    if (Team.IsInTeam)
-        //    {
-        //        if (target.IsAttacking && (Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any() || AttackBuddy.OSHelpers.Where(c => target.FightingTarget.Name == c).Any()))
-        //            return true;
-        //        if (target.IsAttacking && (target.FightingTarget.IsPet && Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any()))
-        //            return true;
-        //        else
-        //            return false;
-        //    }
-        //    else
-        //    {
-        //        if (target.IsAttacking && (target.FightingTarget.Name == DynelManager.LocalPlayer.Name || AttackBuddy.OSHelpers.Where(c => target.FightingTarget.Name == c).Any()))
-        //            return true;
-        //        if (target.IsAttacking && (DynelManager.LocalPlayer.Pets.Where(c => target.FightingTarget.Name == c.Character.Name).Any()))
-        //            return true;
-        //        else
-        //            return false;
-        //    }
-        //}
-
         private bool IsFightingAny()
         {
             SimpleChar target = DynelManager.NPCs
@@ -798,9 +765,6 @@ namespace MultiboxHelper
                     return true;
 
                     return false;
-                // maybe some sort of assist function??
-                //return target.IsAttacking && (Team.Members.Where(c => target.FightingTarget == c.Character).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f || target.FightingTarget.IsPet);
-                //Team.Members.Any(x => target.FightingTarget.Identity == x.Character.Identity) || (target.IsAttacking && Team.Members.Where(x => x.Character.FightingTarget != null).Any(x => x.Character.FightingTarget.Identity == target.Identity));
             }
             else
             {
@@ -810,8 +774,6 @@ namespace MultiboxHelper
                     return true;
 
                     return false;
-
-                //return target.IsAttacking && (target.FightingTarget.Identity == DynelManager.LocalPlayer.Identity || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f || target.FightingTarget.IsPet);
             }
         }
 
@@ -1282,239 +1244,6 @@ namespace MultiboxHelper
             IPCChannel.Broadcast(new ClearBuffsMessage());
         }
 
-
-        private void LeadFollow(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0 && settings["Follow"].AsBool())
-            {
-                settings["Follow"] = false;
-                Chat.WriteLine($"Stopped following.");
-                return;
-            }
-            if (param.Length == 0 && !settings["Follow"].AsBool())
-            {
-                settings["Follow"] = true;
-                Chat.WriteLine($"Following active window.");
-                return;
-            }
-        }
-
-        private void AssistPlayer(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                if (SettingsController.assistersname == String.Empty)
-                {
-                    Chat.WriteLine($"Wrong syntax, /assistplayer playername");
-                    settings["AssistPlayer"] = false;
-                    return;
-                }
-                if (!settings["AssistPlayer"].AsBool() && SettingsController.assistersname != String.Empty)
-                {
-                    settings["AssistPlayer"] = true;
-                    Chat.WriteLine($"Following {SettingsController.assistersname}.");
-                    return;
-                }
-                if (settings["AssistPlayer"].AsBool() && SettingsController.assistersname != String.Empty)
-                {
-                    settings["AssistPlayer"] = false;
-                    Chat.WriteLine($"Stopped assisting.");
-                    return;
-                }
-            }
-
-            if (SettingsController.assistersname == String.Empty && settings["AssistPlayer"].AsBool())
-            {
-                Chat.WriteLine($"Cannot find player.");
-                settings["AssistPlayer"] = false;
-            }
-
-            if (param.Length >= 1)
-            {
-                if (param[0].ToLower() == "clear")
-                {
-                    if (settings["AssistPlayer"].AsBool())
-                    {
-                        settings["AssistPlayer"] = false;
-                        Chat.WriteLine($"Disabled AssistPlayer.");
-                    }
-
-                    SettingsController.assistersname = String.Empty;
-                    Chat.WriteLine($"Assister cleared.");
-                }
-                else
-                {
-                    SettingsController.assistersname = param[0];
-                    Chat.WriteLine($"Assisting set to {SettingsController.assistersname}.");
-                }
-            }
-        }
-
-        private void Navfollow(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                if (SettingsController.identitiesname == String.Empty)
-                {
-                    Chat.WriteLine($"Wrong syntax, /navfollow playername");
-                    settings["NavFollow"] = false;
-                    return;
-                }
-                if (!settings["NavFollow"].AsBool() && SettingsController.identitiesname != String.Empty)
-                {
-                    settings["NavFollow"] = true;
-                    Chat.WriteLine($"Following {SettingsController.identitiesname}.");
-                    return;
-                }
-                if (settings["NavFollow"].AsBool() && SettingsController.identitiesname != String.Empty)
-                {
-                    settings["NavFollow"] = false;
-                    Chat.WriteLine($"Stopped following.");
-                    return;
-                }
-            }
-
-            if (SettingsController.identitiesname == String.Empty && settings["NavFollow"].AsBool())
-            {
-                Chat.WriteLine($"Cannot find player.");
-                settings["NavFollow"] = false;
-            }
-
-            if (param.Length >= 1)
-            {
-                if (param[0].ToLower() == "clear")
-                {
-                    if (settings["NavFollow"].AsBool())
-                    {
-                        settings["NavFollow"] = false;
-                        Chat.WriteLine($"Disabled NavFollow.");
-                    }
-
-                    SettingsController.identitiesname = String.Empty;
-                    Chat.WriteLine($"Follower cleared.");
-                }
-                else
-                {
-                    SettingsController.identitiesname = param[0];
-                    Chat.WriteLine($"Follower set to {SettingsController.identitiesname}.");
-                }
-            }
-        }
-
-        private void Allfollow(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                if (SettingsController.playersname == String.Empty)
-                {
-                    Chat.WriteLine($"Wrong syntax, /allfollow playername");
-                    settings["OSFollow"] = false;
-                    return;
-                }
-                if (!settings["OSFollow"].AsBool() && SettingsController.playersname != String.Empty)
-                {
-                    settings["OSFollow"] = true;
-                    Chat.WriteLine($"Following {SettingsController.playersname}.");
-                    return;
-                }
-                if (settings["OSFollow"].AsBool() && SettingsController.playersname != String.Empty)
-                {
-                    settings["OSFollow"] = false;
-                    Chat.WriteLine($"Stopped following.");
-                    return;
-                }
-            }
-
-            if (SettingsController.playersname == String.Empty && settings["OSFollow"].AsBool())
-            {
-                Chat.WriteLine($"Cannot find player.");
-                settings["OSFollow"] = false;
-            }
-
-            if (param.Length >= 1)
-            {
-                if (param[0].ToLower() == "clear")
-                {
-                    if (settings["OSFollow"].AsBool())
-                    {
-                        settings["OSFollow"] = false;
-                        Chat.WriteLine($"Disabled OSFollow.");
-                    }
-
-                    SettingsController.playersname = String.Empty;
-                    Chat.WriteLine($"Follower cleared.");
-                }
-                else
-                {
-                    SettingsController.playersname = param[0];
-                    Chat.WriteLine($"Follower set to {SettingsController.playersname}.");
-                }
-            }
-        }
-
-        private void OnChannelAll(int sender, IPCMessage msg)
-        {
-            IPCChannelAllMessage channelMsg = (IPCChannelAllMessage)msg;
-
-            _channelId = Convert.ToByte(channelMsg.Channel);
-            IPCChannel.SetChannelId(_channelId);
-            settings["ChannelID"] = _channelId;
-
-            Chat.WriteLine($"IPC for MultiboxHelper Channel is - {_channelId}");
-        }
-
-        private void ChannelAllCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            try
-            {
-                if (IPCChannel != null)
-                {
-                    _channelId = Convert.ToByte(param[0]);
-                    IPCChannel.SetChannelId(_channelId);
-                    settings["ChannelID"] = _channelId;
-
-                    IPCChannel.Broadcast(new IPCChannelAllMessage()
-                    {
-                        Channel = Convert.ToUInt16(_channelId),
-                    });
-
-                    Chat.WriteLine($"IPC for MultiboxHelper Channel is - {_channelId}");
-                }
-            }
-            catch (Exception e)
-            {
-                Chat.WriteLine(e.Message);
-            }
-        }
-
-        private void ChannelCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            try
-            {
-                if (IPCChannel != null)
-                {
-                    if (param.Length == 0)
-                    {
-                        Chat.WriteLine($"IPC for MultiboxHelper Channel is - {_channelId}");
-                    }
-
-                    if (param.Length > 0)
-                    {
-                        _channelId = Convert.ToByte(param[0]);
-
-                        IPCChannel.SetChannelId(_channelId);
-                        settings["ChannelID"] = _channelId;
-
-                        Chat.WriteLine($"IPC for MultiboxHelper Channel is now - {_channelId}");
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Chat.WriteLine(e.Message);
-            }
-        }
-
         private void HelpCommand(string command, string[] param, ChatWindow chatWindow)
         {
             string help = "For team commands;\n" +
@@ -1556,7 +1285,7 @@ namespace MultiboxHelper
                             "For IPC Channel;\n" +
                             "\n" +
                             "/mbchannel # or /mbchannelall #\n" +
-                            $"Currently: {_channelId}";
+                            $"Currently: {Config.IPCChannel}";
 
             Chat.WriteLine(help, ChatColor.LightBlue);
         }

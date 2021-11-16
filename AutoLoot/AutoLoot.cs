@@ -5,7 +5,6 @@ using System.Linq;
 using AOSharp.Common.GameData;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
-using SettingsCore;
 
 namespace AutoLoot
 {

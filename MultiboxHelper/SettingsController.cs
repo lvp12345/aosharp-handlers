@@ -12,19 +12,51 @@ namespace MultiboxHelper
 {
     public static class SettingsController
     {
-        private static List<Settings> settingsToSave = new List<Settings>();
+        private static List<AOSharp.Core.Settings> settingsToSave = new List<AOSharp.Core.Settings>();
         public static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
         private static bool IsCommandRegistered;
-        public static Window settingsWindow;
 
-        public static void RegisterSettingsWindow(string settingsName, string settingsWindowPath, Settings settings)
+        public static Window settingsWindow;
+        public static View settingsView;
+
+        public static string playersname = String.Empty;
+        public static string identitiesname = String.Empty;
+        public static string assistersname = String.Empty;
+
+        public static string MultiboxHelperChannel = String.Empty;
+
+        public static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
+
+
+        public static int GetRemainingNCU(Identity target)
+        {
+            return RemainingNCU.ContainsKey(target) ? RemainingNCU[target] : 0;
+        }
+
+        public static Identity[] GetRegisteredCharacters()
+        {
+            return RemainingNCU.Keys.ToArray();
+        }
+
+        public static bool IsCharacterRegistered(Identity target)
+        {
+            return RemainingNCU.ContainsKey(target);
+        }
+
+        public static void RegisterCharacters(AOSharp.Core.Settings settings)
+        {
+            RegisterChatCommandIfNotRegistered();
+            settingsToSave.Add(settings);
+        }
+
+        public static void RegisterSettingsWindow(string settingsName, string settingsWindowPath, AOSharp.Core.Settings settings)
         {
             RegisterChatCommandIfNotRegistered();
             settingsWindows[settingsName] = settingsWindowPath;
             settingsToSave.Add(settings);
         }
 
-        public static void RegisterSettings(Settings settings)
+        public static void RegisterSettings(AOSharp.Core.Settings settings)
         {
             RegisterChatCommandIfNotRegistered();
             settingsToSave.Add(settings);
@@ -39,36 +71,36 @@ namespace MultiboxHelper
         {
             if (!IsCommandRegistered)
             {
-                Chat.RegisterCommand("aosharp", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("helper", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {
-                        if (param.Length > 0)
+                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "MultiboxHelper", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                        foreach (string settingsName in settingsWindows.Keys)
                         {
-                            if ("settings" == param[0])
+                            AppendSettingsTab(settingsName, settingsWindow);
+
+                            if (MultiboxHelperChannel != String.Empty)
                             {
-                                settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "AOSharp", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+                                settingsWindow.FindView("ChannelBox", out TextInputView textinput);
+                                textinput.Text = MultiboxHelperChannel;
+                            }
 
-                                foreach (string settingsName in settingsWindows.Keys)
-                                {
-                                    AppendSettingsTab(settingsName, settingsWindow);
-
-                                    if (MultiboxHelper.playersname != String.Empty)
-                                    {
-                                        settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-                                        textinput.Text = MultiboxHelper.playersname;
-                                    }
-                                    if (MultiboxHelper.identitiesname != String.Empty)
-                                    {
-                                        settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                                        textinput2.Text = MultiboxHelper.identitiesname;
-                                    }
-                                    if (MultiboxHelper.assistersname != String.Empty)
-                                    {
-                                        settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput3);
-                                        textinput3.Text = MultiboxHelper.assistersname;
-                                    }
-                                }
+                            if (playersname != String.Empty)
+                            {
+                                settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+                                textinput.Text = playersname;
+                            }
+                            if (identitiesname != String.Empty)
+                            {
+                                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
+                                textinput2.Text = identitiesname;
+                            }
+                            if (assistersname != String.Empty)
+                            {
+                                settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput3);
+                                textinput3.Text = assistersname;
                             }
                         }
                     }
@@ -85,7 +117,7 @@ namespace MultiboxHelper
         public static void AppendSettingsTab(String settingsName, Window testWindow)
         {
             String settingsWindowXmlPath = settingsWindows[settingsName];
-            View settingsView = View.CreateFromXml(settingsWindowXmlPath);
+            settingsView = View.CreateFromXml(settingsWindowXmlPath);
             if (settingsView != null)
             {
                 testWindow.AppendTab(settingsName, settingsView);

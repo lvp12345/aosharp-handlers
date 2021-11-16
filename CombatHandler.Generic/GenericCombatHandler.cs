@@ -5,7 +5,6 @@ using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
-using SettingsCore;
 
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
@@ -20,7 +19,7 @@ namespace CombatHandler.Generic
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
 
-        private string pluginDir = "";
+        private string pluginDir;
 
         protected AOSharp.Core.Settings settings;
 
@@ -78,6 +77,7 @@ namespace CombatHandler.Generic
         {
             this.pluginDir = pluginDir;
             Game.TeleportEnded += TeleportEnded;
+
             settings = new AOSharp.Core.Settings("CombatHandler");
 
             RegisterPerkProcessors();
@@ -182,6 +182,8 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
+            SettingsController.CleanUp();
+
             base.OnUpdate(deltaTime);
 
             if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)

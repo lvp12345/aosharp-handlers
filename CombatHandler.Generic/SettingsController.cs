@@ -8,20 +8,16 @@ using System.Text;
 using System.Threading.Tasks;
 using AOSharp.Common.GameData.UI;
 
-namespace SettingsCore
+namespace CombatHandler
 {
     public static class SettingsController
     {
         private static List<AOSharp.Core.Settings> settingsToSave = new List<AOSharp.Core.Settings>();
         public static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
         private static bool IsCommandRegistered;
+
         public static Window settingsWindow;
-
-        public static string playersname = String.Empty;
-        public static string identitiesname = String.Empty;
-        public static string assistersname = String.Empty;
-
-        public static string MultiboxHelperChannel = String.Empty;
+        public static View settingsView;
 
         public static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
@@ -69,37 +65,15 @@ namespace SettingsCore
         {
             if (!IsCommandRegistered)
             {
-                Chat.RegisterCommand("settings", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("handler", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {
-                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "AOSharp", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
                         foreach (string settingsName in settingsWindows.Keys)
                         {
                             AppendSettingsTab(settingsName, settingsWindow);
-
-                            if (MultiboxHelperChannel != String.Empty)
-                            {
-                                settingsWindow.FindView("ChannelBox", out TextInputView textinput);
-                                textinput.Text = MultiboxHelperChannel;
-                            }
-
-                            if (playersname != String.Empty)
-                            {
-                                settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-                                textinput.Text = playersname;
-                            }
-                            if (identitiesname != String.Empty)
-                            {
-                                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                                textinput2.Text = identitiesname;
-                            }
-                            if (assistersname != String.Empty)
-                            {
-                                settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput3);
-                                textinput3.Text = assistersname;
-                            }
                         }
                     }
                     catch (Exception e)
@@ -115,7 +89,7 @@ namespace SettingsCore
         public static void AppendSettingsTab(String settingsName, Window testWindow)
         {
             String settingsWindowXmlPath = settingsWindows[settingsName];
-            View settingsView = View.CreateFromXml(settingsWindowXmlPath);
+            settingsView = View.CreateFromXml(settingsWindowXmlPath);
             if (settingsView != null)
             {
                 testWindow.AppendTab(settingsName, settingsView);

@@ -76,17 +76,15 @@
     <Compile Include="IPCMessages\MoveMessage.cs" />
     <Compile Include="MultiboxHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettingsController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\MultiboxHelpBox.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\MultiboxSettingWindow.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SettingsCore\SettingsCore.csproj">
-      <Project>{1112efe9-d38c-4075-a4bf-eac59047c5ad}</Project>
-      <Name>SettingsCore</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -14,7 +14,7 @@
 				<RadioButton label="Use DOT proc" value="3"/>
 			</OptionRadioButtonGroup>
 			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-			<VLayoutSpacer/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		</BorderView>
 	</View>
 </root>

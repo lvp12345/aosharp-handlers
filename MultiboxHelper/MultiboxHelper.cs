@@ -16,14 +16,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
-using SettingsCore;
 
 namespace MultiboxHelper
 {
     public class MultiboxHelper : AOPluginEntry
     {
-        public static string PluginDir;
-
         private static IPCChannel IPCChannel;
 
         public static Config Config { get; private set; }
@@ -34,9 +31,7 @@ namespace MultiboxHelper
         private static Identity useOnDynel;
         private static Identity useItem;
 
-        //public static string playersname = String.Empty;
-        //public static string identitiesname = String.Empty;
-        //public static string assistersname = String.Empty;
+        public static string PluginDirectory;
 
 
         private static double posUpdateTimer;
@@ -47,17 +42,10 @@ namespace MultiboxHelper
 
         public static Spell yalmbuffs = null;
 
-        //private static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
-
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
         private static AOSharp.Core.Settings settings = new AOSharp.Core.Settings("MultiboxHelper");
-
-        //private string[] playername = null;
-        //private string[] identityname = null;
-        //private string[] assistname = null;
-
         private double _lastFollowTime = Time.NormalTime;
 
         List<Vector3> birdy = new List<Vector3>
@@ -86,7 +74,7 @@ namespace MultiboxHelper
 
         public override void Run(string pluginDir)
         {
-            PluginDir = pluginDir;
+            PluginDirectory = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\MultiboxHelper\\{Game.ClientInst}\\Config.json");
 
@@ -157,20 +145,10 @@ namespace MultiboxHelper
             Chat.WriteLine($"IPC Channel for MultiboxHelper - {_channelId}");
         }
 
-        //public static int GetRemainingNCU(Identity target)
-        //{
-        //    return RemainingNCU.ContainsKey(target) ? RemainingNCU[target] : 0;
-        //}
-
-        //public static Identity[] GetRegisteredCharacters()
-        //{
-        //    return RemainingNCU.Keys.ToArray();
-        //}
-
-        //public static bool IsCharacterRegistered(Identity target)
-        //{
-        //    return RemainingNCU.ContainsKey(target);
-        //}
+        public override void Teardown()
+        {
+            SettingsController.CleanUp();
+        }
 
         private void OnUpdate(object s, float deltaTime)
         {
@@ -244,6 +222,12 @@ namespace MultiboxHelper
                             Config.Save();
                         }
                     }
+                }
+
+                if (SettingsController.settingsView.FindChild("MultiboxHelpBox", out Button helpBox))
+                {
+                    helpBox.Tag = SettingsController.settingsView;
+                    helpBox.Clicked = HelpBox;
                 }
             }
 
@@ -423,6 +407,16 @@ namespace MultiboxHelper
                 }
             }
         }
+
+        private void HelpBox(object s, ButtonBase button)
+        {
+            Window helpWindow = Window.CreateFromXml("Help", PluginDirectory + "\\UI\\MultiboxHelpBox.xml",
+            windowSize: new Rect(0, 0, 455, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            helpWindow.Show(true);
+        }
+
 
         private bool IsActiveCharacter()
         {
@@ -873,11 +867,6 @@ namespace MultiboxHelper
         {
             NpcChatAnswerMessage message = (NpcChatAnswerMessage)msg;
             NpcDialog.SelectAnswer(message.Target, message.Answer);
-        }
-
-        public override void Teardown()
-        {
-            SettingsController.CleanUp();
         }
 
         private void DisbandCommand(string command, string[] param, ChatWindow chatWindow)

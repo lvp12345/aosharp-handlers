@@ -37,10 +37,6 @@
     <Reference Include="AOSharp.Core">
       <HintPath>..\..\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="SettingsCore, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Debug\SettingsCore.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -55,6 +51,7 @@
     <Compile Include="PerkProcessors.cs" />
     <Compile Include="PerkTypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettingsController.cs" />
     <Compile Include="TauntTools.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

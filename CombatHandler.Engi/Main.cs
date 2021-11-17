@@ -11,6 +11,7 @@ namespace CombatHandler.Engi
             try
             {
                 Chat.WriteLine("Engi Combat Handler Loaded!");
+                Chat.WriteLine("/handler for settings.");
                 AOSharp.Core.Combat.CombatHandler.Set(new EngiCombatHandler(pluginDir));
             }
             catch (Exception e)

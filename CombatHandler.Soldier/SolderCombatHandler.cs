@@ -92,7 +92,7 @@ namespace Desu
         {
             if (DynelManager.LocalPlayer.FightingTarget == null || fightingtarget == null) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 75) { return true; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
 
             return false;
         }

@@ -119,8 +119,6 @@ namespace MultiboxHelper
 
             SettingsController.RegisterSettingsWindow("Multibox Helper", pluginDir + "\\UI\\MultiboxSettingWindow.xml", settings);
 
-            Chat.RegisterCommand("mbhelp", HelpCommand);
-
             Chat.RegisterCommand("sync", SyncSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
@@ -141,8 +139,7 @@ namespace MultiboxHelper
             Team.TeamRequest = Team_TeamRequest;
 
             Chat.WriteLine("Multibox Helper Loaded!");
-            Chat.WriteLine("/mbhelp for a list of shortcut commands.");
-            Chat.WriteLine($"IPC Channel for MultiboxHelper - {_channelId}");
+            Chat.WriteLine("/helper for settings.");
         }
 
         public override void Teardown()

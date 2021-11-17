@@ -11,6 +11,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("Enforcer Combat Handler Loaded!");
+                Chat.WriteLine("/handler for settings.");
                 AOSharp.Core.Combat.CombatHandler.Set(new EnfCombatHandler(pluginDir));
             }
             catch (Exception e)

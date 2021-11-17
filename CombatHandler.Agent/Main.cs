@@ -11,6 +11,7 @@ namespace CombatHandler.Agent
             try
             {
                 Chat.WriteLine("Agent Combat Handler Loaded!");
+                Chat.WriteLine("/handler for settings.");
                 AOSharp.Core.Combat.CombatHandler.Set(new AgentCombatHandler(pluginDir));
             }
             catch(Exception e)

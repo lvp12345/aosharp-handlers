@@ -11,6 +11,7 @@ namespace Desu
             try
             {
                 Chat.WriteLine("Soldier Combat Handler Loaded!");
+                Chat.WriteLine("/handler for settings.");
                 AOSharp.Core.Combat.CombatHandler.Set(new SoldCombathandler(pluginDir));
             }
             catch (Exception e)

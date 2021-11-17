@@ -5,6 +5,7 @@ using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
+using MultiboxHelper;
 
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
@@ -579,7 +580,15 @@ namespace CombatHandler.Generic
 
         protected bool MeleeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
 
-        protected bool PistolBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        protected bool PistolBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+            {
+                return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+            }
+            else
+                return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
         #endregion
 
         #region Items
@@ -1115,7 +1124,7 @@ namespace CombatHandler.Generic
 
             if (Playfield.ModelIdentity.Instance == 152) { return false; }
 
-            if (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
+            if (fightingTarget.IsPlayer && !MultiboxHelper.SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
 
             if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
 
@@ -1174,7 +1183,7 @@ namespace CombatHandler.Generic
 
         protected bool HasNCU(Spell spell, SimpleChar target)
         {
-            return SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
+            return MultiboxHelper.SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
         }
 
         private void TeleportEnded(object sender, EventArgs e)

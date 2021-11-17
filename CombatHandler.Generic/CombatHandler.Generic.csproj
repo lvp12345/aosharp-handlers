@@ -54,5 +54,11 @@
     <Compile Include="SettingsController.cs" />
     <Compile Include="TauntTools.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MultiboxHelper\MultiboxHelper.csproj">
+      <Project>{5b5488b2-fec0-4c69-8933-98151c575220}</Project>
+      <Name>MultiboxHelper</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

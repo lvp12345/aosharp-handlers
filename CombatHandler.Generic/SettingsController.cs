@@ -19,24 +19,6 @@ namespace CombatHandler
         public static Window settingsWindow;
         public static View settingsView;
 
-        public static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
-
-
-        public static int GetRemainingNCU(Identity target)
-        {
-            return RemainingNCU.ContainsKey(target) ? RemainingNCU[target] : 0;
-        }
-
-        public static Identity[] GetRegisteredCharacters()
-        {
-            return RemainingNCU.Keys.ToArray();
-        }
-
-        public static bool IsCharacterRegistered(Identity target)
-        {
-            return RemainingNCU.ContainsKey(target);
-        }
-
         public static void RegisterCharacters(AOSharp.Core.Settings settings)
         {
             RegisterChatCommandIfNotRegistered();

@@ -222,10 +222,13 @@ namespace MultiboxHelper
                     }
                 }
 
-                if (SettingsController.settingsView.FindChild("MultiboxHelpBox", out Button helpBox))
+                if (SettingsController.settingsView != null)
                 {
-                    helpBox.Tag = SettingsController.settingsView;
-                    helpBox.Clicked = HelpBox;
+                    if (SettingsController.settingsView.FindChild("MultiboxHelpBox", out Button helpBox))
+                    {
+                        helpBox.Tag = SettingsController.settingsView;
+                        helpBox.Clicked = HelpBox;
+                    }
                 }
             }
 

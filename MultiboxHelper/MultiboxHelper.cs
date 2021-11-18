@@ -206,11 +206,11 @@ namespace MultiboxHelper
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput);
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
 
-                if (textinput != null && textinput.Text != String.Empty)
+                if (textinput1 != null && textinput1.Text != String.Empty)
                 {
-                    if (int.TryParse(textinput.Text, out int channelValue))
+                    if (int.TryParse(textinput1.Text, out int channelValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
                         {

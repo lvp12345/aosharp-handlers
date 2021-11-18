@@ -84,7 +84,9 @@ namespace MultiboxHelper
                             if (MultiboxHelperChannel != String.Empty)
                             {
                                 settingsWindow.FindView("ChannelBox", out TextInputView textinput);
-                                textinput.Text = MultiboxHelperChannel;
+
+                                if (textinput != null)
+                                    textinput.Text = MultiboxHelperChannel;
                             }
 
                             if (playersname != String.Empty)
@@ -94,13 +96,13 @@ namespace MultiboxHelper
                             }
                             if (identitiesname != String.Empty)
                             {
-                                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                                textinput2.Text = identitiesname;
+                                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
+                                textinput.Text = identitiesname;
                             }
                             if (assistersname != String.Empty)
                             {
-                                settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput3);
-                                textinput3.Text = assistersname;
+                                settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
+                                textinput.Text = assistersname;
                             }
                         }
                     }

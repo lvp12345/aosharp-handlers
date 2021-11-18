@@ -92,17 +92,20 @@ namespace MultiboxHelper
                             if (playersname != String.Empty)
                             {
                                 settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-                                textinput.Text = playersname;
+                                if (textinput != null)
+                                    textinput.Text = playersname;
                             }
                             if (identitiesname != String.Empty)
                             {
                                 settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
-                                textinput.Text = identitiesname;
+                                if (textinput != null)
+                                    textinput.Text = identitiesname;
                             }
                             if (assistersname != String.Empty)
                             {
                                 settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
-                                textinput.Text = assistersname;
+                                if (textinput != null)
+                                    textinput.Text = assistersname;
                             }
                         }
                     }

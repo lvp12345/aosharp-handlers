@@ -540,8 +540,8 @@ namespace CombatHandler.Generic
                     .Where(c => GetWieldedWeapons(c).HasFlag(supportedWeaponType))
                     .FirstOrDefault();
 
-                if (spell.Nanoline == NanoLine.FixerSuppressorBuff &&
-                teamMemberWithoutBuff.Buffs.Contains(NanoLine.FixerSuppressorBuff)) { return false; }
+                if (teamMemberWithoutBuff.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
+                    (spell.Nanoline == NanoLine.FixerSuppressorBuff || spell.Nanoline == NanoLine.AssaultRifleBuffs)) { return false; }
 
                 if (teamMemberWithoutBuff != null)
                 {
@@ -579,6 +579,11 @@ namespace CombatHandler.Generic
         protected bool RangedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
 
         protected bool MeleeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
+
+        protected bool PistolSelfBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+                return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
 
         protected bool PistolBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

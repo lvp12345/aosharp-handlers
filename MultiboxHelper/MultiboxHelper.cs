@@ -26,6 +26,7 @@ namespace MultiboxHelper
         public static Config Config { get; private set; }
 
         private double _ncuUpdateTime = 0;
+        private double _updateTick = 0;
 
         private static Identity useDynel;
         private static Identity useOnDynel;
@@ -159,6 +160,26 @@ namespace MultiboxHelper
                 OnRemainingNCUMessage(0, ncuMessage);
 
                 _ncuUpdateTime = Time.NormalTime;
+            }
+
+            if (Time.NormalTime > _updateTick + 8f)
+            {
+                List<SimpleChar> PlayersInRange = DynelManager.Characters
+                    .Where(x => x.IsPlayer)
+                    .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
+                    .ToList();
+
+                foreach (SimpleChar player in PlayersInRange)
+                {
+                    Network.Send(new CharacterActionMessage()
+                    {
+                        Action = CharacterActionType.InfoRequest,
+                        Target = player.Identity
+
+                    });
+                }
+
+                _updateTick = Time.NormalTime;
             }
 
             if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281109))

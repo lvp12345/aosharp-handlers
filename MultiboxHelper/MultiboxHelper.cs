@@ -353,7 +353,7 @@ namespace MultiboxHelper
                     }
                 }
 
-                Dynel identity = DynelManager.AllDynels.Where(x => x.Name.Contains(SettingsController.identitiesname)).FirstOrDefault();
+                Dynel identity = DynelManager.AllDynels.Where(x => x.Name == SettingsController.identitiesname).FirstOrDefault();
 
                 if (identity != null)
                 {
@@ -408,7 +408,7 @@ namespace MultiboxHelper
 
                 if (SettingsController.playersname != String.Empty)
                 {
-                    Dynel npc = DynelManager.AllDynels.Where(x => x.Name.Contains(SettingsController.playersname)).FirstOrDefault();
+                    Dynel npc = DynelManager.AllDynels.Where(x => x.Name == SettingsController.playersname).FirstOrDefault();
 
                     if (npc != null)
                     {

@@ -231,6 +231,7 @@ namespace MultiboxHelper
                 SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput2);
                 SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput3);
                 SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput4);
+                SettingsController.settingsWindow.FindView("NavFollowDistanceBox", out TextInputView textinput5);
 
                 if (textinput1 != null && textinput1.Text != String.Empty)
                 {
@@ -276,6 +277,19 @@ namespace MultiboxHelper
                     }
                 }
 
+                if (textinput5 != null && textinput5.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput5.Text, out int rangeValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
+                            SettingsController.MultiboxHelperNavFollowDistance = rangeValue;
+                            Config.Save();
+                        }
+                    }
+                }
+
                 if (SettingsController.settingsView != null)
                 {
                     if (SettingsController.settingsView.FindChild("MultiboxHelpBox", out Button helpBox))
@@ -304,6 +318,11 @@ namespace MultiboxHelper
             if (SettingsController.MultiboxHelperNavFollowPlayer == String.Empty)
             {
                 SettingsController.MultiboxHelperNavFollowPlayer = Config.NavFollowPlayer;
+            }
+
+            if (SettingsController.MultiboxHelperNavFollowDistance != Config.NavFollowDistance)
+            {
+                SettingsController.MultiboxHelperNavFollowDistance = Config.NavFollowDistance;
             }
 
             if (settings["AssistPlayer"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
@@ -363,10 +382,10 @@ namespace MultiboxHelper
 
                 if (identity != null)
                 {
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= 15f)
+                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= Config.CharSettings[Game.ClientInst].NavFollowDistance)
                         MovementController.Instance.Halt();
 
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > 15f)
+                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > Config.CharSettings[Game.ClientInst].NavFollowDistance)
                         MovementController.Instance.SetDestination(identity.Position);
 
                     IPCChannel.Broadcast(new NavFollowMessage()

@@ -25,6 +25,8 @@ namespace MultiboxHelper
 
         public static string MultiboxHelperChannel = String.Empty;
 
+        public static int MultiboxHelperNavFollowDistance = 0;
+
         public static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
 
@@ -89,21 +91,34 @@ namespace MultiboxHelper
                                     textinput.Text = MultiboxHelperChannel;
                             }
 
+                            if (MultiboxHelperNavFollowDistance.ToString() != String.Empty)
+                            {
+                                settingsWindow.FindView("NavFollowDistanceBox", out TextInputView textinput);
+
+                                if (textinput != null)
+                                    textinput.Text = MultiboxHelperNavFollowDistance.ToString();
+                            }
+
                             if (MultiboxHelperAssistPlayer != String.Empty)
                             {
                                 settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
+
                                 if (textinput != null)
                                     textinput.Text = MultiboxHelperAssistPlayer;
                             }
+
                             if (MultiboxHelperFollowPlayer != String.Empty)
                             {
                                 settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+
                                 if (textinput != null)
                                     textinput.Text = MultiboxHelperFollowPlayer;
                             }
+
                             if (MultiboxHelperNavFollowPlayer != String.Empty)
                             {
                                 settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
+
                                 if (textinput != null)
                                     textinput.Text = MultiboxHelperNavFollowPlayer;
                             }

@@ -23,6 +23,8 @@ namespace MultiboxHelper
 
         public string NavFollowPlayer => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NavFollowPlayer : String.Empty;
 
+        public int NavFollowDistance => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NavFollowDistance : 15;
+
         public static Config Load(string path)
         {
             Config config;
@@ -75,8 +77,7 @@ namespace MultiboxHelper
         public string AssistPlayer { get; set; } = String.Empty;
         public string FollowPlayer { get; set; } = String.Empty;
         public string NavFollowPlayer { get; set; } = String.Empty;
-
-
+        public int NavFollowDistance { get; set; } = 15;
     }
 }
 

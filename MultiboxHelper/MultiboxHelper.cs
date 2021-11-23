@@ -228,6 +228,9 @@ namespace MultiboxHelper
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
+                SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput2);
+                SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput3);
+                SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput4);
 
                 if (textinput1 != null && textinput1.Text != String.Empty)
                 {
@@ -240,6 +243,36 @@ namespace MultiboxHelper
                             SettingsController.MultiboxHelperChannel = channelValue.ToString();
                             Config.Save();
                         }
+                    }
+                }
+
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput2.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput2.Text;
+                        SettingsController.MultiboxHelperAssistPlayer = textinput2.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput3 != null && textinput3.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput3.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput3.Text;
+                        SettingsController.MultiboxHelperFollowPlayer = textinput3.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput4 != null && textinput4.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput4.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput4.Text;
+                        SettingsController.MultiboxHelperNavFollowPlayer = textinput4.Text;
+                        Config.Save();
                     }
                 }
 
@@ -258,6 +291,21 @@ namespace MultiboxHelper
                 SettingsController.MultiboxHelperChannel = Config.IPCChannel.ToString();
             }
 
+            if (SettingsController.MultiboxHelperAssistPlayer == String.Empty)
+            {
+                SettingsController.MultiboxHelperAssistPlayer = Config.AssistPlayer;
+            }
+
+            if (SettingsController.MultiboxHelperFollowPlayer == String.Empty)
+            {
+                SettingsController.MultiboxHelperFollowPlayer = Config.FollowPlayer;
+            }
+
+            if (SettingsController.MultiboxHelperNavFollowPlayer == String.Empty)
+            {
+                SettingsController.MultiboxHelperNavFollowPlayer = Config.NavFollowPlayer;
+            }
+
             if (settings["AssistPlayer"].AsBool() && Time.NormalTime - _lastFollowTime > 1)
             {
                 if (settings["SyncAttack"].AsBool())
@@ -267,31 +315,11 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one form of sync attack active at once.");
                 }
 
-                if (SettingsController.assistersname == String.Empty)
-                {
-                    Window textboxwindow = SettingsController.settingsWindow;
-
-                    textboxwindow.FindView("AssistNamedCharacter", out TextInputView textinput);
-
-                    if (textinput.Text == String.Empty)
-                    {
-                        Chat.WriteLine("You must enter a characters name.");
-                        settings["AssistPlayer"] = false;
-                        return;
-                    }
-
-                    if (textinput.Text != String.Empty)
-                    {
-                        SettingsController.assistersname = textinput.Text;
-                        return;
-                    }
-                }
-
                 SimpleChar identity = DynelManager.Characters
-                    .Where(c => SettingsController.assistersname != String.Empty)
+                    .Where(c => SettingsController.MultiboxHelperAssistPlayer != String.Empty)
                     .Where(c => c.IsValid)
                     .Where(c => c.IsAlive)
-                    .Where(c => c.Name.Contains(SettingsController.assistersname))
+                    .Where(c => c.Name.Contains(SettingsController.MultiboxHelperAssistPlayer))
                     .FirstOrDefault();
 
                 if (identity != null && identity.FightingTarget == null &&
@@ -317,8 +345,6 @@ namespace MultiboxHelper
                 }
                 else if (identity == null)
                 {
-                    Chat.WriteLine($"Cannot find {SettingsController.assistersname}. Make sure to type captial first letter.");
-                    settings["AssistPlayer"] = false;
                     return;
                 }
             }
@@ -333,27 +359,7 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
 
-                if (SettingsController.identitiesname == String.Empty)
-                {
-                    Window textboxwindow = SettingsController.settingsWindow;
-
-                    textboxwindow.FindView("FollowNamedIdentity", out TextInputView textinput);
-
-                    if (textinput.Text == String.Empty)
-                    {
-                        Chat.WriteLine("You must enter a characters name.");
-                        settings["NavFollow"] = false;
-                        return;
-                    }
-
-                    if (textinput.Text != String.Empty)
-                    {
-                        SettingsController.identitiesname = textinput.Text;
-                        return;
-                    }
-                }
-
-                Dynel identity = DynelManager.AllDynels.Where(x => x.Name == SettingsController.identitiesname).FirstOrDefault();
+                Dynel identity = DynelManager.AllDynels.Where(x => x.Name == SettingsController.MultiboxHelperNavFollowPlayer).FirstOrDefault();
 
                 if (identity != null)
                 {
@@ -371,8 +377,6 @@ namespace MultiboxHelper
                 }
                 else
                 {
-                    Chat.WriteLine($"Cannot find {SettingsController.identitiesname}. Make sure to type captial first letter.");
-                    settings["NavFollow"] = false;
                     return;
                 }
             }
@@ -386,29 +390,9 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
 
-                if (SettingsController.playersname == String.Empty)
+                if (SettingsController.MultiboxHelperFollowPlayer != String.Empty)
                 {
-                    Window textboxwindow = SettingsController.settingsWindow;
-
-                    textboxwindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-
-                    if (textinput.Text == String.Empty)
-                    {
-                        Chat.WriteLine("You must enter a characters name.");
-                        settings["OSFollow"] = false;
-                        return;
-                    }
-
-                    if (textinput.Text != String.Empty)
-                    {
-                        SettingsController.playersname = textinput.Text;
-                        return;
-                    }
-                }
-
-                if (SettingsController.playersname != String.Empty)
-                {
-                    Dynel npc = DynelManager.AllDynels.Where(x => x.Name == SettingsController.playersname).FirstOrDefault();
+                    Dynel npc = DynelManager.AllDynels.Where(x => x.Name == SettingsController.MultiboxHelperFollowPlayer).FirstOrDefault();
 
                     if (npc != null)
                     {
@@ -422,8 +406,6 @@ namespace MultiboxHelper
                     }
                     else
                     {
-                        Chat.WriteLine($"Cannot find {SettingsController.playersname}. Make sure to type captial first letter.");
-                        settings["OSFollow"] = false;
                         return;
                     }
                 }

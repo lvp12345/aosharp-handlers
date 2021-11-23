@@ -19,9 +19,9 @@ namespace MultiboxHelper
         public static Window settingsWindow;
         public static View settingsView;
 
-        public static string playersname = String.Empty;
-        public static string identitiesname = String.Empty;
-        public static string assistersname = String.Empty;
+        public static string MultiboxHelperAssistPlayer = String.Empty;
+        public static string MultiboxHelperFollowPlayer = String.Empty;
+        public static string MultiboxHelperNavFollowPlayer = String.Empty;
 
         public static string MultiboxHelperChannel = String.Empty;
 
@@ -89,23 +89,23 @@ namespace MultiboxHelper
                                     textinput.Text = MultiboxHelperChannel;
                             }
 
-                            if (playersname != String.Empty)
-                            {
-                                settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-                                if (textinput != null)
-                                    textinput.Text = playersname;
-                            }
-                            if (identitiesname != String.Empty)
-                            {
-                                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
-                                if (textinput != null)
-                                    textinput.Text = identitiesname;
-                            }
-                            if (assistersname != String.Empty)
+                            if (MultiboxHelperAssistPlayer != String.Empty)
                             {
                                 settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
                                 if (textinput != null)
-                                    textinput.Text = assistersname;
+                                    textinput.Text = MultiboxHelperAssistPlayer;
+                            }
+                            if (MultiboxHelperFollowPlayer != String.Empty)
+                            {
+                                settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+                                if (textinput != null)
+                                    textinput.Text = MultiboxHelperFollowPlayer;
+                            }
+                            if (MultiboxHelperNavFollowPlayer != String.Empty)
+                            {
+                                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
+                                if (textinput != null)
+                                    textinput.Text = MultiboxHelperNavFollowPlayer;
                             }
                         }
                     }

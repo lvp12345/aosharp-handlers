@@ -16,13 +16,13 @@ namespace MultiboxHelper
 
         [JsonIgnore]
         public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
-
+        [JsonIgnore]
         public string AssistPlayer => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AssistPlayer : String.Empty;
-
+        [JsonIgnore]
         public string FollowPlayer => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].FollowPlayer : String.Empty;
-
+        [JsonIgnore]
         public string NavFollowPlayer => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NavFollowPlayer : String.Empty;
-
+        [JsonIgnore]
         public int NavFollowDistance => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NavFollowDistance : 15;
 
         public static Config Load(string path)

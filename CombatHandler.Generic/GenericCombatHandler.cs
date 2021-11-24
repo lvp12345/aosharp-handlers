@@ -540,11 +540,11 @@ namespace CombatHandler.Generic
                     .Where(c => GetWieldedWeapons(c).HasFlag(supportedWeaponType))
                     .FirstOrDefault();
 
-                if (teamMemberWithoutBuff.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
-                    (spell.Nanoline == NanoLine.FixerSuppressorBuff || spell.Nanoline == NanoLine.AssaultRifleBuffs)) { return false; }
-
                 if (teamMemberWithoutBuff != null)
                 {
+                    if (teamMemberWithoutBuff.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
+                        (spell.Nanoline == NanoLine.FixerSuppressorBuff || spell.Nanoline == NanoLine.AssaultRifleBuffs)) { return false; }
+
                     actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
                     return true;

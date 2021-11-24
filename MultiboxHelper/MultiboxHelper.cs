@@ -336,8 +336,8 @@ namespace MultiboxHelper
 
                 SimpleChar identity = DynelManager.Characters
                     .Where(c => SettingsController.MultiboxHelperAssistPlayer != String.Empty)
-                    .Where(c => c.IsValid)
                     .Where(c => c.IsAlive)
+                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
                     .Where(c => c.Name.Contains(SettingsController.MultiboxHelperAssistPlayer))
                     .FirstOrDefault();
 
@@ -378,7 +378,11 @@ namespace MultiboxHelper
                     Chat.WriteLine($"Can only have one follow active at once.");
                 }
 
-                Dynel identity = DynelManager.AllDynels.Where(x => x.Name == SettingsController.MultiboxHelperNavFollowPlayer).FirstOrDefault();
+                Dynel identity = DynelManager.AllDynels
+                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
+                    .Where(x => SettingsController.MultiboxHelperNavFollowPlayer != String.Empty)
+                    .Where(x => x.Name == SettingsController.MultiboxHelperNavFollowPlayer)
+                    .FirstOrDefault();
 
                 if (identity != null)
                 {
@@ -411,7 +415,11 @@ namespace MultiboxHelper
 
                 if (SettingsController.MultiboxHelperFollowPlayer != String.Empty)
                 {
-                    Dynel npc = DynelManager.AllDynels.Where(x => x.Name == SettingsController.MultiboxHelperFollowPlayer).FirstOrDefault();
+                    Dynel npc = DynelManager.AllDynels
+                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
+                    .Where(x => SettingsController.MultiboxHelperFollowPlayer != String.Empty)
+                    .Where(x => x.Name == SettingsController.MultiboxHelperFollowPlayer)
+                    .FirstOrDefault();
 
                     if (npc != null)
                     {

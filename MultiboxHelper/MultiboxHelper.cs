@@ -415,8 +415,6 @@ namespace MultiboxHelper
 
                 if (SettingsController.MultiboxHelperFollowPlayer != String.Empty)
                 {
-
-                    //new
                     Dynel npc = DynelManager.AllDynels
                         .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
                         .Where(x => SettingsController.MultiboxHelperFollowPlayer != String.Empty)

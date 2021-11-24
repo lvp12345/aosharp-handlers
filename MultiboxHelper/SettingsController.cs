@@ -30,7 +30,7 @@ namespace MultiboxHelper
         public static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
 
 
-        public static int GetRemainingNCU(Identity target)
+        public static int GetRemainingNCU(Identity target) //meeee
         {
             return RemainingNCU.ContainsKey(target) ? RemainingNCU[target] : 0;
         }

@@ -162,6 +162,7 @@ namespace MultiboxHelper
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+
             if (Time.NormalTime > _updateTick + 8f)
             {
                 List<SimpleChar> PlayersInRange = DynelManager.Characters

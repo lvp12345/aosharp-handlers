@@ -339,7 +339,7 @@ namespace MultiboxHelper
                     .Where(c => SettingsController.MultiboxHelperAssistPlayer != String.Empty)
                     .Where(c => c.IsAlive)
                     .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(c => c.Name.Contains(SettingsController.MultiboxHelperAssistPlayer))
+                    .Where(c => c.Name == SettingsController.MultiboxHelperAssistPlayer)
                     .FirstOrDefault();
 
                 if (identity != null && identity.FightingTarget == null &&

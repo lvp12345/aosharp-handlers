@@ -122,6 +122,8 @@ namespace Desu
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("RansackDrain") || fightingTarget == null) { return false; }
+
             if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff) && fightingTarget != null)
             {
                 actionTarget.ShouldSetTarget = true;
@@ -133,6 +135,8 @@ namespace Desu
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("DepriveDrain") || fightingTarget == null) { return false; }
+
             if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff) && fightingTarget != null)
             {
                 actionTarget.ShouldSetTarget = true;
@@ -144,6 +148,8 @@ namespace Desu
 
         private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("DamageDrain") || fightingTarget == null) { return false; }
+
             if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.DamageBuffs_LineA, out Buff buff) && fightingTarget != null)
             {
                 actionTarget.ShouldSetTarget = true;
@@ -155,6 +161,8 @@ namespace Desu
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("AAODrain") || fightingTarget == null) { return false; }
+
             if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AAOBuffs, out Buff buff) && fightingTarget != null)
             {
                 actionTarget.ShouldSetTarget = true;
@@ -166,6 +174,8 @@ namespace Desu
 
         private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("AADDrain") || fightingTarget == null) { return false; }
+
             if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AADBuffs, out Buff buff) && fightingTarget != null)
             {
                 actionTarget.ShouldSetTarget = true;

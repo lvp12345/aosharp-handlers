@@ -737,15 +737,17 @@ namespace MultiboxHelper
 
         private void ListenerSit()
         {
-            Spell spell = Spell.List.FirstOrDefault();
+            Spell spell = Spell.List.FirstOrDefault(x => x.IsReady);
 
-            if (spell != null && spell.IsReady && settings["AutoSit"].AsBool())
+            if (spell != null && settings["AutoSit"].AsBool())
             {
                 if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 
-                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning 
+                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null 
+                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning 
                     && !DynelManager.LocalPlayer.Buffs.Contains(280488))
                 {
-                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && DynelManager.LocalPlayer.MovementState != MovementState.Sit
+                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
+                        && DynelManager.LocalPlayer.MovementState != MovementState.Sit
                         && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
                     {
                         Task.Factory.StartNew(

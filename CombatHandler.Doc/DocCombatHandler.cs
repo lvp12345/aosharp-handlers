@@ -83,6 +83,8 @@ namespace Desu
         {
             if (!IsSettingEnabled("CH")) { return false; }
 
+            if (!CanCast(spell)) { return false; }
+
             return FindMemberWithHealthBelow(50, ref actionTarget);
         }
 

@@ -90,6 +90,8 @@ namespace CombatHandler.Agent
         {
             if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
 
+            if (!CanCast(spell)) { return false; }
+
             if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
             {
                 return FindPlayerWithHealthBelow(85, ref actionTarget);

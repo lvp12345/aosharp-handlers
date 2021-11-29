@@ -58,7 +58,7 @@ namespace Desu
                 return FindPlayerWithHealthBelow(85, ref actionTarget);
             }
 
-            return FindMemberWithHealthBelow(85, ref actionTarget); ;
+            return FindMemberWithHealthBelow(85, ref actionTarget);
         }
 
         //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

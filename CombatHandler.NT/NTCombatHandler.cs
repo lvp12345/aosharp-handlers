@@ -13,10 +13,15 @@ namespace Desu
         public NTCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("AIDot", true);
+
             settings.AddVariable("AoeBlind", false);
+
             settings.AddVariable("AOE", false);
-            settings.AddVariable("OSNanoHoT", false);
-            settings.AddVariable("OSCost", false);
+            settings.AddVariable("VE", false);
+
+            settings.AddVariable("NanoHoT", false);
+            settings.AddVariable("Cost", false);
+
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
 
             //Buffs
@@ -31,8 +36,9 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), GenericBuff);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHoT);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
 
             if (Spell.Find(RelevantNanos.SuperiorFleetingImmunity, out Spell immunity))
             {
@@ -41,14 +47,13 @@ namespace Desu
 
             //Team buffs
             RegisterSpellProcessor(RelevantNanos.AbsortAcTargetBuffs, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), CheckNotProfsBeforeCast);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), CheckNotProfsBeforeCast);
 
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
             RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
             RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
+            RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
 
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
@@ -69,6 +74,39 @@ namespace Desu
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
 
+        private bool VolcanicEruption(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("VE"))
+            {
+                if (fightingTarget == null || !CanCast(spell)) { return false; }
+
+                actionTarget.ShouldSetTarget = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool NanoHoT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("NanoHoT"))
+            {
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Cost"))
+            {
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             actionTarget.ShouldSetTarget = false;
@@ -83,17 +121,13 @@ namespace Desu
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
-
-            if (IsSettingEnabled("AOE")) { return false; }
+            if (IsSettingEnabled("AOE") || fightingTarget == null) { return false; }
 
             return true;
         }
         private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
-
-            if (!IsSettingEnabled("AOE")) { return false; }
+            if (!IsSettingEnabled("AOE") || fightingTarget == null) { return false; }
 
             return true;
         }
@@ -102,7 +136,7 @@ namespace Desu
         {
             if (fightingTarget == null) { return false; }
 
-            if (DynelManager.LocalPlayer.MissingNano < 20000 && DynelManager.LocalPlayer.NanoPercent > 5) { return false; }
+            if (DynelManager.LocalPlayer.NanoPercent > 25) { return false; }
 
             actionTarget.ShouldSetTarget = false;
             return true;
@@ -110,9 +144,7 @@ namespace Desu
 
         private bool AiDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AIDot")) { return false; }
-
-            if (fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("AIDot") || fightingTarget == null) { return false; }
 
             if (fightingTarget.Health < 80000) { return false; }
 
@@ -127,6 +159,7 @@ namespace Desu
             public const int IzgimmersWealth = 275024;
             public const int IzgimmersUltimatum = 218168;
             public const int Garuk = 275692;
+            public const int VolcanicEruption = 28638;
             public static readonly int[] AOENukes = { 266293, 28638,
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };
@@ -146,8 +179,6 @@ namespace Desu
                 45229, 45907, 45139, 45887, 45231, 45882, 28627, 45936, 45194, 28639, 45243, 45931, 28630, 45137, 28607, 45257, 45880, 
                 45256, 45249, 45888, 45255, 45881, 42543, 45927, 45902, 42540, 42541, 45899, 45905, 28611, 45897, 28601, 42542, 28608, 
                 45918, 42539, 45892, 45930, 45879, 45896, 28612 };
-
-            //Buffs
             public static readonly int[] NanobotShelter = { 273388, 263265 };
             public static readonly int CompositeAttribute = 223372;
             public static readonly int CompositeNano = 223380;

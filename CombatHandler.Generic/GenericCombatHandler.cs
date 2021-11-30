@@ -1014,7 +1014,7 @@ namespace CombatHandler.Generic
 
         protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Profession == Profession.NanoTechnician && !IsSettingEnabled("OSCost") && !IsSettingEnabled("OSNanoHoT")) { return false; }
+            if (DynelManager.LocalPlayer.Profession == Profession.NanoTechnician && !IsSettingEnabled("Cost") && !IsSettingEnabled("NanoHoT")) { return false; }
 
             if (!CanCast(spell)) { return false; }
 

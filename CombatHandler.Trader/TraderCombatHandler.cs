@@ -172,10 +172,13 @@ namespace Desu
         {
             if (!IsSettingEnabled("AAODrain") || fightingTarget == null) { return false; }
 
-            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AAOBuffs, out Buff buff) && fightingTarget != null)
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AAOBuffs, out Buff buff))
             {
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                if (fightingTarget.Buffs.Contains(NanoLine.TraderNanoTheft1))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return ToggledDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
@@ -185,10 +188,13 @@ namespace Desu
         {
             if (!IsSettingEnabled("AADDrain") || fightingTarget == null) { return false; }
 
-            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AADBuffs, out Buff buff) && fightingTarget != null)
+            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AADBuffs, out Buff buff))
             {
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                if (fightingTarget.Buffs.Contains(NanoLine.TraderNanoTheft2))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return ToggledDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
@@ -223,10 +229,15 @@ namespace Desu
 
         private bool TraderACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff) && fightingTarget != null)
+            if (!IsSettingEnabled("AADDrain") || fightingTarget == null) { return false; }
+
+            if (!DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
             {
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                if (fightingTarget.Buffs.Contains(spell.Nanoline))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return ToggledDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);

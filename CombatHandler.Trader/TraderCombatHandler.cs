@@ -229,7 +229,7 @@ namespace Desu
 
         private bool TraderACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AADDrain") || fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("ACDrains") || fightingTarget == null) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
             {

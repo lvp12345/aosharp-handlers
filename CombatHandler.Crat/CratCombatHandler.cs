@@ -85,7 +85,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, BuffNanoResistAura);
 
             //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), CheckNotProfsBeforeCast);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
             RegisterSpellProcessor(RelevantNanos.PistolBuffs, PistolBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), TeamBuff);
 
@@ -143,6 +143,16 @@ namespace Desu
 
 
         #region Buffs
+
+        private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+            {
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
 
         public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

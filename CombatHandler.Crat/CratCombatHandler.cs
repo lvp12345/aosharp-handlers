@@ -45,11 +45,11 @@ namespace Desu
 
             settings.AddVariable("Nukes", false);
             settings.AddVariable("AoeRoot", false);
-            settings.AddVariable("Calm12Man", false);
 
             settings.AddVariable("AoECalm", false);
             settings.AddVariable("SLCalm", false);
             settings.AddVariable("RKCalm", false);
+            settings.AddVariable("Calm12Man", false);
 
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
@@ -98,6 +98,7 @@ namespace Desu
             {
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
             }
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetTargetBuff);

@@ -47,6 +47,10 @@ namespace Desu
             settings.AddVariable("AoeRoot", false);
             settings.AddVariable("Calm12Man", false);
 
+            settings.AddVariable("AoECalm", false);
+            settings.AddVariable("SLCalm", false);
+            settings.AddVariable("RKCalm", false);
+
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
             //LE Procs
@@ -59,6 +63,10 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, LEInitTargetDebuff);
             RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, LEInitTargetDebuff);
             RegisterSpellProcessor(RelevantNanos.AoeRoots, AoeRoot, CombatActionPriority.High);
+
+            RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalmDebuff, CombatActionPriority.Low);
+            RegisterSpellProcessor(RelevantNanos.AoECalms, AoECalmDebuff, CombatActionPriority.Low);
+            RegisterSpellProcessor(RelevantNanos.RkCalms, RKCalmDebuff, CombatActionPriority.Low);
 
             //Debuff Aura
             RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, DebuffNanoDrainAura);
@@ -360,6 +368,72 @@ namespace Desu
             if (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000) { return false; }
 
             return true;
+        }
+
+        private bool RKCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell)) { return false; }
+
+            if (!IsSettingEnabled("RKCalm")) { return false; }
+
+            SimpleChar target = DynelManager.NPCs
+                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => c.IsInLineOfSight)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget = (target, true);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool SLCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell)) { return false; }
+
+            if (!IsSettingEnabled("SLCalm")) { return false; }
+
+            SimpleChar target = DynelManager.NPCs
+                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => c.IsInLineOfSight)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget = (target, true);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool AoECalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell)) { return false; }
+
+            if (!IsSettingEnabled("AoECalm")) { return false; }
+
+            SimpleChar target = DynelManager.NPCs
+                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => c.IsInLineOfSight)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                .Where(c => !c.Buffs.Contains(NanoLine.AOEMezz))
+                .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget = (target, true);
+                return true;
+            }
+
+            return false;
         }
 
         private bool MalaiseTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -686,6 +760,12 @@ namespace Desu
             public static readonly int[] NanoResDebuffAuras = { 157527, 157526, 157525, 157535 };
             public static readonly int[] GeneralRadACDebuff = { 302143, 302142 };
             public static readonly int[] GeneralProjACDebuff = { 302150, 302152 };
+
+            public static readonly int[] ShadowlandsCalms = { 224143, 224141, 224139, 224149, 224147, 224145,
+            224137, 224135, 224133, 224131, 219020 };
+            public static readonly int[] RkCalms = { 155577, 100428, 100429, 100430, 100431, 100432,
+            30093, 30056, 30065 };
+            public static readonly int[] AoECalms = { 100422, 100424, 100426 };
 
             public static Dictionary<int, int> PetNanoToBuff = new Dictionary<int, int>
             {

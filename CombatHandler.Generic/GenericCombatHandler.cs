@@ -26,7 +26,7 @@ namespace CombatHandler.Generic
 
         protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
         {
-                    "Awakened Xan",
+                    "Unicorn Commander Labbe",
                     "Altar of Torture",
                     "Altar of Purification",
                     "Calan-Cur",

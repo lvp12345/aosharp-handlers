@@ -1164,6 +1164,8 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
 
+            if (DynelManager.LocalPlayer.Buffs.Contains(spell.Nanoline)) { return false; }
+
             return true;
         }
 

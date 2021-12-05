@@ -112,7 +112,9 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.BlessedWithThunderLow, RelevantItems.BlessedWithThunderHigh, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
 
-            RegisterItemProcessor(RelevantItems.HealthAndNanoStimLow, RelevantItems.HealthAndNanoStimHigh, HealthAndNanoStim, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, HealthAndNanoStim, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.HealthAndNanoStim200, RelevantItems.HealthAndNanoStim400, HealthAndNanoStim, CombatActionPriority.High);
+
             RegisterItemProcessor(RelevantItems.RezCan, RelevantItems.RezCan, UseRezCan);
             RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
 
@@ -1255,8 +1257,9 @@ namespace CombatHandler.Generic
                 case RelevantItems.BlessedWithThunderLow:
                 case RelevantItems.BlessedWithThunderHigh:
                     return Stat.MartialArts;
-                case RelevantItems.HealthAndNanoStimLow:
-                case RelevantItems.HealthAndNanoStimHigh:
+                case RelevantItems.HealthAndNanoStim1:
+                case RelevantItems.HealthAndNanoStim200:
+                case RelevantItems.HealthAndNanoStim400:
                     return Stat.FirstAid;
                 case RelevantItems.FlurryOfBlowsLow:
                 case RelevantItems.FlurryOfBlowsHigh:
@@ -1320,8 +1323,9 @@ namespace CombatHandler.Generic
             public const int FreeStim100 = 204105;
             public const int FreeStim200 = 204106;
             public const int FreeStim300 = 204107;
-            public const int HealthAndNanoStimLow = 291043;
-            public const int HealthAndNanoStimHigh = 291045;
+            public const int HealthAndNanoStim1 = 291043;
+            public const int HealthAndNanoStim200 = 291044;
+            public const int HealthAndNanoStim400 = 291045;
             public const int AmmoBoxEnergy = 303138;
             public const int AmmoBoxShotgun = 303141;
             public const int AmmoBoxBullets = 303137;

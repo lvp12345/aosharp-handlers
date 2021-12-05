@@ -116,6 +116,8 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.RezCan, RelevantItems.RezCan, UseRezCan);
             RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
 
+
+
             RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit1, RelevantItems.SitKit100, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
@@ -1306,8 +1308,6 @@ namespace CombatHandler.Generic
             public const int BlessedWithThunderLow = 70612;
             public const int BlessedWithThunderHigh = 204327;
             public const int GnuffsEternalRiftCrystal = 303179;
-            public const int HealthAndNanoStimLow = 291043;
-            public const int HealthAndNanoStimHigh = 291044;
             public const int RezCan = 301070;
             public const int ExperienceStim = 288769;
             public const int PremSitKit = 297274;
@@ -1320,6 +1320,8 @@ namespace CombatHandler.Generic
             public const int FreeStim100 = 204105;
             public const int FreeStim200 = 204106;
             public const int FreeStim300 = 204107;
+            public const int HealthAndNanoStimLow = 291043;
+            public const int HealthAndNanoStimHigh = 291045;
             public const int AmmoBoxEnergy = 303138;
             public const int AmmoBoxShotgun = 303141;
             public const int AmmoBoxBullets = 303137;

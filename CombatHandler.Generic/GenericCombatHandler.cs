@@ -124,7 +124,6 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.FreeStim1, RelevantItems.FreeStim50, UseFreeStim);
             RegisterItemProcessor(RelevantItems.FreeStim50, RelevantItems.FreeStim100, UseFreeStim);
             RegisterItemProcessor(RelevantItems.FreeStim100, RelevantItems.FreeStim200, UseFreeStim);
-            RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim200, UseFreeStim);
             RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim300, UseFreeStim);
 
 

@@ -88,7 +88,11 @@ namespace Desu
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
+            if (IsSettingEnabled("RKRunspeed") && 
+                DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SL_RUN_BUFFS))
+            {
+                CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
+            }
 
             return ToggledBuff("RKRunspeed", spell, fightingTarget, ref actionTarget);
         }
@@ -97,7 +101,11 @@ namespace Desu
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
+            if (IsSettingEnabled("SLRunspeed") && 
+                DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
+            {
+                CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
+            }
 
             return ToggledBuff("SLRunspeed", spell, fightingTarget, ref actionTarget);
         }
@@ -138,8 +146,6 @@ namespace Desu
                 Chat.WriteLine("Can only activate one.");
             }
 
-            CancelBuffs(IsSettingEnabled("RKRunspeed") ? RelevantNanos.RK_RUN_BUFFS : RelevantNanos.SL_RUN_BUFFS);
-            CancelBuffs(IsSettingEnabled("SLRunspeed") ? RelevantNanos.SL_RUN_BUFFS : RelevantNanos.RK_RUN_BUFFS);
             EquipBackArmor();
         }
 

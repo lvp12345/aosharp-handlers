@@ -71,6 +71,7 @@ namespace Desu
 
             //Pet Buffs
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamageBuff);
+            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(RelevantNanos.ChantBuffs, ChantBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealingConstructEmpowerment).OrderByStackingOrder(), HealPetBuff);
@@ -98,7 +99,20 @@ namespace Desu
             }
             return false;
         }
+        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
+            Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
+
+            if (petToBuff != null)
+            {
+                spell.Cast(petToBuff.Character, true);
+            }
+
+            return false;
+        }
         private bool CanPerkChannelRage(Pet pet)
         {
             if(pet.Type != PetType.Attack) { return false; }
@@ -365,6 +379,7 @@ namespace Desu
 
         private static class RelevantNanos
         {
+            public const int MastersBidding = 268171;
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
             public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };

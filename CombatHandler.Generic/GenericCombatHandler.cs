@@ -4,6 +4,7 @@ using System.Linq;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using MultiboxHelper;
 
@@ -117,7 +118,6 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(RelevantItems.RezCan, RelevantItems.RezCan, UseRezCan);
             RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
-
 
 
             RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);

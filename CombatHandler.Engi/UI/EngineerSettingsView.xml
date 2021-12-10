@@ -6,16 +6,20 @@
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="           Auras" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraArmor" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Shield" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraShield" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Reflect" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraReflect" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraDamage" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Pet Snare Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SnareAura" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Shield Ripper" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShieldRipper" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Pet Snare Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SnareAura" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="        Trimmers" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<OptionCheckBox label="Divert to Offense Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertOffTrimmer" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Divert to Hp Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertHpTrimmer" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Taunt Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TauntTrimmer" layout_borders="Rect(10,1,5,1)"/>
@@ -24,17 +28,21 @@
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value="            Pets" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Spawn pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Buff pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Heal pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealPets" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Off perks" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Offperks" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Def perks" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Defperks" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Spawn Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Buff Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Heal Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealPets" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Off Perks" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Offperks" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Def Perks" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Defperks" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value="        Helpers" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="(S13) Spam debuff aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamDebuffAura" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="(POH) Spam snare aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamSnareAura" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="(S13) Spam Debuff Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamDebuffAura" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(POH) Spam Snare Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamSnareAura" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>

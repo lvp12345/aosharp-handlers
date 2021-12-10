@@ -122,32 +122,36 @@ namespace Desu
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("RansackDrain") || fightingTarget == null) { return false; }
+            //if (!IsSettingEnabled("RansackDrain") || fightingTarget == null) { return false; }
 
-            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
-            {
-                if (fightingTarget.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
+            //if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
+            //{
+            //    if (fightingTarget.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack))
+            //    {
+            //        actionTarget.ShouldSetTarget = true;
+            //        return true;
+            //    }
+            //}
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.TraderSkillTransferCasterBuff_Ransack)) { return false; }
 
             return ToggledDebuff("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
         }
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DepriveDrain") || fightingTarget == null) { return false; }
+            //if (!IsSettingEnabled("DepriveDrain") || fightingTarget == null) { return false; }
 
-            if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
-            {
-                if (fightingTarget.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
+            //if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
+            //{
+            //    if (fightingTarget.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive))
+            //    {
+            //        actionTarget.ShouldSetTarget = true;
+            //        return true;
+            //    }
+            //}
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.TraderSkillTransferCasterBuff_Deprive)) { return false; }
 
             return ToggledDebuff("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
         }

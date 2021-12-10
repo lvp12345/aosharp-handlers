@@ -108,7 +108,7 @@ namespace MultiboxHelper
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);  
+            IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
             IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
@@ -853,7 +853,7 @@ namespace MultiboxHelper
                     return;
 
                 RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
-                    SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
             }
             catch (Exception e)
             {

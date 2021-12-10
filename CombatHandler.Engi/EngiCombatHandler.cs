@@ -99,6 +99,7 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(RelevantNanos.PetHealingCH, PetHealingCH);
 
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
+            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
 
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticEnergyBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
@@ -423,7 +424,7 @@ namespace CombatHandler.Engi
 
         protected bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
+            if (PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
             {
                 ResetTrimmers();
                 return true;
@@ -447,6 +448,21 @@ namespace CombatHandler.Engi
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             return FindPetThat(pet => !HasBuffNanoLine(NanoLine.ShieldoftheObedientServant, pet.Character)) != null;
+        }
+
+        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
+
+            if (petToBuff != null)
+            {
+                spell.Cast(petToBuff.Character, true);
+            }
+
+            return false;
         }
 
         protected bool CanTrim()
@@ -520,6 +536,7 @@ namespace CombatHandler.Engi
             public static readonly int[] PerkChaoticEnergy = { 227787 };
             public const int CompositeAttribute = 223372;
             public const int CompositeNano = 223380;
+            public const int MastersBidding = 268171;
             public const int CompositeUtility = 287046;
             public const int CompositeRanged = 223348;
             public const int CompositeRangedSpec = 223364;

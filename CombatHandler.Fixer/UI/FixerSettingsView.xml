@@ -11,13 +11,15 @@
     <OptionCheckBox label="Grid Armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GridArmor" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<OptionCheckBox label="Rubi-Ka Runspeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RKRunspeed" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Rubi-Ka Runspeed (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RKRunspeedTeam" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="SL Runspeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLRunspeed" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<OptionCheckBox label="Long HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LongHoT" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Short HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoT" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Long HoT (Other)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LongHoTOther" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Short HoT (Other)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoTOther" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Long HoT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LongHoTTeam" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Short HoT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoTTeam" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="       Debuffs" layout_borders="Rect(5,5,5,5)"/>

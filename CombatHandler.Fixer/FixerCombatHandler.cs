@@ -16,19 +16,25 @@ namespace Desu
         public FixerCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("RKRunspeed", false);
+            settings.AddVariable("RKRunspeedTeam", false);
             settings.AddVariable("SLRunspeed", false);
+
             settings.AddVariable("EvasionDebuff", false);
+
             settings.AddVariable("ShadowwebSpinner", false);
             settings.AddVariable("GridArmor", false);
+
             settings.AddVariable("LongHoT", false);
             settings.AddVariable("ShortHoT", false);
-            settings.AddVariable("LongHoTOther", false);
-            settings.AddVariable("ShortHoTOther", false);
+            settings.AddVariable("LongHoTTeam", false);
+            settings.AddVariable("ShortHoTTeam", false);
 
             RegisterSettingsWindow("Fixer Handler", "FixerSettingsView.xml");
 
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcFixerBootlegRemedies, LEProc);
+
+            RegisterPerkProcessor(PerkHash.NCUBooster, LEProc);
 
             //Luck's Calamity is missing from PerkHash list
             PerkAction lucksCalamity = PerkAction.List.Where(action => action.Name.Equals("Luck's Calamity")).FirstOrDefault();
@@ -61,7 +67,7 @@ namespace Desu
 
         private bool LongHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("LongHoTOther"))
+            if (IsSettingEnabled("LongHoTTeam"))
             {
                 return TeamBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -71,7 +77,7 @@ namespace Desu
 
         private bool ShortHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ShortHoTOther"))
+            if (IsSettingEnabled("ShortHoTTeam"))
             {
                 return TeamBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -84,17 +90,55 @@ namespace Desu
             return ToggledDebuffTarget("EvasionDebuff", spell, fightingTarget, ref actionTarget);
         }
 
+        protected bool GSFTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => !c.Buffs.Contains(RelevantNanos.EVASION_BUFFS))
+                    .Where(c => SpellChecksOther(spell, c))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private bool GsfBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (IsSettingEnabled("RKRunspeed") && 
-                DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SL_RUN_BUFFS))
+            if (IsSettingEnabled("RKRunspeedTeam"))
             {
-                CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SL_RUN_BUFFS))
+                {
+                    CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
+                }
+
+                return GSFTeamBuff(spell, fightingTarget, ref actionTarget);
             }
 
-            return ToggledBuff("RKRunspeed", spell, fightingTarget, ref actionTarget);
+            if (IsSettingEnabled("RKRunspeed"))
+            {
+                if (IsSettingEnabled("RKRunspeed") &&
+                    DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SL_RUN_BUFFS))
+                {
+                    CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
+                }
+
+                return ToggledBuff("RKRunspeed", spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool ShadowlandsSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -143,7 +187,7 @@ namespace Desu
                 settings["RKRunspeed"] = false;
                 settings["SLRunspeed"] = false;
 
-                Chat.WriteLine("Can only activate one.");
+                Chat.WriteLine("Only activate one Runspeed option.");
             }
 
             EquipBackArmor();
@@ -182,6 +226,9 @@ namespace Desu
             public const int GREATER_PRESERVATION_MATRIX = 275679;
             public static readonly int[] SL_RUN_BUFFS = { 223125, 223131, 223129, 215718, 223127, 272416, 272415, 272414, 272413, 272412 };
             public static readonly int[] RK_RUN_BUFFS = { 93132, 93126, 93127, 93128, 93129, 93130, 93131, 93125 };
+            public static readonly int[] EVASION_BUFFS = { 275844, 29247, 28903, 28878, 28872, 218070, 218068, 218066,
+            218064, 218062, 218060, 272371, 270808, 30745, 302188, 29272, 270802, 28603, 223125, 223131, 223129, 215718,
+            223127, 272416, 272415, 272414, 272413, 272412};
             public static readonly int[] SUMMON_GRID_ARMOR = { 155189, 155187, 155188, 155186 };
             public static readonly int[] SUMMON_SHADOWWEB_SPINNER = { 273349, 224422, 224420, 224418, 224416, 224414, 224412, 224410, 224408, 224405, 224403 };
             public static readonly int[] NCU_BUFFS = { 275043, 163095, 163094, 163087, 163085, 163083, 163081, 163079, 162995 };

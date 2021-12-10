@@ -14,13 +14,15 @@ namespace Desu
         {
             settings.AddVariable("AIDot", true);
 
+            settings.AddVariable("Pierce", false);
+
             settings.AddVariable("AoeBlind", false);
 
             settings.AddVariable("AOE", false);
             settings.AddVariable("VE", false);
 
-            settings.AddVariable("NanoHoT", false);
-            settings.AddVariable("Cost", false);
+            settings.AddVariable("NanoHoTTeam", false);
+            settings.AddVariable("CostTeam", false);
 
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
 
@@ -51,6 +53,7 @@ namespace Desu
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
             RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
+            RegisterSpellProcessor(RelevantNanos.PierceReflect, PierceNuke);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
             RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
             RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
@@ -89,7 +92,7 @@ namespace Desu
 
         private bool NanoHoT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NanoHoT"))
+            if (IsSettingEnabled("NanoHoTTeam"))
             {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
             }
@@ -99,7 +102,7 @@ namespace Desu
 
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Cost"))
+            if (IsSettingEnabled("CostTeam"))
             {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
             }
@@ -125,6 +128,14 @@ namespace Desu
 
             return true;
         }
+
+        private bool PierceNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Pierce") || fightingTarget == null) { return false; }
+
+            return true;
+        }
+
         private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("AOE") || fightingTarget == null) { return false; }
@@ -159,6 +170,7 @@ namespace Desu
             public const int IzgimmersWealth = 275024;
             public const int IzgimmersUltimatum = 218168;
             public const int Garuk = 275692;
+            public const int PierceReflect = 266287;
             public const int VolcanicEruption = 28638;
             public static readonly int[] AOENukes = { 266293, 28638,
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,

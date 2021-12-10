@@ -7,19 +7,21 @@
 		<TextView value="      Buffs" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Nano HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoHoT" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Cost" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Cost" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Nano HoT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoHoTTeam" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Cost (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CostTeam" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="      Preference" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Pierce Reflects" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Pierce" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="AoE" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AOE" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="AoE Blind" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AoeBlind" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="VE" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__VE" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="AI DOT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AIDot" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="AI DoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AIDot" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>

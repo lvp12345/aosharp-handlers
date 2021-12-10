@@ -373,6 +373,9 @@ namespace CombatHandler.Generic
                 || perkAction.Name == "Dodge the Blame" || perkAction.Name == "Devotional Armor"))
                 return false;
 
+
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
             return true;
         }
 

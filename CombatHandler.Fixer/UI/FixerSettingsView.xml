@@ -2,19 +2,29 @@
 <root>
 <View h_alignment="LEFT" view_layout="vertical" name="parent">
 	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-		<TextView value="Buffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Use Rubi-Ka runspeed buffs instead of Shadowlands aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseRKRunspeed" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use long HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseLongHoT" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use short HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseShortHoT" layout_borders="Rect(10,1,5,1)"/>
-		<TextView value="Back armor" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Summon and equip back armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SummonBackArmor" layout_borders="Rect(10,1,5,1)"/>
-		<OptionRadioButtonGroup label="Back armor selection" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__BackArmorType">
-			<RadioButton label="Use Shadowweb Spinner" value="0"/>
-			<RadioButton label="Use Grid Armor" value="1"/>
-		</OptionRadioButtonGroup>
-		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-		<TextView value="Debuffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Debuff evasion" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseEvasionDebuff" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="         Buffs" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Shadowweb Spinner" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShadowwebSpinner" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Grid Armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GridArmor" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Rubi-Ka Runspeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RKRunspeed" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="SL Runspeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLRunspeed" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Long HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LongHoT" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Short HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoT" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Long HoT (Other)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LongHoTOther" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Short HoT (Other)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoTOther" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="       Debuffs" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Evasion" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__EvasionDebuff" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<VLayoutSpacer/>
 	</BorderView>

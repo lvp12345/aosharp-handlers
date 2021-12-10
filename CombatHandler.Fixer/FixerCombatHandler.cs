@@ -15,17 +15,21 @@ namespace Desu
 
         public FixerCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("UseRKRunspeed", false);
-            settings.AddVariable("UseEvasionDebuff", false);
-            settings.AddVariable("SummonBackArmor", false);
-            settings.AddVariable("BackArmorType", (int)BackItemType.SHADOWWEB_SPINNER);
-            settings.AddVariable("UseLongHoT", true);
-            settings.AddVariable("UseShortHoT", false);
+            settings.AddVariable("RKRunspeed", false);
+            settings.AddVariable("SLRunspeed", false);
+            settings.AddVariable("EvasionDebuff", false);
+            settings.AddVariable("ShadowwebSpinner", false);
+            settings.AddVariable("GridArmor", false);
+            settings.AddVariable("LongHoT", false);
+            settings.AddVariable("ShortHoT", false);
+            settings.AddVariable("LongHoTOther", false);
+            settings.AddVariable("ShortHoTOther", false);
 
             RegisterSettingsWindow("Fixer Handler", "FixerSettingsView.xml");
 
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcFixerBootlegRemedies, LEProc);
+
             //Luck's Calamity is missing from PerkHash list
             PerkAction lucksCalamity = PerkAction.List.Where(action => action.Name.Equals("Luck's Calamity")).FirstOrDefault();
             if (lucksCalamity != null) {
@@ -44,79 +48,117 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.SL_RUN_BUFFS, ShadowlandsSpeedBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDebuff);
-            RegisterSpellProcessor(RelevantNanos.SUMMON_GRID_ARMOR, SummonGridArmor);
-            RegisterSpellProcessor(RelevantNanos.SUMMON_SHADOWWEB_SPINNER, SummonShadowwebSpinner);
+            RegisterSpellProcessor(RelevantNanos.SUMMON_GRID_ARMOR, GridArmor);
+            RegisterSpellProcessor(RelevantNanos.SUMMON_SHADOWWEB_SPINNER, ShadowwebSpinner);
         }
 
         private bool NCUBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(HasBuffNanoLine(NanoLine.FixerNCUBuff, DynelManager.LocalPlayer)) { return false; }
+            if (HasBuffNanoLine(NanoLine.FixerNCUBuff, DynelManager.LocalPlayer)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool LongHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledBuff("UseLongHoT", spell, fightingTarget, ref actionTarget);
+            if (IsSettingEnabled("LongHoTOther"))
+            {
+                return TeamBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return ToggledBuff("LongHoT", spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return HealOverTimeBuff("UseShortHoT", spell, fightingTarget, ref actionTarget);
-        }
+            if (IsSettingEnabled("ShortHoTOther"))
+            {
+                return TeamBuff(spell, fightingTarget, ref actionTarget);
+            }
 
-        private bool SummonShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return SummonBackArmor(BackItemType.SHADOWWEB_SPINNER, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool SummonGridArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return SummonBackArmor(BackItemType.GRID_ARMOR, spell, fightingTarget, ref actionTarget);
+            return ToggledBuff("ShortHoT", spell, fightingTarget, ref actionTarget);
         }
 
         private bool EvasionDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("UseEvasionDebuff", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("EvasionDebuff", spell, fightingTarget, ref actionTarget);
         }
 
         private bool GsfBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
 
-            return ToggledBuff("UseRKRunspeed", spell, fightingTarget, ref actionTarget);
+            return ToggledBuff("RKRunspeed", spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShadowlandsSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsInsideInnerSanctum() || IsSettingEnabled("UseRKRunspeed")) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
+
+            return ToggledBuff("SLRunspeed", spell, fightingTarget, ref actionTarget);
         }
 
-        private bool SummonBackArmor(BackItemType backItemType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool GridArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SummonBackArmor") || HasBackItemEquipped() || GetSelectedBackItem() != backItemType || FindBackItem(backItemType) != null) { return false; }
+            if (!IsSettingEnabled("GridArmor") || !CanCast(spell)) { return false; }
 
-            return spell.Cost < DynelManager.LocalPlayer.Nano;
+            if (Inventory.Items.FirstOrDefault(x => RelevantItems.GRID_ARMORS.Contains(x.HighId)) != null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ShadowwebSpinner") || !CanCast(spell)) { return false; }
+
+            if (Inventory.Items.FirstOrDefault(x => RelevantItems.SHADOWWEB_SPINNERS.Contains(x.HighId)) != null)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
 
-            CancelBuffs(IsSettingEnabled("UseRKRunspeed") ? RelevantNanos.SL_RUN_BUFFS : RelevantNanos.RK_RUN_BUFFS);
+            if (settings["RKRunspeed"].AsBool() && settings["SLRunspeed"].AsBool())
+            {
+                settings["RKRunspeed"] = false;
+                settings["SLRunspeed"] = false;
+
+                Chat.WriteLine("Can only activate one.");
+            }
+
+            CancelBuffs(IsSettingEnabled("RKRunspeed") ? RelevantNanos.RK_RUN_BUFFS : RelevantNanos.SL_RUN_BUFFS);
+            CancelBuffs(IsSettingEnabled("SLRunspeed") ? RelevantNanos.SL_RUN_BUFFS : RelevantNanos.RK_RUN_BUFFS);
             EquipBackArmor();
         }
 
         private void EquipBackArmor()
         {
-            if (IsSettingEnabled("SummonBackArmor") && !HasBackItemEquipped() && Time.NormalTime - _lastBackArmorCheckTime > 6)
+            if (IsSettingEnabled("GridArmor") && !HasBackItemEquipped() && Time.NormalTime - _lastBackArmorCheckTime > 6)
             {
                 _lastBackArmorCheckTime = Time.NormalTime;
-                Item backArmor = FindBackItem(GetSelectedBackItem());
+                Item backArmor = Inventory.Items.FirstOrDefault(x => RelevantItems.GRID_ARMORS.Contains(x.HighId));
+                if (backArmor != null)
+                {
+                    backArmor.Equip(EquipSlot.Cloth_Back);
+                }
+            }
+
+            if (IsSettingEnabled("ShadowwebSpinner") && !HasBackItemEquipped() && Time.NormalTime - _lastBackArmorCheckTime > 6)
+            {
+                _lastBackArmorCheckTime = Time.NormalTime;
+                Item backArmor = Inventory.Items.FirstOrDefault(x => RelevantItems.SHADOWWEB_SPINNERS.Contains(x.HighId));
                 if (backArmor != null)
                 {
                     backArmor.Equip(EquipSlot.Cloth_Back);
@@ -124,27 +166,9 @@ namespace Desu
             }
         }
 
-        private Item FindBackItem(BackItemType backItemType)
-        {
-            int[] itemIds = backItemType == BackItemType.SHADOWWEB_SPINNER ? RelevantItems.SHADOWWEB_SPINNERS : RelevantItems.GRID_ARMORS;
-            foreach (int itemId in itemIds)
-            {
-                if (Inventory.Find(itemId, out Item item))
-                {
-                    return item;
-                }
-            }
-            return null;
-        }
-
         private bool HasBackItemEquipped()
         {
             return Inventory.Items.Any(itemCandidate => itemCandidate.Slot.Instance == (int)EquipSlot.Cloth_Back);
-        }
-
-        private BackItemType GetSelectedBackItem()
-        {
-            return (BackItemType)settings["BackArmorType"].AsInt32();
         }
 
         private static class RelevantNanos
@@ -162,12 +186,6 @@ namespace Desu
         {
             public static readonly int[] GRID_ARMORS = { 155172, 155173, 155174, 155150 };
             public static readonly int[] SHADOWWEB_SPINNERS = { 273350, 224400, 224399, 224398, 224397, 224396, 224395, 224394, 224393, 224392, 224390 };
-        }
-
-        private enum BackItemType
-        {
-            SHADOWWEB_SPINNER = 0,
-            GRID_ARMOR = 1
         }
     }
 }

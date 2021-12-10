@@ -11,8 +11,7 @@ namespace Desu
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SingleTaunt", false);
-            //settings.AddVariable("TauntTool", false);
-            settings.AddVariable("OSDamage", false);
+            settings.AddVariable("DamageTeam", false);
 
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
 
@@ -24,7 +23,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), TeamBuffDamageLogic);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), DamageTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
@@ -97,12 +96,14 @@ namespace Desu
             return false;
         }
 
-        private bool TeamBuffDamageLogic(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DamageTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("OSDamage"))
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
-            else
+            if (IsSettingEnabled("DamageTeam"))
+            {
                 return TeamBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

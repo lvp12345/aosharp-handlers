@@ -3,6 +3,7 @@ using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using AOSharp.Core.UI;
+using System.Linq;
 
 namespace Desu
 {
@@ -11,6 +12,13 @@ namespace Desu
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SingleTaunt", false);
+
+            settings.AddVariable("Burst", false);
+            settings.AddVariable("BurstTeam", false);
+
+            settings.AddVariable("Init", false);
+            settings.AddVariable("InitTeam", false);
+
             settings.AddVariable("DamageTeam", false);
 
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
@@ -53,12 +61,61 @@ namespace Desu
 
         private bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg);
+            if (IsSettingEnabled("BurstTeam"))
+            {
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => c.SpecialAttacks.Contains(SpecialAttack.Burst))
+                    .FirstOrDefault();
+
+                    if (teamMemberWithoutBuff != null)
+                    {
+                        actionTarget.Target = teamMemberWithoutBuff;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
+            if (!IsSettingEnabled("Burst")) { return false; }
+
+            if (!DynelManager.LocalPlayer.SpecialAttacks.Contains(SpecialAttack.Burst)) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg);
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Smg)
+                    || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Shotgun)
+                    || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Grenade)
+                    || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.AssaultRifle))
+                    .Where(c => !c.Buffs.Contains(NanoLine.FixerSuppressorBuff))
+                    .Where(c => !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff.Identity == DynelManager.LocalPlayer.Identity
+                    && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
+                                || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun)
+                                || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade);
         }
 
         private bool ShotgunBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -73,14 +130,16 @@ namespace Desu
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SingleTaunt") || DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("SingleTaunt")) { return false; }
+
+            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
             return true;
         }
 
         private bool SolDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= 40) { return true; }
 
@@ -89,7 +148,7 @@ namespace Desu
 
         private bool AugmentedMirrorShieldMKV(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget == null || fightingtarget == null) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
 
@@ -100,7 +159,21 @@ namespace Desu
         {
             if (IsSettingEnabled("DamageTeam"))
             {
-                return TeamBuff(spell, fightingTarget, ref actionTarget);
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => !c.Buffs.Contains(NanoLine.DamageBuffs_LineA))
+                        .Where(c => SpellChecksOther(spell, c))
+                        .FirstOrDefault();
+
+                    if (teamMemberWithoutBuff != null)
+                    {
+                        actionTarget.Target = teamMemberWithoutBuff;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
             }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
@@ -108,7 +181,28 @@ namespace Desu
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffInitSol(spell, fightingTarget, ref actionTarget);
+            if (IsSettingEnabled("InitTeam"))
+            {
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
+                        .Where(c => SpellChecksOther(spell, c))
+                        .FirstOrDefault();
+
+                    if (teamMemberWithoutBuff != null)
+                    {
+                        actionTarget.Target = teamMemberWithoutBuff;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
+            if (!IsSettingEnabled("Init")) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion

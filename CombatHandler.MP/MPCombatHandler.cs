@@ -104,6 +104,7 @@ namespace Desu
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                && (pet.Character.GetStat(Stat.NPCFamily) != 98)
                 && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
 
             if (petToBuff != null)

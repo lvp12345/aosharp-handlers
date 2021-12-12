@@ -134,6 +134,8 @@ namespace MultiboxHelper
             Chat.RegisterCommand("yalm", YalmCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
 
+            Chat.RegisterCommand("doc", DocTarget);
+
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
@@ -1259,6 +1261,20 @@ namespace MultiboxHelper
                 Chat.WriteLine($"Sync move started.");
                 return;
             }
+        }
+
+        private void DocTarget(string command, string[] param, ChatWindow chatWindow)
+        {
+            SimpleChar doctor = DynelManager.Characters
+                .Where(c => c.IsAlive)
+                .Where(c => c.Profession == Profession.Doctor)
+                .Where(c => c.IsPlayer)
+                .Where(c => !Team.Members.Contains(c.Identity))
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                .FirstOrDefault();
+
+            if (doctor != null)
+                Targeting.SetTarget(doctor);
         }
 
         private void Rebuff(string command, string[] param, ChatWindow chatWindow)

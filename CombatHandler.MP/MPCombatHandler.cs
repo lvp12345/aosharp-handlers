@@ -276,31 +276,33 @@ namespace Desu
 
         private SimpleChar GetTargetToHeal()
         {
-           if(DynelManager.LocalPlayer.HealthPercent < 90)
-            {
+           if (DynelManager.LocalPlayer.HealthPercent < 90)
+           {
                 return DynelManager.LocalPlayer;
-            }
+           }
 
-           if(DynelManager.LocalPlayer.IsInTeam())
-            {
+           if (DynelManager.LocalPlayer.IsInTeam())
+           {
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent < 90)
                     .OrderByDescending(c => c.HealthPercent)
                     .FirstOrDefault();
-                if(dyingTeamMember != null)
+
+                if (dyingTeamMember != null)
                 {
                     return dyingTeamMember;
                 }
-            }
+           }
 
             Pet dyingPet = DynelManager.LocalPlayer.Pets
                  .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
                  .Where(pet => pet.Character.HealthPercent < 90)
                  .OrderByDescending(pet => pet.Character.HealthPercent)
                  .FirstOrDefault();
-            if(dyingPet != null)
+
+            if (dyingPet != null)
             {
                 return dyingPet.Character;
             }
@@ -361,6 +363,7 @@ namespace Desu
                 AssignTargetToHealPet();
                 AssignTargetToMezzPet();
             }
+
             base.OnUpdate(deltaTime);
 
             if (GetNanoBuffsSelection() == NanoBuffsSelection.RK) 

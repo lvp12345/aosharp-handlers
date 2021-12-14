@@ -10,6 +10,8 @@ namespace CombatHandler.Agent
 {
     public class AgentCombatHandler : GenericCombatHandler
     {
+        private double _lastSwitchedHealTime = 0;
+
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("DotStrainA", false);
@@ -72,6 +74,12 @@ namespace CombatHandler.Agent
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (CanLookupPetsAfterZone())
+            {
+                SynchronizePetCombatStateWithOwner();
+                AssignTargetToHealPet();
+            }
+
             base.OnUpdate(deltaTime);
 
             if (IsSettingEnabled("Damage") && !IsSettingEnabled("Detaunt"))
@@ -85,6 +93,59 @@ namespace CombatHandler.Agent
         }
 
         #region Healing
+
+        private void AssignTargetToHealPet()
+        {
+            if (Time.NormalTime - _lastSwitchedHealTime > 5)
+            {
+                SimpleChar dyingTarget = GetTargetToHeal();
+                if (dyingTarget != null)
+                {
+                    Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal).FirstOrDefault();
+                    if (healPet != null)
+                    {
+                        healPet.Heal(dyingTarget.Identity);
+                        _lastSwitchedHealTime = Time.NormalTime;
+                    }
+                }
+            }
+        }
+
+        private SimpleChar GetTargetToHeal()
+        {
+            if (DynelManager.LocalPlayer.HealthPercent < 90)
+            {
+                return DynelManager.LocalPlayer;
+            }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent < 90)
+                    .OrderByDescending(c => c.HealthPercent)
+                    .FirstOrDefault();
+
+                if (dyingTeamMember != null)
+                {
+                    return dyingTeamMember;
+                }
+            }
+
+            Pet dyingPet = DynelManager.LocalPlayer.Pets
+                 .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
+                 .Where(pet => pet.Character.HealthPercent < 90)
+                 .OrderByDescending(pet => pet.Character.HealthPercent)
+                 .FirstOrDefault();
+
+            if (dyingPet != null)
+            {
+                return dyingPet.Character;
+            }
+
+            return null;
+        }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

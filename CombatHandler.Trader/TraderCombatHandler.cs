@@ -51,7 +51,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), TeamNanoHeal);
 
             //GTH/Your Enemy Drains
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineB), GrandTheftHumidity);
+            RegisterSpellProcessor(RelevantNanos.GrandThefts, GrandTheftHumidity);
             RegisterSpellProcessor(RelevantNanos.MyEnemiesEnemyIsMyFriend, MyEnemy);
 
             //AAO/AAD/Damage Drains
@@ -88,22 +88,6 @@ namespace Desu
             if (IsSettingEnabled("Sacrifice") && IsSettingEnabled("PurpleHeart")) { return false; }
 
             return PerkCondtionProcessors.DamagePerk(perk, fightingTarget, ref actionTarget);
-        }
-
-        private static class RelevantNanos
-        {
-            public const int QuantumUncertanity = 30745;
-            public const int ImprovedQuantumUncertanity = 270808;
-            public const int UnstoppableKiller = 275846;
-            public const int DivestDamage = 273407;
-            public const int UmbralWranglerPremium = 235291;
-            public const int MyEnemiesEnemyIsMyFriend = 270714;
-            //public static Dictionary<NanoLine, NanoLine> DebuffToDrainLine = new Dictionary<NanoLine, NanoLine>()
-            //{
-            //    {NanoLine.TraderAADDrain, NanoLine.TraderNanoTheft2},
-            //    {NanoLine.TraderAAODrain, NanoLine.TraderNanoTheft1},
-            //    {NanoLine.NanoDrain_LineB, NanoLine.NanoOverTime_LineB}
-            //};
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -255,6 +239,23 @@ namespace Desu
                 .Where(buff => buff.Nanoline == spellNanoLine) //Same nanoline as the spell nanoline
                 .Where(buff => buff.RemainingTime > 3) //Remaining time on buff > 1 second
                 .Any(); ;
+        }
+
+        private static class RelevantNanos
+        {
+            public const int QuantumUncertanity = 30745;
+            public const int ImprovedQuantumUncertanity = 270808;
+            public const int UnstoppableKiller = 275846;
+            public const int DivestDamage = 273407;
+            public const int UmbralWranglerPremium = 235291;
+            public const int MyEnemiesEnemyIsMyFriend = 270714;
+            public static int[] GrandThefts = { 269842, 280050 };
+            //public static Dictionary<NanoLine, NanoLine> DebuffToDrainLine = new Dictionary<NanoLine, NanoLine>()
+            //{
+            //    {NanoLine.TraderAADDrain, NanoLine.TraderNanoTheft2},
+            //    {NanoLine.TraderAAODrain, NanoLine.TraderNanoTheft1},
+            //    {NanoLine.NanoDrain_LineB, NanoLine.NanoOverTime_LineB}
+            //};
         }
     }
 }

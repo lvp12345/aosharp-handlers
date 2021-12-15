@@ -21,8 +21,13 @@ namespace Desu
 
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
+            //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, LEProc);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerCombustion, LEProc);
+
             //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHealing, CombatActionPriority.High);
 
             //Buffs
@@ -59,6 +64,11 @@ namespace Desu
             }
 
             return FindMemberWithHealthBelow(85, ref actionTarget);
+        }
+
+        private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return FindMemberWithHealthBelow(30, ref actionTarget);
         }
 
         //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -126,7 +136,9 @@ namespace Desu
         #region Misc
         private static class RelevantNanos
         {
-
+            public static int[] HEALS = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
+                136678, 136679, 136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
+                82064, 26695 };
         }
 
         private static class RelevantItems

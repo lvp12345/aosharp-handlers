@@ -15,7 +15,6 @@
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="SL Runspeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLRunspeed" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Long HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LongHoT" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Short HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoT" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Long HoT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LongHoTTeam" layout_borders="Rect(10,1,5,1)"/>

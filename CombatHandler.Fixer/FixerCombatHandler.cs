@@ -49,7 +49,8 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.NCU_BUFFS, NCUBuff);
             RegisterSpellProcessor(RelevantNanos.GREATER_PRESERVATION_MATRIX, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.TEAM_LONG_HOTS, LongHotBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHotBuff);
+            RegisterSpellProcessor(RelevantNanos.SuperiorInsuranceHack, ShortHotBuff);
+            RegisterSpellProcessor(RelevantNanos.TeamShortHoTs, TeamShortHotBuff);
             RegisterSpellProcessor(RelevantNanos.RK_RUN_BUFFS, GsfBuff);
             RegisterSpellProcessor(RelevantNanos.SL_RUN_BUFFS, ShadowlandsSpeedBuff);
 
@@ -75,12 +76,16 @@ namespace Desu
             return ToggledBuff("LongHoT", spell, fightingTarget, ref actionTarget);
         }
 
+        private bool TeamShortHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ShortHoTTeam")) { return false; }
+
+            return TeamBuff(spell, fightingTarget, ref actionTarget);
+        }
+
         private bool ShortHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ShortHoTTeam"))
-            {
-                return TeamBuff(spell, fightingTarget, ref actionTarget);
-            }
+            if (!IsSettingEnabled("ShortHoT")) { return false; }
 
             return ToggledBuff("ShortHoT", spell, fightingTarget, ref actionTarget);
         }
@@ -224,6 +229,7 @@ namespace Desu
         private static class RelevantNanos
         {
             public const int GREATER_PRESERVATION_MATRIX = 275679;
+            public const int SuperiorInsuranceHack = 273352;
             public static readonly int[] SL_RUN_BUFFS = { 223125, 223131, 223129, 215718, 223127, 272416, 272415, 272414, 272413, 272412 };
             public static readonly int[] RK_RUN_BUFFS = { 93132, 93126, 93127, 93128, 93129, 93130, 93131, 93125 };
             public static readonly int[] EVASION_BUFFS = { 275844, 29247, 28903, 28878, 28872, 218070, 218068, 218066,
@@ -232,6 +238,7 @@ namespace Desu
             public static readonly int[] SUMMON_GRID_ARMOR = { 155189, 155187, 155188, 155186 };
             public static readonly int[] SUMMON_SHADOWWEB_SPINNER = { 273349, 224422, 224420, 224418, 224416, 224414, 224412, 224410, 224408, 224405, 224403 };
             public static readonly int[] NCU_BUFFS = { 275043, 163095, 163094, 163087, 163085, 163083, 163081, 163079, 162995 };
+            public static readonly Spell[] TeamShortHoTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder().Where(spell => spell.Identity.Instance != SuperiorInsuranceHack).ToArray();
             public static readonly Spell[] TEAM_LONG_HOTS = Spell.GetSpellsForNanoline(NanoLine.FixerLongHoT).OrderByStackingOrder().Where(spell => spell.Identity.Instance != GREATER_PRESERVATION_MATRIX).ToArray();
         }
 

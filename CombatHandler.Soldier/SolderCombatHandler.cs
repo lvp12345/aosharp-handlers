@@ -19,7 +19,9 @@ namespace Desu
             settings.AddVariable("Init", false);
             settings.AddVariable("InitTeam", false);
 
-            settings.AddVariable("DamageTeam", false);
+            settings.AddVariable("NotumGrenades", false);
+
+            //settings.AddVariable("DamageTeam", false);
 
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
 
@@ -31,8 +33,9 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), DamageTeam);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), DamageTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GenericBuff);
@@ -99,15 +102,16 @@ namespace Desu
                     || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Shotgun)
                     || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Grenade)
                     || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.AssaultRifle))
+                    .Where(c => !GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Pistol))
                     .Where(c => !c.Buffs.Contains(NanoLine.FixerSuppressorBuff))
                     .Where(c => !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))
                     .FirstOrDefault();
 
-                if (teamMemberWithoutBuff.Identity == DynelManager.LocalPlayer.Identity
-                    && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
-
                 if (teamMemberWithoutBuff != null)
                 {
+                    if (teamMemberWithoutBuff.Identity == DynelManager.LocalPlayer.Identity
+                        && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
+
                     actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
                     return true;
@@ -132,6 +136,13 @@ namespace Desu
         private bool ARBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
+        }
+
+        private bool NotumGrenades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("NotumGrenades")) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -161,29 +172,29 @@ namespace Desu
             return false;
         }
 
-        private bool DamageTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("DamageTeam"))
-            {
-                if (DynelManager.LocalPlayer.IsInTeam())
-                {
-                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        .Where(c => !c.Buffs.Contains(NanoLine.DamageBuffs_LineA))
-                        .Where(c => SpellChecksOther(spell, c))
-                        .FirstOrDefault();
+        //private bool DamageTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsSettingEnabled("DamageTeam"))
+        //    {
+        //        if (DynelManager.LocalPlayer.IsInTeam())
+        //        {
+        //            SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+        //                .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+        //                .Where(c => !c.Buffs.Contains(NanoLine.DamageBuffs_LineA))
+        //                .Where(c => SpellChecksOther(spell, c))
+        //                .FirstOrDefault();
 
-                    if (teamMemberWithoutBuff != null)
-                    {
-                        actionTarget.Target = teamMemberWithoutBuff;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
-                }
-            }
+        //            if (teamMemberWithoutBuff != null)
+        //            {
+        //                actionTarget.Target = teamMemberWithoutBuff;
+        //                actionTarget.ShouldSetTarget = true;
+        //                return true;
+        //            }
+        //        }
+        //    }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
-        }
+        //    return false;
+        //}
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

@@ -19,18 +19,30 @@ namespace Desu
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
 
-            settings.AddVariable("BuffInterruptChance", false);
+            settings.AddVariable("InterruptChance", false);
 
-            settings.AddVariable("UseDamageDebuffs", true);
-            settings.AddVariable("UseDamageDebuffsOnOthers", false);
+            settings.AddVariable("DamageDebuffs", false);
+            settings.AddVariable("OSDamageDebuffs", false);
 
-            settings.AddVariable("UseNanoResistanceDebuff", true);
-            settings.AddVariable("UseNanoShutdownDebuff", true);
+            settings.AddVariable("NanoResistanceDebuff", false);
+            settings.AddVariable("NanoShutdownDebuff", false);
 
-            settings.AddVariable("UseNukes", true);
+            settings.AddVariable("Composites", false);
+            settings.AddVariable("CompositesTeam", false);
 
-            settings.AddVariable("NanoBuffsSelection", (int)NanoBuffsSelection.SL);
-            settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
+            settings.AddVariable("MatterCrea", false);
+            settings.AddVariable("PyschoModi", false);
+            settings.AddVariable("TimeSpace", false);
+            settings.AddVariable("SenseImprov", false);
+            settings.AddVariable("BioMet", false);
+            settings.AddVariable("MattMet", false);
+
+            //settings.AddVariable("CostTeam", false);
+
+            settings.AddVariable("Nukes", false);
+
+            //settings.AddVariable("NanoBuffsSelection", (int)NanoBuffsSelection.SL);
+            //settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
 
             RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
 
@@ -44,13 +56,15 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
 
             //Team buffs
-            RegisterSpellProcessor(RelevantNanos.MPCompositeNano, MPCompositeNanoBuff);
-            RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MPNanoBuff);
-            RegisterSpellProcessor(RelevantNanos.BioMetBuffs, MPNanoBuff);
-            RegisterSpellProcessor(RelevantNanos.PsyModBuffs, MPNanoBuff);
-            RegisterSpellProcessor(RelevantNanos.SenImpBuffs, MPNanoBuff);
-            RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MPNanoBuff);
-            RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MPNanoBuff);
+            RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
+
+            RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMetBuff);
+            RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMetBuff);
+            RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PyschoModiBuff);
+            RegisterSpellProcessor(RelevantNanos.SenImpBuffs, SenseImprovBuff);
+            RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MatterCreaBuff);
+            RegisterSpellProcessor(RelevantNanos.MatLocBuffs, TimeSpaceBuff);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifierBuff);
             RegisterSpellProcessor(RelevantNanos.CostBuffs, GenericBuff);
 
@@ -123,57 +137,125 @@ namespace Desu
 
         private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("UseNanoShutdownDebuff", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("NanoShutdownDebuff", spell, fightingTarget, ref actionTarget);
         }
 
         private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("UseNanoResistanceDebuff", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("NanoResistanceDebuff", spell, fightingTarget, ref actionTarget);
         }
 
         private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("UseDamageDebuffs", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("DamageDebuffs", spell, fightingTarget, ref actionTarget);
         }
 
-        private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) {
-            return ToggledDebuffTarget("UseNukes", spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool MPCompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
         {
-            if(GetNanoBuffsSelection() != NanoBuffsSelection.SL) { return false; }
-
-            return GenericBuff(spell, fightingTarget,  ref actionTarget);
+            return ToggledDebuffTarget("Nukes", spell, fightingTarget, ref actionTarget);
         }
 
-        private bool MPNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (GetNanoBuffsSelection() != NanoBuffsSelection.RK) { return false; }
+            if (IsSettingEnabled("Composites")) 
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MatMetBuffs))
+                    CancelBuffs(RelevantNanos.MatMetBuffs);
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.BioMetBuffs))
+                    CancelBuffs(RelevantNanos.BioMetBuffs);
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.PsyModBuffs))
+                    CancelBuffs(RelevantNanos.PsyModBuffs);
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SenImpBuffs))
+                    CancelBuffs(RelevantNanos.SenImpBuffs);
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MatCreBuffs))
+                    CancelBuffs(RelevantNanos.MatCreBuffs);
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MatLocBuffs))
+                    CancelBuffs(RelevantNanos.MatLocBuffs);
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            if (IsSettingEnabled("CompositesTeam"))
+            {
+                return TeamBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
-        private bool HasAnyMPNanoLineBuff(SimpleChar target)
+        private bool MatterCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return target.Buffs.Contains(NanoLine.MatMetBuff) || target.Buffs.Contains(NanoLine.BioMetBuff)
-                || target.Buffs.Contains(NanoLine.PsyModBuff) || target.Buffs.Contains(NanoLine.SenseImpBuff)
-                || target.Buffs.Contains(NanoLine.MatCreaBuff) || target.Buffs.Contains(NanoLine.MatLocBuff);
+            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                CancelBuffs(RelevantNanos.MPCompositeNano);
+
+            return ToggledBuff("MatterCrea", spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool PyschoModiBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                CancelBuffs(RelevantNanos.MPCompositeNano);
+
+            return ToggledBuff("PyschoModi", spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool TimeSpaceBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                CancelBuffs(RelevantNanos.MPCompositeNano);
+
+            return ToggledBuff("TimeSpace", spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool SenseImprovBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                CancelBuffs(RelevantNanos.MPCompositeNano);
+
+            return ToggledBuff("SenseImprov", spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool BioMetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                CancelBuffs(RelevantNanos.MPCompositeNano);
+
+            return ToggledBuff("BioMet", spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool MattMetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                CancelBuffs(RelevantNanos.MPCompositeNano);
+
+            return ToggledBuff("MattMet", spell, fightingTarget, ref actionTarget);
         }
 
         private bool InterruptModifierBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledBuff("BuffInterruptChance", spell, fightingTarget, ref actionTarget);
+            return ToggledBuff("InterruptChance", spell, fightingTarget, ref actionTarget);
         }
 
         private bool MPDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
         {
-            return ToggledDebuffOthersInCombat("UseDamageDebuffsOnOthers", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffOthersInCombat("OSDamageDebuffs", spell, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !IsSettingEnabled("UseNukes")) { return false; }
+            if (fightingTarget == null || !IsSettingEnabled("Nukes")) { return false; }
 
             return true;
         }
@@ -321,7 +403,7 @@ namespace Desu
                 .Where(c => DynelManager.LocalPlayer.FightingTarget.Identity != c.Identity)
                 .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player of a pet
                 .Where(c => c.IsAttacking) //Is in combat
-                .Where(c => c.IsValid).Where(c => c.IsInLineOfSight).Where(c => c.IsInAttackRange()) //Is in range for debuff (we assume weapon range == debuff range)
+                .Where(c => c.IsValid).Where(c => c.IsInLineOfSight).Where(c => c.DistanceFrom(DynelManager.LocalPlayer) <= 15f) //Is in range for debuff
                 .FirstOrDefault();
         }
 
@@ -369,20 +451,6 @@ namespace Desu
             }
 
             base.OnUpdate(deltaTime);
-
-            if (GetNanoBuffsSelection() == NanoBuffsSelection.RK) 
-            {
-                CancelBuffs(RelevantNanos.MPCompositeNano);
-            } 
-            else
-            {
-                CancelBuffs(RelevantNanos.MatMetBuffs);
-                CancelBuffs(RelevantNanos.BioMetBuffs);
-                CancelBuffs(RelevantNanos.PsyModBuffs);
-                CancelBuffs(RelevantNanos.SenImpBuffs);
-                CancelBuffs(RelevantNanos.MatCreBuffs);
-                CancelBuffs(RelevantNanos.MatLocBuffs);
-            }
         }
 
         private static class RelevantNanos
@@ -404,35 +472,24 @@ namespace Desu
             public static readonly int[] MatCreBuffs = Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder().Select(spell => spell.Identity.Instance).ToArray();
             public static readonly int[] MatLocBuffs = Spell.GetSpellsForNanoline(NanoLine.MatLocBuff).OrderByStackingOrder().Select(spell => spell.Identity.Instance).ToArray();
 
-            public static readonly string[] TwoHandedNames = { "Azure Cobra of Orma", "Wixel's Notum Python", "Asp of Semol", "Viper Staff" };
-            public static readonly string[] OneHandedNames = { "Asp of Titaniush", "Gold Acantophis", "Bitis Striker", "Coplan's Hand Taipan", "The Crotalus" };
-            public static readonly string[] ShieldNames = { "Shield of Zset", "Shield of Esa", "Shield of Asmodian", "Mocham's Guard", "Death Ward", "Belthior's Flame Ward", "Wave Breaker", "Living Shield of Evernan", "Solar Guard", "Notum Defender", "Vital Buckler" };
+            //public static readonly string[] TwoHandedNames = { "Azure Cobra of Orma", "Wixel's Notum Python", "Asp of Semol", "Viper Staff" };
+            //public static readonly string[] OneHandedNames = { "Asp of Titaniush", "Gold Acantophis", "Bitis Striker", "Coplan's Hand Taipan", "The Crotalus" };
+            //public static readonly string[] ShieldNames = { "Shield of Zset", "Shield of Esa", "Shield of Asmodian", "Mocham's Guard", "Death Ward", "Belthior's Flame Ward", "Wave Breaker", "Living Shield of Evernan", "Solar Guard", "Notum Defender", "Vital Buckler" };
         }
 
-        private enum NanoBuffsSelection
-        {
-            SL = 0,
-            RK = 1
-        }
+        //private enum SummonedWeaponSelection
+        //{
+        //    DISABLED = 0,
+        //    TWO_HANDED = 1,
+        //    ONE_HANDED_PLUS_SHIELD = 2,
+        //    ONE_HANDED_PLUS_ONE_HANDED = 3,
+        //    ONE_HANDED = 4,
+        //    SHIELD = 5
+        //}
 
-        private enum SummonedWeaponSelection
-        {
-            DISABLED = 0,
-            TWO_HANDED = 1,
-            ONE_HANDED_PLUS_SHIELD = 2,
-            ONE_HANDED_PLUS_ONE_HANDED = 3,
-            ONE_HANDED = 4,
-            SHIELD = 5
-        }
-
-        private NanoBuffsSelection GetNanoBuffsSelection()
-        {
-            return (NanoBuffsSelection)settings["NanoBuffsSelection"].AsInt32();
-        }
-
-        private SummonedWeaponSelection GetSummonedWeaponSelection()
-        {
-            return (SummonedWeaponSelection)settings["SummonedWeaponSelection"].AsInt32();
-        }
+        //private SummonedWeaponSelection GetSummonedWeaponSelection()
+        //{
+        //    return (SummonedWeaponSelection)settings["SummonedWeaponSelection"].AsInt32();
+        //}
     }
 }

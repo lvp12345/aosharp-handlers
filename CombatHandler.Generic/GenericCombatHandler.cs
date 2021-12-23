@@ -27,6 +27,10 @@ namespace CombatHandler.Generic
 
         protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
         {
+                    "Immortal Guardian",
+                    "Mature Abyss Orchid",
+                    "Abyss Orchid Sprout",
+                    "Tower of Astodan",
                     "Unicorn Commander Labbe",
                     "Altar of Torture",
                     "Altar of Purification",
@@ -412,6 +416,7 @@ namespace CombatHandler.Generic
                 .Where(c => c.IsInLineOfSight)
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
                 .Where(c => SpellChecksOther(spell, c)) //Needs debuff refreshed
+                .OrderBy(c => c.MaxHealth)
                 .FirstOrDefault();
 
             if (debuffTarget != null)

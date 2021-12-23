@@ -15,7 +15,7 @@ namespace Desu
         public const double absorbsrefresh = 8f;
         public const double aoerefresh = 7.5f;
         public const double aoerefreshost = 10f;
-        public const double singletauntrefresh = 4.5f;
+        public const double singletauntrefresh = 8f;
         private double _absorbsused;
         private double _aoeused;
         private double _aoeusedost;

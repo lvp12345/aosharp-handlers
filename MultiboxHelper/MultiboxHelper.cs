@@ -584,7 +584,7 @@ namespace MultiboxHelper
                 {
                     Inventory.Find(genericCmdMsg.Target, out Item item);
 
-                    if (!IsBackpack(item))
+                    if (!IsBackpack(item) && !IsOther(item))
                     {
                         IPCChannel.Broadcast(new UsableMessage()
                         {
@@ -1345,6 +1345,12 @@ namespace MultiboxHelper
                 item.LowId == 287447 || item.LowId == 287448 || item.LowId == 287609 || item.LowId == 287610 || item.LowId == 287611 ||
                 item.LowId == 287612 || item.LowId == 287613 || item.LowId == 287614 || item.LowId == 287615 || item.LowId == 287616 ||
                 item.LowId == 287617 || item.LowId == 287618 || item.LowId == 287619 || item.LowId == 287620;
+        }
+
+        public static bool IsOther(Item item)
+        {
+            return item.LowId == 305476 || item.LowId == 204698 || item.LowId == 156576 || item.LowId == 267168 || item.LowId == 267167
+                || item.Name.Contains("Health");
         }
 
         private void OnNavFollowMessage(int sender, IPCMessage msg)

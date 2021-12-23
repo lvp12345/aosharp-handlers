@@ -9,6 +9,9 @@ namespace Desu
 {
     public class SoldCombathandler : GenericCombatHandler
     {
+        public const double singletauntrefresh = 8f;
+        private double _singletauntused;
+
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SingleTaunt", false);
@@ -151,7 +154,26 @@ namespace Desu
 
             if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
-            return true;
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
+            if (fightingTarget?.FightingTarget != null && fightingTarget?.FightingTarget.Profession == Profession.Enforcer) { return false; }
+
+            if (IsNotFightingMe(fightingTarget))
+            {
+                actionTarget.Target = fightingTarget;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            if (Time.NormalTime > _singletauntused + singletauntrefresh)
+            {
+                _singletauntused = Time.NormalTime;
+                actionTarget.Target = fightingTarget;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
         }
 
         private bool SolDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

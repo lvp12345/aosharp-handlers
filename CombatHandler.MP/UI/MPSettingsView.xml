@@ -1,34 +1,54 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-<View h_alignment="LEFT" view_layout="vertical" name="parent">
-	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-		<TextView value="Debuffs" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Use Damage debuffs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseDamageDebuffs" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Nano Resistance debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseNanoResistanceDebuff" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Nano Shutdown debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseNanoShutdownDebuff" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use Damage debuffs on others in combat" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseDamageDebuffsOnOthers" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Use nukes" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__UseNukes" layout_borders="Rect(10,1,5,1)"/>
-		<OptionRadioButtonGroup label="MP Nano buffing type" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoBuffsSelection">
-			<RadioButton label="Composite" value="0"/>
-			<RadioButton label="Single" value="1"/>
-		</OptionRadioButtonGroup>
-		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-		<TextView value="Pets" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Spawn pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Buff pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
-		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-		<VLayoutSpacer/>
-		<TextView value="Summoned Weapons (Not implemented yet)" layout_borders="Rect(5,5,5,5)"/>
-		<OptionRadioButtonGroup label="Weapon types" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SummonedWeaponSelection">
-			<RadioButton label="Disabled" value="0"/>
-			<RadioButton label="2HB" value="1"/>
-			<RadioButton label="1HB + Shield" value="2"/>
-			<RadioButton label="1HB + 1HB" value="3"/>
-			<RadioButton label="1HB" value="4"/>
-			<RadioButton label="Shield" value="5"/>
-		</OptionRadioButtonGroup>
-		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-		<VLayoutSpacer/>
-	</BorderView>
-</View>
+  <View h_alignment="LEFT" view_layout="vertical" name="parent">
+    <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value="           Buffs" layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Composites (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CompositesTeam" layout_borders="Rect(10,1,5,1)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Space Time" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TimeSpace" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Matter Crea" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MatterCrea" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Bio Metamor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BioMet" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Matt Metam" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MattMet" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Psycho Modi" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PyschoModi" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Sensory Impr" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SenseImprov" layout_borders="Rect(10,1,5,1)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value="          Debuffs" layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Nuking" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Nukes" layout_borders="Rect(10,1,5,1)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageDebuffs" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="OS Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__OSDamageDebuffs" layout_borders="Rect(10,1,5,1)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Nano Resistance" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoResistanceDebuff" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Nano Shutdown" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoShutdownDebuff" layout_borders="Rect(10,1,5,1)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value="            Pets" layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Spawn Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Buff Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
+      <!--<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value="        Weapons" layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Space Time" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TimeSpace" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Matter Crea" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MatterCrea" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Bio Metamor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BioMet" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Matt Metam" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MattMet" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Psycho Modi" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PyschoModi" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Sensory Impr" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SenseImprov" layout_borders="Rect(10,1,5,1)"/>-->
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    </BorderView>
+  </View>
 </root>

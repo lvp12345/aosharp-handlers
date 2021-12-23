@@ -256,6 +256,7 @@ namespace Desu
                 SimpleChar target = DynelManager.NPCs
                     .Where(x => x.IsAlive)
                     .Where(x => x.Identity == fightingTarget.Identity)
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
                     .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                     .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
                     .FirstOrDefault();
@@ -283,6 +284,7 @@ namespace Desu
                 SimpleChar target = DynelManager.NPCs
                     .Where(x => x.IsAlive)
                     .Where(x => x.Identity == fightingTarget.Identity)
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
                     .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                     .Where(x => !x.Buffs.Contains(NanoLine.GeneralRadiationACDebuff) && !x.Buffs.Contains(NanoLine.GeneralProjectileACDebuff))
                     .FirstOrDefault();

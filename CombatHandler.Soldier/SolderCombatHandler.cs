@@ -101,10 +101,10 @@ namespace Desu
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => SpellChecksOther(spell, c))
-                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Smg)
+                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Grenade) && c.Profession != Profession.Engineer
+                    || (GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Smg)
                     || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Shotgun)
-                    || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Grenade)
-                    || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.AssaultRifle))
+                    || GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.AssaultRifle)))
                     .Where(c => !GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Pistol))
                     .Where(c => !c.Buffs.Contains(NanoLine.FixerSuppressorBuff))
                     .Where(c => !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))

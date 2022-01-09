@@ -19,6 +19,9 @@ namespace Desu
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
 
+            settings.AddVariable("Cost", false);
+            settings.AddVariable("CostTeam", false);
+
             settings.AddVariable("InterruptChance", false);
 
             settings.AddVariable("DamageDebuffs", false);
@@ -66,7 +69,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.MatLocBuffs, TimeSpaceBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifierBuff);
-            RegisterSpellProcessor(RelevantNanos.CostBuffs, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
@@ -124,6 +127,21 @@ namespace Desu
             if (petToBuff != null)
             {
                 spell.Cast(petToBuff.Character, true);
+            }
+
+            return false;
+        }
+
+        private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Cost"))
+            {
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            if (IsSettingEnabled("CostTeam"))
+            {
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -323,8 +341,7 @@ namespace Desu
 
         private bool CostPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetTargetBuff(NanoLine.NPCostBuff, PetType.Attack, spell, fightingTarget, ref actionTarget) ||
-                PetTargetBuff(NanoLine.NPCostBuff, PetType.Heal, spell, fightingTarget, ref actionTarget) ||
+            return PetTargetBuff(NanoLine.NPCostBuff, PetType.Heal, spell, fightingTarget, ref actionTarget) ||
                 PetTargetBuff(NanoLine.NPCostBuff, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 

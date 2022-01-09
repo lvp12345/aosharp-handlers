@@ -55,8 +55,8 @@ namespace MultiboxHelper
             new Vector3(37.3, 29.0, 59.0),
             new Vector3(35.6, 29.3, 30.5),
             new Vector3(37.3, 29.0, 59.0),
-            new Vector3(75.5, 29.0, 58.6),
-            new Vector3(76.1, 29.0, 28.3)
+            new Vector3(75.5, 29.0, 58.6)
+            //new Vector3(76.1, 29.0, 28.3)
         };
 
         List<Vector3> horsey = new List<Vector3>
@@ -65,8 +65,8 @@ namespace MultiboxHelper
             new Vector3(161.9, 29.0, 59.5),
             new Vector3(163.9, 29.4, 29.6),
             new Vector3(161.9, 29.0, 59.5),
-            new Vector3(128.4, 29.0, 59.6),
-            new Vector3(76.1, 29.0, 28.3)
+            new Vector3(128.4, 29.0, 59.6)
+            //new Vector3(76.1, 29.0, 28.3)
         };
 
         public byte _channelId;
@@ -187,12 +187,18 @@ namespace MultiboxHelper
 
             if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281109))
             {
+                Vector3 curr = DynelManager.LocalPlayer.Position;
+
                 MovementController.Instance.SetPath(birdy);
+                MovementController.Instance.AppendDestination(curr);
             }
 
             if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281108))
             {
+                Vector3 curr = DynelManager.LocalPlayer.Position;
+
                 MovementController.Instance.SetPath(horsey);
+                MovementController.Instance.AppendDestination(curr);
             }
 
             if (Time.NormalTime > sitUpdateTimer + 0.5)

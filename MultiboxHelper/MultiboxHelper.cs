@@ -797,7 +797,7 @@ namespace MultiboxHelper
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && HealingPet == false)
                 {
-                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 95) { return; }
+                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 55) { return; }
 
                     Task.Factory.StartNew(
                         async () =>

@@ -758,7 +758,7 @@ namespace MultiboxHelper
             DynelManager.LocalPlayer.StopAttack();
         }
 
-        private int PetMaxNanoPool()
+        private float PetMaxNanoPool()
         {
             if (healpet.Character.Level == 215)
                 return 5803;
@@ -798,7 +798,7 @@ namespace MultiboxHelper
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && Time.NormalTime > usedSitPetUpdateTimer + 16)
                 {
-                    if (PetMaxNanoPool() / healpet.Character.Nano * 100 > 55) { return; }
+                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 55) { return; }
 
                     MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
 

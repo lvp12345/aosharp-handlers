@@ -28,18 +28,24 @@ namespace MultiboxHelper
         private double _ncuUpdateTime = 0;
         private double _updateTick = 0;
 
+        private Dictionary<string, int> PetNanoPool = new Dictionary<string, int>();
+
         private static Identity useDynel;
         private static Identity useOnDynel;
         private static Identity useItem;
+
+        private static Pet healpet;
 
         public static string PluginDirectory;
 
 
         private static double posUpdateTimer;
         private static double sitUpdateTimer;
+        private static double sitPetUpdateTimer;
 
         public static bool YalmSwitch = false;
         public static bool Sitting = false;
+        public static bool HealingPet = false;
 
         public static Spell yalmbuffs = null;
 
@@ -206,6 +212,14 @@ namespace MultiboxHelper
                 ListenerSit();
 
                 sitUpdateTimer = Time.NormalTime;
+            }
+
+            if (Time.NormalTime > sitPetUpdateTimer + 1.5)
+            {
+                if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
+                    ListenerPetSit();
+
+                sitPetUpdateTimer = Time.NormalTime;
             }
 
             if (Time.NormalTime > posUpdateTimer + 0.1)
@@ -741,6 +755,69 @@ namespace MultiboxHelper
                 return;
 
             DynelManager.LocalPlayer.StopAttack();
+        }
+
+        private int PetMaxNanoPool()
+        {
+            if (healpet.Character.Level == 215)
+                return 5803;
+            else if (healpet.Character.Level == 192)
+                return 13310;
+            else if (healpet.Character.Level == 169)
+                return 11231;
+            else if (healpet.Character.Level == 146)
+                return 9153;
+            else if (healpet.Character.Level == 123)
+                return 7169;
+            else if (healpet.Character.Level == 99)
+                return 5327;
+            else if (healpet.Character.Level == 77)
+                return 3807;
+            else if (healpet.Character.Level == 55)
+                return 2404;
+            else if (healpet.Character.Level == 33)
+                return 1234;
+            else if (healpet.Character.Level == 14)
+                return 414;
+
+            return 0;
+        }
+
+        private void ListenerPetSit()
+        {
+            healpet = DynelManager.LocalPlayer.Pets.Where(x => x.Type == PetType.Heal).FirstOrDefault();
+
+            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.LowId)).FirstOrDefault();
+
+            if (healpet == null) { return; }
+
+            if (settings["AutoSit"].AsBool())
+            {
+                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
+                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
+                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && HealingPet == false)
+                {
+                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 95) { return; }
+
+                    Task.Factory.StartNew(
+                        async () =>
+                        {
+                            HealingPet = true;
+                            await Task.Delay(400);
+                            MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                            await Task.Delay(400);
+                            if (kit != null)
+                            {
+                                Targeting.SetTarget(healpet.Identity);
+                                kit.Use();
+                            }
+                            await Task.Delay(400);
+                            MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                            await Task.Delay(15000);
+                            HealingPet = false;
+                        });
+                }
+            }
         }
 
         private void ListenerSit()
@@ -1437,6 +1514,13 @@ namespace MultiboxHelper
                 296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
                 270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 293619,
                 294781, 301669
+            };
+        }
+
+        private static class RelevantItems
+        {
+            public static readonly int[] Kits = {
+                297274, 293296, 291084, 291083, 291082
             };
         }
     }

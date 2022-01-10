@@ -42,6 +42,7 @@ namespace MultiboxHelper
         private static double posUpdateTimer;
         private static double sitUpdateTimer;
         private static double sitPetUpdateTimer;
+        private static double usedSitPetUpdateTimer;
 
         public static bool YalmSwitch = false;
         public static bool Sitting = false;
@@ -789,33 +790,24 @@ namespace MultiboxHelper
 
             Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.LowId)).FirstOrDefault();
 
-            if (healpet == null) { return; }
+            if (healpet == null || kit == null) { return; }
 
             if (settings["AutoSit"].AsBool())
             {
                 if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
-                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && HealingPet == false)
+                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && Time.NormalTime > usedSitPetUpdateTimer + 16)
                 {
-                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 55) { return; }
+                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 95) { return; }
 
-                    Task.Factory.StartNew(
-                        async () =>
-                        {
-                            HealingPet = true;
-                            await Task.Delay(400);
-                            MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                            await Task.Delay(400);
-                            if (kit != null)
-                            {
-                                Targeting.SetTarget(healpet.Identity);
-                                kit.Use();
-                            }
-                            await Task.Delay(400);
-                            MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                            await Task.Delay(15000);
-                            HealingPet = false;
-                        });
+                    MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+
+                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
+                    {
+                        kit.Use(healpet.Character, true);
+                        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                        usedSitPetUpdateTimer = Time.NormalTime;
+                    }
                 }
             }
         }

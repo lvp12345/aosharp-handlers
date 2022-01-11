@@ -798,6 +798,8 @@ namespace MultiboxHelper
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && Time.NormalTime > usedSitPetUpdateTimer + 16)
                 {
+                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 == 0 || healpet.Character.Nano / PetMaxNanoPool() * 100 == 10) { return; }
+
                     if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 55) { return; }
 
                     MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
@@ -816,13 +818,41 @@ namespace MultiboxHelper
         {
             Spell spell = Spell.List.FirstOrDefault(x => x.IsReady);
 
+            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.LowId)).FirstOrDefault();
+
+            if (kit == null) { return; }
+
             if (spell != null && settings["AutoSit"].AsBool())
             {
                 if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null 
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning 
-                    && !DynelManager.LocalPlayer.Buffs.Contains(280488))
+                    && !DynelManager.LocalPlayer.Buffs.Contains(280488) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
                 {
+                    // Trying something new
+
+                    //if (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65)
+                    //{
+                    //    MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+
+                    //    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
+                    //    {
+                    //        Sitting = true;
+                    //        kit.Use(DynelManager.LocalPlayer, true);
+                    //    }
+                    //}
+
+                    //if (Sitting == true && DynelManager.LocalPlayer.MovementState == MovementState.Sit
+                    //    && DynelManager.LocalPlayer.NanoPercent > 65 && DynelManager.LocalPlayer.HealthPercent > 65)
+                    //{
+                    //    Sitting = false;
+                    //    MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                    //}
+
+
+
+                    // Works best
+
                     if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
                         && DynelManager.LocalPlayer.MovementState != MovementState.Sit
                         && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))

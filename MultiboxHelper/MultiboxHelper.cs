@@ -806,8 +806,24 @@ namespace MultiboxHelper
 
                     if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
                     {
+                        //Task.Factory.StartNew(
+                        //    async () =>
+                        //    {
+                        //        Sitting = true;
+                        //        kit.Use(healpet.Character, true);
+                        //        await Task.Delay(100);
+                        //        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                        //        usedSitPetUpdateTimer = Time.NormalTime;
+                        //    });
+
                         kit.Use(healpet.Character, true);
                         MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                        Task.Factory.StartNew(
+                            async () =>
+                            {
+                                await Task.Delay(100);
+                                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                            });
                         usedSitPetUpdateTimer = Time.NormalTime;
                     }
                 }
@@ -850,11 +866,12 @@ namespace MultiboxHelper
                     //}
 
 
-
-                    // Works best
-
-                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
+                    if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
                         && DynelManager.LocalPlayer.MovementState != MovementState.Sit
+                        && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
+                        && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
+                        && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning
+                        && !DynelManager.LocalPlayer.Buffs.Contains(280488)
                         && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
                     {
                         Task.Factory.StartNew(
@@ -863,20 +880,45 @@ namespace MultiboxHelper
                                 Sitting = true;
                                 await Task.Delay(400);
                                 MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                            });
-                    }
-
-                    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && DynelManager.LocalPlayer.MovementState == MovementState.Sit
-                        && DynelManager.LocalPlayer.NanoPercent > 65 && DynelManager.LocalPlayer.HealthPercent > 65 && Sitting == true)
-                    {
-                        Task.Factory.StartNew(
-                            async () =>
-                            {
+                                await Task.Delay(800);
                                 MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                                await Task.Delay(400);
+                                await Task.Delay(200);
                                 Sitting = false;
                             });
                     }
+
+
+
+                    // Works best
+
+                    //if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
+                    //    && DynelManager.LocalPlayer.MovementState != MovementState.Sit
+                    //    && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
+                    //    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
+                    //    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning
+                    //    && !DynelManager.LocalPlayer.Buffs.Contains(280488)
+                    //    && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
+                    //{
+                    //    Task.Factory.StartNew(
+                    //        async () =>
+                    //        {
+                    //            Sitting = true;
+                    //            await Task.Delay(400);
+                    //            MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                    //        });
+                    //}
+
+                    //if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && DynelManager.LocalPlayer.MovementState == MovementState.Sit
+                    //    && DynelManager.LocalPlayer.NanoPercent > 65 && DynelManager.LocalPlayer.HealthPercent > 65 && Sitting == true)
+                    //{
+                    //    Task.Factory.StartNew(
+                    //        async () =>
+                    //        {
+                    //            MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                    //            await Task.Delay(400);
+                    //            Sitting = false;
+                    //        });
+                    //}
                 }
             }
         }

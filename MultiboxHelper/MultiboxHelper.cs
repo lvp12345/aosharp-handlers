@@ -159,7 +159,6 @@ namespace MultiboxHelper
 
         private void OnUpdate(object s, float deltaTime)
         {
-
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -798,7 +797,7 @@ namespace MultiboxHelper
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && Time.NormalTime > usedSitPetUpdateTimer + 16)
                 {
-                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 == 0 || healpet.Character.Nano / PetMaxNanoPool() * 100 == 10) { return; }
+                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 <= 10) { return; }
 
                     if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 55) { return; }
 

@@ -827,7 +827,7 @@ namespace MultiboxHelper
                 if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null 
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning 
-                    && !DynelManager.LocalPlayer.Buffs.Contains(280488) && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                    && !DynelManager.LocalPlayer.Buffs.Contains(280488))
                 {
                     // Trying something new
 

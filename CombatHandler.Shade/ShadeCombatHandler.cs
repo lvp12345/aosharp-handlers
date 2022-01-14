@@ -14,10 +14,16 @@ namespace Desu
 
         public ShadeCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("UseDrainNanoForDps", true);
-            settings.AddVariable("UseSpiritSiphon", true);
-            settings.AddVariable("UseFasterThanYourShadow", false);
-            settings.AddVariable("ProcSelection", 0);
+            settings.AddVariable("Runspeed", false);
+            settings.AddVariable("RunspeedTeam", false);
+
+            settings.AddVariable("InitDebuffProc", false);
+            settings.AddVariable("DamageProc", false);
+            settings.AddVariable("DoTProc", false);
+            settings.AddVariable("StunProc", false);
+
+            settings.AddVariable("HealthDrain", false);
+            settings.AddVariable("SpiritSiphon", false);
 
             RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
@@ -46,44 +52,32 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(), GenericBuff);
+
             RegisterSpellProcessor(RelevantNanos.ShadeDmgProc, DamageProc);
             RegisterSpellProcessor(RelevantNanos.ShadeStunProc, StunProc);
             RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc, InitDebuffProc);
-            RegisterSpellProcessor(RelevantNanos.ShadeDotProc, DotProc);
+            RegisterSpellProcessor(RelevantNanos.ShadeDotProc, DoTProc);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
         }
 
-        private bool DamageProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            return ShadeProc(ProcType.DAMAGE, spell, fightingtarget, ref actiontarget);
-        }
-
-        private bool StunProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            return ShadeProc(ProcType.STUN, spell, fightingtarget, ref actiontarget);
-        }
-
         private bool InitDebuffProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            return ShadeProc(ProcType.INIT_DEBUFF, spell, fightingtarget, ref actiontarget);
+            return ToggledBuff("InitDebuffProc", spell, fightingtarget, ref actiontarget);
         }
 
-        private bool DotProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool DamageProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            return ShadeProc(ProcType.DOT, spell, fightingtarget, ref actiontarget);
+            return ToggledBuff("DamageProc", spell, fightingtarget, ref actiontarget);
         }
-
-        private bool ShadeProc(ProcType procType, Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool DoTProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsProcSelected(procType)) { return false; }
-
-            return GenericBuff(spell, fightingtarget, ref actiontarget);
+            return ToggledBuff("DoTProc", spell, fightingtarget, ref actiontarget);
         }
-
-        private bool IsProcSelected(ProcType procType)
+        private bool StunProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            return procType == (ProcType)settings["ProcSelection"].AsInt32();
+            return ToggledBuff("StunProc", spell, fightingtarget, ref actiontarget);
         }
 
         private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -95,13 +89,54 @@ namespace Desu
             return false;
         }
 
+        protected bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => !c.Buffs.Contains(RelevantNanos.EVASION_BUFFS))
+                    .Where(c => SpellChecksOther(spell, c))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
+            if (IsSettingEnabled("RunspeedTeam"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
+                {
+                    CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
+                }
 
-            return ToggledBuff("UseFasterThanYourShadow", spell, fightingTarget, ref actionTarget);
+                return FTYSTeamBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            if (IsSettingEnabled("Runspeed"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
+                {
+                    CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
+                }
+
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -136,7 +171,7 @@ namespace Desu
 
         private bool SpiritSiphonNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("UseSpiritSiphon")) { return false; }
+            if (!IsSettingEnabled("SpiritSiphon")) { return false; }
 
             if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
@@ -158,7 +193,7 @@ namespace Desu
             }
 
             // only use it for dps if we have plenty of nano
-            if (IsSettingEnabled("UseDrainNanoForDps") && DynelManager.LocalPlayer.NanoPercent > 80) { return true; }
+            if (IsSettingEnabled("HealthDrain") && DynelManager.LocalPlayer.NanoPercent > 80) { return true; }
 
             // otherwise save it for if our health starts to drop
             if (DynelManager.LocalPlayer.HealthPercent >= 85) { return false; }
@@ -215,30 +250,69 @@ namespace Desu
         {
             base.OnUpdate(deltaTime);
 
-            if (!IsProcSelected(ProcType.DAMAGE))
+            if (settings["InitDebuffProc"].AsBool() && settings["DamageProc"].AsBool())
             {
-                CancelBuffs(RelevantNanos.ShadeDmgProc);
+                settings["InitDebuffProc"] = false;
+                settings["DamageProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
             }
-            if (!IsProcSelected(ProcType.STUN))
+            if (settings["InitDebuffProc"].AsBool() && settings["DoTProc"].AsBool())
             {
-                CancelBuffs(RelevantNanos.ShadeStunProc);
+                settings["InitDebuffProc"] = false;
+                settings["DoTProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
             }
-            if (!IsProcSelected(ProcType.INIT_DEBUFF))
+            if (settings["InitDebuffProc"].AsBool() && settings["StunProc"].AsBool())
+            {
+                settings["InitDebuffProc"] = false;
+                settings["StunProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+            if (settings["DamageProc"].AsBool() && settings["StunProc"].AsBool())
+            {
+                settings["DamageProc"] = false;
+                settings["StunProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+            if (settings["DamageProc"].AsBool() && settings["DoTProc"].AsBool())
+            {
+                settings["DamageProc"] = false;
+                settings["DoTProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+            if (settings["StunProc"].AsBool() && settings["DoTProc"].AsBool())
+            {
+                settings["StunProc"] = false;
+                settings["DoTProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+
+            if (!IsSettingEnabled("Runspeed") && !IsSettingEnabled("RunspeedTeam"))
+            {
+                CancelBuffs(RelevantNanos.FasterThanYourShadow);
+            }
+            if (!IsSettingEnabled("InitDebuffProc"))
             {
                 CancelBuffs(RelevantNanos.ShadeInitDebuffProc);
             }
-            if (!IsProcSelected(ProcType.DOT))
+            if (!IsSettingEnabled("DamageProc"))
+            {
+                CancelBuffs(RelevantNanos.ShadeDmgProc);
+            }
+            if (!IsSettingEnabled("DoTProc"))
             {
                 CancelBuffs(RelevantNanos.ShadeDotProc);
             }
-        }
-
-        private enum ProcType
-        {
-            DAMAGE = 0,
-            STUN = 1,
-            INIT_DEBUFF = 2,
-            DOT = 3
+            if (!IsSettingEnabled("StunProc"))
+            {
+                CancelBuffs(RelevantNanos.ShadeStunProc);
+            }
         }
 
         private class RelevantItems {
@@ -252,6 +326,11 @@ namespace Desu
             public const int CompositeNano = 223380;
             public const int CompositeMelee = 223360;
             public const int CompositeMeleeSpec = 215264;
+            public static readonly int[] FasterThanYourShadow = { 272371 };
+            public static readonly int[] EVASION_BUFFS = { 275844, 29247, 28903, 28878, 28872, 218070, 218068, 218066,
+            218064, 218062, 218060, 272371, 270808, 30745, 302188, 29272, 270802, 28603, 223125, 223131, 223129, 215718,
+            223127, 272416, 272415, 272414, 272413, 272412};
+            public static readonly int[] RK_RUN_BUFFS = { 93132, 93126, 93127, 93128, 93129, 93130, 93131, 93125 };
             public static readonly int[] ShadeDmgProc = { 224167, 224165, 224163, 210371, 210369, 210367, 210365, 210363, 210361, 210359, 210357, 210355, 210353 };
             public static readonly int[] ShadeStunProc = { 224171, 224169, 210380, 210378, 210376 };
             public static readonly int[] ShadeInitDebuffProc = { 224177, 210407, 210401 };

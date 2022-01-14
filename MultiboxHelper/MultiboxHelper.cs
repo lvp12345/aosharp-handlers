@@ -926,7 +926,6 @@ namespace MultiboxHelper
         {
             SimpleChar target = DynelManager.NPCs
                 .Where(c => c.IsAlive)
-                .Where(c => c.IsInLineOfSight)
                 .Where(c => c.FightingTarget != null)
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                 .FirstOrDefault();
@@ -935,22 +934,43 @@ namespace MultiboxHelper
 
             if (Team.IsInTeam)
             {
-                if (Team.Members.Where(c => c.Character != null).Where(c => target.FightingTarget.Name == c.Character.Name).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
-                    return true;
-                if (target.FightingTarget.IsPet && Team.Members.Where(c => c.Character != null).Where(c => c.Name == target.FightingTarget.Name).Any())
-                    return true;
+                if (DynelManager.LocalPlayer.FightingTarget != null && target.FightingTarget == DynelManager.LocalPlayer) { return true; }
 
-                    return false;
+                if (Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any()) { return true; }
+
+                if (target.FightingTarget.IsPet) { return true; }
+
+                return false;
             }
             else
             {
-                if (target.FightingTarget.Identity == DynelManager.LocalPlayer.Identity || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
-                    return true;
-                if (DynelManager.LocalPlayer.Pets.Where(c => target.FightingTarget.Name == c.Character.Name).Any())
-                    return true;
+                if (DynelManager.LocalPlayer.FightingTarget != null && target.FightingTarget == DynelManager.LocalPlayer) { return true; }
 
-                    return false;
+                if (target.FightingTarget.IsPet) { return true; }
+
+                return false;
             }
+
+            //if (target == null) { return false; }
+
+            //if (Team.IsInTeam)
+            //{
+            //    if (Team.Members.Where(c => c.Character != null).Where(c => target.FightingTarget.Name == c.Character.Name).Any() || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
+            //        return true;
+            //    if (target.FightingTarget.IsPet && Team.Members.Where(c => c.Character != null).Where(c => c.Name == target.FightingTarget.Name).Any())
+            //        return true;
+
+            //        return false;
+            //}
+            //else
+            //{
+            //    if (target.FightingTarget.Identity == DynelManager.LocalPlayer.Identity || target.FightingTarget.DistanceFrom(DynelManager.LocalPlayer) < 6f)
+            //        return true;
+            //    if (DynelManager.LocalPlayer.Pets.Where(c => target.FightingTarget.Name == c.Character.Name).Any())
+            //        return true;
+
+            //        return false;
+            //}
         }
 
         private void ListenerUseSync()

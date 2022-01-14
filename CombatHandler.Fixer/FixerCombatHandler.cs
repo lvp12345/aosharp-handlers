@@ -17,6 +17,7 @@ namespace Desu
         {
             settings.AddVariable("RKRunspeed", false);
             settings.AddVariable("RKRunspeedTeam", false);
+
             settings.AddVariable("SLRunspeed", false);
 
             settings.AddVariable("EvasionDebuff", false);
@@ -124,22 +125,11 @@ namespace Desu
 
             if (IsSettingEnabled("RKRunspeedTeam"))
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SL_RUN_BUFFS))
-                {
-                    CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
-                }
-
                 return GSFTeamBuff(spell, fightingTarget, ref actionTarget);
             }
 
             if (IsSettingEnabled("RKRunspeed"))
             {
-                if (IsSettingEnabled("RKRunspeed") &&
-                    DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SL_RUN_BUFFS))
-                {
-                    CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
-                }
-
                 return ToggledBuff("RKRunspeed", spell, fightingTarget, ref actionTarget);
             }
 
@@ -149,12 +139,6 @@ namespace Desu
         private bool ShadowlandsSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
-
-            if (IsSettingEnabled("SLRunspeed") && 
-                DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
-            {
-                CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
-            }
 
             return ToggledBuff("SLRunspeed", spell, fightingTarget, ref actionTarget);
         }
@@ -193,6 +177,15 @@ namespace Desu
                 settings["SLRunspeed"] = false;
 
                 Chat.WriteLine("Only activate one Runspeed option.");
+            }
+
+            if (!IsSettingEnabled("RKRunspeed") && !IsSettingEnabled("RKRunspeedTeam"))
+            {
+                CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
+            }
+            if (!IsSettingEnabled("SLRunspeed"))
+            {
+                CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
             }
 
             EquipBackArmor();

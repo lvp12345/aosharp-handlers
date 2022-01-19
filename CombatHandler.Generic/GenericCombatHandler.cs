@@ -125,14 +125,16 @@ namespace CombatHandler.Generic
 
 
             RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
+            RegisterItemProcessor(RelevantItems.AreteSitKit, RelevantItems.AreteSitKit, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit1, RelevantItems.SitKit100, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
             RegisterItemProcessor(RelevantItems.SitKit200, RelevantItems.SitKit300, SitKit);
+            RegisterItemProcessor(RelevantItems.SitKit300, RelevantItems.SitKit400, SitKit);
 
-            RegisterItemProcessor(RelevantItems.FreeStim1, RelevantItems.FreeStim50, UseFreeStim);
-            RegisterItemProcessor(RelevantItems.FreeStim50, RelevantItems.FreeStim100, UseFreeStim);
-            RegisterItemProcessor(RelevantItems.FreeStim100, RelevantItems.FreeStim200, UseFreeStim);
-            RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim300, UseFreeStim);
+            RegisterItemProcessor(RelevantItems.FreeStim1, RelevantItems.FreeStim50, FreeStim);
+            RegisterItemProcessor(RelevantItems.FreeStim50, RelevantItems.FreeStim100, FreeStim);
+            RegisterItemProcessor(RelevantItems.FreeStim100, RelevantItems.FreeStim200, FreeStim);
+            RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim300, FreeStim);
 
 
             RegisterItemProcessor(RelevantItems.AmmoBoxArrows, RelevantItems.AmmoBoxArrows, AmmoBoxArrows);
@@ -582,7 +584,7 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        private bool UseFreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool FreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
                 && !DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
@@ -1286,10 +1288,12 @@ namespace CombatHandler.Generic
             public const int RezCan = 301070;
             public const int ExperienceStim = 288769;
             public const int PremSitKit = 297274;
+            public const int AreteSitKit = 292256;
             public const int SitKit1 = 291082;
             public const int SitKit100 = 291083;
             public const int SitKit200 = 291084;
             public const int SitKit300 = 293296;
+            public const int SitKit400 = 293297;
             public const int FreeStim1 = 204103;
             public const int FreeStim50 = 204104;
             public const int FreeStim100 = 204105;

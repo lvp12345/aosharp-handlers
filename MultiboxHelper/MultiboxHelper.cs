@@ -1505,7 +1505,7 @@ namespace MultiboxHelper
 
         public static void CancelAllBuffs()
         {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.Where(x => !x.Name.Contains("Valid Pass")))
             {
                 buff.Remove();
             }

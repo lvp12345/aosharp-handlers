@@ -39,10 +39,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Character.State, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Debug\Character.State.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

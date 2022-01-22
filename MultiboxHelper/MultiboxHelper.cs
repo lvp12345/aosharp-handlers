@@ -1291,8 +1291,7 @@ namespace MultiboxHelper
                 if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && Time.NormalTime > _sitPetUsedTimer + 16
-                    && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f && healpet.Character.IsInLineOfSight
-                    && kit.MeetsSelfUseReqs())
+                    && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f && healpet.Character.IsInLineOfSight)
                 {
                     if (healpet.Character.Nano / PetMaxNanoPool() * 100 <= 10) { return; }
 
@@ -1368,8 +1367,7 @@ namespace MultiboxHelper
                         && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
                         && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning
                         && !DynelManager.LocalPlayer.Buffs.Contains(280488)
-                        && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65)
-                        && kit.MeetsSelfUseReqs())
+                        && (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66))
                     {
                         Task.Factory.StartNew(
                             async () =>

@@ -455,7 +455,7 @@ namespace CombatHandler.Generic
 
         protected bool TeamBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -500,6 +500,34 @@ namespace CombatHandler.Generic
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
+            }
+
+            return false;
+        }
+
+        protected bool TeamBuffNoNTWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
+        {
+            if (fightingTarget != null || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => c.Profession != Profession.NanoTechnician)
+                    // Combines both together
+                    .Where(c => GetWieldedWeapons(c).HasFlag(supportedWeaponType))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    if (teamMemberWithoutBuff.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
+                        (spell.Nanoline == NanoLine.FixerSuppressorBuff || spell.Nanoline == NanoLine.AssaultRifleBuffs)) { return false; }
+
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;
@@ -563,11 +591,11 @@ namespace CombatHandler.Generic
                 return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
-        protected bool PistolBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool PistolMasteryBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
             {
-                return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+                return TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
             }
             else
                 return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
@@ -613,7 +641,7 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent > 65 && DynelManager.LocalPlayer.NanoPercent > 65) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent >= 66 && DynelManager.LocalPlayer.NanoPercent >= 66) { return false; }
 
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;

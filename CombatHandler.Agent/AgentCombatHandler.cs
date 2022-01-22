@@ -16,6 +16,8 @@ namespace CombatHandler.Agent
         {
             settings.AddVariable("DotStrainA", false);
 
+            settings.AddVariable("CritTeam", false);
+
             settings.AddVariable("InitDebuff", false);
             settings.AddVariable("OSInitDebuff", false);
 
@@ -62,7 +64,7 @@ namespace CombatHandler.Agent
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), TeamBuff);
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
 
             //Debuffs/DoTs
             RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffTarget);
@@ -214,6 +216,18 @@ namespace CombatHandler.Agent
             if (SomeoneNeedsHealing()) { return false; }
 
             return ToggledDebuffTarget(settingName, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+            {
+                if (!IsSettingEnabled("CritTeam")) { return false; }
+
+                return TeamBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool InitDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

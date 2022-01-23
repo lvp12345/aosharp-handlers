@@ -91,14 +91,19 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.FountainOfLife, FountainOfLife);
+            RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
 
             RegisterItemProcessor(RelevantItems.ReflectGraft, RelevantItems.ReflectGraft, ReflectGraft);
 
-            RegisterItemProcessor(RelevantItems.FlurryOfBlowsLow, RelevantItems.FlurryOfBlowsHigh, DamageItem);
+            RegisterItemProcessor(RelevantItems.SteamingHotCupOfEnhancedCoffee, RelevantItems.SteamingHotCupOfEnhancedCoffee, Coffee);
 
-            RegisterItemProcessor(RelevantItems.StrengthOfTheImmortal, RelevantItems.StrengthOfTheImmortal, DamageItem);
-            RegisterItemProcessor(RelevantItems.MightOfTheRevenant, RelevantItems.MightOfTheRevenant, DamageItem);
-            RegisterItemProcessor(RelevantItems.BarrowStrength, RelevantItems.BarrowStrength, DamageItem);
+            //RegisterItemProcessor(RelevantItems.FlurryOfBlowsLow, RelevantItems.FlurryOfBlowsHigh, DamageItem);
+
+            //RegisterItemProcessor(RelevantItems.StrengthOfTheImmortal, RelevantItems.StrengthOfTheImmortal, DamageItem);
+            //RegisterItemProcessor(RelevantItems.MightOfTheRevenant, RelevantItems.MightOfTheRevenant, DamageItem);
+            //RegisterItemProcessor(RelevantItems.BarrowStrength, RelevantItems.BarrowStrength, DamageItem);
+
+            //RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
 
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBooster, RelevantItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
@@ -106,35 +111,49 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.DesecratedFlesh, RelevantItems.DesecratedFlesh, DescFlesh, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.AssaultClassTank, RelevantItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-            RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
-            RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
-            RegisterItemProcessor(RelevantItems.HSR1, RelevantItems.HSR2, TargetedDamageItem);
-            RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
-            RegisterItemProcessor(RelevantItems.SteamingHotCupOfEnhancedCoffee, RelevantItems.SteamingHotCupOfEnhancedCoffee, Coffee);
-            RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
+            RegisterItemProcessor(new int[] { RelevantItems.FlurryOfBlowsLow, RelevantItems.StrengthOfTheImmortal,
+            RelevantItems.MightOfTheRevenant, RelevantItems.BarrowStrength, RelevantItems.GnuffsEternalRiftCrystal }, DamageItem, CombatActionPriority.High);
 
-            RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
-            RegisterItemProcessor(RelevantItems.BlessedWithThunderLow, RelevantItems.BlessedWithThunderHigh, TargetedDamageItem);
-            RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
+            RegisterItemProcessor(new int[] { RelevantItems.MeteoriteSpikes, RelevantItems.LavaCapsule,
+            RelevantItems.HSR1, RelevantItems.KizzermoleGumboil, RelevantItems.UponAWaveOfSummerLow, 
+            RelevantItems.BlessedWithThunderLow }, TargetedDamageItem);
 
-            RegisterItemProcessor(RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, HealthAndNanoStim, CombatActionPriority.High);
-            RegisterItemProcessor(RelevantItems.HealthAndNanoStim200, RelevantItems.HealthAndNanoStim400, HealthAndNanoStim, CombatActionPriority.High);
+            //RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
+            //RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
+            //RegisterItemProcessor(RelevantItems.HSR1, RelevantItems.HSR2, TargetedDamageItem);
+            //RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
+
+            //RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
+            //RegisterItemProcessor(RelevantItems.BlessedWithThunderLow, RelevantItems.BlessedWithThunderHigh, TargetedDamageItem);
+
+            //RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
+
+            //RegisterItemProcessor(RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, HealthAndNanoStim, CombatActionPriority.High);
+            //RegisterItemProcessor(RelevantItems.HealthAndNanoStim200, RelevantItems.HealthAndNanoStim400, HealthAndNanoStim, CombatActionPriority.High);
 
             RegisterItemProcessor(RelevantItems.RezCan, RelevantItems.RezCan, UseRezCan);
             RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
 
+            RegisterItemProcessor(new int[] { RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, 
+            RelevantItems.HealthAndNanoStim400, }, HealthAndNanoStim, CombatActionPriority.High);
 
-            RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
-            RegisterItemProcessor(RelevantItems.AreteSitKit, RelevantItems.AreteSitKit, SitKit);
-            RegisterItemProcessor(RelevantItems.SitKit1, RelevantItems.SitKit100, SitKit);
-            RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
-            RegisterItemProcessor(RelevantItems.SitKit200, RelevantItems.SitKit300, SitKit);
-            RegisterItemProcessor(RelevantItems.SitKit300, RelevantItems.SitKit400, SitKit);
+            RegisterItemProcessor(new int[] { RelevantItems.PremSitKit, RelevantItems.AreteSitKit, RelevantItems.SitKit1,
+            RelevantItems.SitKit100, RelevantItems.SitKit200, RelevantItems.SitKit300, RelevantItems.SitKit400 }, SitKit);
 
-            RegisterItemProcessor(RelevantItems.FreeStim1, RelevantItems.FreeStim50, FreeStim);
-            RegisterItemProcessor(RelevantItems.FreeStim50, RelevantItems.FreeStim100, FreeStim);
-            RegisterItemProcessor(RelevantItems.FreeStim100, RelevantItems.FreeStim200, FreeStim);
-            RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim300, FreeStim);
+            RegisterItemProcessor(new int[] { RelevantItems.FreeStim1, RelevantItems.FreeStim50, RelevantItems.FreeStim100,
+            RelevantItems.FreeStim300 }, FreeStim);
+
+            //RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
+            //RegisterItemProcessor(RelevantItems.AreteSitKit, RelevantItems.AreteSitKit, SitKit);
+            //RegisterItemProcessor(RelevantItems.SitKit1, RelevantItems.SitKit100, SitKit);
+            //RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
+            //RegisterItemProcessor(RelevantItems.SitKit200, RelevantItems.SitKit300, SitKit);
+            //RegisterItemProcessor(RelevantItems.SitKit300, RelevantItems.SitKit400, SitKit);
+
+            //RegisterItemProcessor(RelevantItems.FreeStim1, RelevantItems.FreeStim50, FreeStim);
+            //RegisterItemProcessor(RelevantItems.FreeStim50, RelevantItems.FreeStim100, FreeStim);
+            //RegisterItemProcessor(RelevantItems.FreeStim100, RelevantItems.FreeStim200, FreeStim);
+            //RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim300, FreeStim);
 
 
             RegisterItemProcessor(RelevantItems.AmmoBoxArrows, RelevantItems.AmmoBoxArrows, AmmoBoxArrows);

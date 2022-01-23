@@ -43,6 +43,7 @@ namespace MultiboxHelper
         private static double _followTimer;
         private static double _assistTimer;
         private static double _morphPathingTimer;
+        private static double _zixMorphTimer;
 
         public static bool Sitting = false;
         public static bool HealingPet = false;
@@ -439,6 +440,16 @@ namespace MultiboxHelper
                 ListenerSit();
 
                 _sitUpdateTimer = Time.NormalTime;
+            }
+
+            if (Time.NormalTime > _zixMorphTimer + 3)
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
+                {
+                    CancelBuffs(RelevantNanos.ZixMorph);
+                }
+
+                _zixMorphTimer = Time.NormalTime;
             }
 
             if (Time.NormalTime > _sitPetUpdateTimer + 2)
@@ -1636,6 +1647,7 @@ namespace MultiboxHelper
 
         private static class RelevantNanos
         {
+            public static readonly int[] ZixMorph = { 288532, 302212 };
             public static readonly int[] Yalms = {
                 290473, 281569, 301672, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982,
                 296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,

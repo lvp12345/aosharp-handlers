@@ -97,13 +97,13 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(RelevantItems.SteamingHotCupOfEnhancedCoffee, RelevantItems.SteamingHotCupOfEnhancedCoffee, Coffee);
 
-            //RegisterItemProcessor(RelevantItems.FlurryOfBlowsLow, RelevantItems.FlurryOfBlowsHigh, DamageItem);
+            RegisterItemProcessor(RelevantItems.FlurryOfBlowsLow, RelevantItems.FlurryOfBlowsHigh, DamageItem);
 
-            //RegisterItemProcessor(RelevantItems.StrengthOfTheImmortal, RelevantItems.StrengthOfTheImmortal, DamageItem);
-            //RegisterItemProcessor(RelevantItems.MightOfTheRevenant, RelevantItems.MightOfTheRevenant, DamageItem);
-            //RegisterItemProcessor(RelevantItems.BarrowStrength, RelevantItems.BarrowStrength, DamageItem);
+            RegisterItemProcessor(RelevantItems.StrengthOfTheImmortal, RelevantItems.StrengthOfTheImmortal, DamageItem);
+            RegisterItemProcessor(RelevantItems.MightOfTheRevenant, RelevantItems.MightOfTheRevenant, DamageItem);
+            RegisterItemProcessor(RelevantItems.BarrowStrength, RelevantItems.BarrowStrength, DamageItem);
 
-            //RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
+            RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
 
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBooster, RelevantItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
@@ -111,22 +111,20 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.DesecratedFlesh, RelevantItems.DesecratedFlesh, DescFlesh, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.AssaultClassTank, RelevantItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-            RegisterItemProcessor(new int[] { RelevantItems.FlurryOfBlowsLow, RelevantItems.StrengthOfTheImmortal,
-            RelevantItems.MightOfTheRevenant, RelevantItems.BarrowStrength, RelevantItems.GnuffsEternalRiftCrystal }, DamageItem, CombatActionPriority.High);
+            //RegisterItemProcessor(new int[] { RelevantItems.FlurryOfBlowsLow, RelevantItems.StrengthOfTheImmortal,
+            //RelevantItems.MightOfTheRevenant, RelevantItems.BarrowStrength, RelevantItems.GnuffsEternalRiftCrystal }, DamageItem, CombatActionPriority.High);
 
-            RegisterItemProcessor(new int[] { RelevantItems.MeteoriteSpikes, RelevantItems.LavaCapsule,
-            RelevantItems.HSR1, RelevantItems.KizzermoleGumboil, RelevantItems.UponAWaveOfSummerLow, 
-            RelevantItems.BlessedWithThunderLow }, TargetedDamageItem);
+            //RegisterItemProcessor(new int[] { RelevantItems.MeteoriteSpikes, RelevantItems.LavaCapsule,
+            //RelevantItems.HSR1, RelevantItems.KizzermoleGumboil, RelevantItems.UponAWaveOfSummerLow, 
+            //RelevantItems.BlessedWithThunderLow }, TargetedDamageItem);
 
-            //RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
-            //RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
-            //RegisterItemProcessor(RelevantItems.HSR1, RelevantItems.HSR2, TargetedDamageItem);
-            //RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.HSR1, RelevantItems.HSR2, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
 
-            //RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
-            //RegisterItemProcessor(RelevantItems.BlessedWithThunderLow, RelevantItems.BlessedWithThunderHigh, TargetedDamageItem);
-
-            //RegisterItemProcessor(RelevantItems.FlowerOfLifeLow, RelevantItems.FlowerOfLifeHigh, FlowerOfLife);
+            RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.BlessedWithThunderLow, RelevantItems.BlessedWithThunderHigh, TargetedDamageItem);
 
             //RegisterItemProcessor(RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, HealthAndNanoStim, CombatActionPriority.High);
             //RegisterItemProcessor(RelevantItems.HealthAndNanoStim200, RelevantItems.HealthAndNanoStim400, HealthAndNanoStim, CombatActionPriority.High);

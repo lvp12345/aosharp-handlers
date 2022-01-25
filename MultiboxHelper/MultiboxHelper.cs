@@ -1299,9 +1299,7 @@ namespace MultiboxHelper
 
             if (settings["AutoSit"].AsBool())
             {
-                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
-                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning && Time.NormalTime > _sitPetUsedTimer + 16
+                if (CanUseSitKit() && Time.NormalTime > _sitPetUsedTimer + 16
                     && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f && healpet.Character.IsInLineOfSight)
                 {
                     if (healpet.Character.Nano / PetMaxNanoPool() * 100 <= 10) { return; }
@@ -1346,10 +1344,7 @@ namespace MultiboxHelper
 
             if (spell != null && settings["AutoSit"].AsBool())
             {
-                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
-                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning
-                    && !DynelManager.LocalPlayer.Buffs.Contains(280488))
+                if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
                 {
                     // Trying something new
 
@@ -1374,11 +1369,9 @@ namespace MultiboxHelper
 
                     if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
                         && DynelManager.LocalPlayer.MovementState != MovementState.Sit
-                        && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                        && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
-                        && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning
                         && !DynelManager.LocalPlayer.Buffs.Contains(280488)
-                        && (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66))
+                        && (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
+                        && CanUseSitKit())
                     {
                         Task.Factory.StartNew(
                             async () =>
@@ -1592,6 +1585,32 @@ namespace MultiboxHelper
 
             //        return false;
             //}
+        }
+
+        private bool CanUseSitKit()
+        {
+            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger");
+
+            if (!sitKits.Any())
+                return false;
+
+            //Check if we are fighting or being fought
+            //Check if any team member is fighting or being fought
+
+            if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
+                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
+                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning)
+            {
+                foreach (Item sitKit in sitKits.OrderBy(x => x.QualityLevel))
+                {
+                    int skillReq = (sitKit.QualityLevel > 200 ? (sitKit.QualityLevel % 200 * 3) + 1501 : (int)(sitKit.QualityLevel * 7.5f));
+
+                    if (DynelManager.LocalPlayer.GetStat(Stat.FirstAid) >= skillReq || DynelManager.LocalPlayer.GetStat(Stat.Treatment) >= skillReq)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         public static bool IsBackpack(Item item)

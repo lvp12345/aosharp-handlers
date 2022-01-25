@@ -52,6 +52,7 @@ namespace Desu
             settings.AddVariable("SLCalm", false);
             settings.AddVariable("RKCalm", false);
             settings.AddVariable("Calm12Man", false);
+            settings.AddVariable("CalmSector7", false);
 
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
@@ -70,6 +71,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.AoECalms, AoECalmDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.RkCalms, RKCalmDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
 
             //Debuff Aura
             RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, DebuffNanoDrainAura);
@@ -399,6 +401,30 @@ namespace Desu
             return true;
         }
 
+        private bool CalmSector7(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell)) { return false; }
+
+            if (!IsSettingEnabled("CalmSector7")) { return false; }
+
+            SimpleChar target = DynelManager.NPCs
+                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => c.IsInLineOfSight)
+                .Where(x => x.Name == "Kyr'Ozch Guardian")
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                .Where(c => c.MaxHealth < 1000000)
+                .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget = (target, true);
+                return true;
+            }
+
+            return false;
+        }
+
         private bool RKCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanCast(spell)) { return false; }
@@ -410,6 +436,7 @@ namespace Desu
                 .Where(c => c.IsInLineOfSight)
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
                 .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                .Where(c => c.MaxHealth < 1000000)
                 .FirstOrDefault();
 
             if (target != null)
@@ -432,6 +459,7 @@ namespace Desu
                 .Where(c => c.IsInLineOfSight)
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
                 .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                .Where(c => c.MaxHealth < 1000000)
                 .FirstOrDefault();
 
             if (target != null)
@@ -454,6 +482,7 @@ namespace Desu
                 .Where(c => c.IsInLineOfSight)
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
                 .Where(c => !c.Buffs.Contains(NanoLine.AOEMezz))
+                .Where(c => c.MaxHealth < 1000000)
                 .FirstOrDefault();
 
             if (target != null)

@@ -362,8 +362,6 @@ namespace MultiboxHelper
 
         private void OnUpdate(object s, float deltaTime)
         {
-            Chat.WriteLine($"{CanUseSitKit()}");
-
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {

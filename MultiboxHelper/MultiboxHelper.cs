@@ -1509,11 +1509,12 @@ namespace MultiboxHelper
         public static void CancelAllBuffs()
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs
-                .Where(x => !x.Name.Contains("Valid Pass") 
+                .Where(x => !x.Name.Contains("Valid Pass")
                 && x.Nanoline != NanoLine.BioMetBuff && x.Nanoline != NanoLine.MatCreaBuff
                 && x.Nanoline != NanoLine.MatLocBuff && x.Nanoline != NanoLine.MatMetBuff
                 && x.Nanoline != NanoLine.PsyModBuff && x.Nanoline != NanoLine.SenseImpBuff
-                && x.Nanoline != NanoLine.TraderTeamSkillWranglerBuff))
+                && x.Nanoline != NanoLine.TraderTeamSkillWranglerBuff
+                && x.Nanoline != NanoLine.FixerNCUBuff))
             {
                 buff.Remove();
             }

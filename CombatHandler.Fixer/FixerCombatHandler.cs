@@ -71,8 +71,28 @@ namespace Desu
         {
             if (IsSettingEnabled("LongHoTTeam"))
             {
-                return TeamBuff(spell, fightingTarget, ref actionTarget);
+                if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
+
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
+                        .Where(c => SpellChecksOther(spell, c))
+                        .FirstOrDefault();
+
+                    if (teamMemberWithoutBuff != null)
+                    {
+                        actionTarget.Target = teamMemberWithoutBuff;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+
+                return false;
             }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
             return ToggledBuff("LongHoT", spell, fightingTarget, ref actionTarget);
         }

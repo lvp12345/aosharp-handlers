@@ -362,6 +362,9 @@ namespace MultiboxHelper
 
         private void OnUpdate(object s, float deltaTime)
         {
+            Chat.WriteLine($"{CanUseSitKit()}");
+
+
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -1589,10 +1592,16 @@ namespace MultiboxHelper
 
         private bool CanUseSitKit()
         {
-            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger");
+            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.LowId != 297274).ToList();
 
-            if (!sitKits.Any())
-                return false;
+            if (Inventory.Find(297274, out Item premSitKit))
+            {
+                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
+                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
+                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning) { return true; }
+            }
+
+            if (!sitKits.Any()) { return false; }
 
             //Check if we are fighting or being fought
             //Check if any team member is fighting or being fought

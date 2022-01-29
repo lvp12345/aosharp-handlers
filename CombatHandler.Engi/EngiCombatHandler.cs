@@ -198,7 +198,7 @@ namespace CombatHandler.Engi
 
             if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield")) { return false; }
 
-            if (IsSettingEnabled("AuraArmor") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
+            //if (IsSettingEnabled("AuraArmor") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
@@ -209,7 +209,7 @@ namespace CombatHandler.Engi
 
             if (IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield")) { return false; }
 
-            if (IsSettingEnabled("AuraDamage") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
+            //if (IsSettingEnabled("AuraDamage") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
@@ -220,7 +220,7 @@ namespace CombatHandler.Engi
 
             if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraShield")) { return false; }
 
-            if (IsSettingEnabled("AuraReflect") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
+            //if (IsSettingEnabled("AuraReflect") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
@@ -231,7 +231,7 @@ namespace CombatHandler.Engi
 
             if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraArmor")) { return false; }
 
-            if (IsSettingEnabled("AuraShield") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
+            //if (IsSettingEnabled("AuraShield") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
         }
@@ -519,6 +519,26 @@ namespace CombatHandler.Engi
 
             base.OnUpdate(deltaTime);
 
+            if (!IsSettingEnabled("AuraShield"))
+            {
+                CancelBuffs(RelevantNanos.AuraShield);
+            }
+
+            if (!IsSettingEnabled("AuraDamage"))
+            {
+                CancelBuffs(RelevantNanos.AuraDamage);
+            }
+
+            if (!IsSettingEnabled("AuraArmor"))
+            {
+                CancelBuffs(RelevantNanos.AuraArmor);
+            }
+
+            if (!IsSettingEnabled("AuraReflect"))
+            {
+                CancelBuffs(RelevantNanos.AuraReflect);
+            }
+
             CancelBuffs(IsSettingEnabled("ShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
             CancelHostileAuras(RelevantNanos.Blinds);
             CancelHostileAuras(RelevantNanos.ShieldRippers);
@@ -549,9 +569,10 @@ namespace CombatHandler.Engi
             public static readonly int[] AuraShield = { 154550, 154551, 154552, 154553 };
             public static readonly int[] AuraDamage = { 154560, 154561 };
             public static readonly int[] AuraArmor = { 154562, 154563, 154564, 154565, 154566, 154567 };
+            public static readonly int[] AuraReflect = { 154557, 154558, 154559 };
             public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
             public static readonly int PetHealingCH = 270351;
-            public static readonly int[] AuraReflect = { 154557, 154558, 154559 };
+==
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
         }
 

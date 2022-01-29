@@ -572,7 +572,6 @@ namespace CombatHandler.Engi
             public static readonly int[] AuraReflect = { 154557, 154558, 154559 };
             public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
             public static readonly int PetHealingCH = 270351;
-==
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
         }
 

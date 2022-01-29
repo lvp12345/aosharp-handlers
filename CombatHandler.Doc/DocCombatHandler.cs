@@ -95,9 +95,10 @@ namespace Desu
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 85)
-                    .Where(c => c.HealthPercent >= 50)
+                    .Where(c => Team.Members
+                        .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                            .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
                     .ToList();
 
                 if (dyingTeamMember.Count < 4) { return false; }
@@ -116,9 +117,10 @@ namespace Desu
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 85)
-                    .Where(c => c.HealthPercent >= 50)
+                    .Where(c => Team.Members
+                        .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                            .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 4) { return false; }

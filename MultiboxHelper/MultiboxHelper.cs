@@ -1508,7 +1508,12 @@ namespace MultiboxHelper
 
         public static void CancelAllBuffs()
         {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.Where(x => !x.Name.Contains("Valid Pass")))
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs
+                .Where(x => !x.Name.Contains("Valid Pass") 
+                && x.Nanoline != NanoLine.BioMetBuff && x.Nanoline != NanoLine.MatCreaBuff
+                && x.Nanoline != NanoLine.MatLocBuff && x.Nanoline != NanoLine.MatMetBuff
+                && x.Nanoline != NanoLine.PsyModBuff && x.Nanoline != NanoLine.SenseImpBuff
+                && x.Nanoline != NanoLine.TraderTeamSkillWranglerBuff))
             {
                 buff.Remove();
             }
@@ -1675,6 +1680,12 @@ namespace MultiboxHelper
         {
             public static readonly int[] ZixMorph = { 288532, 302212 };
             public static readonly int[] Yalms = {
+                290473, 281569, 301672, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982,
+                296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
+                270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 293619,
+                294781, 301669
+            };
+            public static readonly int[] DontRemoveNanos = {
                 290473, 281569, 301672, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982,
                 296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
                 270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 293619,

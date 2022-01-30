@@ -30,6 +30,9 @@ namespace Desu
             settings.AddVariable("Sacrifice", false);
             settings.AddVariable("PurpleHeart", false);
 
+            settings.AddVariable("NanoHealTeam", false);
+            settings.AddVariable("EvadesTeam", false);
+
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
             //LE Proc
@@ -40,12 +43,12 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
 
             //Self Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, Evades);
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, EvadesTeam);
             RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericBuff);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, TeamBuffExcludeInnerSanctum);
+            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, EvadesTeam);
 
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), TeamNanoHeal);
@@ -81,9 +84,58 @@ namespace Desu
             return PerkCondtionProcessors.HealPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool NanoHealTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
+
+            if (IsSettingEnabled("EvadesTeam"))
+            {
+                if (fightingTarget != null || !CanCast(spell)) { return false; }
+
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
+                        .Where(c => SpellChecksOther(spell, c))
+                        .FirstOrDefault();
+
+                    if (teamMemberWithoutBuff != null)
+                    {
+                        actionTarget.Target = teamMemberWithoutBuff;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum()) { return false; }
+
+            if (IsSettingEnabled("EvadesTeam"))
+            {
+                if (fightingTarget != null || !CanCast(spell)) { return false; }
+
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
+                        .Where(c => SpellChecksOther(spell, c))
+                        .FirstOrDefault();
+
+                    if (teamMemberWithoutBuff != null)
+                    {
+                        actionTarget.Target = teamMemberWithoutBuff;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -197,19 +249,15 @@ namespace Desu
 
         private bool TeamNanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
-            {
-                if (buff.Nanoline == NanoLine.NanoPointHeals) { return false; }
-            }
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NanoPointHeals)) { return false; }
 
-            // Cast when any team mate is lower than 30% of nano
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar lowNanoTeamMember = DynelManager.Characters
-                    .Where(c => c.Identity != DynelManager.LocalPlayer.Identity) //Do net perk on self
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.Identity != DynelManager.LocalPlayer.Identity)
-                    .Where(c => c.NanoPercent <= 30)
+                    .Where(c => Team.Members
+                        .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                            .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.NanoPercent <= 80)
                     .FirstOrDefault();
 
                 if (lowNanoTeamMember != null)

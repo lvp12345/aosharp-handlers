@@ -40,7 +40,7 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
 
             //Self Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, GenericBuffExcludeInnerSanctum);
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, Evades);
             RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericBuff);
 
@@ -79,6 +79,13 @@ namespace Desu
             if (IsSettingEnabled("PurpleHeart") && IsSettingEnabled("Sacrifice")) { return false; }
 
             return PerkCondtionProcessors.HealPerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

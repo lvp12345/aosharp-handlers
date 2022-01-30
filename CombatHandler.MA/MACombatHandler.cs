@@ -44,7 +44,7 @@ namespace Desu
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), EvadesTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), GenericBuff);
@@ -90,6 +90,36 @@ namespace Desu
             }
 
             return false;
+        }
+
+        protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum()) { return false; }
+
+            if (IsSettingEnabled("EvadesTeam"))
+            {
+                if (fightingTarget != null || !CanCast(spell)) { return false; }
+
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
+                        .Where(c => SpellChecksOther(spell, c))
+                        .FirstOrDefault();
+
+                    if (teamMemberWithoutBuff != null)
+                    {
+                        actionTarget.Target = teamMemberWithoutBuff;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -433,7 +433,10 @@ namespace CombatHandler.Generic
 
             if (fightingTarget.MaxHealth >= 1000000)
             {
-                if (fightingTarget.Name != "Technological Officer Darwelsi" || fightingTarget.Name != "Collector")
+                if (fightingTarget.Name == "Technological Officer Darwelsi")
+                    return false;
+
+                if (fightingTarget.Name == "Collector")
                     return false;
             }
 

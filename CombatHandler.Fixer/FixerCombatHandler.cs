@@ -145,11 +145,21 @@ namespace Desu
 
             if (IsSettingEnabled("RKRunspeedTeam"))
             {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SL_RUN_BUFFS))
+                {
+                    CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
+                }
+
                 return GSFTeamBuff(spell, fightingTarget, ref actionTarget);
             }
 
             if (IsSettingEnabled("RKRunspeed"))
             {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SL_RUN_BUFFS))
+                {
+                    CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
+                }
+
                 return ToggledBuff("RKRunspeed", spell, fightingTarget, ref actionTarget);
             }
 
@@ -160,7 +170,17 @@ namespace Desu
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            return ToggledBuff("SLRunspeed", spell, fightingTarget, ref actionTarget);
+            if (IsSettingEnabled("SLRunspeed"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
+                {
+                    CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
+                }
+
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool GridArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -199,14 +219,14 @@ namespace Desu
                 Chat.WriteLine("Only activate one Runspeed option.");
             }
 
-            if (!IsSettingEnabled("RKRunspeed") && !IsSettingEnabled("RKRunspeedTeam"))
-            {
-                CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
-            }
-            if (!IsSettingEnabled("SLRunspeed"))
-            {
-                CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
-            }
+            //if (!IsSettingEnabled("RKRunspeed") && !IsSettingEnabled("RKRunspeedTeam"))
+            //{
+            //    CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
+            //}
+            //if (!IsSettingEnabled("SLRunspeed"))
+            //{
+            //    CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
+            //}
 
             EquipBackArmor();
         }

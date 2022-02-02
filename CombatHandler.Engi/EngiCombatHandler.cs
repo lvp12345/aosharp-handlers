@@ -100,6 +100,7 @@ namespace CombatHandler.Engi
 
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
+            RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, PetDamage);
 
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticEnergyBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
@@ -448,6 +449,23 @@ namespace CombatHandler.Engi
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             return FindPetThat(pet => !HasBuffNanoLine(NanoLine.ShieldoftheObedientServant, pet.Character)) != null;
+        }
+
+        protected bool PetDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (IsSettingEnabled("AuraDamage")) { return false; }
+
+            Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.DamageBuffs_LineA)
+                && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
+
+            if (petToBuff != null)
+            {
+                spell.Cast(petToBuff.Character, true);
+            }
+
+            return false;
         }
 
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

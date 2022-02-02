@@ -1153,18 +1153,32 @@ namespace CombatHandler.Generic
 
             if (fightingTarget.IsPlayer && !MultiboxHelper.SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
 
-            if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
-
             if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
             {
                 //Don't cast if weaker than existing
-                if (spell.StackingOrder < buff.StackingOrder) { return false; }
+                if (spell.StackingOrder <= buff.StackingOrder) { return false; }
 
-                //Don't cast if greater than 10% time remaining
-                if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1) { return false; }
+                if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
+
+                return true;
+            }
+            else
+            {
+                if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
+
+                return true;
             }
 
-            return true;
+            //if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
+            //{
+            //    //Don't cast if weaker than existing
+            //    if (spell.StackingOrder < buff.StackingOrder) { return false; }
+
+            //    //Don't cast if greater than 10% time remaining
+            //    if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1) { return false; }
+            //}
+
+            //return true;
         }
 
         protected bool SpellChecksPlayer(Spell spell)
@@ -1176,17 +1190,18 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
             {
                 //Don't cast if weaker than existing
-                if (spell.StackingOrder < buff.StackingOrder) { return false; }
-
-                //Don't cast if greater than 10% time remaining
-                if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1) { return false; }
+                if (spell.StackingOrder <= buff.StackingOrder) { return false; }
 
                 if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
+                return true;
             }
+            else
+            {
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
 
-            if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-            return true;
+                return true;
+            }
         }
 
         protected bool CanCast(Spell spell)

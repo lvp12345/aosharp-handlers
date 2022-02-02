@@ -12,6 +12,8 @@ namespace Desu
     {
         private const int MissingHealthCombatAbortPercentage = 30;
 
+        private static bool ShadeSiphon;
+
         public ShadeCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("Runspeed", false);
@@ -173,11 +175,25 @@ namespace Desu
         {
             if (!IsSettingEnabled("SpiritSiphon")) { return false; }
 
-            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
+            if (fightingtarget == null && ShadeSiphon)
+            {
+                ShadeSiphon = false;
+            }
 
             if (!DynelManager.LocalPlayer.IsAttacking) { return false; }
 
-            return true;
+            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
+
+            if (fightingtarget != null && DynelManager.LocalPlayer.HealthPercent <= 20)
+            {
+                if (!ShadeSiphon)
+                {
+                    ShadeSiphon = true;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool HealthDrainNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

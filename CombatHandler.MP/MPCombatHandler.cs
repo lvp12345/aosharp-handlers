@@ -177,19 +177,6 @@ namespace Desu
         {
             if (IsSettingEnabled("Composites")) 
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MatMetBuffs))
-                    CancelBuffs(RelevantNanos.MatMetBuffs);
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.BioMetBuffs))
-                    CancelBuffs(RelevantNanos.BioMetBuffs);
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.PsyModBuffs))
-                    CancelBuffs(RelevantNanos.PsyModBuffs);
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SenImpBuffs))
-                    CancelBuffs(RelevantNanos.SenImpBuffs);
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MatCreBuffs))
-                    CancelBuffs(RelevantNanos.MatCreBuffs);
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MatLocBuffs))
-                    CancelBuffs(RelevantNanos.MatLocBuffs);
-
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -205,60 +192,90 @@ namespace Desu
         {
             if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                CancelBuffs(RelevantNanos.MPCompositeNano);
+            if (IsSettingEnabled("MatterCrea"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                    CancelBuffs(RelevantNanos.MPCompositeNano);
 
-            return ToggledBuff("MatterCrea", spell, fightingTarget, ref actionTarget);
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool PyschoModiBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                CancelBuffs(RelevantNanos.MPCompositeNano);
+            if (IsSettingEnabled("PyschoModi"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                    CancelBuffs(RelevantNanos.MPCompositeNano);
 
-            return ToggledBuff("PyschoModi", spell, fightingTarget, ref actionTarget);
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool TimeSpaceBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                CancelBuffs(RelevantNanos.MPCompositeNano);
+            if (IsSettingEnabled("TimeSpace"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                    CancelBuffs(RelevantNanos.MPCompositeNano);
 
-            return ToggledBuff("TimeSpace", spell, fightingTarget, ref actionTarget);
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool SenseImprovBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                CancelBuffs(RelevantNanos.MPCompositeNano);
+            if (IsSettingEnabled("SenseImprov"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                    CancelBuffs(RelevantNanos.MPCompositeNano);
 
-            return ToggledBuff("SenseImprov", spell, fightingTarget, ref actionTarget);
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool BioMetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                CancelBuffs(RelevantNanos.MPCompositeNano);
+            if (IsSettingEnabled("BioMet"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                    CancelBuffs(RelevantNanos.MPCompositeNano);
 
-            return ToggledBuff("BioMet", spell, fightingTarget, ref actionTarget);
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool MattMetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                CancelBuffs(RelevantNanos.MPCompositeNano);
+            if (IsSettingEnabled("MattMet"))
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+                    CancelBuffs(RelevantNanos.MPCompositeNano);
 
-            return ToggledBuff("MattMet", spell, fightingTarget, ref actionTarget);
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool InterruptModifierBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

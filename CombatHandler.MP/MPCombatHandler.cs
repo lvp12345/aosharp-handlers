@@ -479,6 +479,23 @@ namespace Desu
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (settings["Composites"].AsBool() || settings["CompositesTeam"].AsBool() && 
+                (settings["MatterCrea"].AsBool() || settings["PyschoModi"].AsBool()
+                || settings["TimeSpace"].AsBool() || settings["SenseImprov"].AsBool()
+                || settings["BioMet"].AsBool() || settings["MattMet"].AsBool()))
+            {
+                settings["Composites"] = false;
+                settings["CompositesTeam"] = false;
+                settings["MatterCrea"] = false;
+                settings["PyschoModi"] = false;
+                settings["TimeSpace"] = false;
+                settings["SenseImprov"] = false;
+                settings["BioMet"] = false;
+                settings["MattMet"] = false;
+
+                Chat.WriteLine("Only activate one option.");
+            }
+
             if (CanLookupPetsAfterZone())
             {
                 SynchronizePetCombatStateWithOwner();

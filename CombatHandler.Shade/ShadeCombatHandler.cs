@@ -82,13 +82,31 @@ namespace Desu
             return ToggledBuff("StunProc", spell, fightingtarget, ref actiontarget);
         }
 
-        private bool ShadesCaressNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool ShadesCaressNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingtarget == null) { return false; }
+            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null
+                 || !CanCast(spell)) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 50 && fightingtarget.HealthPercent > 5) { return true; }
+            if (fightingTarget.HealthPercent < 5) { return false; }
 
-            return false;
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                List<SimpleChar> teamMembersLowHp = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 80)
+                    .ToList();
+
+                if (teamMembersLowHp.Count >= 3)
+                {
+                    actionTarget.Target = fightingTarget;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 50 && fightingTarget.HealthPercent > 5) { return true; }
+
+            return true;
         }
 
         protected bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -171,11 +189,11 @@ namespace Desu
             return false;
         }
 
-        private bool SpiritSiphonNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SpiritSiphonNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("SpiritSiphon")) { return false; }
 
-            if (fightingtarget == null && ShadeSiphon)
+            if (fightingTarget == null && ShadeSiphon)
             {
                 ShadeSiphon = false;
             }
@@ -184,7 +202,7 @@ namespace Desu
 
             if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
-            if (fightingtarget != null && DynelManager.LocalPlayer.HealthPercent <= 20)
+            if (fightingTarget != null && DynelManager.LocalPlayer.HealthPercent <= 20)
             {
                 if (!ShadeSiphon)
                 {
@@ -196,32 +214,23 @@ namespace Desu
             return false;
         }
 
-        private bool HealthDrainNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool HealthDrainNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
+            if (!IsSettingEnabled("HealthDrain") || fightingTarget == null) { return false; }
 
-            if (!DynelManager.LocalPlayer.IsAttacking) { return false; }
+            if (DynelManager.LocalPlayer.NanoPercent > 80) { return true; }
 
-            // if we have caress, save enough nano to use it
-            if (Spell.Find(RelevantNanos.ShadesCaress, out Spell caress))
-            {
-                if (DynelManager.LocalPlayer.Nano - spell.Cost < caress.Cost) { return false; }
-            }
-
-            // only use it for dps if we have plenty of nano
-            if (IsSettingEnabled("HealthDrain") && DynelManager.LocalPlayer.NanoPercent > 80) { return true; }
-
-            // otherwise save it for if our health starts to drop
+            // Otherwise save it for if our health starts to drop
             if (DynelManager.LocalPlayer.HealthPercent >= 85) { return false; }
 
-            return true;
+            return ToggledDebuffTarget("HealthDrain", spell, fightingTarget, ref actionTarget);
         }
 
         private bool PiercingMasteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
 
-            //Don't PM if there are TR/SP chains in progress
+            // Don't PM if there are TR/SP chains in progress
             if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.SpiritPhylactery.Contains(action.Hash)))) { return false; }
 
             if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))

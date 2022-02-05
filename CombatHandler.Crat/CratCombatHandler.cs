@@ -57,7 +57,8 @@ namespace Desu
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratWrongWindow, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, LEProc, CombatActionPriority.Low);
+            //RegisterPerkProcessor(PerkHash.LEProcBureaucratWrongWindow, LEProc, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcBureaucratFormsInTriplicate, LEProc, CombatActionPriority.Low);
 
             //Debuffs

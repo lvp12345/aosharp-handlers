@@ -251,14 +251,21 @@ namespace Desu
             }
             else
             {
+                if (!CanCast(spell) || fightingTarget == null) { return false; }
+
                 if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
                 {
                     if (spell.StackingOrder <= buff.StackingOrder)
                     {
                         if (buff.RemainingTime > 40) { return false; }
 
-                        if (!CanCast(spell) || fightingTarget == null) { return false; }
-
+                        return true;
+                    }
+                }
+                if (fightingTarget.Buffs.Find(NanoLine.TraderSkillTransferTargetDebuff_Ransack, out Buff debuff))
+                {
+                    if (spell.StackingOrder > debuff.StackingOrder)
+                    {
                         return true;
                     }
                 }
@@ -295,14 +302,22 @@ namespace Desu
             }
             else
             {
+                if (!CanCast(spell) || fightingTarget == null) { return false; }
+
                 if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
                 {
                     if (spell.StackingOrder <= buff.StackingOrder)
                     {
                         if (buff.RemainingTime > 40) { return false; }
 
-                        if (!CanCast(spell) || fightingTarget == null) { return false; }
+                        return true;
+                    }
+                }
 
+                if (fightingTarget.Buffs.Find(NanoLine.TraderSkillTransferTargetDebuff_Deprive, out Buff debuff))
+                {
+                    if (spell.StackingOrder > debuff.StackingOrder)
+                    {
                         return true;
                     }
                 }

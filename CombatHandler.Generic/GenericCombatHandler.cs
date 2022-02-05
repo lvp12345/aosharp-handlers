@@ -1194,6 +1194,8 @@ namespace CombatHandler.Generic
 
                 if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
 
+                //if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
                 return true;
             }
             else

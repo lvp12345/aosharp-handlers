@@ -257,6 +257,8 @@ namespace Desu
                 {
                     if (spell.StackingOrder <= buff.StackingOrder)
                     {
+                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
                         if (buff.RemainingTime > 40) { return false; }
 
                         return true;
@@ -266,9 +268,13 @@ namespace Desu
                 {
                     if (spell.StackingOrder > debuff.StackingOrder)
                     {
+                        if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
                         return true;
                     }
                 }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
 
                 return ToggledDebuffTarget("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
             }
@@ -308,6 +314,8 @@ namespace Desu
                 {
                     if (spell.StackingOrder <= buff.StackingOrder)
                     {
+                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
                         if (buff.RemainingTime > 40) { return false; }
 
                         return true;
@@ -318,9 +326,13 @@ namespace Desu
                 {
                     if (spell.StackingOrder > debuff.StackingOrder)
                     {
+                        if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
                         return true;
                     }
                 }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
 
                 return ToggledDebuffTarget("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
             }

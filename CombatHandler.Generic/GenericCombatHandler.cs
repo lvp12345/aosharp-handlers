@@ -296,7 +296,7 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .Where(c => c.Profession == Profession.Doctor || c.Profession == Profession.NanoTechnician)
                     .FirstOrDefault();
 
@@ -329,7 +329,7 @@ namespace CombatHandler.Generic
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged))
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
                     .FirstOrDefault();
 
@@ -408,12 +408,12 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool ToggledDebuffTarget(string settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool ToggledDebuffTarget(string settingName, Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             // Check if we are fighting and if debuffing is enabled
             if (fightingTarget == null || !IsSettingEnabled(settingName)) { return false; }
 
-            if (SpellChecksOther(spell, fightingTarget))
+            if (SpellChecksOther(spell, nanoline, fightingTarget))
             {
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = fightingTarget;
@@ -434,7 +434,7 @@ namespace CombatHandler.Generic
                 .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
                 .Where(c => c.IsInLineOfSight)
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                .Where(c => SpellChecksOther(spell, c)) //Needs debuff refreshed
+                .Where(c => SpellChecksOther(spell, spell.Nanoline, c)) //Needs debuff refreshed
                 .OrderBy(c => c.MaxHealth)
                 .FirstOrDefault();
 
@@ -485,7 +485,7 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -530,7 +530,7 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .Where(c => c.Profession != Profession.NanoTechnician)
                     // Combines both together
                     .Where(c => GetWieldedWeapons(c).HasFlag(supportedWeaponType))
@@ -558,7 +558,7 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     // Combines both together
                     .Where(c => GetWieldedWeapons(c).HasFlag(supportedWeaponType))
                     .FirstOrDefault();
@@ -1046,7 +1046,7 @@ namespace CombatHandler.Generic
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.Profession != Profession.Keeper)
                     .Where(c => c.Profession != Profession.Engineer)
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null && teamMemberWithoutBuff.Profession != Profession.Keeper)
@@ -1145,7 +1145,7 @@ namespace CombatHandler.Generic
             return Spell.Find(nanoId, out Spell spell);
         }
 
-        protected bool SpellChecksOther(Spell spell, SimpleChar fightingTarget)
+        protected bool SpellChecksOther(Spell spell, NanoLine nanoline, SimpleChar fightingTarget)
         {
             if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
@@ -1153,7 +1153,7 @@ namespace CombatHandler.Generic
 
             if (fightingTarget.IsPlayer && !MultiboxHelper.SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
 
-            if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
+            if (fightingTarget.Buffs.Find(nanoline, out Buff buff))
             {
                 //Don't cast if weaker than existing
                 if (spell.StackingOrder <= buff.StackingOrder) { return false; }

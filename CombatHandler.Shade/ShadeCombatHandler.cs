@@ -117,8 +117,8 @@ namespace Desu
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => !c.Buffs.Contains(RelevantNanos.EVASION_BUFFS))
-                    .Where(c => SpellChecksOther(spell, c))
+                    //.Where(c => !c.Buffs.Contains(RelevantNanos.EVASION_BUFFS))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -223,7 +223,7 @@ namespace Desu
             // Otherwise save it for if our health starts to drop
             if (DynelManager.LocalPlayer.HealthPercent >= 85) { return false; }
 
-            return ToggledDebuffTarget("HealthDrain", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool PiercingMasteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

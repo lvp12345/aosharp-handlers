@@ -74,7 +74,7 @@ namespace Desu
                 {
                     SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .Where(c => c.SpecialAttacks.Contains(SpecialAttack.Burst))
                     .FirstOrDefault();
 
@@ -100,7 +100,7 @@ namespace Desu
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Grenade) && c.Profession != Profession.Engineer)
                     .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Smg))
                     .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Shotgun))
@@ -226,7 +226,7 @@ namespace Desu
                     SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                         .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
-                        .Where(c => SpellChecksOther(spell, c))
+                        .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
                     if (teamMemberWithoutBuff != null)

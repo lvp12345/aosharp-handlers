@@ -77,8 +77,8 @@ namespace Desu
                 {
                     SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        .Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
-                        .Where(c => SpellChecksOther(spell, c))
+                        //.Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
+                        .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
                     if (teamMemberWithoutBuff != null)
@@ -113,7 +113,7 @@ namespace Desu
 
         private bool EvasionDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("EvasionDebuff", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("EvasionDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         protected bool GSFTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -124,8 +124,8 @@ namespace Desu
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => !c.Buffs.Contains(RelevantNanos.EVASION_BUFFS))
-                    .Where(c => SpellChecksOther(spell, c))
+                    //.Where(c => !c.Buffs.Contains(RelevantNanos.EVASION_BUFFS))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)

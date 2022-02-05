@@ -78,8 +78,8 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.DivestDamage, DamageDrain);
 
             //Deprive/Ransack Drains
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Deprive), DepriveDrain);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack), RansackDrain);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Deprive).OrderByStackingOrder(), DepriveDrain);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack).OrderByStackingOrder(), RansackDrain);
 
             //AC Drains/Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderDebuffACNanos).OrderByStackingOrder(), TraderACDrain);
@@ -180,8 +180,8 @@ namespace Desu
                 {
                     SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        .Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
-                        .Where(c => SpellChecksOther(spell, c))
+                        //.Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
+                        .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
                     if (teamMemberWithoutBuff != null)
@@ -198,30 +198,30 @@ namespace Desu
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("SLNanoDrain", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("SLNanoDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
         private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("HealthDrain", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("RKNanoDrain", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("RKNanoDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             //if (!IsSettingEnabled("MyEnemy") || fightingTarget == null || fightingTarget.FightingTarget == DynelManager.LocalPlayer) { return false; }
 
-            return ToggledDebuffTarget("MyEnemy", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("MyEnemy", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             //if (!IsSettingEnabled("GTH") || fightingTarget == null) { return false; }
 
-            return ToggledDebuffTarget("GTH", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("GTH", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -242,7 +242,29 @@ namespace Desu
             //if (fightingTarget.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack)) { return false; }
 
             //return ToggledDebuff("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
-            return ToggledDebuffTarget("RansackDrain", spell, fightingTarget, ref actionTarget);
+
+            //return ToggledDebuffTarget("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+
+            if (DynelManager.LocalPlayer.Level >= 150)
+            {
+                return ToggledDebuffTarget("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+            }
+            else
+            {
+                if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
+                {
+                    if (spell.StackingOrder <= buff.StackingOrder)
+                    {
+                        if (buff.RemainingTime > 150) { return false; }
+
+                        if (!CanCast(spell) || fightingTarget == null) { return false; }
+
+                        return true;
+                    }
+                }
+
+                return ToggledDebuffTarget("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+            }
         }
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -263,7 +285,30 @@ namespace Desu
             //if (fightingTarget.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive)) { return false; }
 
             //return ToggledDebuff("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
-            return ToggledDebuffTarget("DepriveDrain", spell, fightingTarget, ref actionTarget);
+
+            //return ToggledDebuffTarget("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+
+
+            if (DynelManager.LocalPlayer.Level >= 150)
+            {
+                return ToggledDebuffTarget("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+            }
+            else
+            {
+                if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
+                {
+                    if (spell.StackingOrder <= buff.StackingOrder)
+                    {
+                        if (buff.RemainingTime > 150) { return false; }
+
+                        if (!CanCast(spell) || fightingTarget == null) { return false; }
+
+                        return true;
+                    }
+                }
+
+                return ToggledDebuffTarget("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+            }
         }
 
         private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -280,14 +325,14 @@ namespace Desu
             //}
 
             //return ToggledDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            return ToggledDebuffTarget("DamageDrain", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("AAODrain") || fightingTarget == null) { return false; }
 
-            if (fightingTarget.Buffs.Contains(NanoLine.TraderNanoTheft2)) { return false; }
+            //if (fightingTarget.Buffs.Contains(NanoLine.TraderNanoTheft2)) { return false; }
 
             //if (!DynelManager.LocalPlayer.Buffs.Find(NanoLine.AAOBuffs, out Buff buff))
             //{
@@ -297,7 +342,7 @@ namespace Desu
             //        return true;
             //    }
             //}
-            return ToggledDebuffTarget("AAODrain", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
             //return ToggledDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
         }
 
@@ -316,7 +361,7 @@ namespace Desu
             //    }
             //}
 
-            return ToggledDebuffTarget("AADDrain", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
             //return ToggledDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
         }
 
@@ -356,7 +401,7 @@ namespace Desu
             //    }
             //}
 
-            return ToggledDebuffTarget("ACDrains", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         //private bool ToggledDebuff(string settingName, Spell spell, NanoLine spellNanoLine , SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

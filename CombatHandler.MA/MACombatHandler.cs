@@ -105,7 +105,7 @@ namespace Desu
                     SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                         .Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
-                        .Where(c => SpellChecksOther(spell, c))
+                        .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
                     if (teamMemberWithoutBuff != null)
@@ -177,7 +177,7 @@ namespace Desu
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
                     .Where(c => c.Identity != DynelManager.LocalPlayer.Identity)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, c))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)

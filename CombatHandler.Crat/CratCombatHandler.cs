@@ -528,7 +528,7 @@ namespace Desu
 
             //if (!SpellChecksOther(spell, fightingTarget)) { return false; }
 
-            return SpellChecksOther(spell, fightingTarget);
+            return SpellChecksOther(spell, spell.Nanoline, fightingTarget);
         }
 
         private bool Calm12Man(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -586,7 +586,7 @@ namespace Desu
 
             //if (!SpellChecksOther(spell, fightingTarget)) { return false; }
 
-            return SpellChecksOther(spell, fightingTarget);
+            return SpellChecksOther(spell, spell.Nanoline, fightingTarget);
         }
 
         private bool CratDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

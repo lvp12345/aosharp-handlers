@@ -193,7 +193,7 @@ namespace Desu
         {
             if (SomeoneNeedsHealing()) { return false; }
 
-            return ToggledDebuffTarget(settingName, spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget(settingName, spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool InitDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

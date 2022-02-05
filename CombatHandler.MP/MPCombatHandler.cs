@@ -155,22 +155,22 @@ namespace Desu
 
         private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("NanoShutdownDebuff", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("NanoShutdownDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("NanoResistanceDebuff", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("NanoResistanceDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("DamageDebuffs", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("DamageDebuffs", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
         {
-            return ToggledDebuffTarget("Nukes", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("Nukes", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

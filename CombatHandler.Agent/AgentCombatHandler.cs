@@ -215,7 +215,7 @@ namespace CombatHandler.Agent
         {
             if (SomeoneNeedsHealing()) { return false; }
 
-            return ToggledDebuffTarget(settingName, spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget(settingName, spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -270,12 +270,12 @@ namespace CombatHandler.Agent
 
         private bool DotStrainA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("DotStrainA", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("DotStrainA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool EvasionDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("EvasionDebuff", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("EvasionDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion

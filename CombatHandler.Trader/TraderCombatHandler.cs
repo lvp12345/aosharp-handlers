@@ -255,7 +255,7 @@ namespace Desu
                 {
                     if (spell.StackingOrder <= buff.StackingOrder)
                     {
-                        if (buff.RemainingTime > 150) { return false; }
+                        if (buff.RemainingTime > 40) { return false; }
 
                         if (!CanCast(spell) || fightingTarget == null) { return false; }
 
@@ -299,7 +299,7 @@ namespace Desu
                 {
                     if (spell.StackingOrder <= buff.StackingOrder)
                     {
-                        if (buff.RemainingTime > 150) { return false; }
+                        if (buff.RemainingTime > 40) { return false; }
 
                         if (!CanCast(spell) || fightingTarget == null) { return false; }
 

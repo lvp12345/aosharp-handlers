@@ -510,7 +510,7 @@ namespace CombatHandler.Generic
 
         protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
+            if (fightingTarget != null || !CanCast(spell) || RelevantNanos.IgnoreNanos.Contains(spell.Identity.Instance)) { return false; }
 
             if (SpellChecksPlayer(spell))
             {
@@ -1386,6 +1386,7 @@ namespace CombatHandler.Generic
             public const int CompositeRangedSpecial = 223364;
             public const int InnerSanctumDebuff = 206387;
             public const int InsightIntoSL = 268610;
+            public static int[] IgnoreNanos = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
         }
 
         public class PetSpellData

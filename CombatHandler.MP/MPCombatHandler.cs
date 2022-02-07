@@ -70,6 +70,7 @@ namespace Desu
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifierBuff);
             RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolMasteryBuff);
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);

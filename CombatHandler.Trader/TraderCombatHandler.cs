@@ -58,7 +58,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
 
             //Self Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, EvadesTeam);
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericBuff);
 

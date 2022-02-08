@@ -104,9 +104,9 @@ namespace Desu
                 }
             }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 50 && fightingTarget.HealthPercent > 5) { return true; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 80 && fightingTarget.HealthPercent > 5) { return true; }
 
-            return true;
+            return false;
         }
 
         protected bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

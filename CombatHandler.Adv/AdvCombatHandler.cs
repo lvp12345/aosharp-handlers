@@ -166,11 +166,15 @@ namespace Desu
         {
             if (!IsSettingEnabled("WolfMorph")) { return false; }
 
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool SaberDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("SaberMorph")) { return false; }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -178,11 +182,15 @@ namespace Desu
         {
             if (!IsSettingEnabled("LeetMorph")) { return false; }
 
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool DragonScales(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DragonMorph")) { return false; }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }

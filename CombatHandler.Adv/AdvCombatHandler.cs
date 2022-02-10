@@ -128,6 +128,15 @@ namespace Desu
             }
         }
 
+        private bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        #region Morphs
+
         private bool DragonMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DragonMorph")) { return false; }
@@ -153,18 +162,9 @@ namespace Desu
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
-
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
-        }
-
         private bool WolfAgility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("WolfMorph")) { return false; }
-
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -172,15 +172,11 @@ namespace Desu
         {
             if (!IsSettingEnabled("SaberMorph")) { return false; }
 
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
-
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool LeetCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("LeetMorph")) { return false; }
-
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -188,10 +184,10 @@ namespace Desu
         {
             if (!IsSettingEnabled("DragonMorph")) { return false; }
 
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
-
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
+
+        #endregion
 
         #region Healing
 

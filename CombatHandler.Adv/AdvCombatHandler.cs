@@ -4,6 +4,7 @@ using System.Linq;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
 
 namespace Desu
@@ -44,6 +45,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.ArmorBuffs, ArmorBuff);
 
             //Morphs
             RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
@@ -61,18 +63,74 @@ namespace Desu
 
         }
 
+        protected override void OnUpdate(float deltaTime)
+        {
+            base.OnUpdate(deltaTime);
+
+            if (settings["DragonMorph"].AsBool() && settings["LeetMorph"].AsBool())
+            {
+                settings["DragonMorph"] = false;
+                settings["LeetMorph"] = false;
+
+                Chat.WriteLine("Only activate one Morph option.");
+            }
+            if (settings["DragonMorph"].AsBool() && settings["SaberMorph"].AsBool())
+            {
+                settings["DragonMorph"] = false;
+                settings["SaberMorph"] = false;
+
+                Chat.WriteLine("Only activate one Morph option.");
+            }
+            if (settings["DragonMorph"].AsBool() && settings["WolfMorph"].AsBool())
+            {
+                settings["DragonMorph"] = false;
+                settings["WolfMorph"] = false;
+
+                Chat.WriteLine("Only activate one Morph option.");
+            }
+            if (settings["SaberMorph"].AsBool() && settings["LeetMorph"].AsBool())
+            {
+                settings["SaberMorph"] = false;
+                settings["LeetMorph"] = false;
+
+                Chat.WriteLine("Only activate one Morph option.");
+            }
+            if (settings["SaberMorph"].AsBool() && settings["WolfMorph"].AsBool())
+            {
+                settings["SaberMorph"] = false;
+                settings["WolfMorph"] = false;
+
+                Chat.WriteLine("Only activate one Morph option.");
+            }
+            if (settings["LeetMorph"].AsBool() && settings["WolfMorph"].AsBool())
+            {
+                settings["LeetMorph"] = false;
+                settings["WolfMorph"] = false;
+
+                Chat.WriteLine("Only activate one Morph option.");
+            }
+
+            if (!settings["DragonMorph"].AsBool())
+            {
+                CancelBuffs(RelevantNanos.DragonMorph);
+            }
+            if (!settings["LeetMorph"].AsBool())
+            {
+                CancelBuffs(RelevantNanos.LeetMorph);
+            }
+            if (!settings["SaberMorph"].AsBool())
+            {
+                CancelBuffs(RelevantNanos.SaberMorph);
+            }
+            if (!settings["WolfMorph"].AsBool())
+            {
+                CancelBuffs(RelevantNanos.WolfMorph);
+            }
+        }
+
         private bool DragonMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DragonMorph")) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph) 
-                || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph) 
-                || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph))
-            {
-                CancelBuffs(RelevantNanos.LeetMorph);
-                CancelBuffs(RelevantNanos.SaberMorph);
-                CancelBuffs(RelevantNanos.WolfMorph);
-            }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -80,29 +138,11 @@ namespace Desu
         {
             if (!IsSettingEnabled("LeetMorph")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)
-                || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)
-                || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph))
-            {
-                CancelBuffs(RelevantNanos.DragonMorph);
-                CancelBuffs(RelevantNanos.SaberMorph);
-                CancelBuffs(RelevantNanos.WolfMorph);
-            }
-
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool WolfMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("WolfMorph")) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)
-                || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)
-                || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph))
-            {
-                CancelBuffs(RelevantNanos.LeetMorph);
-                CancelBuffs(RelevantNanos.SaberMorph);
-                CancelBuffs(RelevantNanos.DragonMorph);
-            }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -110,22 +150,11 @@ namespace Desu
         {
             if (!IsSettingEnabled("SaberMorph")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)
-                || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)
-                || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph))
-            {
-                CancelBuffs(RelevantNanos.LeetMorph);
-                CancelBuffs(RelevantNanos.DragonMorph);
-                CancelBuffs(RelevantNanos.WolfMorph);
-            }
-
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ArmorBuff")) { return false; }
-
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);

@@ -296,7 +296,7 @@ namespace CombatHandler.Generic
 
         public static bool SelfAbsorbPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 || !Team.IsInCombat)
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
                 return false;
 
             if (!perkAction.IsAvailable)
@@ -382,7 +382,7 @@ namespace CombatHandler.Generic
         public static bool HealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0 || !Team.IsInCombat)
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
                 return false;
 
             // Prioritize keeping ourself alive

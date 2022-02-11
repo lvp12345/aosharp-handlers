@@ -12,7 +12,7 @@
     <OptionCheckBox label="Reflect" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraReflect" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraDamage" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Blind Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamBlindAura" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Blind Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BlindAura" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Shield Ripper" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShieldRipper" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>

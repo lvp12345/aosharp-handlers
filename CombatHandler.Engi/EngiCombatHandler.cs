@@ -52,7 +52,7 @@ namespace CombatHandler.Engi
             settings.AddVariable("Offperks", false);
             settings.AddVariable("Defperks", false);
 
-            settings.AddVariable("SpamBlindAura", false);
+            settings.AddVariable("BlindAura", false);
             settings.AddVariable("SpamSnareAura", false);
 
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
@@ -189,7 +189,7 @@ namespace CombatHandler.Engi
         {
             if (!IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
 
-            if (IsSettingEnabled("SpamBlindAura")) { return false; }
+            if (IsSettingEnabled("BlindAura")) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
         }
@@ -242,7 +242,7 @@ namespace CombatHandler.Engi
         {
             if (IsSettingEnabled("ShieldRipper")) { return false; }
 
-            if (IsSettingEnabled("SpamBlindAura") && fightingTarget != null)
+            if (IsSettingEnabled("BlindAura") && fightingTarget != null && DynelManager.LocalPlayer.DistanceFrom(fightingTarget) < 8)
             {
                 if (Time.NormalTime - _recastBlinds > 9)
                 {

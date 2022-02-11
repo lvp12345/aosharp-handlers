@@ -15,6 +15,7 @@ namespace CombatHandler.Engi
         private const float DelayBetweenDiverTrims = 305;
         private bool attackPetTrimmedAggressive = false;
         private double _lastTrimTime = 0;
+        private double _recastBlinds = Time.NormalTime;
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedHpDiv = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
@@ -51,7 +52,7 @@ namespace CombatHandler.Engi
             settings.AddVariable("Offperks", false);
             settings.AddVariable("Defperks", false);
 
-            settings.AddVariable("SpamDebuffAura", false);
+            settings.AddVariable("SpamBlindAura", false);
             settings.AddVariable("SpamSnareAura", false);
 
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
@@ -188,7 +189,7 @@ namespace CombatHandler.Engi
         {
             if (!IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
 
-            if (IsSettingEnabled("SpamDebuffAura")) { return false; }
+            if (IsSettingEnabled("SpamBlindAura")) { return false; }
 
             return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
         }
@@ -239,11 +240,18 @@ namespace CombatHandler.Engi
 
         private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
+            if (IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
 
-            if (IsSettingEnabled("SpamDebuffAura")) { return false; }
+            if (IsSettingEnabled("SpamBlindAura"))
+            {
+                if (Time.NormalTime - _recastBlinds > 9)
+                {
+                    _recastBlinds = Time.NormalTime;
+                    return true;
+                }
+            }
 
-            return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
+            return false;
         }
 
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

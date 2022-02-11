@@ -242,7 +242,7 @@ namespace CombatHandler.Engi
         {
             if (IsSettingEnabled("ShieldRipper")) { return false; }
 
-            if (IsSettingEnabled("BlindAura") && fightingTarget != null && DynelManager.LocalPlayer.DistanceFrom(fightingTarget) < 8)
+            if (IsSettingEnabled("BlindAura") && fightingTarget != null)
             {
                 if (Time.NormalTime - _recastBlinds > 9)
                 {

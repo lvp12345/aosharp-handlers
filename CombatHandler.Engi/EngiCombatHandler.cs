@@ -240,9 +240,9 @@ namespace CombatHandler.Engi
 
         private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ShieldRipper")) { return false; }
+            if (IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
 
-            if (IsSettingEnabled("BlindAura") && fightingTarget != null)
+            if (IsSettingEnabled("BlindAura"))
             {
                 if (Time.NormalTime - _recastBlinds > 9)
                 {
@@ -251,7 +251,7 @@ namespace CombatHandler.Engi
                 }
             }
 
-            return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
+            return false;
         }
 
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

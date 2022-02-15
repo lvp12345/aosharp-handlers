@@ -4,9 +4,6 @@ using System.Linq;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
-using AOSharp.Core.IPC;
-using AOSharp.Core.UI;
-using MultiboxHelper;
 
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
@@ -1151,7 +1148,7 @@ namespace CombatHandler.Generic
 
             if (Playfield.ModelIdentity.Instance == 152) { return false; }
 
-            if (fightingTarget.IsPlayer && !MultiboxHelper.SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
+            if (fightingTarget.IsPlayer && !Helper.SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
 
             if (fightingTarget.Buffs.Find(nanoline, out Buff buff))
             {
@@ -1227,7 +1224,7 @@ namespace CombatHandler.Generic
 
         protected bool HasNCU(Spell spell, SimpleChar target)
         {
-            return MultiboxHelper.SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
+            return Helper.SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
         }
 
         private void TeleportEnded(object sender, EventArgs e)

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8CB8419F-3914-49C1-ABA3-78C5D26E8E48}</ProjectGuid>
+    <ProjectGuid>{5B5488B2-FEC0-4C69-8933-98151C575220}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CombatHandler.Generic</RootNamespace>
-    <AssemblyName>CombatHandler.Generic</AssemblyName>
+    <RootNamespace>Helper</RootNamespace>
+    <AssemblyName>Helper</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -31,14 +31,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AOSharp.Common">
+    <Reference Include="AOSharp.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\aosharp\AOSharp.Common\bin\Debug\AOSharp.Common.dll</HintPath>
     </Reference>
-    <Reference Include="AOSharp.Core">
-      <HintPath>..\..\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="AOSharp.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\aosharp\AOSharp\bin\Debug\AOSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -51,18 +52,42 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GenericCombatHandler.cs" />
-    <Compile Include="PerkProcessors.cs" />
-    <Compile Include="PerkTypes.cs" />
+    <Compile Include="Config.cs" />
+    <Compile Include="IPCMessages\ClearBuffsMessage.cs" />
+    <Compile Include="IPCMessages\YalmOnMessage.cs" />
+    <Compile Include="IPCMessages\YalmOffMessage.cs" />
+    <Compile Include="IPCMessages\IPCChannelAllMessage.cs" />
+    <Compile Include="IPCMessages\DisbandMessage.cs" />
+    <Compile Include="IPCMessages\AssistMessage.cs" />
+    <Compile Include="IPCMessages\JumpMessage.cs" />
+    <Compile Include="IPCMessages\NavFollowMessage.cs" />
+    <Compile Include="IPCMessages\RemaingNCUMessage.cs" />
+    <Compile Include="IPCMessages\FollowMessage.cs" />
+    <Compile Include="IPCMessages\NpcChatAnswerMessage.cs" />
+    <Compile Include="IPCMessages\NpcChatCloseMessage.cs" />
+    <Compile Include="IPCMessages\NpcChatOpenMessage.cs" />
+    <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
+    <Compile Include="IPCMessages\IPCOpcode.cs" />
+    <Compile Include="IPCMessages\AttackIPCMessage.cs" />
+    <Compile Include="IPCMessages\TradeHandleMessage.cs" />
+    <Compile Include="IPCMessages\UsableMessage.cs" />
+    <Compile Include="IPCMessages\UseMessage.cs" />
+    <Compile Include="IPCMessages\TargetMessage.cs" />
+    <Compile Include="IPCMessages\MoveMessage.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />
-    <Compile Include="TauntTools.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Helper\Helper.csproj">
-      <Project>{5b5488b2-fec0-4c69-8933-98151c575220}</Project>
-      <Name>Helper</Name>
-    </ProjectReference>
+    <Content Include="UI\HelperHelpBox.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\HelperSettingWindow.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

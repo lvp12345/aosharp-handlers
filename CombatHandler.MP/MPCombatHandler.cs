@@ -98,7 +98,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), NanoResistancePetBuff);
             RegisterSpellProcessor(RelevantNanos.PetDefensive, DefensivePetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealDelta843).OrderByStackingOrder(), HealDeltaPetBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), ShortTermDamagePetBuff);
+            RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePetBuff);
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPetBuff);
 
             RegisterPerkProcessor(PerkHash.ChannelRage, ChannelRage);
@@ -516,6 +516,10 @@ namespace Desu
             public static readonly int[] MPCompositeNano = { 220343, 220341, 220339, 220337, 220335, 220333, 220331 };
             public static readonly int[] WarmUpfNukes = { 270355, 125761, 29297, 125762, 29298, 29114 };
             public static readonly int[] PetDefensive = { 267601, 267600, 267599 };
+
+            public static readonly int[] PetShortTermDamage = { 267598, 205193, 151827, 205189, 205187, 151828, 205185, 151824, 205183,
+            151830, 205191, 151826, 205195, 151825, 205197, 151831 };
+
             public static readonly int[] SingleTargetNukes = { 267878, 125763, 125760, 125765, 125764 };
             public static readonly int[] InstillDamageBuffs = { 270800, 285101, 116814, 116817, 116812, 116816, 116821, 116815, 116813 };
             public static readonly int[] ChantBuffs = { 116819, 116818, 116811, 116820 };

@@ -50,8 +50,8 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.NCU_BUFFS, NCUBuff);
             RegisterSpellProcessor(RelevantNanos.GREATER_PRESERVATION_MATRIX, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.TEAM_LONG_HOTS, LongHotBuff);
-            RegisterSpellProcessor(RelevantNanos.SuperiorInsuranceHack, ShortHotBuff);
-            RegisterSpellProcessor(RelevantNanos.TeamShortHoTs, TeamShortHotBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHotBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), TeamShortHotBuff);
             RegisterSpellProcessor(RelevantNanos.RK_RUN_BUFFS, GsfBuff);
             RegisterSpellProcessor(RelevantNanos.SL_RUN_BUFFS, ShadowlandsSpeedBuff);
 
@@ -89,12 +89,14 @@ namespace Desu
                     }
                 }
 
-                return false;
+                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
-            return ToggledBuff("LongHoT", spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool TeamShortHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -271,7 +273,7 @@ namespace Desu
             public static readonly int[] SUMMON_GRID_ARMOR = { 155189, 155187, 155188, 155186 };
             public static readonly int[] SUMMON_SHADOWWEB_SPINNER = { 273349, 224422, 224420, 224418, 224416, 224414, 224412, 224410, 224408, 224405, 224403 };
             public static readonly int[] NCU_BUFFS = { 275043, 163095, 163094, 163087, 163085, 163083, 163081, 163079, 162995 };
-            public static readonly Spell[] TeamShortHoTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder().Where(spell => spell.Identity.Instance != SuperiorInsuranceHack).ToArray();
+            //public static readonly Spell[] TeamShortHoTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder().Where(spell => spell.Identity.Instance != SuperiorInsuranceHack).ToArray();
             public static readonly Spell[] TEAM_LONG_HOTS = Spell.GetSpellsForNanoline(NanoLine.FixerLongHoT).OrderByStackingOrder().Where(spell => spell.Identity.Instance != GREATER_PRESERVATION_MATRIX).ToArray();
         }
 

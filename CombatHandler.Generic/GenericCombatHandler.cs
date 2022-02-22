@@ -492,17 +492,8 @@ namespace CombatHandler.Generic
                     return true;
                 }
             }
-            else
-            {
-                if (SpellChecksPlayer(spell))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    return true;
-                }
-            }
 
-            return false;
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

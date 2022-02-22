@@ -1560,7 +1560,9 @@ namespace Helper
 
             if (Team.IsInTeam)
             {
-                if (DynelManager.LocalPlayer.FightingTarget != null && target.FightingTarget == DynelManager.LocalPlayer) { return true; }
+                if (DynelManager.LocalPlayer.FightingTarget != null) { return true; }
+
+                if (target.FightingTarget == DynelManager.LocalPlayer) { return true; }
 
                 if (Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any()) { return true; }
 
@@ -1570,7 +1572,9 @@ namespace Helper
             }
             else
             {
-                if (DynelManager.LocalPlayer.FightingTarget != null && target.FightingTarget == DynelManager.LocalPlayer) { return true; }
+                if (DynelManager.LocalPlayer.FightingTarget != null) { return true; }
+
+                if (target.FightingTarget == DynelManager.LocalPlayer) { return true; }
 
                 if (target.FightingTarget.IsPet) { return true; }
 

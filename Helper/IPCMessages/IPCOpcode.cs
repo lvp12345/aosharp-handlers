@@ -29,6 +29,7 @@ namespace Helper.IPCMessages
         Disband,
         ChannelAll,
         YalmOn,
+        YalmUse,
         YalmOff,
         ClearBuffs
     }

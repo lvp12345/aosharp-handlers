@@ -765,14 +765,7 @@ namespace Helper
 
             Spell yalmbuff = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.Spell);
 
-            Item yalm = Inventory.Items.FirstOrDefault(x => x.HighId == yalmMsg.Item);
-
-            if (yalm != null)
-            {
-                if (yalm != null)
-                    yalm.Equip(EquipSlot.Weap_Hud1);
-            }
-            else if (yalmbuff != null)
+            if (yalmbuff != null)
             {
                 yalmbuff.Cast(false);
             }
@@ -782,6 +775,27 @@ namespace Helper
 
                 if (yalmbuffs != null)
                     yalmbuffs.Cast(false);
+            }
+        }
+
+        private void OnYalmUse(int sender, IPCMessage msg)
+        {
+            YalmOnMessage yalmMsg = (YalmOnMessage)msg;
+
+            Item yalm = Inventory.Items.FirstOrDefault(x => x.LowId == yalmMsg.Item || x.HighId == yalmMsg.Item);
+
+            if (yalm != null)
+            {
+                yalm.Equip(EquipSlot.Weap_Hud1);
+            }
+            else
+            {
+                Item yalm2 = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
+
+                if (yalm2 != null)
+                {
+                    yalm2.Equip(EquipSlot.Weap_Hud1);
+                }
             }
         }
 
@@ -1129,9 +1143,9 @@ namespace Helper
                 CancelBuffs(RelevantNanos.Yalms);
                 IPCChannel.Broadcast(new YalmOffMessage());
             }
-            else if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).Any())
+            else if (Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.WeaponPage).Any())
             {
-                Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
+                Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
 
                 if (yalm != null)
                 {
@@ -1140,15 +1154,15 @@ namespace Helper
                     IPCChannel.Broadcast(new YalmOffMessage());
                 }
             }
-            else if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).Any())
+            else if (Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).Any())
             {
-                Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
+                Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
 
                 if (yalm != null)
                 {
                     yalm.Equip(EquipSlot.Weap_Hud1);
 
-                    IPCChannel.Broadcast(new YalmOnMessage()
+                    IPCChannel.Broadcast(new YalmUseMessage()
                     {
                         Item = yalm.HighId
                     });

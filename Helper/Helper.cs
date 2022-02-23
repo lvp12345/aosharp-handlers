@@ -763,9 +763,16 @@ namespace Helper
         {
             YalmOnMessage yalmMsg = (YalmOnMessage)msg;
 
-            Spell yalmbuff = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell);
+            Spell yalmbuff = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.Spell);
 
-            if (yalmbuff != null)
+            Item yalm = Inventory.Items.FirstOrDefault(x => x.HighId == yalmMsg.Item);
+
+            if (yalm != null)
+            {
+                if (yalm != null)
+                    yalm.Equip(EquipSlot.Weap_Hud1);
+            }
+            else if (yalmbuff != null)
             {
                 yalmbuff.Cast(false);
             }
@@ -780,7 +787,15 @@ namespace Helper
 
         private void OnYalmCancel(int sender, IPCMessage msg)
         {
-            CancelBuffs(RelevantNanos.Yalms);
+            if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).Any())
+            {
+                Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
+
+                if (yalm != null)
+                    yalm.MoveToInventory();
+            }
+            else
+                CancelBuffs(RelevantNanos.Yalms);
         }
 
         private void OnJumpMessage(int sender, IPCMessage msg)
@@ -1114,6 +1129,17 @@ namespace Helper
                 CancelBuffs(RelevantNanos.Yalms);
                 IPCChannel.Broadcast(new YalmOffMessage());
             }
+            else if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).Any())
+            {
+                Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
+
+                if (yalm != null)
+                {
+                    yalm.MoveToInventory();
+
+                    IPCChannel.Broadcast(new YalmOffMessage());
+                }
+            }
             else
             {
                 if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).Any())
@@ -1121,14 +1147,14 @@ namespace Helper
                     Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
 
                     if (yalm != null)
+                    {
                         yalm.Equip(EquipSlot.Weap_Hud1);
-                }
-                else if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).Any())
-                {
-                    Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
 
-                    if (yalm != null)
-                        yalm.MoveToInventory();
+                        IPCChannel.Broadcast(new YalmOnMessage()
+                        {
+                            Spell = yalm.HighId
+                        });
+                    }
                 }
                 else
                 {
@@ -1140,7 +1166,7 @@ namespace Helper
 
                         IPCChannel.Broadcast(new YalmOnMessage()
                         {
-                            spell = yalmbuff.Identity.Instance
+                            Spell = yalmbuff.Identity.Instance
                         });
                     }
                 }
@@ -1715,7 +1741,7 @@ namespace Helper
                 290473, 281569, 301672, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982,
                 296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
                 270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 293619,
-                294781, 301669, 301700, 301670
+                294781, 301669, 301700, 301670, 120499, 82835
             };
             //public static readonly int[] DontRemoveNanos = {};
         }

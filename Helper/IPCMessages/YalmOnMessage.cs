@@ -14,6 +14,9 @@ namespace Helper.IPCMessages
         public override short Opcode => (short)IPCOpcode.YalmOn;
 
         [AoMember(0)]
-        public int spell { get; set; }
+        public int Spell { get; set; }
+
+        [AoMember(1)]
+        public int Item { get; set; }
     }
 }

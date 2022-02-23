@@ -48,8 +48,6 @@ namespace Helper
         public static bool Sitting = false;
         public static bool HealingPet = false;
 
-        public static Spell yalmbuffs = null;
-
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
@@ -765,15 +763,18 @@ namespace Helper
         {
             YalmOnMessage yalmMsg = (YalmOnMessage)msg;
 
-            if (Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell) != null)
+            Spell yalmbuff = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell);
+
+            if (yalmbuff != null)
             {
-                yalmbuffs = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.spell);
-                yalmbuffs.Cast(false);
+                yalmbuff.Cast(false);
             }
             else
             {
-                yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
-                yalmbuffs.Cast(false);
+                Spell yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+
+                if (yalmbuffs != null)
+                    yalmbuffs.Cast(false);
             }
         }
 
@@ -1108,20 +1109,41 @@ namespace Helper
 
         private void YalmCommand(string command, string[] param, ChatWindow chatWindow)
         {
-            if (Team.Members.Where(x => x.Character.Buffs.Contains(RelevantNanos.Yalms)).Any())
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.Yalms))
             {
                 CancelBuffs(RelevantNanos.Yalms);
                 IPCChannel.Broadcast(new YalmOffMessage());
             }
-
-            if (!Team.Members.Where(x => x.Character.Buffs.Contains(RelevantNanos.Yalms)).Any())
+            else
             {
-                yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
-                yalmbuffs.Cast(false);
-                IPCChannel.Broadcast(new YalmOnMessage()
+                if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).Any())
                 {
-                    spell = yalmbuffs.Identity.Instance
-                });
+                    Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
+
+                    if (yalm != null)
+                        yalm.Equip(EquipSlot.Weap_Hud1);
+                }
+                else if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).Any())
+                {
+                    Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
+
+                    if (yalm != null)
+                        yalm.MoveToInventory();
+                }
+                else
+                {
+                    Spell yalmbuff = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+
+                    if (yalmbuff != null)
+                    {
+                        yalmbuff.Cast(false);
+
+                        IPCChannel.Broadcast(new YalmOnMessage()
+                        {
+                            spell = yalmbuff.Identity.Instance
+                        });
+                    }
+                }
             }
         }
 

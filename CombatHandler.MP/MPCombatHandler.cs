@@ -18,6 +18,7 @@ namespace Desu
         {
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
+            settings.AddVariable("MezzPet", false);
 
             settings.AddVariable("Cost", false);
             settings.AddVariable("CostTeam", false);
@@ -88,6 +89,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
 
             //Pet Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), EvasionPetBuff);
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamageBuff);
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(RelevantNanos.ChantBuffs, ChantBuff);
@@ -321,7 +323,13 @@ namespace Desu
         {
             return PetTargetBuff(NanoLine.MPAttackPetDamageType, PetType.Attack, spell, fightingTarget, ref actionTarget);
         }
-        
+
+        private bool EvasionPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget) ||
+                PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Heal, spell, fightingTarget, ref actionTarget) ||
+                PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
 
         private bool ChantBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -370,6 +378,8 @@ namespace Desu
 
         private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("MezzPet")) { return false; }
+
             return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 

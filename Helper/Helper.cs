@@ -1140,35 +1140,32 @@ namespace Helper
                     IPCChannel.Broadcast(new YalmOffMessage());
                 }
             }
-            else
+            else if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).Any())
             {
-                if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).Any())
+                Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
+
+                if (yalm != null)
                 {
-                    Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
+                    yalm.Equip(EquipSlot.Weap_Hud1);
 
-                    if (yalm != null)
+                    IPCChannel.Broadcast(new YalmOnMessage()
                     {
-                        yalm.Equip(EquipSlot.Weap_Hud1);
-
-                        IPCChannel.Broadcast(new YalmOnMessage()
-                        {
-                            Spell = yalm.HighId
-                        });
-                    }
+                        Spell = yalm.HighId
+                    });
                 }
-                else
+            }
+            else 
+            {
+                Spell yalmbuff = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+
+                if (yalmbuff != null)
                 {
-                    Spell yalmbuff = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+                    yalmbuff.Cast(false);
 
-                    if (yalmbuff != null)
+                    IPCChannel.Broadcast(new YalmOnMessage()
                     {
-                        yalmbuff.Cast(false);
-
-                        IPCChannel.Broadcast(new YalmOnMessage()
-                        {
-                            Spell = yalmbuff.Identity.Instance
-                        });
-                    }
+                        Spell = yalmbuff.Identity.Instance
+                    });
                 }
             }
         }

@@ -1150,7 +1150,7 @@ namespace Helper
 
                     IPCChannel.Broadcast(new YalmOnMessage()
                     {
-                        Spell = yalm.HighId
+                        Item = yalm.HighId
                     });
                 }
             }

@@ -764,18 +764,24 @@ namespace Helper
         {
             YalmOnMessage yalmMsg = (YalmOnMessage)msg;
 
-            Spell yalmbuff = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.Spell);
+            Spell yalm = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.Spell);
 
-            if (yalmbuff != null)
+            Spell yalm2 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+
+            if (yalm != null)
             {
-                yalmbuff.Cast(false);
+                yalm.Cast(false);
+            }
+            else if (yalm2 != null)
+            {
+                    yalm2.Cast(false);
             }
             else
             {
-                Spell yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+                Item yalm3 = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
 
-                if (yalmbuffs != null)
-                    yalmbuffs.Cast(false);
+                if (yalm3 != null)
+                    yalm3.Equip(EquipSlot.Weap_Hud1);
             }
         }
 

@@ -785,18 +785,22 @@ namespace Helper
 
             Item yalm = Inventory.Items.FirstOrDefault(x => x.HighId == yalmMsg.Item);
 
+            Item yalm2 = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
+
             if (yalm != null)
             {
                 yalm.Equip(EquipSlot.Weap_Hud1);
             }
+            else if (yalm2 != null)
+            {
+                yalm2.Equip(EquipSlot.Weap_Hud1);
+            }
             else
             {
-                Item yalm2 = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
+                Spell yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
 
-                if (yalm2 != null)
-                {
-                    yalm2.Equip(EquipSlot.Weap_Hud1);
-                }
+                if (yalmbuffs != null)
+                    yalmbuffs.Cast(false);
             }
         }
 

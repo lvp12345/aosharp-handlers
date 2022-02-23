@@ -132,6 +132,7 @@ namespace Helper
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmCast);
+            IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
 
@@ -780,9 +781,9 @@ namespace Helper
 
         private void OnYalmUse(int sender, IPCMessage msg)
         {
-            YalmOnMessage yalmMsg = (YalmOnMessage)msg;
+            YalmUseMessage yalmMsg = (YalmUseMessage)msg;
 
-            Item yalm = Inventory.Items.FirstOrDefault(x => x.LowId == yalmMsg.Item || x.HighId == yalmMsg.Item);
+            Item yalm = Inventory.Items.FirstOrDefault(x => x.HighId == yalmMsg.Item);
 
             if (yalm != null)
             {

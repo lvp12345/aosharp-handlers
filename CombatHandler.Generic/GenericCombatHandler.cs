@@ -474,6 +474,28 @@ namespace CombatHandler.Generic
             return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
+        protected bool CombatTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
+        }
+
         protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }

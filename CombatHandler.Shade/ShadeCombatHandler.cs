@@ -62,6 +62,17 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.ShadeDotProc, DoTProc);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
+
+            RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+        }
+
+        private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingtarget == null) { return false; }
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
+
+            return true;
         }
 
         private bool InitDebuffProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -340,7 +351,9 @@ namespace Desu
             }
         }
 
-        private class RelevantItems {
+        private class RelevantItems 
+        {
+            public const int Sappo = 267525;
             public const int Tattoo = 269511;
         }
 

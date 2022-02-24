@@ -65,6 +65,7 @@ namespace Desu
             //Items
             RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
             RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
+            RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
 
         }
 
@@ -190,6 +191,14 @@ namespace Desu
 
             return false;
         }
+        private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingtarget == null) { return false; }
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
+
+            return true;
+        }
 
         private bool TouchOfSaiFung(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -254,6 +263,7 @@ namespace Desu
         {
             public const int TheWizdomOfHuzzum = 303056;
             public const int TouchOfSaiFung = 275018;
+            public const int Sappo = 267525;
             public const int TreeOfEnlightenment = 204607;
         }
     }

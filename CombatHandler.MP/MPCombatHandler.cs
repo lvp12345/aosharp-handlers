@@ -89,7 +89,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
 
             //Pet Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), EvasionPetBuff);
+            RegisterSpellProcessor(RelevantNanos.EvadeBuff, EvasionPetBuff);
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamageBuff);
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(RelevantNanos.ChantBuffs, ChantBuff);
@@ -520,6 +520,7 @@ namespace Desu
         private static class RelevantNanos
         {
             public const int MastersBidding = 268171;
+            public const int EvadeBuff = 29272;
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
             public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };

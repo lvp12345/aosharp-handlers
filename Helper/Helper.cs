@@ -774,7 +774,7 @@ namespace Helper
             }
             else if (yalm2 != null)
             {
-                    yalm2.Cast(false);
+                yalm2.Cast(false);
             }
             else
             {
@@ -803,10 +803,10 @@ namespace Helper
             }
             else
             {
-                Spell yalmbuffs = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+                Spell yalm3 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
 
-                if (yalmbuffs != null)
-                    yalmbuffs.Cast(false);
+                if (yalm3 != null)
+                    yalm3.Cast(false);
             }
         }
 

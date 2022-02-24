@@ -227,7 +227,9 @@ namespace Desu
 
         private bool HealthDrainNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("HealthDrain") || fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
+
+            if (fightingTarget.Buffs.Contains(273390)) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent > 80) { return true; }
 

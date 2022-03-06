@@ -252,7 +252,7 @@ namespace Desu
 
             //return ToggledDebuffTarget("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
 
-            if (DynelManager.LocalPlayer.Level >= 150)
+            if (DynelManager.LocalPlayer.Level >= 205)
             {
                 return ToggledDebuffTarget("RansackDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
             }
@@ -309,7 +309,7 @@ namespace Desu
             //return ToggledDebuffTarget("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
 
 
-            if (DynelManager.LocalPlayer.Level >= 150)
+            if (DynelManager.LocalPlayer.Level >= 205)
             {
                 return ToggledDebuffTarget("DepriveDrain", spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
             }

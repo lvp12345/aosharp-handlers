@@ -551,6 +551,9 @@ namespace CombatHandler.Generic
                     if (teamMemberWithoutBuff.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
                         (spell.Nanoline == NanoLine.FixerSuppressorBuff || spell.Nanoline == NanoLine.AssaultRifleBuffs)) { return false; }
 
+                    if (teamMemberWithoutBuff.Buffs.Contains(NanoLine.PistolBuff) &&
+                        spell.Nanoline == NanoLine.PistolBuff) { return false; }
+
                     actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
                     return true;

@@ -1,6 +1,9 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
+using AOSharp.Core.UI;
 using AOSharp.Core.UI.Options;
+using CombatHandler;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
@@ -10,6 +13,9 @@ namespace Desu
 {
     public class NTCombatHandler : GenericCombatHandler
     {
+
+        public static string PluginDirectory;
+
         public NTCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("AIDot", true);
@@ -61,6 +67,49 @@ namespace Desu
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
             RegisterSpellProcessor(RelevantNanos.AoeBlinds, AoeBlind);
+
+            PluginDirectory = pluginDir;
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\NTBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void PrefsView(object s, ButtonBase button)
+        {
+            Window prefWindow = Window.CreateFromXml("Prefs", PluginDirectory + "\\UI\\NTPreferencesView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            prefWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("PreferencesView", out Button prefView))
+                    {
+                        prefView.Tag = SettingsController.settingsView;
+                        prefView.Clicked = PrefsView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
         }
 
         private bool AoeBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

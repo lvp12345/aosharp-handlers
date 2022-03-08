@@ -1,8 +1,10 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
 using AOSharp.Core.UI.Options;
+using CombatHandler;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
@@ -20,6 +22,8 @@ namespace Desu
         private double _aoeused;
         private double _aoeusedost;
         private double _singletauntused;
+
+        public static string PluginDirectory;
 
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -65,8 +69,65 @@ namespace Desu
             //    Item tauntTool = TauntTools.GetBestTauntTool();
             //    RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
             //}
+
+            PluginDirectory = pluginDir;
         }
 
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\EnforcerBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void TauntView(object s, ButtonBase button)
+        {
+            Window tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\EnforcerTauntsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            tauntWindow.Show(true);
+        }
+
+        private void HelperView(object s, ButtonBase button)
+        {
+            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\EnforcerHelperView.xml",
+            windowSize: new Rect(0, 0, 270, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            helperWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    {
+                        helpView.Tag = SettingsController.settingsView;
+                        helpView.Clicked = HelperView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("TauntsView", out Button tauntView))
+                    {
+                        tauntView.Tag = SettingsController.settingsView;
+                        tauntView.Clicked = TauntView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
+        }
         private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if(HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer)) { return false; }

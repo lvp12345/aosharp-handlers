@@ -6,12 +6,16 @@ using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
 using System;
+using CombatHandler;
+using AOSharp.Common.GameData.UI;
 
 namespace Desu
 {
     public class FixerCombatHandler : GenericCombatHandler
     {
         private double _lastBackArmorCheckTime = Time.NormalTime;
+
+        public static string PluginDirectory;
 
         public FixerCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -58,6 +62,59 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDebuff);
             RegisterSpellProcessor(RelevantNanos.SUMMON_GRID_ARMOR, GridArmor);
             RegisterSpellProcessor(RelevantNanos.SUMMON_SHADOWWEB_SPINNER, ShadowwebSpinner);
+
+            PluginDirectory = pluginDir;
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\FixerDebuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            debuffWindow.Show(true);
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\FixerBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            base.OnUpdate(deltaTime);
+
+            if (settings["RKRunspeed"].AsBool() && settings["SLRunspeed"].AsBool())
+            {
+                settings["RKRunspeed"] = false;
+                settings["SLRunspeed"] = false;
+
+                Chat.WriteLine("Only activate one Runspeed option.");
+            }
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Clicked = DebuffView;
+                    }
+                }
+            }
+
+            EquipBackArmor();
         }
 
         private bool NCUBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -89,12 +146,8 @@ namespace Desu
                     }
                 }
 
-                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
-
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -207,30 +260,6 @@ namespace Desu
             }
 
             return true;
-        }
-
-        protected override void OnUpdate(float deltaTime)
-        {
-            base.OnUpdate(deltaTime);
-
-            if (settings["RKRunspeed"].AsBool() && settings["SLRunspeed"].AsBool())
-            {
-                settings["RKRunspeed"] = false;
-                settings["SLRunspeed"] = false;
-
-                Chat.WriteLine("Only activate one Runspeed option.");
-            }
-
-            //if (!IsSettingEnabled("RKRunspeed") && !IsSettingEnabled("RKRunspeedTeam"))
-            //{
-            //    CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
-            //}
-            //if (!IsSettingEnabled("SLRunspeed"))
-            //{
-            //    CancelBuffs(RelevantNanos.SL_RUN_BUFFS);
-            //}
-
-            EquipBackArmor();
         }
 
         private void EquipBackArmor()

@@ -90,38 +90,6 @@ namespace Helper
                                 if (textinput != null)
                                     textinput.Text = HelperChannel;
                             }
-
-                            if (HelperNavFollowDistance.ToString() != String.Empty)
-                            {
-                                settingsWindow.FindView("NavFollowDistanceBox", out TextInputView textinput);
-
-                                if (textinput != null)
-                                    textinput.Text = HelperNavFollowDistance.ToString();
-                            }
-
-                            if (HelperAssistPlayer != String.Empty)
-                            {
-                                settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
-
-                                if (textinput != null)
-                                    textinput.Text = HelperAssistPlayer;
-                            }
-
-                            if (HelperFollowPlayer != String.Empty)
-                            {
-                                settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-
-                                if (textinput != null)
-                                    textinput.Text = HelperFollowPlayer;
-                            }
-
-                            if (HelperNavFollowPlayer != String.Empty)
-                            {
-                                settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
-
-                                if (textinput != null)
-                                    textinput.Text = HelperNavFollowPlayer;
-                            }
                         }
                     }
                     catch (Exception e)

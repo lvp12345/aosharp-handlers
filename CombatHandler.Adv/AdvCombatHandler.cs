@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
+using CombatHandler;
 using CombatHandler.Generic;
 
 namespace Desu
 {
     public class AdvCombatHandler : GenericCombatHandler
     {
+        public static string PluginDirectory;
+
         public AdvCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("Heal", true);
@@ -58,9 +62,29 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
             RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
 
+            PluginDirectory = pluginDir;
+
             //Items
             //RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
 
+        }
+
+        private void HealingView(object s, ButtonBase button)
+        {
+            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\AdvHealingView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            healingWindow.Show(true);
+        }
+
+        private void MorphView(object s, ButtonBase button)
+        {
+            Window morphWindow = Window.CreateFromXml("Morphs", PluginDirectory + "\\UI\\AdvMorphView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            morphWindow.Show(true);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -125,6 +149,24 @@ namespace Desu
             if (!settings["WolfMorph"].AsBool())
             {
                 CancelBuffs(RelevantNanos.WolfMorph);
+            }
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Clicked = HealingView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("MorphView", out Button morphView))
+                    {
+                        morphView.Tag = SettingsController.settingsView;
+                        morphView.Clicked = MorphView;
+                    }
+                }
             }
         }
 

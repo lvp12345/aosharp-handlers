@@ -1,4 +1,5 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
@@ -29,6 +30,8 @@ namespace CombatHandler.Engi
             { PetType.Attack, 0 },
             { PetType.Support, 0 }
         };
+
+        public static string PluginDirectory;
 
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -126,6 +129,90 @@ namespace CombatHandler.Engi
             }
 
             Game.TeleportEnded += OnZoned;
+
+            PluginDirectory = pluginDir;
+        }
+
+        private void PetView(object s, ButtonBase button)
+        {
+            Window petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\EngineerPetsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            petWindow.Show(true);
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\EngineerBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void HelperView(object s, ButtonBase button)
+        {
+            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\EngineerHelperView.xml",
+            windowSize: new Rect(0, 0, 340, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            helperWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            SynchronizePetCombatStateWithOwner();
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    {
+                        helpView.Tag = SettingsController.settingsView;
+                        helpView.Clicked = HelperView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("PetsView", out Button petView))
+                    {
+                        petView.Tag = SettingsController.settingsView;
+                        petView.Clicked = PetView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
+
+            if (!IsSettingEnabled("AuraShield"))
+            {
+                CancelBuffs(RelevantNanos.AuraShield);
+            }
+
+            if (!IsSettingEnabled("AuraDamage"))
+            {
+                CancelBuffs(RelevantNanos.AuraDamage);
+            }
+
+            if (!IsSettingEnabled("AuraArmor"))
+            {
+                CancelBuffs(RelevantNanos.AuraArmor);
+            }
+
+            if (!IsSettingEnabled("AuraReflect"))
+            {
+                CancelBuffs(RelevantNanos.AuraReflect);
+            }
+
+            CancelBuffs(IsSettingEnabled("ShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
+            CancelHostileAuras(RelevantNanos.Blinds);
+            CancelHostileAuras(RelevantNanos.ShieldRippers);
         }
 
         private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -537,37 +624,6 @@ namespace CombatHandler.Engi
         {
 
             ResetTrimmers();
-        }
-
-        protected override void OnUpdate(float deltaTime)
-        {
-            SynchronizePetCombatStateWithOwner();
-
-            base.OnUpdate(deltaTime);
-
-            if (!IsSettingEnabled("AuraShield"))
-            {
-                CancelBuffs(RelevantNanos.AuraShield);
-            }
-
-            if (!IsSettingEnabled("AuraDamage"))
-            {
-                CancelBuffs(RelevantNanos.AuraDamage);
-            }
-
-            if (!IsSettingEnabled("AuraArmor"))
-            {
-                CancelBuffs(RelevantNanos.AuraArmor);
-            }
-
-            if (!IsSettingEnabled("AuraReflect"))
-            {
-                CancelBuffs(RelevantNanos.AuraReflect);
-            }
-
-            CancelBuffs(IsSettingEnabled("ShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
-            CancelHostileAuras(RelevantNanos.Blinds);
-            CancelHostileAuras(RelevantNanos.ShieldRippers);
         }
 
         protected bool ShouldCancelHostileAuras()

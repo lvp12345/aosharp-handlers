@@ -1,6 +1,8 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.UI;
+using CombatHandler;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
@@ -10,6 +12,8 @@ namespace Desu
 {
     class DocCombatHandler : GenericCombatHandler
     {
+        public static string PluginDirectory;
+
         public DocCombatHandler(String pluginDir) : base(pluginDir)
         {
             settings.AddVariable("InitDebuff", false);
@@ -29,7 +33,7 @@ namespace Desu
 
             settings.AddVariable("LockCH", false);
 
-            RegisterSettingsWindow("Doctor Handler", "DoctorSettingsView.xml");
+            RegisterSettingsWindow("Doctor Handler", "DocSettingsView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, LEProc, CombatActionPriority.Low);
@@ -75,6 +79,79 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(), DOTADebuffTarget);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(), DOTBDebuffTarget);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget);
+
+            PluginDirectory = pluginDir;
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\DocDebuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            debuffWindow.Show(true);
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\DocBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void HealingView(object s, ButtonBase button)
+        {
+            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\DocHealingView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            healingWindow.Show(true);
+        }
+
+        private void HelperView(object s, ButtonBase button)
+        {
+            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\DocHelperView.xml",
+            windowSize: new Rect(0, 0, 270, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            helperWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    {
+                        helpView.Tag = SettingsController.settingsView;
+                        helpView.Clicked = HelperView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Clicked = HealingView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Clicked = DebuffView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
         }
 
         #region Healing

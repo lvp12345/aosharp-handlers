@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
+using CombatHandler;
 using CombatHandler.Generic;
 
 namespace Desu
 {
     public class MACombatHandler : GenericCombatHandler
     {
+        public static string PluginDirectory;
+
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SingleTaunt", false);
@@ -67,6 +71,64 @@ namespace Desu
             RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
             RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
 
+            PluginDirectory = pluginDir;
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MABuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void HealingView(object s, ButtonBase button)
+        {
+            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\MAHealingView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            healingWindow.Show(true);
+        }
+
+        private void TauntView(object s, ButtonBase button)
+        {
+            Window tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\MATauntsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            tauntWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+
+                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Clicked = HealingView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("TauntsView", out Button tauntView))
+                    {
+                        tauntView.Tag = SettingsController.settingsView;
+                        tauntView.Clicked = TauntView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
         }
 
         private bool ZazenStance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

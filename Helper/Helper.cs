@@ -1696,7 +1696,7 @@ namespace Helper
 
         private void HelperView(object s, ButtonBase button)
         {
-            Window helpWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\HelperHelpersView.xml",
+            Window helpWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\HelperHelpersView.xml",
             windowSize: new Rect(0, 0, 220, 345),
             windowStyle: WindowStyle.Default,
             windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);

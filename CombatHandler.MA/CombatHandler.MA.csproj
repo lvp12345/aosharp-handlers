@@ -60,6 +60,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\MAHealingView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\MABuffsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\MATauntsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\MASettingsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

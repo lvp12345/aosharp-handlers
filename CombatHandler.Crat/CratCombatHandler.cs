@@ -1,7 +1,9 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
+using CombatHandler;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,8 @@ namespace Desu
         private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
         private bool attackPetTrimmedAggressive = false;
+
+        public static string PluginDirectory;
 
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
         private Dictionary<PetType, double> _lastPetTrimDivertTime = new Dictionary<PetType, double>()
@@ -96,7 +100,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), TeamBuff);
 
             //Pet Buffs
-            if(Spell.Find(RelevantNanos.CorporateStrategy, out Spell spell))
+            if (Spell.Find(RelevantNanos.CorporateStrategy, out Spell spell))
             {
                 RegisterSpellProcessor(RelevantNanos.CorporateStrategy, CorporateStrategy);
             }
@@ -131,6 +135,44 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.Puppeteer, Puppeteer);
 
             Game.TeleportEnded += OnZoned;
+
+            PluginDirectory = pluginDir;
+        }
+
+        private void PetView(object s, ButtonBase button)
+        {
+            Window petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\BureaucratPetsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            petWindow.Show(true);
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\BureaucratDebuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            debuffWindow.Show(true);
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\BureaucratBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void HelperView(object s, ButtonBase button)
+        {
+            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\BureaucratHelperView.xml",
+            windowSize: new Rect(0, 0, 340, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            helperWindow.Show(true);
         }
 
         private void OnZoned(object s, EventArgs e)
@@ -141,6 +183,36 @@ namespace Desu
         protected override void OnUpdate(float deltaTime)
         {
             SynchronizePetCombatStateWithOwner();
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    {
+                        helpView.Tag = SettingsController.settingsView;
+                        helpView.Clicked = HelperView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("PetsView", out Button petView))
+                    {
+                        petView.Tag = SettingsController.settingsView;
+                        petView.Clicked = PetView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Clicked = DebuffView;
+                    }
+                }
+            }
 
             base.OnUpdate(deltaTime);
 
@@ -186,21 +258,21 @@ namespace Desu
         }
         private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffAAOAAD")) { return false; }
+            if (IsSettingEnabled("BuffCrit") || IsSettingEnabled("BuffAAOAAD") || !IsSettingEnabled("BuffAAOAAD")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffCrit") || IsSettingEnabled("BuffAAOAAD")) { return false; }
+            if (IsSettingEnabled("BuffCrit") || IsSettingEnabled("BuffAAOAAD") || !IsSettingEnabled("BuffNanoResist")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffCrit")) { return false; }
+            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffCrit") || !IsSettingEnabled("BuffAAOAAD")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }

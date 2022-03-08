@@ -80,7 +80,16 @@
     <Compile Include="SettingsController.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="UI\HelperHelpBox.xml">
+    <Content Include="UI\HelperAssistView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\HelperHelpersView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\HelperFollowView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\HelperHelpView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\HelperSettingWindow.xml">

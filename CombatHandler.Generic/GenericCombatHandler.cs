@@ -393,7 +393,7 @@ namespace CombatHandler.Generic
 
         protected bool CombatBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
 
             if (SpellChecksPlayer(spell))
             {
@@ -476,7 +476,7 @@ namespace CombatHandler.Generic
 
         protected bool CombatTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
+            if (!CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {

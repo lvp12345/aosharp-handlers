@@ -1,7 +1,9 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
+using CombatHandler;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
@@ -13,6 +15,8 @@ namespace Desu
     {
         private double _lastSwitchedHealTime = 0;
         private double _lastSwitchedMezzTime = 0;
+
+        public static string PluginDirectory;
 
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -104,6 +108,88 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPetBuff);
 
             RegisterPerkProcessor(PerkHash.ChannelRage, ChannelRage);
+
+            PluginDirectory = pluginDir;
+        }
+
+        private void PetView(object s, ButtonBase button)
+        {
+            Window petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\MPPetsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            petWindow.Show(true);
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\MPDebuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            debuffWindow.Show(true);
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MPBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            if (settings["Composites"].AsBool() || settings["CompositesTeam"].AsBool() &&
+                (settings["MatterCrea"].AsBool() || settings["PyschoModi"].AsBool()
+                || settings["TimeSpace"].AsBool() || settings["SenseImprov"].AsBool()
+                || settings["BioMet"].AsBool() || settings["MattMet"].AsBool()))
+            {
+                settings["Composites"] = false;
+                settings["CompositesTeam"] = false;
+                settings["MatterCrea"] = false;
+                settings["PyschoModi"] = false;
+                settings["TimeSpace"] = false;
+                settings["SenseImprov"] = false;
+                settings["BioMet"] = false;
+                settings["MattMet"] = false;
+
+                Chat.WriteLine("Only activate one option.");
+            }
+
+            if (CanLookupPetsAfterZone())
+            {
+                SynchronizePetCombatStateWithOwner();
+                AssignTargetToHealPet();
+                AssignTargetToMezzPet();
+            }
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("PetsView", out Button petView))
+                    {
+                        petView.Tag = SettingsController.settingsView;
+                        petView.Clicked = PetView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Clicked = DebuffView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
         }
 
         private bool ChannelRage(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -486,35 +572,6 @@ namespace Desu
                     }
                 }
             }
-        }
-
-        protected override void OnUpdate(float deltaTime)
-        {
-            if (settings["Composites"].AsBool() || settings["CompositesTeam"].AsBool() && 
-                (settings["MatterCrea"].AsBool() || settings["PyschoModi"].AsBool()
-                || settings["TimeSpace"].AsBool() || settings["SenseImprov"].AsBool()
-                || settings["BioMet"].AsBool() || settings["MattMet"].AsBool()))
-            {
-                settings["Composites"] = false;
-                settings["CompositesTeam"] = false;
-                settings["MatterCrea"] = false;
-                settings["PyschoModi"] = false;
-                settings["TimeSpace"] = false;
-                settings["SenseImprov"] = false;
-                settings["BioMet"] = false;
-                settings["MattMet"] = false;
-
-                Chat.WriteLine("Only activate one option.");
-            }
-
-            if (CanLookupPetsAfterZone())
-            {
-                SynchronizePetCombatStateWithOwner();
-                AssignTargetToHealPet();
-                AssignTargetToMezzPet();
-            }
-
-            base.OnUpdate(deltaTime);
         }
 
         private static class RelevantNanos

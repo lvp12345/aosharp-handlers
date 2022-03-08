@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="Debuffs" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Theft Humidity" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GTH" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="My Enemy" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MyEnemy" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="AAO Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AAODrain" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="AAD Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AADDrain" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Damage Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageDrain" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Health Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealthDrain" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Ransack Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RansackDrain" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Deprive Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DepriveDrain" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="RK Nano Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RKNanoDrain" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="SL Nano Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLNanoDrain" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="AC Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ACDrains" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+  </BorderView>
+</root>

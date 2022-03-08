@@ -4,6 +4,8 @@ using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using AOSharp.Core.UI;
 using System.Linq;
+using CombatHandler;
+using AOSharp.Common.GameData.UI;
 
 namespace Desu
 {
@@ -11,6 +13,9 @@ namespace Desu
     {
         public const double singletauntrefresh = 8f;
         private double _singletauntused;
+
+
+        public static string PluginDirectory;
 
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
@@ -62,6 +67,49 @@ namespace Desu
             //    Item tauntTool = TauntTools.GetBestTauntTool();
             //    RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
             //}
+
+            PluginDirectory = pluginDir;
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\SoldierBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void TauntView(object s, ButtonBase button)
+        {
+            Window tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\SoldierTauntsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            tauntWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("TauntsView", out Button tauntView))
+                    {
+                        tauntView.Tag = SettingsController.settingsView;
+                        tauntView.Clicked = TauntView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
         }
 
         #region Instanced Logic
@@ -192,30 +240,6 @@ namespace Desu
 
             return false;
         }
-
-        //private bool DamageTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IsSettingEnabled("DamageTeam"))
-        //    {
-        //        if (DynelManager.LocalPlayer.IsInTeam())
-        //        {
-        //            SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-        //                .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-        //                .Where(c => !c.Buffs.Contains(NanoLine.DamageBuffs_LineA))
-        //                .Where(c => SpellChecksOther(spell, c))
-        //                .FirstOrDefault();
-
-        //            if (teamMemberWithoutBuff != null)
-        //            {
-        //                actionTarget.Target = teamMemberWithoutBuff;
-        //                actionTarget.ShouldSetTarget = true;
-        //                return true;
-        //            }
-        //        }
-        //    }
-
-        //    return false;
-        //}
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

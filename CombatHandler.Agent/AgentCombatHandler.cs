@@ -5,12 +5,15 @@ using AOSharp.Core.UI;
 using System.Linq;
 using System.Collections.Generic;
 using System;
+using AOSharp.Common.GameData.UI;
 
 namespace CombatHandler.Agent
 {
     public class AgentCombatHandler : GenericCombatHandler
     {
         private double _lastSwitchedHealTime = 0;
+
+        public static string PluginDirectory;
 
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -72,6 +75,43 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DotStrainA);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff);
 
+            PluginDirectory = pluginDir;
+        }
+
+        private void ProcView(object s, ButtonBase button)
+        {
+            Window procWindow = Window.CreateFromXml("Procs", PluginDirectory + "\\UI\\AgentProcView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            procWindow.Show(true);
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\AgentDebuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            debuffWindow.Show(true);
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\AgentBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void HealingView(object s, ButtonBase button)
+        {
+            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\AgentHealingView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            healingWindow.Show(true);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -80,6 +120,36 @@ namespace CombatHandler.Agent
             {
                 SynchronizePetCombatStateWithOwner();
                 AssignTargetToHealPet();
+            }
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Clicked = HealingView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Clicked = DebuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("ProcView", out Button procView))
+                    {
+                        procView.Tag = SettingsController.settingsView;
+                        procView.Clicked = ProcView;
+                    }
+                }
             }
 
             base.OnUpdate(deltaTime);

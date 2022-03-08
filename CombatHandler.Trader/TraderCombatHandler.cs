@@ -6,11 +6,15 @@ using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
 using System;
+using AOSharp.Common.GameData.UI;
+using CombatHandler;
 
 namespace Desu
 {
     public class TraderCombatHandler : GenericCombatHandler
     {
+        public static string PluginDirectory;
+
         public TraderCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("DamageDrain", true);
@@ -87,10 +91,78 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), TraderACDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DebuffNanoACHeavy).OrderByStackingOrder(), TraderACDrain);
 
+            PluginDirectory = pluginDir;
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\TraderDebuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            debuffWindow.Show(true);
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\TraderBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void PerkView(object s, ButtonBase button)
+        {
+            Window perkWindow = Window.CreateFromXml("Perks", PluginDirectory + "\\UI\\TraderPerkView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            perkWindow.Show(true);
+        }
+
+        private void HealingView(object s, ButtonBase button)
+        {
+            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\TraderHealingView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            healingWindow.Show(true);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("PerkView", out Button perkView))
+                    {
+                        perkView.Tag = SettingsController.settingsView;
+                        perkView.Clicked = PerkView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Clicked = HealingView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Clicked = DebuffView;
+                    }
+                }
+            }
+
             if (settings["PurpleHeart"].AsBool() && settings["Sacrifice"].AsBool())
             {
                 settings["PurpleHeart"] = false;

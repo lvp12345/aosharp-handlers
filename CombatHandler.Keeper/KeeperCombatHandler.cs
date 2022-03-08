@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AOSharp.Common.Unmanaged.Imports;
+using CombatHandler;
+using AOSharp.Common.GameData.UI;
 
 namespace Desu
 {
@@ -20,6 +22,8 @@ namespace Desu
         private readonly int[] _npAuras;
         private readonly int[] _reaperAuras;
         private readonly int[] _sanctifierAuras;
+
+        public static string PluginDirectory;
 
         public KeeperCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -76,9 +80,56 @@ namespace Desu
             RegisterSpellProcessor(_vengeanceAuras, VengeanceAura);
             RegisterSpellProcessor(_sanctifierAuras, SanctifierAura);
             RegisterSpellProcessor(_reaperAuras, ReaperAura);
+
+            PluginDirectory = pluginDir;
         }
 
-        private Boolean AntifearSpam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\KeeperBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        private void HelperView(object s, ButtonBase button)
+        {
+            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\KeeperHelperView.xml",
+            windowSize: new Rect(0, 0, 270, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            helperWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    {
+                        helpView.Tag = SettingsController.settingsView;
+                        helpView.Clicked = HelperView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
+
+            CancelBuffs(IsSettingEnabled("NanoAura") ? _hpAuras : _npAuras);
+            CancelBuffs(IsSettingEnabled("ReflectAura") ? _imminenceAuras : _barrierAuras);
+            CancelBuffs(IsSettingEnabled("DerootAura") ? _vengeanceAuras : _enervateAuras);
+        }
+
+        private bool AntifearSpam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if(IsSettingEnabled("SpamAntifear"))
             {
@@ -211,15 +262,6 @@ namespace Desu
         protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
         {
             return specialAttack != SpecialAttack.Dimach;
-        }
-
-        protected override void OnUpdate(float deltaTime)
-        {
-            base.OnUpdate(deltaTime);
-
-            CancelBuffs(IsSettingEnabled("NanoAura") ? _hpAuras : _npAuras);
-            CancelBuffs(IsSettingEnabled("ReflectAura") ? _imminenceAuras : _barrierAuras);
-            CancelBuffs(IsSettingEnabled("DerootAura") ? _vengeanceAuras : _enervateAuras);
         }
 
         private static class RelevantNanos

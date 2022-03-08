@@ -60,6 +60,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\SoldierBuffsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\SoldierTauntsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\SoldierSettingsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

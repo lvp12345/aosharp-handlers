@@ -48,6 +48,9 @@ namespace Helper
         public static bool Sitting = false;
         public static bool HealingPet = false;
 
+        public Window followWindow;
+        public Window assistWindow;
+
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
@@ -595,13 +598,64 @@ namespace Helper
                 }
             }
 
+            if (assistWindow != null && assistWindow.IsValid)
+            {
+                assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput1);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput1.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput1.Text;
+                        SettingsController.HelperAssistPlayer = textinput1.Text;
+                        Config.Save();
+                    }
+                }
+            }
+
+            if (followWindow != null && followWindow.IsValid)
+            {
+                followWindow.FindView("FollowNamedCharacter", out TextInputView textinput1);
+                followWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
+                followWindow.FindView("NavFollowDistanceBox", out TextInputView textinput3);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
+                        SettingsController.HelperFollowPlayer = textinput1.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput2.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput2.Text;
+                        SettingsController.HelperNavFollowPlayer = textinput2.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput3 != null && textinput3.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput3.Text, out int rangeValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
+                            SettingsController.HelperNavFollowDistance = rangeValue;
+                            Config.Save();
+                        }
+                    }
+                }
+            }
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
-                SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView textinput2);
-                SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView textinput3);
-                SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView textinput4);
-                SettingsController.settingsWindow.FindView("NavFollowDistanceBox", out TextInputView textinput5);
 
                 if (textinput1 != null && textinput1.Text != String.Empty)
                 {
@@ -617,55 +671,30 @@ namespace Helper
                     }
                 }
 
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput2.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput2.Text;
-                        SettingsController.HelperAssistPlayer = textinput2.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput3 != null && textinput3.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput3.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput3.Text;
-                        SettingsController.HelperFollowPlayer = textinput3.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput4 != null && textinput4.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput4.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput4.Text;
-                        SettingsController.HelperNavFollowPlayer = textinput4.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput5 != null && textinput5.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput5.Text, out int rangeValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
-                            SettingsController.HelperNavFollowDistance = rangeValue;
-                            Config.Save();
-                        }
-                    }
-                }
-
                 if (SettingsController.settingsView != null)
                 {
-                    if (SettingsController.settingsView.FindChild("HelperHelpBox", out Button helpBox))
+                    if (SettingsController.settingsView.FindChild("HelperHelpView", out Button helpView))
                     {
-                        helpBox.Tag = SettingsController.settingsView;
-                        helpBox.Clicked = HelpBox;
+                        helpView.Tag = SettingsController.settingsView;
+                        helpView.Clicked = HelpView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("HelperFollowView", out Button followView))
+                    {
+                        followView.Tag = SettingsController.settingsView;
+                        followView.Clicked = FollowView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("HelperAssistView", out Button assistView))
+                    {
+                        assistView.Tag = SettingsController.settingsView;
+                        assistView.Clicked = AssistView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("HelperHelpersView", out Button helpersView))
+                    {
+                        helpersView.Tag = SettingsController.settingsView;
+                        helpersView.Clicked = HelperView;
                     }
                 }
             }
@@ -1604,10 +1633,71 @@ namespace Helper
             }
         }
 
-        private void HelpBox(object s, ButtonBase button)
+        private void AssistView(object s, ButtonBase button)
         {
-            Window helpWindow = Window.CreateFromXml("Help", PluginDirectory + "\\UI\\HelperHelpBox.xml",
+            assistWindow = Window.CreateFromXml("Assist", PluginDirectory + "\\UI\\HelperAssistView.xml",
+            windowSize: new Rect(0, 0, 220, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            if (SettingsController.HelperAssistPlayer != String.Empty)
+            {
+                assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
+
+                if (textinput != null)
+                    textinput.Text = SettingsController.HelperAssistPlayer;
+            }
+
+            assistWindow.Show(true);
+        }
+
+        private void FollowView(object s, ButtonBase button)
+        {
+            followWindow = Window.CreateFromXml("Follow", PluginDirectory + "\\UI\\HelperFollowView.xml",
+            windowSize: new Rect(0, 0, 220, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            if (SettingsController.HelperFollowPlayer != String.Empty)
+            {
+                followWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+
+                if (textinput != null)
+                    textinput.Text = SettingsController.HelperFollowPlayer;
+            }
+
+            if (SettingsController.HelperNavFollowPlayer != String.Empty)
+            {
+                followWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
+
+                if (textinput != null)
+                    textinput.Text = SettingsController.HelperNavFollowPlayer;
+            }
+
+            if (SettingsController.HelperNavFollowDistance.ToString() != String.Empty)
+            {
+                followWindow.FindView("NavFollowDistanceBox", out TextInputView textinput);
+
+                if (textinput != null)
+                    textinput.Text = SettingsController.HelperNavFollowDistance.ToString();
+            }
+
+            followWindow.Show(true);
+        }
+
+        private void HelpView(object s, ButtonBase button)
+        {
+            Window helpWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\HelperHelpView.xml",
             windowSize: new Rect(0, 0, 455, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            helpWindow.Show(true);
+        }
+
+        private void HelperView(object s, ButtonBase button)
+        {
+            Window helpWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\HelperHelpersView.xml",
+            windowSize: new Rect(0, 0, 220, 345),
             windowStyle: WindowStyle.Default,
             windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
             helpWindow.Show(true);

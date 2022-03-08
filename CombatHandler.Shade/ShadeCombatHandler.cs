@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
+using CombatHandler;
 using CombatHandler.Generic;
 
 namespace Desu
@@ -13,6 +15,8 @@ namespace Desu
         private const int MissingHealthCombatAbortPercentage = 30;
 
         private static bool ShadeSiphon;
+
+        public static string PluginDirectory;
 
         public ShadeCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -64,6 +68,113 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
 
             RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+
+            PluginDirectory = pluginDir;
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\ShadeDebuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            debuffWindow.Show(true);
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\ShadeBuffsView.xml",
+            windowSize: new Rect(0, 0, 240, 345),
+            windowStyle: WindowStyle.Default,
+            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow.Show(true);
+        }
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                if (SettingsController.settingsView != null)
+                {
+                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Clicked = BuffView;
+                    }
+
+                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Clicked = DebuffView;
+                    }
+                }
+            }
+
+            base.OnUpdate(deltaTime);
+
+            if (settings["InitDebuffProc"].AsBool() && settings["DamageProc"].AsBool())
+            {
+                settings["InitDebuffProc"] = false;
+                settings["DamageProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+            if (settings["InitDebuffProc"].AsBool() && settings["DoTProc"].AsBool())
+            {
+                settings["InitDebuffProc"] = false;
+                settings["DoTProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+            if (settings["InitDebuffProc"].AsBool() && settings["StunProc"].AsBool())
+            {
+                settings["InitDebuffProc"] = false;
+                settings["StunProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+            if (settings["DamageProc"].AsBool() && settings["StunProc"].AsBool())
+            {
+                settings["DamageProc"] = false;
+                settings["StunProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+            if (settings["DamageProc"].AsBool() && settings["DoTProc"].AsBool())
+            {
+                settings["DamageProc"] = false;
+                settings["DoTProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+            if (settings["StunProc"].AsBool() && settings["DoTProc"].AsBool())
+            {
+                settings["StunProc"] = false;
+                settings["DoTProc"] = false;
+
+                Chat.WriteLine("Only activate one Proc option.");
+            }
+
+            if (!IsSettingEnabled("Runspeed") && !IsSettingEnabled("RunspeedTeam"))
+            {
+                CancelBuffs(RelevantNanos.FasterThanYourShadow);
+            }
+            if (!IsSettingEnabled("InitDebuffProc"))
+            {
+                CancelBuffs(RelevantNanos.ShadeInitDebuffProc);
+            }
+            if (!IsSettingEnabled("DamageProc"))
+            {
+                CancelBuffs(RelevantNanos.ShadeDmgProc);
+            }
+            if (!IsSettingEnabled("DoTProc"))
+            {
+                CancelBuffs(RelevantNanos.ShadeDotProc);
+            }
+            if (!IsSettingEnabled("StunProc"))
+            {
+                CancelBuffs(RelevantNanos.ShadeStunProc);
+            }
         }
 
         private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -282,75 +393,6 @@ namespace Desu
             if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
 
             return true;
-        }
-
-        protected override void OnUpdate(float deltaTime)
-        {
-            base.OnUpdate(deltaTime);
-
-            if (settings["InitDebuffProc"].AsBool() && settings["DamageProc"].AsBool())
-            {
-                settings["InitDebuffProc"] = false;
-                settings["DamageProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (settings["InitDebuffProc"].AsBool() && settings["DoTProc"].AsBool())
-            {
-                settings["InitDebuffProc"] = false;
-                settings["DoTProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (settings["InitDebuffProc"].AsBool() && settings["StunProc"].AsBool())
-            {
-                settings["InitDebuffProc"] = false;
-                settings["StunProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (settings["DamageProc"].AsBool() && settings["StunProc"].AsBool())
-            {
-                settings["DamageProc"] = false;
-                settings["StunProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (settings["DamageProc"].AsBool() && settings["DoTProc"].AsBool())
-            {
-                settings["DamageProc"] = false;
-                settings["DoTProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (settings["StunProc"].AsBool() && settings["DoTProc"].AsBool())
-            {
-                settings["StunProc"] = false;
-                settings["DoTProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-
-            if (!IsSettingEnabled("Runspeed") && !IsSettingEnabled("RunspeedTeam"))
-            {
-                CancelBuffs(RelevantNanos.FasterThanYourShadow);
-            }
-            if (!IsSettingEnabled("InitDebuffProc"))
-            {
-                CancelBuffs(RelevantNanos.ShadeInitDebuffProc);
-            }
-            if (!IsSettingEnabled("DamageProc"))
-            {
-                CancelBuffs(RelevantNanos.ShadeDmgProc);
-            }
-            if (!IsSettingEnabled("DoTProc"))
-            {
-                CancelBuffs(RelevantNanos.ShadeDotProc);
-            }
-            if (!IsSettingEnabled("StunProc"))
-            {
-                CancelBuffs(RelevantNanos.ShadeStunProc);
-            }
         }
 
         private class RelevantItems 

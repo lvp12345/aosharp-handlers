@@ -707,31 +707,11 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)) { return false; }
 
-            if (item.HighId == RelevantItems.PremSitKit)
-            {
-                if (DynelManager.LocalPlayer.HealthPercent >= 66 && DynelManager.LocalPlayer.NanoPercent >= 66) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent >= 66 && DynelManager.LocalPlayer.NanoPercent >= 66) { return false; }
 
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-            else
-            {
-                int targetHealing = item.UseModifiers
-                    .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
-                    .Cast<SpellData.Healing>()
-                    .Sum(x => x.Average);
-
-                if (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-
-                    return true;
-                }
-            }
-
-            return false;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -746,9 +726,6 @@ namespace CombatHandler.Generic
                 .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
                 .Cast<SpellData.Healing>()
                 .Sum(x => x.Average);
-
-            //Chat.WriteLine($"{DynelManager.LocalPlayer.MissingHealth > targetHealing}");
-            //Chat.WriteLine($"{DynelManager.LocalPlayer.MissingNano > targetHealing}");
 
             if (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing)
             {
@@ -1072,7 +1049,7 @@ namespace CombatHandler.Generic
                 if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
                 {
                     if (pet.Character.IsAttacking && pet.Character.FightingTarget != null
-                        && pet.Character.FightingTarget != DynelManager.LocalPlayer.FightingTarget)
+                        && pet.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
                     {
                         pet.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
                     }

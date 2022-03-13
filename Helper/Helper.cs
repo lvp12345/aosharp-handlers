@@ -1435,49 +1435,24 @@ namespace Helper
             {
                 if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
                 {
-                    int targetHealing = kit.UseModifiers
-                        .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
-                        .Cast<SpellData.Healing>()
-                        .Sum(x => x.Average);
-
                     if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
                         && DynelManager.LocalPlayer.MovementState != MovementState.Sit
                         && !DynelManager.LocalPlayer.Buffs.Contains(280488)
                         && CanUseSitKit())
                     {
-                        if (kit.HighId == 297274)
+                        if (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
                         {
-                            if (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
-                            {
-                                Task.Factory.StartNew(
-                                   async () =>
-                                   {
-                                       Sitting = true;
-                                       await Task.Delay(400);
-                                       MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                                       await Task.Delay(800);
-                                       MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                                       await Task.Delay(200);
-                                       Sitting = false;
-                                   });
-                            }
-                        }
-                        else
-                        {
-                            if (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing)
-                            {
-                                Task.Factory.StartNew(
-                                   async () =>
-                                   {
-                                       Sitting = true;
-                                       await Task.Delay(400);
-                                       MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                                       await Task.Delay(800);
-                                       MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                                       await Task.Delay(200);
-                                       Sitting = false;
-                                   });
-                            }
+                            Task.Factory.StartNew(
+                               async () =>
+                               {
+                                   Sitting = true;
+                                   await Task.Delay(400);
+                                   MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                                   await Task.Delay(800);
+                                   MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                                   await Task.Delay(200);
+                                   Sitting = false;
+                               });
                         }
                     }
                 }

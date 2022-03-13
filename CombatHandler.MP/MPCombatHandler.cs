@@ -237,7 +237,9 @@ namespace Desu
         }
         private bool CanPerkChannelRage(Pet pet)
         {
-            if(pet.Type != PetType.Attack) { return false; }
+            if (!pet.Character.IsAlive) { return false; }
+
+            if (pet.Type != PetType.Attack) { return false; }
 
             return !pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.ChannelRage);
         }
@@ -386,22 +388,16 @@ namespace Desu
 
         private bool MezzPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !IsSettingEnabled("BuffPets")) { return false; }
-
             return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MesmerizationConstructEmpowerment);
         }
 
         private bool HealPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !IsSettingEnabled("BuffPets")) { return false; }
-
             return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.HealingConstructEmpowerment);
         }
 
         private bool AttackPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !IsSettingEnabled("BuffPets")) { return false; }
-
             return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.AggressiveConstructEmpowerment);
         }
 
@@ -497,8 +493,7 @@ namespace Desu
            {
                 return DynelManager.LocalPlayer;
            }
-
-           if (DynelManager.LocalPlayer.IsInTeam())
+           else if (DynelManager.LocalPlayer.IsInTeam())
            {
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
@@ -513,18 +508,20 @@ namespace Desu
                     return dyingTeamMember;
                 }
            }
+           else
+           {
+                Pet dyingPet = DynelManager.LocalPlayer.Pets
+                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
+                     .Where(pet => pet.Character.HealthPercent < 80)
+                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                     .OrderByDescending(pet => pet.Character.HealthPercent)
+                     .FirstOrDefault();
 
-            Pet dyingPet = DynelManager.LocalPlayer.Pets
-                 .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
-                 .Where(pet => pet.Character.HealthPercent < 80)
-                 .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-                 .OrderByDescending(pet => pet.Character.HealthPercent)
-                 .FirstOrDefault();
-
-            if (dyingPet != null)
-            {
-                return dyingPet.Character;
-            }
+                if (dyingPet != null)
+                {
+                    return dyingPet.Character;
+                }
+           }
 
             return null;
         }
@@ -545,11 +542,15 @@ namespace Desu
             if (Time.NormalTime - _lastSwitchedHealTime > 5)
             {
                 SimpleChar dyingTarget = GetTargetToHeal();
+
                 if (dyingTarget != null)
                 {
                     Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal).FirstOrDefault();
+
                     if (healPet != null)
                     {
+                        if (healPet.Character.Nano <= 1) { return; }
+
                         healPet.Heal(dyingTarget.Identity);
                         _lastSwitchedHealTime = Time.NormalTime;
                     }
@@ -565,8 +566,11 @@ namespace Desu
                 if (targetToMezz != null)
                 {
                     Pet mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support).FirstOrDefault();
+
                     if (mezzPet != null)
                     {
+                        if (mezzPet.Character.Nano <= 1) { return; }
+
                         mezzPet.Attack(targetToMezz.Identity);
                         _lastSwitchedMezzTime = Time.NormalTime;
                     }

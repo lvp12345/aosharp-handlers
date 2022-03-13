@@ -156,14 +156,14 @@ namespace Desu
         {
             if (!IsSettingEnabled("ShortHoTTeam")) { return false; }
 
-            return CombatTeamBuff(spell, fightingTarget, ref actionTarget);
+            return AllTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("ShortHoT")) { return false; }
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            return AllBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool EvasionDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

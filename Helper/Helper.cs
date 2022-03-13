@@ -1402,7 +1402,7 @@ namespace Helper
                 if (CanUseSitKit() && Time.NormalTime > _sitPetUsedTimer + 16
                     && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f && healpet.Character.IsInLineOfSight)
                 {
-                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 <= 10) { return; }
+                    if (healpet.Character.Nano == 10) { return; }
 
                     if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 55) { return; }
 
@@ -1410,18 +1410,7 @@ namespace Helper
 
                     if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
                     {
-                        //Task.Factory.StartNew(
-                        //    async () =>
-                        //    {
-                        //        Sitting = true;
-                        //        kit.Use(healpet.Character, true);
-                        //        await Task.Delay(100);
-                        //        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                        //        usedSitPetUpdateTimer = Time.NormalTime;
-                        //    });
-
                         kit.Use(healpet.Character, true);
-                        //MovementController.Instance.SetMovement(MovementAction.LeaveSit);
                         Task.Factory.StartNew(
                             async () =>
                             {
@@ -1446,78 +1435,51 @@ namespace Helper
             {
                 if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
                 {
-                    // Trying something new
-
-                    //if (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65)
-                    //{
-                    //    MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-
-                    //    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
-                    //    {
-                    //        Sitting = true;
-                    //        kit.Use(DynelManager.LocalPlayer, true);
-                    //    }
-                    //}
-
-                    //if (Sitting == true && DynelManager.LocalPlayer.MovementState == MovementState.Sit
-                    //    && DynelManager.LocalPlayer.NanoPercent > 65 && DynelManager.LocalPlayer.HealthPercent > 65)
-                    //{
-                    //    Sitting = false;
-                    //    MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                    //}
-
+                    int targetHealing = kit.UseModifiers
+                        .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
+                        .Cast<SpellData.Healing>()
+                        .Sum(x => x.Average);
 
                     if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
                         && DynelManager.LocalPlayer.MovementState != MovementState.Sit
                         && !DynelManager.LocalPlayer.Buffs.Contains(280488)
-                        && (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
                         && CanUseSitKit())
                     {
-                        Task.Factory.StartNew(
-                            async () =>
+                        if (kit.HighId == 297274)
+                        {
+                            if (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
                             {
-                                Sitting = true;
-                                await Task.Delay(400);
-                                MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                                await Task.Delay(800);
-                                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                                await Task.Delay(200);
-                                Sitting = false;
-                            });
+                                Task.Factory.StartNew(
+                                   async () =>
+                                   {
+                                       Sitting = true;
+                                       await Task.Delay(400);
+                                       MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                                       await Task.Delay(800);
+                                       MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                                       await Task.Delay(200);
+                                       Sitting = false;
+                                   });
+                            }
+                        }
+                        else
+                        {
+                            if (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing)
+                            {
+                                Task.Factory.StartNew(
+                                   async () =>
+                                   {
+                                       Sitting = true;
+                                       await Task.Delay(400);
+                                       MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                                       await Task.Delay(800);
+                                       MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                                       await Task.Delay(200);
+                                       Sitting = false;
+                                   });
+                            }
+                        }
                     }
-
-
-
-                    // Works best
-
-                    //if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
-                    //    && DynelManager.LocalPlayer.MovementState != MovementState.Sit
-                    //    && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    //    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
-                    //    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning
-                    //    && !DynelManager.LocalPlayer.Buffs.Contains(280488)
-                    //    && (DynelManager.LocalPlayer.NanoPercent <= 65 || DynelManager.LocalPlayer.HealthPercent <= 65))
-                    //{
-                    //    Task.Factory.StartNew(
-                    //        async () =>
-                    //        {
-                    //            Sitting = true;
-                    //            await Task.Delay(400);
-                    //            MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                    //        });
-                    //}
-
-                    //if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && DynelManager.LocalPlayer.MovementState == MovementState.Sit
-                    //    && DynelManager.LocalPlayer.NanoPercent > 65 && DynelManager.LocalPlayer.HealthPercent > 65 && Sitting == true)
-                    //{
-                    //    Task.Factory.StartNew(
-                    //        async () =>
-                    //        {
-                    //            MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                    //            await Task.Delay(400);
-                    //            Sitting = false;
-                    //        });
-                    //}
                 }
             }
         }

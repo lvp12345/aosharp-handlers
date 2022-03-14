@@ -67,7 +67,7 @@
     <Content Include="UI\EngineerBuffsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\EngineerHelperView.xml">
+    <Content Include="UI\EngineerAidingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\EngineerSettingsView.xml">

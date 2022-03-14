@@ -25,6 +25,9 @@ namespace Desu
 
         public static string PluginDirectory;
 
+        public static Window buffWindow;
+        public static Window aidingWindow;
+
         public KeeperCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("NanoAura", false);
@@ -38,6 +41,11 @@ namespace Desu
             settings.AddVariable("SpamAntifear", false);
 
             RegisterSettingsWindow("Keeper Handler", "KeeperSettingsView.xml");
+
+            RegisterSettingsWindow("Buffs", "KeeperBuffsView.xml");
+            RegisterSettingsWindow("Aiding", "KeeperAidingView.xml");
+
+
             RegisterPerkProcessors();
 
             //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
@@ -86,37 +94,53 @@ namespace Desu
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\KeeperBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\KeeperBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
         }
 
-        private void HelperView(object s, ButtonBase button)
+        private void AidingView(object s, ButtonBase button)
         {
-            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\KeeperHelperView.xml",
-            windowSize: new Rect(0, 0, 270, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            helperWindow.Show(true);
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", buffWindow);
+            }
+            else
+            {
+                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\KeeperAidingView.xml",
+                    windowSize: new Rect(0, 0, 270, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                aidingWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    if (SettingsController.settingsWindow.FindView("HelperView", out Button helpView))
                     {
-                        helpView.Tag = SettingsController.settingsView;
-                        helpView.Clicked = HelperView;
+                        helpView.Tag = SettingsController.settingsWindow;
+                        helpView.Clicked = AidingView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
                 }

@@ -48,13 +48,20 @@ namespace Helper
         public static bool Sitting = false;
         public static bool HealingPet = false;
 
-        public Window followWindow;
-        public Window assistWindow;
+        public static Window followWindow;
+        public static Window assistWindow;
+        public static Window infoWindow;
+        public static Window aidWindow;
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
         private static AOSharp.Core.Settings settings = new AOSharp.Core.Settings("Helper");
+
+        private static AOSharp.Core.Settings assist = new AOSharp.Core.Settings("Assist");
+        private static AOSharp.Core.Settings follow = new AOSharp.Core.Settings("Follow");
+        private static AOSharp.Core.Settings info = new AOSharp.Core.Settings("Info");
+        private static AOSharp.Core.Settings aid = new AOSharp.Core.Settings("Aiding");
 
         List<Vector3> MorphBird = new List<Vector3>
         {
@@ -140,6 +147,11 @@ namespace Helper
 
 
             SettingsController.RegisterSettingsWindow("Helper", pluginDir + "\\UI\\HelperSettingWindow.xml", settings);
+
+            SettingsController.RegisterSettingsWindow("Aiding", pluginDir + "\\UI\\HelperAidingView.xml", aid);
+            SettingsController.RegisterSettingsWindow("Assist", pluginDir + "\\UI\\HelperAssistView.xml", assist);
+            SettingsController.RegisterSettingsWindow("Follow", pluginDir + "\\UI\\HelperFollowView.xml", follow);
+            SettingsController.RegisterSettingsWindow("Info", pluginDir + "\\UI\\HelperInfoView.xml", info);
 
             Chat.RegisterCommand("sync", SyncSwitch);
             Chat.RegisterCommand("leadfollow", LeadFollowSwitch);
@@ -671,32 +683,56 @@ namespace Helper
                     }
                 }
 
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow.FindView("HelperInfoView", out Button helpView))
                 {
-                    if (SettingsController.settingsView.FindChild("HelperHelpView", out Button helpView))
-                    {
-                        helpView.Tag = SettingsController.settingsView;
-                        helpView.Clicked = HelpView;
-                    }
-
-                    if (SettingsController.settingsView.FindChild("HelperFollowView", out Button followView))
-                    {
-                        followView.Tag = SettingsController.settingsView;
-                        followView.Clicked = FollowView;
-                    }
-
-                    if (SettingsController.settingsView.FindChild("HelperAssistView", out Button assistView))
-                    {
-                        assistView.Tag = SettingsController.settingsView;
-                        assistView.Clicked = AssistView;
-                    }
-
-                    if (SettingsController.settingsView.FindChild("HelperHelpersView", out Button helpersView))
-                    {
-                        helpersView.Tag = SettingsController.settingsView;
-                        helpersView.Clicked = HelperView;
-                    }
+                    helpView.Tag = SettingsController.settingsWindow;
+                    helpView.Clicked = HelpView;
                 }
+
+                if (SettingsController.settingsWindow.FindView("HelperFollowView", out Button followView))
+                {
+                    followView.Tag = SettingsController.settingsWindow;
+                    followView.Clicked = FollowView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("HelperAssistView", out Button assistView))
+                {
+                    assistView.Tag = SettingsController.settingsWindow;
+                    assistView.Clicked = AssistView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("HelperAidingView", out Button helpersView))
+                {
+                    helpersView.Tag = SettingsController.settingsWindow;
+                    helpersView.Clicked = AidView;
+                }
+
+                //if (SettingsController.settingsView != null)
+                //{
+                //    if (SettingsController.settingsView.FindChild("HelperInfoView", out Button helpView))
+                //    {
+                //        helpView.Tag = SettingsController.settingsView;
+                //        helpView.Clicked = HelpView;
+                //    }
+
+                //    if (SettingsController.settingsView.FindChild("HelperFollowView", out Button followView))
+                //    {
+                //        followView.Tag = SettingsController.settingsView;
+                //        followView.Clicked = FollowView;
+                //    }
+
+                //    if (SettingsController.settingsView.FindChild("HelperAssistView", out Button assistView))
+                //    {
+                //        assistView.Tag = SettingsController.settingsView;
+                //        assistView.Clicked = AssistView;
+                //    }
+
+                //    if (SettingsController.settingsView.FindChild("HelperAidingView", out Button helpersView))
+                //    {
+                //        helpersView.Tag = SettingsController.settingsView;
+                //        helpersView.Clicked = HelperView;
+                //    }
+                //}
             }
 
             if (SettingsController.HelperChannel == String.Empty)
@@ -1572,72 +1608,107 @@ namespace Helper
 
         private void AssistView(object s, ButtonBase button)
         {
-            assistWindow = Window.CreateFromXml("Assist", PluginDirectory + "\\UI\\HelperAssistView.xml",
-            windowSize: new Rect(0, 0, 220, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-            if (SettingsController.HelperAssistPlayer != String.Empty)
+            if (followWindow != null && followWindow.IsValid)
             {
-                assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
-
-                if (textinput != null)
-                    textinput.Text = SettingsController.HelperAssistPlayer;
+                SettingsController.AppendSettingsTab("Assist", followWindow);
             }
+            else if (aidWindow != null && aidWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Assist", aidWindow);
+            }
+            else
+            {
+                assistWindow = Window.CreateFromXml("Assist", PluginDirectory + "\\UI\\HelperAssistView.xml",
+                    windowSize: new Rect(0, 0, 220, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-            assistWindow.Show(true);
+                if (SettingsController.HelperAssistPlayer != String.Empty)
+                {
+                    assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
+
+                    if (textinput != null)
+                        textinput.Text = SettingsController.HelperAssistPlayer;
+                }
+
+                assistWindow.Show(true);
+            }
         }
 
         private void FollowView(object s, ButtonBase button)
         {
-            followWindow = Window.CreateFromXml("Follow", PluginDirectory + "\\UI\\HelperFollowView.xml",
-            windowSize: new Rect(0, 0, 220, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-            if (SettingsController.HelperFollowPlayer != String.Empty)
+            if (assistWindow != null && assistWindow.IsValid)
             {
-                followWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-
-                if (textinput != null)
-                    textinput.Text = SettingsController.HelperFollowPlayer;
+                SettingsController.AppendSettingsTab("Follow", assistWindow);
             }
-
-            if (SettingsController.HelperNavFollowPlayer != String.Empty)
+            else if (aidWindow != null && aidWindow.IsValid)
             {
-                followWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
-
-                if (textinput != null)
-                    textinput.Text = SettingsController.HelperNavFollowPlayer;
+                SettingsController.AppendSettingsTab("Follow", aidWindow);
             }
-
-            if (SettingsController.HelperNavFollowDistance.ToString() != String.Empty)
+            else
             {
-                followWindow.FindView("NavFollowDistanceBox", out TextInputView textinput);
+                followWindow = Window.CreateFromXml("Follow", PluginDirectory + "\\UI\\HelperFollowView.xml",
+                    windowSize: new Rect(0, 0, 220, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-                if (textinput != null)
-                    textinput.Text = SettingsController.HelperNavFollowDistance.ToString();
+                if (SettingsController.HelperFollowPlayer != String.Empty)
+                {
+                    followWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
+
+                    if (textinput != null)
+                        textinput.Text = SettingsController.HelperFollowPlayer;
+                }
+
+                if (SettingsController.HelperNavFollowPlayer != String.Empty)
+                {
+                    followWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
+
+                    if (textinput != null)
+                        textinput.Text = SettingsController.HelperNavFollowPlayer;
+                }
+
+                if (SettingsController.HelperNavFollowDistance.ToString() != String.Empty)
+                {
+                    followWindow.FindView("NavFollowDistanceBox", out TextInputView textinput);
+
+                    if (textinput != null)
+                        textinput.Text = SettingsController.HelperNavFollowDistance.ToString();
+                }
+
+                followWindow.Show(true);
             }
-
-            followWindow.Show(true);
         }
 
         private void HelpView(object s, ButtonBase button)
         {
-            Window helpWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\HelperHelpView.xml",
-            windowSize: new Rect(0, 0, 455, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            helpWindow.Show(true);
+            infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\HelperInfoView.xml",
+                windowSize: new Rect(0, 0, 220, 345),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            infoWindow.Show(true);
         }
 
-        private void HelperView(object s, ButtonBase button)
+        private void AidView(object s, ButtonBase button)
         {
-            Window helpWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\HelperHelpersView.xml",
-            windowSize: new Rect(0, 0, 220, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            helpWindow.Show(true);
+            if (followWindow != null && followWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", followWindow);
+            }
+            else if (assistWindow != null && assistWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", assistWindow);
+            }
+            else
+            {
+                aidWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\HelperAidingView.xml",
+                    windowSize: new Rect(0, 0, 220, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                aidWindow.Show(true);
+            }
         }
 
         private bool IsActiveCharacter()

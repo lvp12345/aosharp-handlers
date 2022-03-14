@@ -2,10 +2,7 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="Auras" layout_borders="Rect(5,5,5,5)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="Buffing Auras" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Heal" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealAura" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Nano" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoAura" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
@@ -17,8 +14,6 @@
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Sanc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SancAura" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Reaper" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ReaperAura" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>
 </root>

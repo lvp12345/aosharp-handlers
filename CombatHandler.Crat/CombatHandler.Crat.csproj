@@ -71,7 +71,7 @@
     <Content Include="UI\BureaucratSettingsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\BureaucratHelperView.xml">
+    <Content Include="UI\BureaucratAidingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

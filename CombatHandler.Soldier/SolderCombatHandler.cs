@@ -14,6 +14,8 @@ namespace Desu
         public const double singletauntrefresh = 8f;
         private double _singletauntused;
 
+        public static Window buffWindow;
+        public static Window tauntWindow;
 
         public static string PluginDirectory;
 
@@ -32,6 +34,9 @@ namespace Desu
             //settings.AddVariable("DamageTeam", false);
 
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
+
+            RegisterSettingsWindow("Buffs", "SoldierBuffsView.xml");
+            RegisterSettingsWindow("Taunts", "SoldierTauntsView.xml");
 
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcSoldierGrazeJugularVein, LEProc);
@@ -73,37 +78,53 @@ namespace Desu
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\SoldierBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (tauntWindow != null && tauntWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", tauntWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\SoldierBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
         }
 
         private void TauntView(object s, ButtonBase button)
         {
-            Window tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\SoldierTauntsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            tauntWindow.Show(true);
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Taunts", buffWindow);
+            }
+            else
+            {
+                tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\SoldierTauntsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                tauntWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("TauntsView", out Button tauntView))
+                    if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
                     {
-                        tauntView.Tag = SettingsController.settingsView;
+                        tauntView.Tag = SettingsController.settingsWindow;
                         tauntView.Clicked = TauntView;
                     }
                 }

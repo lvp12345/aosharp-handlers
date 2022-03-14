@@ -18,6 +18,11 @@ namespace Desu
         private const float DelayBetweenDiverTrims = 305;
         private bool attackPetTrimmedAggressive = false;
 
+        public static Window buffWindow;
+        public static Window debuffWindow;
+        public static Window petWindow;
+        public static Window aidingWindow;
+
         public static string PluginDirectory;
 
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
@@ -59,6 +64,11 @@ namespace Desu
             settings.AddVariable("CalmSector7", false);
 
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
+
+            RegisterSettingsWindow("Pets", "BureaucratPetsView.xml");
+            RegisterSettingsWindow("Aiding", "BureaucratAidingView.xml");
+            RegisterSettingsWindow("Buffs", "BureaucratDebuffsView.xml");
+            RegisterSettingsWindow("Debuffs", "BureaucratBuffsView.xml");
 
             //LE Procs
             //RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, LEProc, CombatActionPriority.Low);
@@ -141,38 +151,102 @@ namespace Desu
 
         private void PetView(object s, ButtonBase button)
         {
-            Window petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\BureaucratPetsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            petWindow.Show(true);
-        }
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Pets", buffWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Pets", debuffWindow);
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Pets", aidingWindow);
+            }
+            else
+            {
+                petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\BureaucratPetsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-        private void DebuffView(object s, ButtonBase button)
-        {
-            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\BureaucratDebuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            debuffWindow.Show(true);
+                petWindow.Show(true);
+            }
         }
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\BureaucratBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (petWindow != null && petWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", petWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\BureaucratBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
         }
 
-        private void HelperView(object s, ButtonBase button)
+        private void DebuffView(object s, ButtonBase button)
         {
-            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\BureaucratHelperView.xml",
-            windowSize: new Rect(0, 0, 340, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            helperWindow.Show(true);
+            if (petWindow != null && petWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", petWindow);
+            }
+            else if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", aidingWindow);
+            }
+            else
+            {
+                debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\BureaucratDebuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                debuffWindow.Show(true);
+            }
+        }
+
+        private void AidingView(object s, ButtonBase button)
+        {
+            if (petWindow != null && petWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", petWindow);
+            }
+            else if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", buffWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", debuffWindow);
+            }
+            else
+            {
+                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\BureaucratAidingView.xml",
+                    windowSize: new Rect(0, 0, 340, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                aidingWindow.Show(true);
+            }
         }
 
         private void OnZoned(object s, EventArgs e)
@@ -186,29 +260,29 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    if (SettingsController.settingsWindow.FindView("HelperView", out Button helpView))
                     {
-                        helpView.Tag = SettingsController.settingsView;
-                        helpView.Clicked = HelperView;
+                        helpView.Tag = SettingsController.settingsWindow;
+                        helpView.Clicked = AidingView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("PetsView", out Button petView))
+                    if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                     {
-                        petView.Tag = SettingsController.settingsView;
+                        petView.Tag = SettingsController.settingsWindow;
                         petView.Clicked = PetView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                     {
-                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Tag = SettingsController.settingsWindow;
                         debuffView.Clicked = DebuffView;
                     }
                 }

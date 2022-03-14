@@ -13,6 +13,10 @@ namespace Desu
 {
     public class TraderCombatHandler : GenericCombatHandler
     {
+        public static Window buffWindow;
+        public static Window debuffWindow;
+        public static Window healingWindow;
+
         public static string PluginDirectory;
 
         public TraderCombatHandler(string pluginDir) : base(pluginDir)
@@ -44,6 +48,10 @@ namespace Desu
             settings.AddVariable("EvadesTeam", false);
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
+
+            RegisterSettingsWindow("Buffs", "TraderBuffsView.xml");
+            RegisterSettingsWindow("Debuffs", "TraderDebuffsView.xml");
+            RegisterSettingsWindow("Healing", "TraderHealingView.xml");
 
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcTraderRigidLiquidation, LEProc);
@@ -94,40 +102,68 @@ namespace Desu
             PluginDirectory = pluginDir;
         }
 
-        private void DebuffView(object s, ButtonBase button)
-        {
-            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\TraderDebuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            debuffWindow.Show(true);
-        }
-
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\TraderBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", healingWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\TraderBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
         }
 
-        private void PerkView(object s, ButtonBase button)
+        private void DebuffView(object s, ButtonBase button)
         {
-            Window perkWindow = Window.CreateFromXml("Perks", PluginDirectory + "\\UI\\TraderPerkView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            perkWindow.Show(true);
+            if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", healingWindow);
+            }
+            else if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
+            }
+            else
+            {
+                debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\TraderDebuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                debuffWindow.Show(true);
+
+            }
         }
 
         private void HealingView(object s, ButtonBase button)
         {
-            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\TraderHealingView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            healingWindow.Show(true);
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", buffWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", debuffWindow);
+            }
+            else
+            {
+                healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\TraderHealingView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                healingWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -135,29 +171,23 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("PerkView", out Button perkView))
+                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                     {
-                        perkView.Tag = SettingsController.settingsView;
-                        perkView.Clicked = PerkView;
-                    }
-
-                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
-                    {
-                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Tag = SettingsController.settingsWindow;
                         healingView.Clicked = HealingView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                     {
-                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Tag = SettingsController.settingsWindow;
                         debuffView.Clicked = DebuffView;
                     }
                 }

@@ -17,7 +17,6 @@ namespace CombatHandler
         private static bool IsCommandRegistered;
 
         public static Window settingsWindow;
-        public static View settingsView;
 
         public static void RegisterCharacters(AOSharp.Core.Settings settings)
         {
@@ -53,7 +52,7 @@ namespace CombatHandler
                     {
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
-                        foreach (string settingsName in settingsWindows.Keys)
+                        foreach (string settingsName in settingsWindows.Keys.Where(x => x.Contains("Handler")))
                         {
                             AppendSettingsTab(settingsName, settingsWindow);
                         }
@@ -71,7 +70,7 @@ namespace CombatHandler
         public static void AppendSettingsTab(String settingsName, Window testWindow)
         {
             String settingsWindowXmlPath = settingsWindows[settingsName];
-            settingsView = View.CreateFromXml(settingsWindowXmlPath);
+            View settingsView = View.CreateFromXml(settingsWindowXmlPath);
             if (settingsView != null)
             {
                 testWindow.AppendTab(settingsName, settingsView);

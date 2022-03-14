@@ -2,10 +2,6 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="Helper" layout_borders="Rect(0,0,0,2)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(0,0,0,2)"/>
-    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/yalm - toggles yalm (if you cancel the ncu, will need to type twice)." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/rebuff - rebuff all toons." layout_borders="Rect(0,0,0,2)"/>
@@ -24,8 +20,6 @@
     <TextView value="/leadfollow - toggles follow the leader of the team while window is acitve." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/assistplayer - toggles assisting named player." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/navfollow - toggles nav follow (follow by sending positions)." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(0,0,0,2)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
   </BorderView>
 </root>

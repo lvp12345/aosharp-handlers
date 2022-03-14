@@ -18,6 +18,10 @@ namespace Desu
 
         public static string PluginDirectory;
 
+        public static Window buffWindow;
+        public static Window debuffWindow;
+        public static Window petWindow;
+
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SpawnPets", true);
@@ -53,6 +57,10 @@ namespace Desu
             //settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
 
             RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
+
+            RegisterSettingsWindow("Pets", "MPPetsView.xml");
+            RegisterSettingsWindow("Buffs", "MPBuffsView.xml");
+            RegisterSettingsWindow("Debuffs", "MPDebuffsView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, LEProc, CombatActionPriority.Low);
@@ -114,29 +122,65 @@ namespace Desu
 
         private void PetView(object s, ButtonBase button)
         {
-            Window petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\MPPetsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            petWindow.Show(true);
-        }
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Pets", buffWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Pets", debuffWindow);
+            }
+            else
+            {
+                petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\MPPetsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-        private void DebuffView(object s, ButtonBase button)
-        {
-            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\MPDebuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            debuffWindow.Show(true);
+                petWindow.Show(true);
+            }
         }
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MPBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (petWindow != null && petWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", petWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MPBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            if (petWindow != null && petWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", petWindow);
+            }
+            else if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
+            }
+            else
+            {
+                debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\MPDebuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                debuffWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -167,23 +211,23 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("PetsView", out Button petView))
+                    if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                     {
-                        petView.Tag = SettingsController.settingsView;
+                        petView.Tag = SettingsController.settingsWindow;
                         petView.Clicked = PetView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                     {
-                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Tag = SettingsController.settingsWindow;
                         debuffView.Clicked = DebuffView;
                     }
                 }

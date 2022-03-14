@@ -74,7 +74,7 @@
     <Content Include="UI\DocHealingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\DocHelperView.xml">
+    <Content Include="UI\DocAidingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -17,6 +17,9 @@ namespace Desu
 
         public static string PluginDirectory;
 
+        public static Window buffWindow;
+        public static Window debuffWindow;
+
         public FixerCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("RKRunspeed", false);
@@ -35,6 +38,9 @@ namespace Desu
             settings.AddVariable("ShortHoTTeam", false);
 
             RegisterSettingsWindow("Fixer Handler", "FixerSettingsView.xml");
+
+            RegisterSettingsWindow("Buffs", "FixerBuffsView.xml");
+            RegisterSettingsWindow("Debuffs", "FixerDebuffsView.xml");
 
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcFixerBootlegRemedies, LEProc);
@@ -66,22 +72,38 @@ namespace Desu
             PluginDirectory = pluginDir;
         }
 
-        private void DebuffView(object s, ButtonBase button)
-        {
-            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\FixerDebuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            debuffWindow.Show(true);
-        }
-
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\FixerBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\FixerBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
+            }
+            else
+            {
+                debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\FixerDebuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                debuffWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -98,17 +120,17 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                     {
-                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Tag = SettingsController.settingsWindow;
                         debuffView.Clicked = DebuffView;
                     }
                 }

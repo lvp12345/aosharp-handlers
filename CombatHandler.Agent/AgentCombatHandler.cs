@@ -13,6 +13,11 @@ namespace CombatHandler.Agent
     {
         private double _lastSwitchedHealTime = 0;
 
+        public static Window buffWindow;
+        public static Window debuffWindow;
+        public static Window procWindow;
+        public static Window healingWindow;
+
         public static string PluginDirectory;
 
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
@@ -41,6 +46,11 @@ namespace CombatHandler.Agent
 
 
             RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
+
+            RegisterSettingsWindow("Healing", "AgentHealingView.xml");
+            RegisterSettingsWindow("Procs", "AgentProcView.xml");
+            RegisterSettingsWindow("Buffs", "AgentDebuffsView.xml");
+            RegisterSettingsWindow("Debuffs", "AgentBuffsView.xml");
 
             ////LE Procs
             RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, LEProc);
@@ -80,38 +90,102 @@ namespace CombatHandler.Agent
 
         private void ProcView(object s, ButtonBase button)
         {
-            Window procWindow = Window.CreateFromXml("Procs", PluginDirectory + "\\UI\\AgentProcView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            procWindow.Show(true);
-        }
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Procs", buffWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Procs", debuffWindow);
+            }
+            else if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Procs", healingWindow);
+            }
+            else
+            {
+                procWindow = Window.CreateFromXml("Procs", PluginDirectory + "\\UI\\AgentProcView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-        private void DebuffView(object s, ButtonBase button)
-        {
-            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\AgentDebuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            debuffWindow.Show(true);
+                procWindow.Show(true);
+            }
         }
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\AgentBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (procWindow != null && procWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", procWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
+            }
+            else if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", healingWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\AgentBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
+            }
+            else if (procWindow != null && procWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", procWindow);
+            }
+            else if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", healingWindow);
+            }
+            else
+            {
+                debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\AgentDebuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                debuffWindow.Show(true);
+            }
         }
 
         private void HealingView(object s, ButtonBase button)
         {
-            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\AgentHealingView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            healingWindow.Show(true);
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", buffWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", debuffWindow);
+            }
+            else if (procWindow != null && procWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", procWindow);
+            }
+            else
+            {
+                healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\AgentHealingView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                healingWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -124,29 +198,29 @@ namespace CombatHandler.Agent
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
+                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                     {
-                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Tag = SettingsController.settingsWindow;
                         healingView.Clicked = HealingView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                     {
-                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Tag = SettingsController.settingsWindow;
                         debuffView.Clicked = DebuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("ProcView", out Button procView))
+                    if (SettingsController.settingsWindow.FindView("ProcView", out Button procView))
                     {
-                        procView.Tag = SettingsController.settingsView;
+                        procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = ProcView;
                     }
                 }

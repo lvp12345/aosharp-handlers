@@ -15,6 +15,9 @@ namespace Desu
     {
         public static string PluginDirectory;
 
+        public static Window morphWindow;
+        public static Window healingWindow;
+
         public AdvCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("Heal", true);
@@ -32,6 +35,9 @@ namespace Desu
             //settings.AddVariable("OSHeal", false); // Morph healing?
 
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
+
+            RegisterSettingsWindow("Healing", "AdvHealingView.xml");
+            RegisterSettingsWindow("Morphs", "AdvMorphView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, LEProc);
@@ -71,20 +77,36 @@ namespace Desu
 
         private void HealingView(object s, ButtonBase button)
         {
-            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\AdvHealingView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            healingWindow.Show(true);
+            if (morphWindow != null && morphWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", morphWindow);
+            }
+            else
+            {
+                healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\AdvHealingView.xml",
+                     windowSize: new Rect(0, 0, 240, 345),
+                     windowStyle: WindowStyle.Default,
+                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                healingWindow.Show(true);
+            }
         }
 
         private void MorphView(object s, ButtonBase button)
         {
-            Window morphWindow = Window.CreateFromXml("Morphs", PluginDirectory + "\\UI\\AdvMorphView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            morphWindow.Show(true);
+            if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Morphs", healingWindow);
+            }
+            else
+            {
+                morphWindow = Window.CreateFromXml("Morphs", PluginDirectory + "\\UI\\AdvMorphView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                morphWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -153,17 +175,17 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
+                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                     {
-                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Tag = SettingsController.settingsWindow;
                         healingView.Clicked = HealingView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("MorphView", out Button morphView))
+                    if (SettingsController.settingsWindow.FindView("MorphView", out Button morphView))
                     {
-                        morphView.Tag = SettingsController.settingsView;
+                        morphView.Tag = SettingsController.settingsWindow;
                         morphView.Clicked = MorphView;
                     }
                 }

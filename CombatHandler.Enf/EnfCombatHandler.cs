@@ -23,6 +23,10 @@ namespace Desu
         private double _aoeusedost;
         private double _singletauntused;
 
+        public static Window buffWindow;
+        public static Window tauntWindow;
+        public static Window aidingWindow;
+
         public static string PluginDirectory;
 
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
@@ -36,7 +40,10 @@ namespace Desu
 
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
-            //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
+            RegisterSettingsWindow("Taunts", "EnforcerTauntsView.xml");
+            RegisterSettingsWindow("Buffs", "EnforcerBuffsView.xml");
+            RegisterSettingsWindow("Aiding", "EnforcerAidingView.xml");
+
 
             //-------------LE procs-------------
             RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, LEProc, CombatActionPriority.Low);
@@ -75,52 +82,88 @@ namespace Desu
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\EnforcerBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (tauntWindow != null && tauntWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", tauntWindow);
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\EnforcerBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
         }
 
         private void TauntView(object s, ButtonBase button)
         {
-            Window tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\EnforcerTauntsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            tauntWindow.Show(true);
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Taunts", buffWindow);
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Taunts", aidingWindow);
+            }
+            else
+            {
+                tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\EnforcerTauntsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                tauntWindow.Show(true);
+            }
         }
 
         private void HelperView(object s, ButtonBase button)
         {
-            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\EnforcerHelperView.xml",
-            windowSize: new Rect(0, 0, 270, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            helperWindow.Show(true);
+            if (tauntWindow != null && tauntWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", tauntWindow);
+            }
+            else if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", buffWindow);
+            }
+            else
+            {
+                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\EnforcerAidingView.xml",
+                    windowSize: new Rect(0, 0, 270, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                aidingWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    if (SettingsController.settingsWindow.FindView("HelperView", out Button helpView))
                     {
-                        helpView.Tag = SettingsController.settingsView;
+                        helpView.Tag = SettingsController.settingsWindow;
                         helpView.Clicked = HelperView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("TauntsView", out Button tauntView))
+                    if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
                     {
-                        tauntView.Tag = SettingsController.settingsView;
+                        tauntView.Tag = SettingsController.settingsWindow;
                         tauntView.Clicked = TauntView;
                     }
                 }

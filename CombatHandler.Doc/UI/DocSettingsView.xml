@@ -7,20 +7,11 @@
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <Button name="HealingView" label="Healing" layout_borders="Rect(5,5,3,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-        <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-        <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-        <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <Button name="BuffsView" label="Buffs" layout_borders="Rect(5,5,3,5)"/>
-        <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-        <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-        <TextView value="" layout_borders="Rect(5,5,5,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <Button name="DebuffsView" label="Debuffs" layout_borders="Rect(5,5,3,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-        <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-        <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-        <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-        <Button name="HelperView" label="Helpers" layout_borders="Rect(5,5,3,5)"/>
+        <Button name="AidingView" label="Aiding" layout_borders="Rect(5,5,3,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
       </View>

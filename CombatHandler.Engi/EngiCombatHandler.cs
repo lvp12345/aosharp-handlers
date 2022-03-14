@@ -31,6 +31,10 @@ namespace CombatHandler.Engi
             { PetType.Support, 0 }
         };
 
+        public static Window petWindow;
+        public static Window buffWindow;
+        public static Window aidingWindow;
+
         public static string PluginDirectory;
 
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
@@ -59,6 +63,10 @@ namespace CombatHandler.Engi
             settings.AddVariable("SpamSnareAura", false);
 
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
+
+            RegisterSettingsWindow("Pets", "EngineerHealingView.xml");
+            RegisterSettingsWindow("Buffs", "EngineerBuffsView.xml");
+            RegisterSettingsWindow("Aiding", "EngineerAidingView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, LEProc, CombatActionPriority.Low);
@@ -135,29 +143,65 @@ namespace CombatHandler.Engi
 
         private void PetView(object s, ButtonBase button)
         {
-            Window petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\EngineerPetsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            petWindow.Show(true);
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Pets", buffWindow);
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Pets", aidingWindow);
+            }
+            else
+            {
+                petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\EngineerPetsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                petWindow.Show(true);
+            }
         }
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\EngineerBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (petWindow != null && petWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", petWindow);
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\EngineerBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
         }
 
-        private void HelperView(object s, ButtonBase button)
+        private void AidingView(object s, ButtonBase button)
         {
-            Window helperWindow = Window.CreateFromXml("Helpers", PluginDirectory + "\\UI\\EngineerHelperView.xml",
-            windowSize: new Rect(0, 0, 340, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            helperWindow.Show(true);
+            if (petWindow != null && petWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", petWindow);
+            }
+            else if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Aiding", buffWindow);
+            }
+            else
+            {
+                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\EngineerAidingView.xml",
+                    windowSize: new Rect(0, 0, 270, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                aidingWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -166,23 +210,23 @@ namespace CombatHandler.Engi
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("HelperView", out Button helpView))
+                    if (SettingsController.settingsWindow.FindView("HelperView", out Button helpView))
                     {
-                        helpView.Tag = SettingsController.settingsView;
-                        helpView.Clicked = HelperView;
+                        helpView.Tag = SettingsController.settingsWindow;
+                        helpView.Clicked = AidingView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("PetsView", out Button petView))
+                    if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                     {
-                        petView.Tag = SettingsController.settingsView;
+                        petView.Tag = SettingsController.settingsWindow;
                         petView.Clicked = PetView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
                 }

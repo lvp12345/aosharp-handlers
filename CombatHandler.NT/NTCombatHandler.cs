@@ -16,6 +16,8 @@ namespace Desu
 
         public static string PluginDirectory;
 
+        public static Window buffWindow;
+
         public NTCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("AIDot", true);
@@ -31,6 +33,8 @@ namespace Desu
             settings.AddVariable("CostTeam", false);
 
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
+
+            RegisterSettingsWindow("Buffs", "NTBuffsView.xml");
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.High);
@@ -73,38 +77,24 @@ namespace Desu
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\NTBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
-        }
+            buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\NTBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-        private void PrefsView(object s, ButtonBase button)
-        {
-            Window prefWindow = Window.CreateFromXml("Prefs", PluginDirectory + "\\UI\\NTPreferencesView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            prefWindow.Show(true);
+            buffWindow.Show(true);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
-                    }
-
-                    if (SettingsController.settingsView.FindChild("PreferencesView", out Button prefView))
-                    {
-                        prefView.Tag = SettingsController.settingsView;
-                        prefView.Clicked = PrefsView;
                     }
                 }
             }

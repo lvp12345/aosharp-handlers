@@ -15,6 +15,10 @@ namespace Desu
     {
         public static string PluginDirectory;
 
+        public static Window buffWindow;
+        public static Window tauntWindow;
+        public static Window healingWindow;
+
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SingleTaunt", false);
@@ -29,6 +33,10 @@ namespace Desu
             settings.AddVariable("ShortDamage", false);
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
+
+            RegisterSettingsWindow("Buffs", "MABuffsView.xml");
+            RegisterSettingsWindow("Healing", "MAHealingView.xml");
+            RegisterSettingsWindow("Taunts", "MATauntsViewView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, LEProc, CombatActionPriority.Low);
@@ -76,53 +84,89 @@ namespace Desu
 
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MABuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (tauntWindow != null && tauntWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", tauntWindow);
+            }
+            else if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", healingWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MABuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
         }
 
         private void HealingView(object s, ButtonBase button)
         {
-            Window healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\MAHealingView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            healingWindow.Show(true);
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", buffWindow);
+            }
+            else if (tauntWindow != null && tauntWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", tauntWindow);
+            }
+            else
+            {
+                healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\MAHealingView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                healingWindow.Show(true);
+            }
         }
 
         private void TauntView(object s, ButtonBase button)
         {
-            Window tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\MATauntsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            tauntWindow.Show(true);
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Taunts", buffWindow);
+            }
+            else if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Taunts", healingWindow);
+            }
+            else
+            {
+                tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\MATauntsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                tauntWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
 
-                    if (SettingsController.settingsView.FindChild("HealingView", out Button healingView))
+                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                     {
-                        healingView.Tag = SettingsController.settingsView;
+                        healingView.Tag = SettingsController.settingsWindow;
                         healingView.Clicked = HealingView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("TauntsView", out Button tauntView))
+                    if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
                     {
-                        tauntView.Tag = SettingsController.settingsView;
+                        tauntView.Tag = SettingsController.settingsWindow;
                         tauntView.Clicked = TauntView;
                     }
                 }

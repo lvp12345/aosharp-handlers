@@ -16,6 +16,9 @@ namespace Desu
 
         private static bool ShadeSiphon;
 
+        public static Window buffWindow;
+        public static Window debuffWindow;
+
         public static string PluginDirectory;
 
         public ShadeCombatHandler(string pluginDir) : base(pluginDir)
@@ -32,6 +35,9 @@ namespace Desu
             settings.AddVariable("SpiritSiphon", false);
 
             RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
+
+            RegisterSettingsWindow("Buffs", "ShadeBuffsView.xml");
+            RegisterSettingsWindow("Debuffs", "ShadeDebuffsView.xml");
 
             RegisterPerkProcessor(PerkHash.LEProcShadeSiphonBeing, LEProc);
             RegisterPerkProcessor(PerkHash.LEProcShadeBlackheart, LEProc);
@@ -72,39 +78,55 @@ namespace Desu
             PluginDirectory = pluginDir;
         }
 
-        private void DebuffView(object s, ButtonBase button)
-        {
-            Window debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\ShadeDebuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            debuffWindow.Show(true);
-        }
-
         private void BuffView(object s, ButtonBase button)
         {
-            Window buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\ShadeBuffsView.xml",
-            windowSize: new Rect(0, 0, 240, 345),
-            windowStyle: WindowStyle.Default,
-            windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-            buffWindow.Show(true);
+            if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
+            }
+            else
+            {
+                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\ShadeBuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                buffWindow.Show(true);
+            }
+        }
+
+        private void DebuffView(object s, ButtonBase button)
+        {
+            if (buffWindow != null && buffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
+            }
+            else
+            {
+                debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\ShadeDebuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                debuffWindow.Show(true);
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsView != null)
+                if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsView.FindChild("BuffsView", out Button buffView))
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                     {
-                        buffView.Tag = SettingsController.settingsView;
+                        buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = BuffView;
                     }
 
-                    if (SettingsController.settingsView.FindChild("DebuffsView", out Button debuffView))
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                     {
-                        debuffView.Tag = SettingsController.settingsView;
+                        debuffView.Tag = SettingsController.settingsWindow;
                         debuffView.Clicked = DebuffView;
                     }
                 }

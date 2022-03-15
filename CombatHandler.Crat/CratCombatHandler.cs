@@ -262,7 +262,7 @@ namespace Desu
             {
                 if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsWindow.FindView("HelperView", out Button helpView))
+                    if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
                     {
                         helpView.Tag = SettingsController.settingsWindow;
                         helpView.Clicked = AidingView;

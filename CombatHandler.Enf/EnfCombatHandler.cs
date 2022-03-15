@@ -122,7 +122,7 @@ namespace Desu
             }
         }
 
-        private void HelperView(object s, ButtonBase button)
+        private void AidingView(object s, ButtonBase button)
         {
             if (tauntWindow != null && tauntWindow.IsValid)
             {
@@ -149,10 +149,10 @@ namespace Desu
             {
                 if (SettingsController.settingsWindow != null)
                 {
-                    if (SettingsController.settingsWindow.FindView("HelperView", out Button helpView))
+                    if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
                     {
                         helpView.Tag = SettingsController.settingsWindow;
-                        helpView.Clicked = HelperView;
+                        helpView.Clicked = AidingView;
                     }
 
                     if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))

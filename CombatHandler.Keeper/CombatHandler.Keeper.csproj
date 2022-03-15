@@ -68,7 +68,7 @@
     <Content Include="UI\KeeperBuffsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\KeeperHelperView.xml">
+    <Content Include="UI\KeeperAidingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\KeeperSettingsView.xml">

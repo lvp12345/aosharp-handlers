@@ -14,15 +14,6 @@ namespace Desu
 {
     public class KeeperCombatHandler : GenericCombatHandler
     {
-        private readonly int[] _barrierAuras;
-        private readonly int[] _imminenceAuras;
-        private readonly int[] _vengeanceAuras;
-        private readonly int[] _enervateAuras;
-        private readonly int[] _hpAuras;
-        private readonly int[] _npAuras;
-        private readonly int[] _reaperAuras;
-        private readonly int[] _sanctifierAuras;
-
         public static string PluginDirectory;
 
         public static Window buffWindow;
@@ -50,16 +41,6 @@ namespace Desu
 
             //Chat.WriteLine("" + DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons));
 
-            _barrierAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Absorb_Reflect_AMSBuff).Where(s => s.Name.Contains("Barrier of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _imminenceAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Absorb_Reflect_AMSBuff).Where(s => s.Name.Contains("Imminence of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _vengeanceAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Damage_SnareReductionBuff).Where(s => s.Name.Contains("Vengeance")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _enervateAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Damage_SnareReductionBuff).Where(s => s.Name.Contains("Enervate")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _reaperAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperProcBuff).Where(s => s.Name.Contains("Reaper")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            _sanctifierAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperProcBuff).Where(s => s.Name.Contains("Sanctifier")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
-            //Since the new nanos are significantly better than the old ones, we will only consider them
-            _hpAuras = new[] { 273362, 223024, 210536, 210528 };
-            _npAuras = new[] { 224073, 210597, 210589 };
-
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcKeeperHonorRestored, LEProc, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousSmite, LEProc, CombatActionPriority.Low);
@@ -76,18 +57,17 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperEvade_Dodge_DuckBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperStr_Stam_AgiBuff).OrderByStackingOrder(), GenericBuff);
 
+            RegisterSpellProcessor(RelevantNanos.HealAuras, HpAura);
+            RegisterSpellProcessor(RelevantNanos.NanoAuras, NpAura);
+            RegisterSpellProcessor(RelevantNanos.ReflectAuras, BarrierAura);
+            RegisterSpellProcessor(RelevantNanos.AAOAuras, ImminenceAura);
+            RegisterSpellProcessor(RelevantNanos.DerootAuras, EnervateAura);
+            RegisterSpellProcessor(RelevantNanos.DamageAuras, VengeanceAura);
+            RegisterSpellProcessor(RelevantNanos.SancAuras, SanctifierAura);
+            RegisterSpellProcessor(RelevantNanos.ReaperAuras, ReaperAura);
+
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, GenericBuff);
-
-            //I'm defining health and nano auras statically since they added new versions with lower stacking order.
-            RegisterSpellProcessor(_hpAuras, HpAura);
-            RegisterSpellProcessor(_npAuras, NpAura);
-            RegisterSpellProcessor(_barrierAuras, BarrierAura);
-            RegisterSpellProcessor(_imminenceAuras, ImminenceAura);
-            RegisterSpellProcessor(_enervateAuras, EnervateAura);
-            RegisterSpellProcessor(_vengeanceAuras, VengeanceAura);
-            RegisterSpellProcessor(_sanctifierAuras, SanctifierAura);
-            RegisterSpellProcessor(_reaperAuras, ReaperAura);
 
             PluginDirectory = pluginDir;
         }
@@ -128,6 +108,39 @@ namespace Desu
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (IsSettingEnabled("HealAura") && IsSettingEnabled("NanoAura"))
+            {
+                settings["HealAura"] = false;
+                settings["NanoAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("AAOAura"))
+            {
+                settings["ReflectAura"] = false;
+                settings["AAOAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("DerootAura"))
+            {
+                settings["DamageAura"] = false;
+                settings["DerootAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("SancAura") && IsSettingEnabled("ReaperAura"))
+            {
+                settings["SancAura"] = false;
+                settings["ReaperAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 if (SettingsController.settingsWindow != null)
@@ -148,122 +161,63 @@ namespace Desu
 
             base.OnUpdate(deltaTime);
 
-            CancelBuffs(IsSettingEnabled("NanoAura") ? _hpAuras : _npAuras);
-            CancelBuffs(IsSettingEnabled("ReflectAura") ? _imminenceAuras : _barrierAuras);
-            CancelBuffs(IsSettingEnabled("DerootAura") ? _vengeanceAuras : _enervateAuras);
+            CancelBuffs(IsSettingEnabled("NanoAura") ? RelevantNanos.HealAuras : RelevantNanos.NanoAuras);
+            CancelBuffs(IsSettingEnabled("ReflectAura") ? RelevantNanos.AAOAuras : RelevantNanos.ReflectAuras);
+            CancelBuffs(IsSettingEnabled("DerootAura") ? RelevantNanos.DamageAuras : RelevantNanos.DerootAuras);
         }
 
         private bool AntifearSpam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(IsSettingEnabled("SpamAntifear"))
-            {
-                return true;
-            }
+            if (IsSettingEnabled("SpamAntifear")) { return true; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ReaperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("SancAura"))
-            {
-                return false;
-            }
-
-            if (IsSettingEnabled("SancAura") && IsSettingEnabled("ReaperAura") || (!IsSettingEnabled("SancAura") && !IsSettingEnabled("ReaperAura")))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("SancAura")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SanctifierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ReaperAura"))
-            {
-                return false;
-            }
-
-            if (IsSettingEnabled("SancAura") && IsSettingEnabled("ReaperAura") || (!IsSettingEnabled("SancAura") && !IsSettingEnabled("ReaperAura")))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("ReaperAura")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool VengeanceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DerootAura"))
-            {
-                return false;
-            }
-
-            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("DerootAura") || (!IsSettingEnabled("DamageAura") && !IsSettingEnabled("DerootAura")))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("DerootAura")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool EnervateAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DamageAura"))
-            {
-                return false;
-            }
-
-            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("DerootAura") || (!IsSettingEnabled("DamageAura") && !IsSettingEnabled("DerootAura")))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("DamageAura")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ImminenceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ReflectAura"))
-            {
-                return false;
-            }
-
-            if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("AAOAura") || (!IsSettingEnabled("ReflectAura") && !IsSettingEnabled("AAOAura")))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("ReflectAura")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BarrierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("AAOAura"))
-            {
-                return false;
-            }
-
-            if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("AAOAura") || (!IsSettingEnabled("ReflectAura") && !IsSettingEnabled("AAOAura")))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("AAOAura")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool HpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NanoAura"))
-            {
-                return false;
-            }
-
-            if (IsSettingEnabled("NanoAura") && IsSettingEnabled("HealAura") || (!IsSettingEnabled("NanoAura") && !IsSettingEnabled("HealAura")))
-            {
-                return false;
-            }
+            if (IsSettingEnabled("NanoAura")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -271,11 +225,6 @@ namespace Desu
         private bool NpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("HealAura"))
-            {
-                return false;
-            }
-
-            if (IsSettingEnabled("NanoAura") && IsSettingEnabled("HealAura") || (!IsSettingEnabled("NanoAura") && !IsSettingEnabled("HealAura")))
             {
                 return false;
             }
@@ -298,16 +247,22 @@ namespace Desu
             public const int CompositeMartialProwess = 302158;
             public const int CompositeMelee = 223360;
             public const int PunisherOfTheWicked = 301602;
-        }
 
-        private static class RelevantItems
-        {
-            public const int ExperienceStim = 288769;
-            public const int PremSitKit = 297274;
-            public const int SitKit1 = 291082;
-            public const int SitKit100 = 291083;
-            public const int SitKit200 = 291084;
-            public const int SitKit300 = 293296;
+            public static int[] HealAuras = new[] { 273362, 223024, 210536, 210528 };
+            public static int[] NanoAuras = new[] { 224073, 210597, 210589 };
+
+            public static readonly int[] ReflectAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Absorb_Reflect_AMSBuff)
+                .Where(s => s.Name.Contains("Barrier of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            public static readonly int[] DamageAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Absorb_Reflect_AMSBuff)
+                .Where(s => s.Name.Contains("Imminence of")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            public static readonly int[] AAOAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Damage_SnareReductionBuff)
+                .Where(s => s.Name.Contains("Vengeance")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            public static readonly int[] DerootAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperAura_Damage_SnareReductionBuff)
+                .Where(s => s.Name.Contains("Enervate")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            public static readonly int[] ReaperAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperProcBuff)
+                .Where(s => s.Name.Contains("Reaper")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+            public static readonly int[] SancAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperProcBuff)
+                .Where(s => s.Name.Contains("Sanctifier")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
         }
     }
 }

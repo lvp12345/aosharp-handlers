@@ -80,11 +80,8 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GenericBuff);
 
-            if(Spell.Find(RelevantNanos.BoostedTendons, out Spell boostedTendons))
-            {
-                RegisterSpellProcessor(boostedTendons, GenericBuff);
-            }
 
+            RegisterSpellProcessor(RelevantNanos.BoostedTendons, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, TeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamBuff);
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);

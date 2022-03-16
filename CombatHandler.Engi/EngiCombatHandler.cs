@@ -50,21 +50,22 @@ namespace CombatHandler.Engi
 
             settings.AddVariable("ShieldRipper", false);
             settings.AddVariable("SnareAura", false);
+            settings.AddVariable("BlindAura", false);
 
-            settings.AddVariable("AuraShield", false);
-            settings.AddVariable("AuraDamage", false);
-            settings.AddVariable("AuraReflect", false);
-            settings.AddVariable("AuraArmor", false);
+            settings.AddVariable("ShieldAura", false);
+            settings.AddVariable("DamageAura", false);
+            settings.AddVariable("ReflectAura", false);
+            settings.AddVariable("ArmorAura", false);
 
             settings.AddVariable("Offperks", false);
             settings.AddVariable("Defperks", false);
 
-            settings.AddVariable("BlindAura", false);
+            settings.AddVariable("SpamBlindAura", false);
             settings.AddVariable("SpamSnareAura", false);
 
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
 
-            RegisterSettingsWindow("Pets", "EngineerHealingView.xml");
+            RegisterSettingsWindow("Pets", "EngineerPetsView.xml");
             RegisterSettingsWindow("Buffs", "EngineerBuffsView.xml");
             RegisterSettingsWindow("Aiding", "EngineerAidingView.xml");
 
@@ -88,10 +89,10 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamBuff);
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
             RegisterSpellProcessor(RelevantNanos.ShieldRippers, ShieldRipperAura);
-            RegisterSpellProcessor(RelevantNanos.AuraArmor, AuraArmor);
-            RegisterSpellProcessor(RelevantNanos.AuraDamage, AuraDamage);
-            RegisterSpellProcessor(RelevantNanos.AuraReflect, AuraReflect);
-            RegisterSpellProcessor(RelevantNanos.AuraShield, AuraShield);
+            RegisterSpellProcessor(RelevantNanos.ArmorAura, ArmorAura);
+            RegisterSpellProcessor(RelevantNanos.DamageAura, DamageAura);
+            RegisterSpellProcessor(RelevantNanos.ReflectAura, ReflectAura);
+            RegisterSpellProcessor(RelevantNanos.ShieldAura, ShieldAura);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
             RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
@@ -208,6 +209,71 @@ namespace CombatHandler.Engi
         {
             SynchronizePetCombatStateWithOwner();
 
+            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("ArmorAura"))
+            {
+                settings["DamageAura"] = false;
+                settings["ArmorAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("ShieldAura"))
+            {
+                settings["DamageAura"] = false;
+                settings["ShieldAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("ReflectAura"))
+            {
+                settings["DamageAura"] = false;
+                settings["ReflectAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("ArmorAura") && IsSettingEnabled("ReflectAura"))
+            {
+                settings["ArmorAura"] = false;
+                settings["ReflectAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("ArmorAura") && IsSettingEnabled("ShieldAura"))
+            {
+                settings["ArmorAura"] = false;
+                settings["ShieldAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("ShieldAura"))
+            {
+                settings["ReflectAura"] = false;
+                settings["ShieldAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
+            if (IsSettingEnabled("Offperks") && IsSettingEnabled("Defperks"))
+            {
+                settings["Offperks"] = false;
+                settings["Defperks"] = false;
+
+                Chat.WriteLine($"Can only have one Perk active.");
+            }
+
+            if (IsSettingEnabled("ShieldRipper") && (IsSettingEnabled("BlindAura") || IsSettingEnabled("SpamBlindAura")))
+            {
+                settings["ShieldRipper"] = false;
+                settings["BlindAura"] = false;
+                settings["SpamBlindAura"] = false;
+
+                Chat.WriteLine($"Can only have one Aura active.");
+            }
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 if (SettingsController.settingsWindow != null)
@@ -234,24 +300,24 @@ namespace CombatHandler.Engi
 
             base.OnUpdate(deltaTime);
 
-            if (!IsSettingEnabled("AuraShield"))
+            if (!IsSettingEnabled("ShieldAura"))
             {
-                CancelBuffs(RelevantNanos.AuraShield);
+                CancelBuffs(RelevantNanos.ShieldAura);
             }
 
-            if (!IsSettingEnabled("AuraDamage"))
+            if (!IsSettingEnabled("DamageAura"))
             {
-                CancelBuffs(RelevantNanos.AuraDamage);
+                CancelBuffs(RelevantNanos.DamageAura);
             }
 
-            if (!IsSettingEnabled("AuraArmor"))
+            if (!IsSettingEnabled("ArmorAura"))
             {
-                CancelBuffs(RelevantNanos.AuraArmor);
+                CancelBuffs(RelevantNanos.ArmorAura);
             }
 
-            if (!IsSettingEnabled("AuraReflect"))
+            if (!IsSettingEnabled("ReflectAura"))
             {
-                CancelBuffs(RelevantNanos.AuraReflect);
+                CancelBuffs(RelevantNanos.ReflectAura);
             }
 
             CancelBuffs(IsSettingEnabled("ShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
@@ -316,62 +382,55 @@ namespace CombatHandler.Engi
             return BuffInitEngi(spell, fightingTarget, ref actionTarget);
         }
 
+        private bool ArmorAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ArmorAura")) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DamageAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("DamageAura")) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool ReflectAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ReflectAura")) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool ShieldAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ShieldAura")) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
         private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
 
-            if (IsSettingEnabled("BlindAura")) { return false; }
-
-            return !HasBuffNanoLine(NanoLine.EngineerDebuffAuras, DynelManager.LocalPlayer);
-        }
-
-        private bool AuraArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage")) { return false; }
-
-            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield")) { return false; }
-
-            //if (IsSettingEnabled("AuraArmor") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
-
-            return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
-        }
-
-        private bool AuraDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage")) { return false; }
-
-            if (IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraShield")) { return false; }
-
-            //if (IsSettingEnabled("AuraDamage") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
-
-            return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
-        }
-
-        private bool AuraReflect(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage")) { return false; }
-
-            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraArmor") || IsSettingEnabled("AuraShield")) { return false; }
-
-            //if (IsSettingEnabled("AuraReflect") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
-
-            return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
-        }
-
-        private bool AuraShield(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("AuraArmor") && !IsSettingEnabled("AuraReflect") && !IsSettingEnabled("AuraShield") && !IsSettingEnabled("AuraDamage")) { return false; }
-
-            if (IsSettingEnabled("AuraDamage") || IsSettingEnabled("AuraReflect") || IsSettingEnabled("AuraArmor")) { return false; }
-
-            //if (IsSettingEnabled("AuraShield") && !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer)) { return false; }
-
-            return !HasBuffNanoLine(NanoLine.EngineerAuras, DynelManager.LocalPlayer);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
+            if (IsSettingEnabled("ShieldRipper")) { return false; }
+
+            if (IsSettingEnabled("SpamBlindAura"))
+            {
+                if (Time.NormalTime - _recastBlinds > 9)
+                {
+                    _recastBlinds = Time.NormalTime;
+                    return true;
+                }
+            }
+
+            if (fightingTarget == null) { return false; }
 
             if (IsSettingEnabled("BlindAura"))
             {
@@ -594,7 +653,7 @@ namespace CombatHandler.Engi
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            if (IsSettingEnabled("AuraDamage")) { return false; }
+            //if (IsSettingEnabled("DamageAura")) { return false; } Issue
 
             Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.DamageBuffs_LineA)
                 && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
@@ -677,9 +736,6 @@ namespace CombatHandler.Engi
 
         private static class RelevantNanos
         {
-            public static readonly int[] PerkTauntBox = { 229131, 229130, 229129, 229128, 229127, 229126 };
-            public static readonly int[] PerkSiphonBox = { 229657, 229656, 229655, 229654 };
-            public static readonly int[] PerkChaoticEnergy = { 227787 };
             public const int CompositeAttribute = 223372;
             public const int CompositeNano = 223380;
             public const int MastersBidding = 268171;
@@ -689,15 +745,22 @@ namespace CombatHandler.Engi
             public const int SympatheticReactiveCocoon = 154550;
             public const int IntrusiveAuraCancellation = 204372;
             public const int BoostedTendons = 269463;
-            public static readonly Spell[] DamageBuffLineA = Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).Where(spell => spell.Identity.Instance != RelevantNanos.BoostedTendons).OrderByStackingOrder().ToArray();
+            public const int PetHealingCH = 270351;
+
+            public static readonly Spell[] DamageBuffLineA = Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA)
+                .Where(spell => spell.Identity.Instance != RelevantNanos.BoostedTendons).OrderByStackingOrder().ToArray();
+
+            public static readonly int[] PerkTauntBox = { 229131, 229130, 229129, 229128, 229127, 229126 };
+            public static readonly int[] PerkSiphonBox = { 229657, 229656, 229655, 229654 };
+            public static readonly int[] PerkChaoticEnergy = { 227787 };
+
             public static readonly int[] ShieldRippers = { 154725, 154726, 154727, 154728 };
             public static readonly int[] Blinds = { 154715, 154716, 154717, 154718, 154719 };
-            public static readonly int[] AuraShield = { 154550, 154551, 154552, 154553 };
-            public static readonly int[] AuraDamage = { 154560, 154561 };
-            public static readonly int[] AuraArmor = { 154562, 154563, 154564, 154565, 154566, 154567 };
-            public static readonly int[] AuraReflect = { 154557, 154558, 154559 };
+            public static readonly int[] ShieldAura = { 154550, 154551, 154552, 154553 };
+            public static readonly int[] DamageAura = { 154560, 154561 };
+            public static readonly int[] ArmorAura = { 154562, 154563, 154564, 154565, 154566, 154567 };
+            public static readonly int[] ReflectAura = { 154557, 154558, 154559 };
             public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
-            public static readonly int PetHealingCH = 270351;
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
         }
 

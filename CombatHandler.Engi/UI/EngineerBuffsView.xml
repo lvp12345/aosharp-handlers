@@ -3,14 +3,13 @@
   <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Buffing Auras" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraArmor" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Shield" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraShield" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Reflect" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraReflect" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AuraDamage" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ArmorAura" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Shield" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShieldAura" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Reflect" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ReflectAura" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageAura" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="Debuffing Auras" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Blind Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BlindAura" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Shield Ripper" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShieldRipper" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Pet Snare Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SnareAura" layout_borders="Rect(10,1,5,1)"/>

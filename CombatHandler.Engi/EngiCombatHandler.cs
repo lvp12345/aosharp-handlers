@@ -318,7 +318,12 @@ namespace CombatHandler.Engi
             }
 
             CancelBuffs(IsSettingEnabled("ShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
-            CancelHostileAuras(RelevantNanos.Blinds);
+
+            if (!IsSettingEnabled("SpamBlindAura"))
+            {
+                CancelHostileAuras(RelevantNanos.Blinds);
+            }
+
             CancelHostileAuras(RelevantNanos.ShieldRippers);
         }
 

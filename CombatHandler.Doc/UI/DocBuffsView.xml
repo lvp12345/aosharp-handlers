@@ -2,8 +2,11 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionCheckBox label="Short Hp" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHPBuff" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Individual HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__IndividualHOT" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Short Hp" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHP" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Short Hp (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHPTeam" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <OptionCheckBox label="Short HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoT" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Short HoT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoTTeam" layout_borders="Rect(10,1,5,1)"/>   
     <OptionCheckBox label="Team Deathless Blessing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Deathless" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

@@ -281,43 +281,6 @@ namespace CombatHandler.Generic
 
         #region Instanced Logic
 
-        protected bool HealOverTimeBuff(string toggleName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledBuff(toggleName, spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool BuffInitDoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .Where(c => c.Profession == Profession.Doctor || c.Profession == Profession.NanoTechnician)
-                    .FirstOrDefault();
-
-                if (teamMemberWithoutBuff != null)
-                {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-            else
-            {
-                if (SpellChecksPlayer(spell))
-                {
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         protected bool BuffInitEngi(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || !CanCast(spell)) { return false; }
@@ -455,7 +418,6 @@ namespace CombatHandler.Generic
             }
 
             return false;
-            //return !fightingTarget.Buffs.Any(buff => ShouldRefreshBuff(spell, buff));
         }
 
         protected bool ToggledDebuffOthersInCombat(string toggleName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

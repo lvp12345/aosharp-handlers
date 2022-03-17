@@ -101,7 +101,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
 
             //Pet Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SnareandMezzRemoval).OrderByStackingOrder(), PetAttention);
+            RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
             RegisterSpellProcessor(RelevantNanos.EvadeBuff, EvasionPetBuff);
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamageBuff);
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
@@ -251,7 +251,7 @@ namespace Desu
             return false;
         }
 
-        public bool PetAttention(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public bool PetCleanse(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanLookupPetsAfterZone()) { return false; }
 
@@ -667,6 +667,7 @@ namespace Desu
             public static readonly int[] MPCompositeNano = { 220343, 220341, 220339, 220337, 220335, 220333, 220331 };
             public static readonly int[] WarmUpfNukes = { 270355, 125761, 29297, 125762, 29298, 29114 };
             public static readonly int[] PetDefensive = { 267601, 267600, 267599 };
+            public static readonly int[] PetCleanse = { 269870, 269869 };
 
             public static readonly int[] PetShortTermDamage = { 267598, 205193, 151827, 205189, 205187, 151828, 205185, 151824, 205183,
             151830, 205191, 151826, 205195, 151825, 205197, 151831 };

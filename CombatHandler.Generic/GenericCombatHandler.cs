@@ -137,7 +137,7 @@ namespace CombatHandler.Generic
             RelevantItems.SitKit100, RelevantItems.SitKit200, RelevantItems.SitKit300, RelevantItems.SitKit400 }, SitKit);
 
             RegisterItemProcessor(new int[] { RelevantItems.FreeStim1, RelevantItems.FreeStim50, RelevantItems.FreeStim100,
-            RelevantItems.FreeStim300 }, FreeStim);
+                RelevantItems.FreeStim200, RelevantItems.FreeStim300 }, FreeStim);
 
             //RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
             //RegisterItemProcessor(RelevantItems.AreteSitKit, RelevantItems.AreteSitKit, SitKit);

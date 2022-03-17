@@ -89,17 +89,10 @@ namespace Desu
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (IsSettingEnabled("Deathless") && IsSettingEnabled("HoT"))
+            if (IsSettingEnabled("Deathless") && (IsSettingEnabled("ShortHoT") || IsSettingEnabled("ShortHoTTeam")))
             {
                 settings["Deathless"] = false;
                 settings["ShortHoT"] = false;
-
-                Chat.WriteLine($"Can only have one Short HoT active.");
-            }
-
-            if (IsSettingEnabled("Deathless") && IsSettingEnabled("ShortHoTTeam"))
-            {
-                settings["Deathless"] = false;
                 settings["ShortHoTTeam"] = false;
 
                 Chat.WriteLine($"Can only have one Short HoT active.");

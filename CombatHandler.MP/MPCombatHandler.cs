@@ -101,6 +101,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
 
             //Pet Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SnareandMezzRemoval).OrderByStackingOrder(), PetAttention);
             RegisterSpellProcessor(RelevantNanos.EvadeBuff, EvasionPetBuff);
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamageBuff);
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
@@ -249,6 +250,24 @@ namespace Desu
             }
             return false;
         }
+
+        public bool PetAttention(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanLookupPetsAfterZone()) { return false; }
+
+            List<Pet> pets = DynelManager.LocalPlayer.Pets
+                .Where(x => x.Character.Buffs.Contains(NanoLine.Root) || x.Character.Buffs.Contains(NanoLine.Snare)
+                || x.Character.Buffs.Contains(NanoLine.Mezz))
+                .ToList();
+
+            if (pets?.Count > 1)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }

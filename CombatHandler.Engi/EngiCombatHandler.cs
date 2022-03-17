@@ -98,7 +98,7 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), PetSpawner);
             RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Support).Select(x => x.Key).ToArray(), PetSpawner);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SnareandMezzRemoval).OrderByStackingOrder(), PetAttention);
+            RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
@@ -644,7 +644,7 @@ namespace CombatHandler.Engi
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
-        public bool PetAttention(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public bool PetCleanse(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanLookupPetsAfterZone()) { return false; }
 
@@ -772,6 +772,7 @@ namespace CombatHandler.Engi
             public static readonly int[] PerkTauntBox = { 229131, 229130, 229129, 229128, 229127, 229126 };
             public static readonly int[] PerkSiphonBox = { 229657, 229656, 229655, 229654 };
             public static readonly int[] PerkChaoticEnergy = { 227787 };
+            public static readonly int[] PetCleanse = { 269870, 269869 };
 
             public static readonly int[] ShieldRippers = { 154725, 154726, 154727, 154728 };
             public static readonly int[] Blinds = { 154715, 154716, 154717, 154718, 154719 };

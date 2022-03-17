@@ -119,7 +119,7 @@ namespace Desu
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
             }
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SnareandMezzRemoval).OrderByStackingOrder(), PetAttention);
+            RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetTargetBuff);
@@ -315,7 +315,7 @@ namespace Desu
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        public bool PetAttention(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public bool PetCleanse(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanLookupPetsAfterZone()) { return false; }
 
@@ -984,6 +984,7 @@ namespace Desu
             public static readonly int[] NanoResDebuffAuras = { 157527, 157526, 157525, 157535 };
             public static readonly int[] GeneralRadACDebuff = { 302143, 302142 };
             public static readonly int[] GeneralProjACDebuff = { 302150, 302152 };
+            public static readonly int[] PetCleanse = { 269870, 269869 };
 
             public static readonly int[] ShadowlandsCalms = { 224143, 224141, 224139, 224149, 224147, 224145,
             224137, 224135, 224133, 224131, 219020 };

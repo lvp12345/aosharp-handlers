@@ -1683,7 +1683,7 @@ namespace Helper
         private void HelpView(object s, ButtonBase button)
         {
             infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\HelperInfoView.xml",
-                windowSize: new Rect(0, 0, 220, 345),
+                windowSize: new Rect(0, 0, 440, 510),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 

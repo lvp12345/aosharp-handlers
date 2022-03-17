@@ -119,6 +119,7 @@ namespace Desu
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
             }
 
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SnareandMezzRemoval).OrderByStackingOrder(), PetAttention);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetTargetBuff);
@@ -312,6 +313,23 @@ namespace Desu
             }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        public bool PetAttention(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanLookupPetsAfterZone()) { return false; }
+
+            List<Pet> pets = DynelManager.LocalPlayer.Pets
+                .Where(x => x.Character.Buffs.Contains(NanoLine.Root) || x.Character.Buffs.Contains(NanoLine.Snare)
+                || x.Character.Buffs.Contains(NanoLine.Mezz))
+                .ToList();
+
+            if (pets?.Count > 1)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

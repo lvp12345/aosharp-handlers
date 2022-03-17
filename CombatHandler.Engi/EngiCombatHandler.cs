@@ -98,6 +98,7 @@ namespace CombatHandler.Engi
             RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), PetSpawner);
             RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Support).Select(x => x.Key).ToArray(), PetSpawner);
 
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SnareandMezzRemoval).OrderByStackingOrder(), PetAttention);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
@@ -641,6 +642,23 @@ namespace CombatHandler.Engi
         {
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
+        public bool PetAttention(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanLookupPetsAfterZone()) { return false; }
+
+            List<Pet> pets = DynelManager.LocalPlayer.Pets
+                .Where(x => x.Character.Buffs.Contains(NanoLine.Root) || x.Character.Buffs.Contains(NanoLine.Snare)
+                || x.Character.Buffs.Contains(NanoLine.Mezz))
+                .ToList();
+
+            if (pets?.Count > 1)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         protected bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

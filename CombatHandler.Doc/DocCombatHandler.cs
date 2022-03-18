@@ -116,31 +116,28 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow != null)
+                if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
                 {
-                    if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
-                    {
-                        helpView.Tag = SettingsController.settingsWindow;
-                        helpView.Clicked = AidingView;
-                    }
+                    helpView.Tag = SettingsController.settingsWindow;
+                    helpView.Clicked = AidingView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
-                    {
-                        healingView.Tag = SettingsController.settingsWindow;
-                        healingView.Clicked = HealingView;
-                    }
+                if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
+                {
+                    healingView.Tag = SettingsController.settingsWindow;
+                    healingView.Clicked = HealingView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                    {
-                        buffView.Tag = SettingsController.settingsWindow;
-                        buffView.Clicked = BuffView;
-                    }
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = BuffView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
-                    {
-                        debuffView.Tag = SettingsController.settingsWindow;
-                        debuffView.Clicked = DebuffView;
-                    }
+                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
+                {
+                    debuffView.Tag = SettingsController.settingsWindow;
+                    debuffView.Clicked = DebuffView;
                 }
             }
 

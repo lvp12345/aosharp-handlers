@@ -706,33 +706,6 @@ namespace Helper
                     helpersView.Tag = SettingsController.settingsWindow;
                     helpersView.Clicked = AidView;
                 }
-
-                //if (SettingsController.settingsView != null)
-                //{
-                //    if (SettingsController.settingsView.FindChild("HelperInfoView", out Button helpView))
-                //    {
-                //        helpView.Tag = SettingsController.settingsView;
-                //        helpView.Clicked = HelpView;
-                //    }
-
-                //    if (SettingsController.settingsView.FindChild("HelperFollowView", out Button followView))
-                //    {
-                //        followView.Tag = SettingsController.settingsView;
-                //        followView.Clicked = FollowView;
-                //    }
-
-                //    if (SettingsController.settingsView.FindChild("HelperAssistView", out Button assistView))
-                //    {
-                //        assistView.Tag = SettingsController.settingsView;
-                //        assistView.Clicked = AssistView;
-                //    }
-
-                //    if (SettingsController.settingsView.FindChild("HelperAidingView", out Button helpersView))
-                //    {
-                //        helpersView.Tag = SettingsController.settingsView;
-                //        helpersView.Clicked = HelperView;
-                //    }
-                //}
             }
 
             if (SettingsController.HelperChannel == String.Empty)

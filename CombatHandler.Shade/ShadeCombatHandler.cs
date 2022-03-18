@@ -116,19 +116,16 @@ namespace Desu
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow != null)
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
-                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                    {
-                        buffView.Tag = SettingsController.settingsWindow;
-                        buffView.Clicked = BuffView;
-                    }
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = BuffView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
-                    {
-                        debuffView.Tag = SettingsController.settingsWindow;
-                        debuffView.Clicked = DebuffView;
-                    }
+                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
+                {
+                    debuffView.Tag = SettingsController.settingsWindow;
+                    debuffView.Clicked = DebuffView;
                 }
             }
 

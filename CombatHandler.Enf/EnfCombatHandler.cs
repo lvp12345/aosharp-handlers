@@ -147,25 +147,22 @@ namespace Desu
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow != null)
+                if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
                 {
-                    if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
-                    {
-                        helpView.Tag = SettingsController.settingsWindow;
-                        helpView.Clicked = AidingView;
-                    }
+                    helpView.Tag = SettingsController.settingsWindow;
+                    helpView.Clicked = AidingView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                    {
-                        buffView.Tag = SettingsController.settingsWindow;
-                        buffView.Clicked = BuffView;
-                    }
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = BuffView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
-                    {
-                        tauntView.Tag = SettingsController.settingsWindow;
-                        tauntView.Clicked = TauntView;
-                    }
+                if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
+                {
+                    tauntView.Tag = SettingsController.settingsWindow;
+                    tauntView.Clicked = TauntView;
                 }
             }
 

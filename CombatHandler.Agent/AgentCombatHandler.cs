@@ -198,31 +198,28 @@ namespace CombatHandler.Agent
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow != null)
+                if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
-                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
-                    {
-                        healingView.Tag = SettingsController.settingsWindow;
-                        healingView.Clicked = HealingView;
-                    }
+                    healingView.Tag = SettingsController.settingsWindow;
+                    healingView.Clicked = HealingView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                    {
-                        buffView.Tag = SettingsController.settingsWindow;
-                        buffView.Clicked = BuffView;
-                    }
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = BuffView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
-                    {
-                        debuffView.Tag = SettingsController.settingsWindow;
-                        debuffView.Clicked = DebuffView;
-                    }
+                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
+                {
+                    debuffView.Tag = SettingsController.settingsWindow;
+                    debuffView.Clicked = DebuffView;
+                }
 
-                    if (SettingsController.settingsWindow.FindView("ProcView", out Button procView))
-                    {
-                        procView.Tag = SettingsController.settingsWindow;
-                        procView.Clicked = ProcView;
-                    }
+                if (SettingsController.settingsWindow.FindView("ProcView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = ProcView;
                 }
             }
 

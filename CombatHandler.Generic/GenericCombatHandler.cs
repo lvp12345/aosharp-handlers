@@ -137,19 +137,7 @@ namespace CombatHandler.Generic
             RelevantItems.SitKit100, RelevantItems.SitKit200, RelevantItems.SitKit300, RelevantItems.SitKit400 }, SitKit);
 
             RegisterItemProcessor(new int[] { RelevantItems.FreeStim1, RelevantItems.FreeStim50, RelevantItems.FreeStim100,
-                RelevantItems.FreeStim200, RelevantItems.FreeStim300 }, FreeStim);
-
-            //RegisterItemProcessor(RelevantItems.PremSitKit, RelevantItems.PremSitKit, SitKit);
-            //RegisterItemProcessor(RelevantItems.AreteSitKit, RelevantItems.AreteSitKit, SitKit);
-            //RegisterItemProcessor(RelevantItems.SitKit1, RelevantItems.SitKit100, SitKit);
-            //RegisterItemProcessor(RelevantItems.SitKit100, RelevantItems.SitKit200, SitKit);
-            //RegisterItemProcessor(RelevantItems.SitKit200, RelevantItems.SitKit300, SitKit);
-            //RegisterItemProcessor(RelevantItems.SitKit300, RelevantItems.SitKit400, SitKit);
-
-            //RegisterItemProcessor(RelevantItems.FreeStim1, RelevantItems.FreeStim50, FreeStim);
-            //RegisterItemProcessor(RelevantItems.FreeStim50, RelevantItems.FreeStim100, FreeStim);
-            //RegisterItemProcessor(RelevantItems.FreeStim100, RelevantItems.FreeStim200, FreeStim);
-            //RegisterItemProcessor(RelevantItems.FreeStim200, RelevantItems.FreeStim300, FreeStim);
+            RelevantItems.FreeStim200, RelevantItems.FreeStim300 }, FreeStim);
 
 
             RegisterItemProcessor(RelevantItems.AmmoBoxArrows, RelevantItems.AmmoBoxArrows, AmmoBoxArrows);

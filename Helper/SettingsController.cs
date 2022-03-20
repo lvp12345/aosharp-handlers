@@ -17,7 +17,11 @@ namespace Helper
         private static bool IsCommandRegistered;
 
         public static Window settingsWindow;
-        //public static View settingsView;
+        public static View settingsView;
+
+        public static View followView;
+        public static View assistView;
+        public static View aidView;
 
         public static string HelperAssistPlayer = String.Empty;
         public static string HelperFollowPlayer = String.Empty;
@@ -79,9 +83,9 @@ namespace Helper
                     {
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Helper", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
-                        foreach (string settingsName in settingsWindows.Keys.Where(x => x == "Helper"))
+                        if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
-                            AppendSettingsTab(settingsName, settingsWindow);
+                            AppendSettingsTab("Helper", settingsWindow);
 
                             if (HelperChannel != String.Empty)
                             {
@@ -105,40 +109,40 @@ namespace Helper
         public static void AppendSettingsTab(String settingsName, Window testWindow)
         {
             String settingsWindowXmlPath = settingsWindows[settingsName];
-            View settingsView = View.CreateFromXml(settingsWindowXmlPath);
+            settingsView = View.CreateFromXml(settingsWindowXmlPath);
             if (settingsView != null)
             {
-                if (SettingsController.HelperAssistPlayer != String.Empty)
-                {
-                    settingsView.FindChild("AssistNamedCharacter", out TextInputView textinput);
+                //if (SettingsController.HelperAssistPlayer != String.Empty)
+                //{
+                //    settingsView.FindChild("AssistNamedCharacter", out TextInputView textinput);
 
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelperAssistPlayer;
-                }
+                //    if (textinput != null)
+                //        textinput.Text = SettingsController.HelperAssistPlayer;
+                //}
 
-                if (SettingsController.HelperFollowPlayer != String.Empty)
-                {
-                    settingsView.FindChild("FollowNamedCharacter", out TextInputView textinput);
+                //if (SettingsController.HelperFollowPlayer != String.Empty)
+                //{
+                //    settingsView.FindChild("FollowNamedCharacter", out TextInputView textinput);
 
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelperFollowPlayer;
-                }
+                //    if (textinput != null)
+                //        textinput.Text = SettingsController.HelperFollowPlayer;
+                //}
 
-                if (SettingsController.HelperNavFollowPlayer != String.Empty)
-                {
-                    settingsView.FindChild("FollowNamedIdentity", out TextInputView textinput);
+                //if (SettingsController.HelperNavFollowPlayer != String.Empty)
+                //{
+                //    settingsView.FindChild("FollowNamedIdentity", out TextInputView textinput);
 
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelperNavFollowPlayer;
-                }
+                //    if (textinput != null)
+                //        textinput.Text = SettingsController.HelperNavFollowPlayer;
+                //}
 
-                if (SettingsController.HelperNavFollowDistance.ToString() != String.Empty)
-                {
-                    settingsView.FindChild("NavFollowDistanceBox", out TextInputView textinput);
+                //if (SettingsController.HelperNavFollowDistance.ToString() != String.Empty)
+                //{
+                //    settingsView.FindChild("NavFollowDistanceBox", out TextInputView textinput);
 
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelperNavFollowDistance.ToString();
-                }
+                //    if (textinput != null)
+                //        textinput.Text = SettingsController.HelperNavFollowDistance.ToString();
+                //}
 
                 testWindow.AppendTab(settingsName, settingsView);
                 testWindow.Show(true);

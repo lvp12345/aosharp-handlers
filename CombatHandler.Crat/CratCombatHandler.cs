@@ -69,8 +69,8 @@ namespace Desu
 
             RegisterSettingsWindow("Pets", "BureaucratPetsView.xml");
             RegisterSettingsWindow("Aiding", "BureaucratAidingView.xml");
-            RegisterSettingsWindow("Buffs", "BureaucratDebuffsView.xml");
-            RegisterSettingsWindow("Debuffs", "BureaucratBuffsView.xml");
+            RegisterSettingsWindow("Buffs", "BureaucratBuffsView.xml");
+            RegisterSettingsWindow("Debuffs", "BureaucratDebuffsView.xml");
 
             //LE Procs
             //RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, LEProc, CombatActionPriority.Low);

@@ -112,38 +112,6 @@ namespace Helper
             settingsView = View.CreateFromXml(settingsWindowXmlPath);
             if (settingsView != null)
             {
-                //if (SettingsController.HelperAssistPlayer != String.Empty)
-                //{
-                //    settingsView.FindChild("AssistNamedCharacter", out TextInputView textinput);
-
-                //    if (textinput != null)
-                //        textinput.Text = SettingsController.HelperAssistPlayer;
-                //}
-
-                //if (SettingsController.HelperFollowPlayer != String.Empty)
-                //{
-                //    settingsView.FindChild("FollowNamedCharacter", out TextInputView textinput);
-
-                //    if (textinput != null)
-                //        textinput.Text = SettingsController.HelperFollowPlayer;
-                //}
-
-                //if (SettingsController.HelperNavFollowPlayer != String.Empty)
-                //{
-                //    settingsView.FindChild("FollowNamedIdentity", out TextInputView textinput);
-
-                //    if (textinput != null)
-                //        textinput.Text = SettingsController.HelperNavFollowPlayer;
-                //}
-
-                //if (SettingsController.HelperNavFollowDistance.ToString() != String.Empty)
-                //{
-                //    settingsView.FindChild("NavFollowDistanceBox", out TextInputView textinput);
-
-                //    if (textinput != null)
-                //        textinput.Text = SettingsController.HelperNavFollowDistance.ToString();
-                //}
-
                 testWindow.AppendTab(settingsName, settingsView);
                 testWindow.Show(true);
             }

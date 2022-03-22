@@ -379,7 +379,6 @@ namespace Helper
 
         private void OnUpdate(object s, float deltaTime)
         {
-
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -800,10 +799,10 @@ namespace Helper
                 }
 
 
-                if (SettingsController.settingsWindow.FindView("HelperInfoView", out Button helpView))
+                if (SettingsController.settingsWindow.FindView("HelperInfoView", out Button infoView))
                 {
-                    helpView.Tag = SettingsController.settingsWindow;
-                    helpView.Clicked = HelpView;
+                    infoView.Tag = SettingsController.settingsWindow;
+                    infoView.Clicked = InfoView;
                 }
 
                 if (SettingsController.settingsWindow.FindView("HelperFollowView", out Button followView))
@@ -1562,9 +1561,9 @@ namespace Helper
                 if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
                 {
                     if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
-                        && DynelManager.LocalPlayer.MovementState != MovementState.Sit
-                        && !DynelManager.LocalPlayer.Buffs.Contains(280488)
-                        && CanUseSitKit())
+                        && DynelManager.LocalPlayer.MovementState != MovementState.Sit)
+                        //&& !DynelManager.LocalPlayer.Buffs.Contains(280488)
+                        //&& CanUseSitKit())
                     {
                         if (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
                         {
@@ -1896,7 +1895,7 @@ namespace Helper
             }
         }
 
-        private void HelpView(object s, ButtonBase button)
+        private void InfoView(object s, ButtonBase button)
         {
             infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\HelperInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
@@ -1943,38 +1942,18 @@ namespace Helper
             return IsActiveWindow;
         }
 
-        private bool IsFightingAny()
+        private bool BeingAttacked()
         {
-            SimpleChar target = DynelManager.NPCs
-                .Where(c => c.IsAlive)
-                .Where(c => c.FightingTarget != null)
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-                .FirstOrDefault();
-
-            if (target == null) { return false; }
-
             if (Team.IsInTeam)
             {
-                if (DynelManager.LocalPlayer.FightingTarget != null) { return true; }
-
-                if (target.FightingTarget == DynelManager.LocalPlayer) { return true; }
-
-                if (Team.Members.Where(c => c.Name == target.FightingTarget.Name).Any()) { return true; }
-
-                if (target.FightingTarget.IsPet) { return true; }
-
-                return false;
+                return DynelManager.Characters
+                    .Any(c => c.FightingTarget != null
+                        && Team.Members.Select(m => m.Name).Contains(c.FightingTarget.Name));
             }
-            else
-            {
-                if (DynelManager.LocalPlayer.FightingTarget != null) { return true; }
 
-                if (target.FightingTarget == DynelManager.LocalPlayer) { return true; }
-
-                if (target.FightingTarget.IsPet) { return true; }
-
-                return false;
-            }
+            return DynelManager.Characters
+                    .Any(c => c.FightingTarget != null
+                        && c.FightingTarget.Name == DynelManager.LocalPlayer.Name);
 
             //if (target == null) { return false; }
 
@@ -2004,17 +1983,14 @@ namespace Helper
 
             if (Inventory.Find(297274, out Item premSitKit))
             {
-                if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
+                if (DynelManager.LocalPlayer.IsAlive && !BeingAttacked() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning) { return true; }
             }
 
             if (!sitKits.Any()) { return false; }
 
-            //Check if we are fighting or being fought
-            //Check if any team member is fighting or being fought
-
-            if (DynelManager.LocalPlayer.IsAlive && !IsFightingAny() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
+            if (DynelManager.LocalPlayer.IsAlive && !BeingAttacked() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
                     && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning)
             {

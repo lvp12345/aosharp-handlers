@@ -154,7 +154,7 @@ namespace CombatHandler.Generic
 
         public static bool BattleGroupHealPerk1(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!Team.IsInCombat)
+            if (!Team.IsInCombat())
                 return false;
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -188,7 +188,7 @@ namespace CombatHandler.Generic
 
         public static bool BattleGroupHealPerk2(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!Team.IsInCombat)
+            if (!Team.IsInCombat())
                 return false;
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -223,7 +223,7 @@ namespace CombatHandler.Generic
 
         public static bool BattleGroupHealPerk3(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!Team.IsInCombat)
+            if (!Team.IsInCombat())
                 return false;
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -259,7 +259,7 @@ namespace CombatHandler.Generic
 
         public static bool BattleGroupHealPerk4(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!Team.IsInCombat)
+            if (!Team.IsInCombat())
                 return false;
 
             if (DynelManager.LocalPlayer.IsInTeam())

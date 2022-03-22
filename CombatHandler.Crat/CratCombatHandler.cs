@@ -46,6 +46,8 @@ namespace Desu
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
 
+            settings.AddVariable("MastersBidding", false);
+
             settings.AddVariable("MalaiseTarget", true);
             settings.AddVariable("LEInitDebuffs", true);
             settings.AddVariable("OSMalaise", false);
@@ -120,6 +122,7 @@ namespace Desu
             }
 
             RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
+            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetTargetBuff);
@@ -324,6 +327,24 @@ namespace Desu
             if (pets?.Count > 1)
             {
                 return true;
+            }
+
+            return false;
+        }
+
+        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (!IsSettingEnabled("MastersBidding")) { return false; }
+
+            Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                && (pet.Character.GetStat(Stat.NPCFamily) != 98)
+                && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
+
+            if (petToBuff != null)
+            {
+                spell.Cast(petToBuff.Character, true);
             }
 
             return false;
@@ -967,6 +988,7 @@ namespace Desu
             public const int LastMinNegotiations = 267535;
             public const int SkilledGunSlinger = 263251;
             public const int GreaterGunSlinger = 263250;
+            public const int MastersBidding = 268171;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
             public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Identity.Instance != GreaterGunSlinger && spell.Identity.Instance != SkilledGunSlinger).ToArray();

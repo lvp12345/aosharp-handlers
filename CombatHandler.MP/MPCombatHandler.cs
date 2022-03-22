@@ -28,6 +28,8 @@ namespace Desu
             settings.AddVariable("BuffPets", true);
             settings.AddVariable("MezzPet", false);
 
+            settings.AddVariable("MastersBidding", false);
+
             settings.AddVariable("Cost", false);
             settings.AddVariable("CostTeam", false);
 
@@ -268,6 +270,8 @@ namespace Desu
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (!IsSettingEnabled("MastersBidding")) { return false; }
 
             Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
                 && (pet.Character.GetStat(Stat.NPCFamily) != 98)

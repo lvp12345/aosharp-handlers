@@ -1984,14 +1984,14 @@ namespace Helper
             if (Inventory.Find(297274, out Item premSitKit))
             {
                 if (DynelManager.LocalPlayer.IsAlive && !BeingAttacked() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
+                    && !Team.IsInCombat() && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning) { return true; }
             }
 
             if (!sitKits.Any()) { return false; }
 
             if (DynelManager.LocalPlayer.IsAlive && !BeingAttacked() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    && !Team.IsInCombat && DynelManager.LocalPlayer.FightingTarget == null
+                    && !Team.IsInCombat() && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning)
             {
                 foreach (Item sitKit in sitKits.OrderBy(x => x.QualityLevel))

@@ -43,6 +43,8 @@ namespace CombatHandler.Engi
             settings.AddVariable("BuffPets", true);
             settings.AddVariable("HealPets", false);
 
+            settings.AddVariable("MastersBidding", false);
+
             settings.AddVariable("DivertHpTrimmer", true);
             settings.AddVariable("DivertOffTrimmer", true);
             settings.AddVariable("TauntTrimmer", true);
@@ -685,6 +687,8 @@ namespace CombatHandler.Engi
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (!IsSettingEnabled("MastersBidding")) { return false; }
 
             Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
                 && (pet.Type == PetType.Attack || pet.Type == PetType.Support));

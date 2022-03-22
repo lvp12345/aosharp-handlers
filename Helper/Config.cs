@@ -29,6 +29,7 @@ namespace Helper
         {
             Config config;
 
+
             try
             {
                 config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(path));

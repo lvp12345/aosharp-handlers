@@ -31,11 +31,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AOSharp.Common">
-      <HintPath>..\..\aosharp\AOSharp.Common\bin\Debug\AOSharp.Common.dll</HintPath>
+    <Reference Include="AOSharp.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AOSharpSDK.1.0.0\lib\net48\AOSharp.Common.dll</HintPath>
     </Reference>
-    <Reference Include="AOSharp.Core">
-      <HintPath>..\..\aosharp\AOSharp.Core\bin\Debug\AOSharp.Core.dll</HintPath>
+    <Reference Include="AOSharp.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AOSharpSDK.1.0.0\lib\net48\AOSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,6 +67,9 @@
     <Content Include="UI\ShadeSettingsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

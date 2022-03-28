@@ -121,7 +121,7 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
-            RegisterItemProcessor(RelevantItems.HSR1, RelevantItems.HSR2, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.HSRLow, RelevantItems.HSRHigh, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
 
             RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
@@ -139,7 +139,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(new int[] { RelevantItems.PremSitKit, RelevantItems.AreteSitKit, RelevantItems.SitKit1,
             RelevantItems.SitKit100, RelevantItems.SitKit200, RelevantItems.SitKit300, RelevantItems.SitKit400 }, SitKit);
 
-            RegisterItemProcessor(new int[] { RelevantItems.DaTaunter1, RelevantItems.DaTaunter200 }, TargetedDamageItem);
+            RegisterItemProcessor(new int[] { RelevantItems.DaTaunterLow, RelevantItems.DaTaunterHigh }, TargetedDamageItem);
 
             RegisterItemProcessor(new int[] { RelevantItems.FreeStim1, RelevantItems.FreeStim50, RelevantItems.FreeStim100,
             RelevantItems.FreeStim200, RelevantItems.FreeStim300 }, FreeStim);
@@ -201,12 +201,6 @@ namespace CombatHandler.Generic
         protected override void OnUpdate(float deltaTime)
         {
             SettingsController.CleanUp();
-
-            //Inventory.Find(303188, out Item drone);
-
-            //Chat.WriteLine($"{drone.LowId}, {drone.HighId}");
-
-            //Chat.WriteLine($"{DynelManager.LocalPlayer.GetStat(Stat.CharState)}");
 
             base.OnUpdate(deltaTime);
 
@@ -1295,10 +1289,6 @@ namespace CombatHandler.Generic
                 case RelevantItems.BlessedWithThunderLow:
                 case RelevantItems.BlessedWithThunderHigh:
                     return Stat.MartialArts;
-                case RelevantItems.HealthAndNanoStim1:
-                case RelevantItems.HealthAndNanoStim200:
-                case RelevantItems.HealthAndNanoStim400:
-                    return Stat.FirstAid;
                 case RelevantItems.FlurryOfBlowsLow:
                 case RelevantItems.FlurryOfBlowsHigh:
                     return Stat.AggDef;
@@ -1318,11 +1308,11 @@ namespace CombatHandler.Generic
                     return Stat.MaterialCreation;
                 case RelevantItems.WenWen:
                     return Stat.RangedEnergy;
-                case RelevantItems.DaTaunter1:
-                case RelevantItems.DaTaunter200:
+                case RelevantItems.DaTaunterLow:
+                case RelevantItems.DaTaunterHigh:
                     return Stat.Psychology;
-                case RelevantItems.HSR1:
-                case RelevantItems.HSR2:
+                case RelevantItems.HSRLow:
+                case RelevantItems.HSRHigh:
                     return Stat.Grenade;
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
@@ -1342,8 +1332,8 @@ namespace CombatHandler.Generic
             public const int WitheredFlesh = 204698;
             public const int DesecratedFlesh = 305476;
             public const int AssaultClassTank = 156576;
-            public const int HSR1 = 164780;
-            public const int HSR2 = 164781;
+            public const int HSRLow = 164780;
+            public const int HSRHigh = 164781;
             public const int KizzermoleGumboil = 245323;
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
             public const int DreadlochEnduranceBooster = 267168;
@@ -1378,8 +1368,8 @@ namespace CombatHandler.Generic
             public const int AmmoBoxShotgun = 303141;
             public const int AmmoBoxBullets = 303137;
             public const int AmmoBoxArrows = 303136;
-            public const int DaTaunter1 = 158045;
-            public const int DaTaunter200 = 158046;
+            public const int DaTaunterLow = 158045;
+            public const int DaTaunterHigh = 158046;
             public const int WenWen = 129656;
         };
 

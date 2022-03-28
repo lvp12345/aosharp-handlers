@@ -138,7 +138,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(new int[] { RelevantItems.PremSitKit, RelevantItems.AreteSitKit, RelevantItems.SitKit1,
             RelevantItems.SitKit100, RelevantItems.SitKit200, RelevantItems.SitKit300, RelevantItems.SitKit400 }, SitKit);
 
-            RegisterItemProcessor(new int[] { RelevantItems.DaTaunter1, RelevantItems.DaTaunter200 }, DamageItem);
+            RegisterItemProcessor(new int[] { RelevantItems.DaTaunter1, RelevantItems.DaTaunter200 }, TargetedDamageItem);
 
             RegisterItemProcessor(new int[] { RelevantItems.FreeStim1, RelevantItems.FreeStim50, RelevantItems.FreeStim100,
             RelevantItems.FreeStim200, RelevantItems.FreeStim300 }, FreeStim);

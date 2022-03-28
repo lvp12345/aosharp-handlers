@@ -102,6 +102,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.BarrowStrength, RelevantItems.BarrowStrength, DamageItem);
 
             RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
+            RegisterItemProcessor(RelevantItems.Drone, RelevantItems.Drone, DamageItem);
 
             RegisterItemProcessor(RelevantItems.WenWen, RelevantItems.WenWen, DamageItem);
 
@@ -1342,6 +1343,7 @@ namespace CombatHandler.Generic
             public const int BlessedWithThunderLow = 70612;
             public const int BlessedWithThunderHigh = 204327;
             public const int GnuffsEternalRiftCrystal = 303179;
+            public const int Drone = 303188;
             public const int RezCan = 301070;
             public const int ExperienceStim = 288769;
             public const int PremSitKit = 297274;

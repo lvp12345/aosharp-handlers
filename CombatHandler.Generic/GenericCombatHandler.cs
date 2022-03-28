@@ -103,6 +103,8 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(RelevantItems.GnuffsEternalRiftCrystal, RelevantItems.GnuffsEternalRiftCrystal, DamageItem);
 
+            RegisterItemProcessor(RelevantItems.WenWen, RelevantItems.WenWen, DamageItem);
+
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBooster, RelevantItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.DreadlochEnduranceBoosterNanomageEdition, RelevantItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.WitheredFlesh, RelevantItems.WitheredFlesh, WithFlesh, CombatActionPriority.High);
@@ -135,6 +137,8 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(new int[] { RelevantItems.PremSitKit, RelevantItems.AreteSitKit, RelevantItems.SitKit1,
             RelevantItems.SitKit100, RelevantItems.SitKit200, RelevantItems.SitKit300, RelevantItems.SitKit400 }, SitKit);
+
+            RegisterItemProcessor(new int[] { RelevantItems.DaTaunter1, RelevantItems.DaTaunter200 }, DamageItem);
 
             RegisterItemProcessor(new int[] { RelevantItems.FreeStim1, RelevantItems.FreeStim50, RelevantItems.FreeStim100,
             RelevantItems.FreeStim200, RelevantItems.FreeStim300 }, FreeStim);
@@ -1359,6 +1363,9 @@ namespace CombatHandler.Generic
             public const int AmmoBoxShotgun = 303141;
             public const int AmmoBoxBullets = 303137;
             public const int AmmoBoxArrows = 303136;
+            public const int DaTaunter1 = 158045;
+            public const int DaTaunter200 = 158046;
+            public const int WenWen = 129656;
         };
 
         private static class RelevantNanos

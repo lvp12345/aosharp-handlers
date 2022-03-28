@@ -66,6 +66,8 @@ namespace Helper
         private static AOSharp.Core.Settings info = new AOSharp.Core.Settings("Info");
         private static AOSharp.Core.Settings aid = new AOSharp.Core.Settings("Aiding");
 
+        private static Item _bagItem;
+
         List<Vector3> MorphBird = new List<Vector3>
         {
             new Vector3(75.5, 29.0, 58.6),
@@ -171,6 +173,20 @@ namespace Helper
 
             Chat.RegisterCommand("yalm", YalmCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
+            //Chat.RegisterCommand("bags", (string command, string[] param, ChatWindow chatWindow) =>
+            //{
+            //    List<Backpack> _bags = Inventory.Backpacks;
+
+            //    List<Item> bags = Inventory.Items
+            //    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+            //    .ToList();
+
+            //    foreach (Item bag in bags)
+            //    {
+            //        bag.Use();
+            //        bag.Use();
+            //    }
+            //});
 
             Chat.RegisterCommand("doc", DocTarget);
 
@@ -178,6 +194,8 @@ namespace Helper
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
             Team.TeamRequest = Team_TeamRequest;
+            Game.TeleportEnded += OnZoned;
+
 
             Chat.WriteLine("Helper Loaded!");
             Chat.WriteLine("/helper for settings.");
@@ -187,6 +205,22 @@ namespace Helper
         {
             SettingsController.CleanUp();
         }
+
+        private void OnZoned(object s, EventArgs e)
+        {
+            List<Backpack> _bags = Inventory.Backpacks;
+
+            List<Item> bags = Inventory.Items
+            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+            .ToList();
+
+            foreach (Item bag in bags)
+            {
+                bag.Use();
+                bag.Use();
+            }
+        }
+
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
@@ -313,9 +347,7 @@ namespace Helper
                 }
                 else if (genericCmdMsg.Action == GenericCmdAction.Use && settings["SyncUse"].AsBool())
                 {
-                    Inventory.Find(genericCmdMsg.Target, out Item item);
-
-                    if (!IsBackpack(item) && !IsOther(item))
+                    if (Inventory.Find(genericCmdMsg.Target, out Item item) && !IsBackpack(item) && !IsOther(item))
                     {
                         IPCChannel.Broadcast(new UsableMessage()
                         {
@@ -323,18 +355,55 @@ namespace Helper
                             ItemHighId = item.HighId,
                         });
                     }
+                    else
+                    {
+                        foreach (Backpack bag in Inventory.Backpacks)
+                        {
+                            _bagItem = bag.Items
+                                .Where(c => c.Slot.Instance == genericCmdMsg.Target.Instance)
+                                .FirstOrDefault();
+
+                            if (_bagItem != null)
+                            {
+                                IPCChannel.Broadcast(new UsableMessage()
+                                {
+                                    ItemLowId = _bagItem.LowId,
+                                    ItemHighId = _bagItem.HighId
+                                });
+                            }
+                        }
+                    }
                 }
                 else if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
                 {
-                    Inventory.Find(genericCmdMsg.Source, out Item item);
-
-                    IPCChannel.Broadcast(new UsableMessage()
+                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
                     {
-                        ItemLowId = item.LowId,
-                        ItemHighId = item.HighId,
-                        Target = genericCmdMsg.Target
+                        IPCChannel.Broadcast(new UsableMessage()
+                        {
+                            ItemLowId = item.LowId,
+                            ItemHighId = item.HighId,
+                            Target = genericCmdMsg.Target
+                        });
+                    }
+                    else
+                    {
+                        foreach (Backpack bag in Inventory.Backpacks)
+                        {
+                            _bagItem = bag.Items
+                                .Where(c => c.Slot.Instance == genericCmdMsg.Source.Instance)
+                                .FirstOrDefault();
 
-                    });
+                            if (_bagItem != null)
+                            {
+                                IPCChannel.Broadcast(new UsableMessage()
+                                {
+                                    ItemLowId = _bagItem.LowId,
+                                    ItemHighId = _bagItem.HighId,
+                                    Target = genericCmdMsg.Target
+                                });
+                            }
+                        }
+                    }
                 }
             }
             else if (n3Msg.N3MessageType == N3MessageType.KnubotOpenChatWindow)
@@ -1169,12 +1238,11 @@ namespace Helper
                     usableMsg.Target = Identity.None;
                 }
             }
-
             else
             {
-                if (Inventory.Find(usableMsg.ItemLowId, usableMsg.ItemHighId, out Item item))
+                if (usableMsg.Target == Identity.None)
                 {
-                    if (usableMsg.Target == Identity.None)
+                    if (Inventory.Find(usableMsg.ItemLowId, usableMsg.ItemHighId, out Item item))
                     {
                         Network.Send(new GenericCmdMessage()
                         {
@@ -1186,10 +1254,53 @@ namespace Helper
                     }
                     else
                     {
+                        foreach (Backpack bag in Inventory.Backpacks)
+                        {
+                            _bagItem = bag.Items
+                                .Where(c => c.HighId == usableMsg.ItemHighId)
+                                .FirstOrDefault();
 
+                            if (_bagItem != null)
+                            {
+                                Network.Send(new GenericCmdMessage()
+                                {
+                                    Unknown = 1,
+                                    Action = GenericCmdAction.Use,
+                                    User = DynelManager.LocalPlayer.Identity,
+                                    Target = _bagItem.Slot
+                                });
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (Inventory.Find(usableMsg.ItemLowId, usableMsg.ItemHighId, out Item item))
+                    {
                         useItem = new Identity(IdentityType.Inventory, item.Slot.Instance);
                         useOnDynel = usableMsg.Target;
                         usableMsg.Target = Identity.None;
+                    }
+                    else
+                    {
+                        foreach (Backpack bag in Inventory.Backpacks)
+                        {
+                            _bagItem = bag.Items
+                                .Where(c => c.HighId == usableMsg.ItemHighId)
+                                .FirstOrDefault();
+
+                            if (_bagItem != null)
+                            {
+                                Network.Send(new GenericCmdMessage()
+                                {
+                                    Unknown = 1,
+                                    Action = GenericCmdAction.UseItemOnItem,
+                                    User = DynelManager.LocalPlayer.Identity,
+                                    Target = usableMsg.Target,
+                                    Source = _bagItem.Slot
+                                });
+                            }
+                        }
                     }
                 }
             }
@@ -1666,7 +1777,6 @@ namespace Helper
                 e.Accept();
             }
         }
-
         public static void CancelAllBuffs()
         {
             //foreach (Buff buff in DynelManager.LocalPlayer.Buffs.Where(x => !RelevantNanos.DontRemoveNanos.Contains(x.Identity.Instance)))

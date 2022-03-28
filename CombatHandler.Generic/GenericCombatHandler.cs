@@ -202,6 +202,12 @@ namespace CombatHandler.Generic
         {
             SettingsController.CleanUp();
 
+            //Inventory.Find(303188, out Item drone);
+
+            //Chat.WriteLine($"{drone.LowId}, {drone.HighId}");
+
+            //Chat.WriteLine($"{DynelManager.LocalPlayer.GetStat(Stat.CharState)}");
+
             base.OnUpdate(deltaTime);
 
             if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
@@ -1308,6 +1314,13 @@ namespace CombatHandler.Generic
                     return Stat.RunSpeed;
                 case RelevantItems.GnuffsEternalRiftCrystal:
                     return Stat.MapNavigation;
+                case RelevantItems.Drone:
+                    return Stat.MaterialCreation;
+                case RelevantItems.WenWen:
+                    return Stat.RangedEnergy;
+                case RelevantItems.DaTaunter1:
+                case RelevantItems.DaTaunter200:
+                    return Stat.Psychology;
                 case RelevantItems.HSR1:
                 case RelevantItems.HSR2:
                     return Stat.Grenade;

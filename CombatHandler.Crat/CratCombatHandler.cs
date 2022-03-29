@@ -21,7 +21,20 @@ namespace Desu
         public static Window buffWindow;
         public static Window debuffWindow;
         public static Window petWindow;
+        public static Window calmingWindow;
         public static Window aidingWindow;
+
+        public static View _aidView;
+        public static View _buffView;
+        public static View _debuffView;
+        public static View _calmView;
+        public static View _petView;
+
+        private static Settings buff = new Settings("Buffs");
+        private static Settings debuff = new Settings("Debuffs");
+        private static Settings calm = new Settings("Calming");
+        private static Settings pet = new Settings("Pets");
+        private static Settings aid = new Settings("Aiding");
 
         public static string PluginDirectory;
 
@@ -34,12 +47,11 @@ namespace Desu
 
         public CratCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("BuffCrit", false);
-            settings.AddVariable("BuffAAOAAD", true);
-            settings.AddVariable("BuffNanoResist", false);
-            settings.AddVariable("DebuffCrit", false);
-            settings.AddVariable("DebuffNanoResist", false);
-            settings.AddVariable("DebuffNanoDrain", false);
+            settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.AAOAAD);
+            settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
+
+            settings.AddVariable("CalmingSelection", (int)CalmingSelection.SL);
+            settings.AddVariable("TypeSelection", (int)TypeSelection.None);
 
             settings.AddVariable("NanoDeltaTeam", false);
 
@@ -59,18 +71,16 @@ namespace Desu
             settings.AddVariable("Nukes", false);
             settings.AddVariable("AoeRoot", false);
 
-            settings.AddVariable("AoECalm", false);
-            settings.AddVariable("SLCalm", false);
-            settings.AddVariable("RKCalm", false);
             settings.AddVariable("Calm12Man", false);
             settings.AddVariable("CalmSector7", false);
 
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
-            RegisterSettingsWindow("Pets", "BureaucratPetsView.xml");
-            RegisterSettingsWindow("Aiding", "BureaucratAidingView.xml");
-            RegisterSettingsWindow("Buffs", "BureaucratBuffsView.xml");
-            RegisterSettingsWindow("Debuffs", "BureaucratDebuffsView.xml");
+            SettingsController.RegisterSettingsWindow("Aiding", pluginDir + "\\UI\\BureaucratAidingView.xml", aid);
+            SettingsController.RegisterSettingsWindow("Buffs", pluginDir + "\\UI\\BureaucratBuffsView.xml", buff);
+            SettingsController.RegisterSettingsWindow("Pets", pluginDir + "\\UI\\BureaucratPetsView.xml", pet);
+            SettingsController.RegisterSettingsWindow("Debuffs", pluginDir + "\\UI\\BureaucratDebuffsView.xml", debuff);
+            SettingsController.RegisterSettingsWindow("Calming", pluginDir + "\\UI\\BureaucratCalmingView.xml", calm);
 
             //LE Procs
             //RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, LEProc, CombatActionPriority.Low);
@@ -157,14 +167,43 @@ namespace Desu
         {
             if (buffWindow != null && buffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Pets", buffWindow);
+                if (_petView == null)
+                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetsView.xml");
+
+                if (!buffWindow.Views.Contains(_petView))
+                {
+                    buffWindow.AppendTab("Pets", _petView);
+                }
             }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Pets", debuffWindow);
+                if (_petView == null)
+                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetsView.xml");
+
+                if (!debuffWindow.Views.Contains(_petView))
+                {
+                    debuffWindow.AppendTab("Pets", _petView);
+                }
+            }
+            else if (calmingWindow != null && calmingWindow.IsValid)
+            {
+                if (_petView == null)
+                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetsView.xml");
+
+                if (!calmingWindow.Views.Contains(_petView))
+                {
+                    calmingWindow.AppendTab("Pets", _petView);
+                }
             }
             else if (aidingWindow != null && aidingWindow.IsValid)
             {
+                if (_petView == null)
+                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetsView.xml");
+
+                if (!aidingWindow.Views.Contains(_petView))
+                {
+                    aidingWindow.AppendTab("Pets", _petView);
+                }
                 SettingsController.AppendSettingsTab("Pets", aidingWindow);
             }
             else
@@ -182,15 +221,43 @@ namespace Desu
         {
             if (petWindow != null && petWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Buffs", petWindow);
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratBuffsView.xml");
+
+                if (!petWindow.Views.Contains(_buffView))
+                {
+                    petWindow.AppendTab("Buffs", _buffView);
+                }
             }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratBuffsView.xml");
+
+                if (!debuffWindow.Views.Contains(_buffView))
+                {
+                    debuffWindow.AppendTab("Buffs", _buffView);
+                }
+            }
+            else if (calmingWindow != null && calmingWindow.IsValid)
+            {
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratBuffsView.xml");
+
+                if (!calmingWindow.Views.Contains(_buffView))
+                {
+                    calmingWindow.AppendTab("Buffs", _buffView);
+                }
             }
             else if (aidingWindow != null && aidingWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratBuffsView.xml");
+
+                if (!aidingWindow.Views.Contains(_buffView))
+                {
+                    aidingWindow.AppendTab("Buffs", _buffView);
+                }
             }
             else
             {
@@ -207,15 +274,43 @@ namespace Desu
         {
             if (petWindow != null && petWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Debuffs", petWindow);
+                if (_debuffView == null)
+                    _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratDebuffsView.xml");
+
+                if (!petWindow.Views.Contains(_debuffView))
+                {
+                    petWindow.AppendTab("Debuffs", _debuffView);
+                }
             }
             else if (buffWindow != null && buffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
+                if (_debuffView == null)
+                    _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratDebuffsView.xml");
+
+                if (!buffWindow.Views.Contains(_debuffView))
+                {
+                    buffWindow.AppendTab("Debuffs", _debuffView);
+                }
+            }
+            else if (calmingWindow != null && calmingWindow.IsValid)
+            {
+                if (_debuffView == null)
+                    _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratDebuffsView.xml");
+
+                if (!calmingWindow.Views.Contains(_debuffView))
+                {
+                    calmingWindow.AppendTab("Debuffs", _debuffView);
+                }
             }
             else if (aidingWindow != null && aidingWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Debuffs", aidingWindow);
+                if (_debuffView == null)
+                    _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratDebuffsView.xml");
+
+                if (!aidingWindow.Views.Contains(_debuffView))
+                {
+                    aidingWindow.AppendTab("Debuffs", _debuffView);
+                }
             }
             else
             {
@@ -228,19 +323,100 @@ namespace Desu
             }
         }
 
+        private void CalmingView(object s, ButtonBase button)
+        {
+            if (petWindow != null && petWindow.IsValid)
+            {
+                if (_calmView == null)
+                    _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratCalmingView.xml");
+
+                if (!petWindow.Views.Contains(_calmView))
+                {
+                    petWindow.AppendTab("Calming", _calmView);
+                }
+            }
+            else if (buffWindow != null && buffWindow.IsValid)
+            {
+                if (_calmView == null)
+                    _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratCalmingView.xml");
+
+                if (!buffWindow.Views.Contains(_calmView))
+                {
+                    buffWindow.AppendTab("Calming", _calmView);
+                }
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                if (_calmView == null)
+                    _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratCalmingView.xml");
+
+                if (!aidingWindow.Views.Contains(_calmView))
+                {
+                    aidingWindow.AppendTab("Calming", _calmView);
+                }
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                if (_calmView == null)
+                    _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratCalmingView.xml");
+
+                if (!debuffWindow.Views.Contains(_calmView))
+                {
+                    debuffWindow.AppendTab("Calming", _calmView);
+                }
+            }
+            else
+            {
+                calmingWindow = Window.CreateFromXml("Calming", PluginDirectory + "\\UI\\BureaucratCalmingView.xml",
+                    windowSize: new Rect(0, 0, 340, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                calmingWindow.Show(true);
+            }
+        }
+
         private void AidingView(object s, ButtonBase button)
         {
             if (petWindow != null && petWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Aiding", petWindow);
+                if (_aidView == null)
+                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
+
+                if (!petWindow.Views.Contains(_aidView))
+                {
+                    petWindow.AppendTab("Aiding", _aidView);
+                }
             }
             else if (buffWindow != null && buffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Aiding", buffWindow);
+                if (_aidView == null)
+                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
+
+                if (!buffWindow.Views.Contains(_aidView))
+                {
+                    buffWindow.AppendTab("Aiding", _aidView);
+                }
+            }
+            else if (calmingWindow != null && calmingWindow.IsValid)
+            {
+                if (_aidView == null)
+                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
+
+                if (!calmingWindow.Views.Contains(_aidView))
+                {
+                    calmingWindow.AppendTab("Aiding", _aidView);
+                }
             }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Aiding", debuffWindow);
+                if (_aidView == null)
+                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
+
+                if (!debuffWindow.Views.Contains(_aidView))
+                {
+                    debuffWindow.AppendTab("Aiding", _aidView);
+                }
             }
             else
             {
@@ -268,6 +444,12 @@ namespace Desu
                 {
                     helpView.Tag = SettingsController.settingsWindow;
                     helpView.Clicked = AidingView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
+                {
+                    calmView.Tag = SettingsController.settingsWindow;
+                    calmView.Clicked = CalmingView;
                 }
 
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
@@ -368,42 +550,42 @@ namespace Desu
         }
         private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffCrit") || IsSettingEnabled("BuffAAOAAD") || !IsSettingEnabled("BuffAAOAAD")) { return false; }
+            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffCrit") || IsSettingEnabled("BuffAAOAAD") || !IsSettingEnabled("BuffNanoResist")) { return false; }
+            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("BuffNanoResist") || IsSettingEnabled("BuffCrit") || !IsSettingEnabled("BuffAAOAAD")) { return false; }
+            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffNanoDrain") || !IsSettingEnabled("DebuffCrit")) { return false; }
+            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffCrit") || IsSettingEnabled("DebuffNanoDrain") || !IsSettingEnabled("DebuffNanoResist")) { return false; }
+            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DebuffNanoResist") || IsSettingEnabled("DebuffCrit") || !IsSettingEnabled("DebuffNanoDrain")) { return false; }
+            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -611,22 +793,45 @@ namespace Desu
 
         private bool RKCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell)) { return false; }
+            if (CalmingSelection.RK != (CalmingSelection)settings["CalmingSelection"].AsInt32()
+                || !CanCast(spell) || TypeSelection.None == (TypeSelection)settings["TypeSelection"].AsInt32()) { return false; }
 
-            if (!IsSettingEnabled("RKCalm")) { return false; }
-
-            SimpleChar target = DynelManager.NPCs
-                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => c.IsInLineOfSight)
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                .Where(c => c.MaxHealth < 1000000)
-                .FirstOrDefault();
-
-            if (target != null)
+            if (TypeSelection.All == (TypeSelection)settings["TypeSelection"].AsInt32())
             {
-                actionTarget = (target, true);
-                return true;
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                    .Where(c => c.MaxHealth < 1000000)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.Target = target;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            if (TypeSelection.Adds == (TypeSelection)settings["TypeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                    .Where(c => c.FightingTarget != null)
+                    .Where(c => IsAttackingUs(c))
+                    .Where(c => c.MaxHealth < 1000000)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.Target = target;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;
@@ -634,22 +839,45 @@ namespace Desu
 
         private bool SLCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell)) { return false; }
+            if (CalmingSelection.SL != (CalmingSelection)settings["CalmingSelection"].AsInt32()
+                || !CanCast(spell) || TypeSelection.None == (TypeSelection)settings["TypeSelection"].AsInt32()) { return false; }
 
-            if (!IsSettingEnabled("SLCalm")) { return false; }
-
-            SimpleChar target = DynelManager.NPCs
-                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => c.IsInLineOfSight)
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                .Where(c => c.MaxHealth < 1000000)
-                .FirstOrDefault();
-
-            if (target != null)
+            if (TypeSelection.All == (TypeSelection)settings["TypeSelection"].AsInt32())
             {
-                actionTarget = (target, true);
-                return true;
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                    .Where(c => c.MaxHealth < 1000000)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.Target = target;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            if (TypeSelection.Adds == (TypeSelection)settings["TypeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                    .Where(c => c.FightingTarget != null)
+                    .Where(c => IsAttackingUs(c))
+                    .Where(c => c.MaxHealth < 1000000)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.Target = target;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;
@@ -657,22 +885,45 @@ namespace Desu
 
         private bool AoECalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell)) { return false; }
+            if (CalmingSelection.AOE != (CalmingSelection)settings["CalmingSelection"].AsInt32()
+                || !CanCast(spell) || TypeSelection.None == (TypeSelection)settings["TypeSelection"].AsInt32()) { return false; }
 
-            if (!IsSettingEnabled("AoECalm")) { return false; }
-
-            SimpleChar target = DynelManager.NPCs
-                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => c.IsInLineOfSight)
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                .Where(c => !c.Buffs.Contains(NanoLine.AOEMezz))
-                .Where(c => c.MaxHealth < 1000000)
-                .FirstOrDefault();
-
-            if (target != null)
+            if (TypeSelection.All == (TypeSelection)settings["TypeSelection"].AsInt32())
             {
-                actionTarget = (target, true);
-                return true;
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                    .Where(c => c.MaxHealth < 1000000)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.Target = target;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            if (TypeSelection.Adds == (TypeSelection)settings["TypeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                    .Where(c => c.FightingTarget != null)
+                    .Where(c => IsAttackingUs(c))
+                    .Where(c => c.MaxHealth < 1000000)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.Target = target;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;
@@ -828,6 +1079,27 @@ namespace Desu
         #endregion
 
         #region Logic
+
+        private bool IsAttackingUs(SimpleChar mob)
+        {
+            if (Team.IsInTeam)
+            {
+                if (Team.Members.Select(m => m.Character.FightingTarget != null).Any())
+                {
+                    return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);
+                }
+
+                return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);
+            }
+
+            if (DynelManager.LocalPlayer.FightingTarget != null)
+            {
+                return mob.FightingTarget.Name == DynelManager.LocalPlayer.Name
+                    && DynelManager.LocalPlayer.FightingTarget.Identity != mob.Identity;
+            }
+
+            return mob.FightingTarget.Name == DynelManager.LocalPlayer.Name;
+        }
 
         private bool CanPerkPuppeteer(Pet pet)
         {
@@ -1034,19 +1306,21 @@ namespace Desu
             public const int PositiveAggressiveDefensive = 88384;
         }
 
-        private enum BuffAuraType
+        public enum BuffingAuraSelection
         {
-            AAD = 0,
-            CRIT = 1,
-            NANO_RES = 2
+            AAOAAD, Crit, NanoResist
         }
-
-        private enum DebuffAuraType
+        public enum DebuffingAuraSelection
         {
-            NONE = 0,
-            NANO_PTS = 1,
-            CRIT = 2,
-            NANO_RES = 3
+            None, NanoResist, Crit, MaxNano
+        }
+        public enum CalmingSelection
+        {
+            SL, RK, AOE
+        }
+        public enum TypeSelection
+        {
+            None, All, Adds
         }
 
         protected bool CanTrim()
@@ -1077,15 +1351,15 @@ namespace Desu
 
         private void CancelBuffAurasIfNeeded()
         {
-            if (!IsSettingEnabled("BuffAAOAAD"))
+            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.AadBuffAuras);
             }
-            if (!IsSettingEnabled("BuffCrit"))
+            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.CritBuffAuras);
             }
-            if (!IsSettingEnabled("BuffNanoResist"))
+            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.NanoResBuffAuras);
             }
@@ -1097,15 +1371,15 @@ namespace Desu
             CancelHostileAuras(RelevantNanos.NanoPointsDebuffAuras);
             CancelHostileAuras(RelevantNanos.NanoResDebuffAuras);
 
-            if (!IsSettingEnabled("DebuffCrit"))
+            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.CritDebuffAuras);
             }
-            if (!IsSettingEnabled("DebuffNanoDrain"))
+            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.NanoPointsDebuffAuras);
             }
-            if (!IsSettingEnabled("DebuffNanoResist"))
+            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.NanoResDebuffAuras);
             }

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+  <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Spawn Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Buff Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
@@ -9,8 +9,10 @@
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Masters Bidding" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MastersBidding" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Off Perks" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Offperks" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Def Perks" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Defperks" layout_borders="Rect(10,1,5,1)"/>
+    <OptionRadioButtonGroup label="Perks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__PetPerkSelection">
+      <RadioButton label="Off" value="0"/>
+      <RadioButton label="Def" value="1"/>
+    </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Divert to Offense Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertOffTrimmer" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Divert to Hp Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertHpTrimmer" layout_borders="Rect(10,1,5,1)"/>

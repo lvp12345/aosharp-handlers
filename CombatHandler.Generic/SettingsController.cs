@@ -52,9 +52,12 @@ namespace CombatHandler
                     {
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
-                        foreach (string settingsName in settingsWindows.Keys.Where(x => x.Contains("Handler")))
+                        if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
-                            AppendSettingsTab(settingsName, settingsWindow);
+                            foreach (string settingsName in settingsWindows.Keys.Where(x => x.Contains("Handler")))
+                            {
+                                AppendSettingsTab(settingsName, settingsWindow);
+                            }
                         }
                     }
                     catch (Exception e)

@@ -15,11 +15,14 @@ namespace CombatHandler.Engi
         private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
         private bool attackPetTrimmedAggressive = false;
+
         private double _lastTrimTime = 0;
         private double _recastBlinds = Time.NormalTime;
+
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedHpDiv = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
+
         private Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
@@ -34,6 +37,14 @@ namespace CombatHandler.Engi
         public static Window petWindow;
         public static Window buffWindow;
         public static Window aidingWindow;
+
+        public static View _aidView;
+        public static View _buffView;
+        public static View _petView;
+
+        private static Settings buff = new Settings("Buffs");
+        private static Settings pet = new Settings("Pets");
+        private static Settings aid = new Settings("Aiding");
 
         public static string PluginDirectory;
 
@@ -50,26 +61,19 @@ namespace CombatHandler.Engi
             settings.AddVariable("TauntTrimmer", true);
             settings.AddVariable("AggDefTrimmer", true);
 
-            settings.AddVariable("ShieldRipper", false);
-            settings.AddVariable("SnareAura", false);
-            settings.AddVariable("BlindAura", false);
+            settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
+            settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
 
-            settings.AddVariable("ShieldAura", false);
-            settings.AddVariable("DamageAura", false);
-            settings.AddVariable("ReflectAura", false);
-            settings.AddVariable("ArmorAura", false);
-
-            settings.AddVariable("Offperks", false);
-            settings.AddVariable("Defperks", false);
+            settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.Off);
 
             settings.AddVariable("SpamBlindAura", false);
             settings.AddVariable("SpamSnareAura", false);
 
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
 
-            RegisterSettingsWindow("Pets", "EngineerPetsView.xml");
-            RegisterSettingsWindow("Buffs", "EngineerBuffsView.xml");
-            RegisterSettingsWindow("Aiding", "EngineerAidingView.xml");
+            SettingsController.RegisterSettingsWindow("Aiding", pluginDir + "\\UI\\EngineerAidingView.xml", aid);
+            SettingsController.RegisterSettingsWindow("Buffs", pluginDir + "\\UI\\EngineerBuffsView.xml", buff);
+            SettingsController.RegisterSettingsWindow("Pets", pluginDir + "\\UI\\EngineerPetsView.xml", pet);
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, LEProc, CombatActionPriority.Low);
@@ -146,11 +150,23 @@ namespace CombatHandler.Engi
         {
             if (buffWindow != null && buffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Pets", buffWindow);
+                if (_petView == null)
+                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPetsView.xml");
+
+                if (!buffWindow.Views.Contains(_petView))
+                {
+                    buffWindow.AppendTab("Pets", _petView);
+                }
             }
             else if (aidingWindow != null && aidingWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Pets", aidingWindow);
+                if (_petView == null)
+                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPetsView.xml");
+
+                if (!aidingWindow.Views.Contains(_petView))
+                {
+                    aidingWindow.AppendTab("Pets", _petView);
+                }
             }
             else
             {
@@ -167,11 +183,23 @@ namespace CombatHandler.Engi
         {
             if (petWindow != null && petWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Buffs", petWindow);
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerBuffsView.xml");
+
+                if (!petWindow.Views.Contains(_buffView))
+                {
+                    petWindow.AppendTab("Buffs", _buffView);
+                }
             }
             else if (aidingWindow != null && aidingWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerBuffsView.xml");
+
+                if (!aidingWindow.Views.Contains(_buffView))
+                {
+                    aidingWindow.AppendTab("Buffs", _buffView);
+                }
             }
             else
             {
@@ -188,11 +216,23 @@ namespace CombatHandler.Engi
         {
             if (petWindow != null && petWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Aiding", petWindow);
+                if (_aidView == null)
+                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerAidingView.xml");
+
+                if (!petWindow.Views.Contains(_aidView))
+                {
+                    petWindow.AppendTab("Aiding", _aidView);
+                }
             }
             else if (buffWindow != null && buffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Aiding", buffWindow);
+                if (_aidView == null)
+                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerAidingView.xml");
+
+                if (!buffWindow.Views.Contains(_aidView))
+                {
+                    buffWindow.AppendTab("Aiding", _aidView);
+                }
             }
             else
             {
@@ -208,71 +248,6 @@ namespace CombatHandler.Engi
         protected override void OnUpdate(float deltaTime)
         {
             SynchronizePetCombatStateWithOwner();
-
-            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("ArmorAura"))
-            {
-                settings["DamageAura"] = false;
-                settings["ArmorAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("ShieldAura"))
-            {
-                settings["DamageAura"] = false;
-                settings["ShieldAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("ReflectAura"))
-            {
-                settings["DamageAura"] = false;
-                settings["ReflectAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("ArmorAura") && IsSettingEnabled("ReflectAura"))
-            {
-                settings["ArmorAura"] = false;
-                settings["ReflectAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("ArmorAura") && IsSettingEnabled("ShieldAura"))
-            {
-                settings["ArmorAura"] = false;
-                settings["ShieldAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("ShieldAura"))
-            {
-                settings["ReflectAura"] = false;
-                settings["ShieldAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("Offperks") && IsSettingEnabled("Defperks"))
-            {
-                settings["Offperks"] = false;
-                settings["Defperks"] = false;
-
-                Chat.WriteLine($"Can only have one Perk active.");
-            }
-
-            if (IsSettingEnabled("ShieldRipper") && (IsSettingEnabled("BlindAura") || IsSettingEnabled("SpamBlindAura")))
-            {
-                settings["ShieldRipper"] = false;
-                settings["BlindAura"] = false;
-                settings["SpamBlindAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
@@ -297,29 +272,30 @@ namespace CombatHandler.Engi
 
             base.OnUpdate(deltaTime);
 
-            if (!IsSettingEnabled("ShieldAura"))
+            if (BuffingAuraSelection.Shield != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.ShieldAura);
             }
 
-            if (!IsSettingEnabled("DamageAura"))
+            if (BuffingAuraSelection.Damage != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.DamageAura);
             }
 
-            if (!IsSettingEnabled("ArmorAura"))
+            if (BuffingAuraSelection.Armor != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.ArmorAura);
             }
 
-            if (!IsSettingEnabled("ReflectAura"))
+            if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.ReflectAura);
             }
 
             if (!IsSettingEnabled("SpamBlindAura"))
             {
-                CancelBuffs(IsSettingEnabled("ShieldRipper") ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
+                CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()
+                    ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
                 CancelHostileAuras(RelevantNanos.Blinds);
             }
 
@@ -340,24 +316,6 @@ namespace CombatHandler.Engi
             }
 
             return false;
-        }
-
-        private bool SnareAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("SpamSnareAura") && ShouldSpamAoeSnare())
-            {
-                Pet petToCastOn = FindPetThat(pet => true);
-                if (petToCastOn != null)
-                {
-                    actionTarget.Target = petToCastOn.Character;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            if (!IsSettingEnabled("SnareAura") || fightingTarget == null) { return false; }
-
-            return PetTargetBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShouldSpamAoeSnare()
@@ -385,43 +343,58 @@ namespace CombatHandler.Engi
 
         private bool ArmorAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ArmorAura")) { return false; }
+            if (BuffingAuraSelection.Armor != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DamageAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DamageAura")) { return false; }
+            if (BuffingAuraSelection.Damage != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ReflectAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ReflectAura")) { return false; }
+            if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShieldAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ShieldAura")) { return false; }
+            if (BuffingAuraSelection.Shield != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
+        private bool SnareAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("SpamSnareAura") && ShouldSpamAoeSnare())
+            {
+                Pet petToCastOn = FindPetThat(pet => true);
+                if (petToCastOn != null)
+                {
+                    actionTarget.Target = petToCastOn.Character;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
 
+            if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
+
+            return PetTargetBuff(spell, fightingTarget, ref actionTarget);
+        }
         private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ShieldRipper") || fightingTarget == null) { return false; }
+            if (DebuffingAuraSelection.ShieldRipper != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ShieldRipper")) { return false; }
-
             if (IsSettingEnabled("SpamBlindAura"))
             {
                 if (Time.NormalTime - _recastBlinds > 9)
@@ -433,7 +406,7 @@ namespace CombatHandler.Engi
 
             if (fightingTarget == null) { return false; }
 
-            if (IsSettingEnabled("BlindAura"))
+            if (DebuffingAuraSelection.Blind == (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32())
             {
                 if (Time.NormalTime - _recastBlinds > 9)
                 {
@@ -477,7 +450,8 @@ namespace CombatHandler.Engi
 
         private bool ChaoticEnergyBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Offperks") || !CanLookupPetsAfterZone()) { return false; }
+            if (PetPerkSelection.Off != (PetPerkSelection)settings["PetPerkSelection"].AsInt32()
+                || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkChaoticEnergy);
 
@@ -495,7 +469,8 @@ namespace CombatHandler.Engi
 
         private bool SiphonBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Defperks") || !CanLookupPetsAfterZone()) { return false; }
+            if (PetPerkSelection.Def != (PetPerkSelection)settings["PetPerkSelection"].AsInt32()
+                || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkSiphonBox);
 
@@ -514,7 +489,8 @@ namespace CombatHandler.Engi
 
         private bool TauntBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Defperks") || !CanLookupPetsAfterZone()) { return false; }
+            if (PetPerkSelection.Def != (PetPerkSelection)settings["PetPerkSelection"].AsInt32()
+                || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkTauntBox);
 
@@ -794,6 +770,19 @@ namespace CombatHandler.Engi
             public const int PositiveAggressiveDefensive = 88384;
             public const int DivertEnergyToHitpointsLow = 88381;
             public const int DivertEnergyToHitpointsHigh = 88382;
+        }
+
+        public enum PetPerkSelection
+        {
+            Off, Def
+        }
+        public enum BuffingAuraSelection
+        {
+            Armor, Reflect, Damage, Shield
+        }
+        public enum DebuffingAuraSelection
+        {
+            Blind, PetSnare, ShieldRipper
         }
     }
 }

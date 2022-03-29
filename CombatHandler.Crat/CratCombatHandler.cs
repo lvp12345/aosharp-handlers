@@ -784,7 +784,8 @@ namespace Desu
 
             if (target != null)
             {
-                actionTarget = (target, true);
+                actionTarget.Target = target;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
@@ -1086,7 +1087,7 @@ namespace Desu
             {
                 if (Team.Members.Select(m => m.Character.FightingTarget != null).Any())
                 {
-                    return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);
+                    return !Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);
                 }
 
                 return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);

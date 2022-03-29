@@ -448,6 +448,7 @@ namespace Helper
 
         private void OnUpdate(object s, float deltaTime)
         {
+
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();

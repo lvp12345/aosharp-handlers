@@ -74,7 +74,8 @@ namespace CombatHandler.Generic
                     "Guide",
                     "Guard",
                     "Awakened Xan",
-                    "Fanatic"
+                    "Fanatic",
+                    "Peacekeeper Coursey"
         };
 
         public GenericCombatHandler(string pluginDir)
@@ -422,6 +423,7 @@ namespace CombatHandler.Generic
                 .Where(c => c.FightingTarget != null) //Is in combat
                 .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
                 .Where(c => c.IsInLineOfSight)
+                .Where(c => !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz))
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
                 .Where(c => SpellChecksOther(spell, spell.Nanoline, c)) //Needs debuff refreshed
                 .OrderBy(c => c.MaxHealth)

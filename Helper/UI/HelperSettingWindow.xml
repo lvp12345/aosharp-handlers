@@ -11,20 +11,22 @@
     <TextView value="  Channel" layout_borders="Rect(5,5,5,5)"/>
     <TextInputView name="ChannelBox" min_size="Point(60,14)" max_size="Point(60,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Auto Sit" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__AutoSit" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Auto sit" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__AutoSit" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Follow lead character" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__Follow" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<OptionCheckBox label="Sync movement" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__SyncMove" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Sync using items" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__SyncUse" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Sync fighting target" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__SyncAttack" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Sync chat" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__SyncChat" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Sync trade" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__SyncTrade" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <OptionCheckBox label="(12man) Morph Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__MorphPathing" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="(DB3) Shapes" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__Db3Shapes" layout_borders="Rect(10,1,5,1)"/>
     <View v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <Button name="HelperAssistView" label="Assist" layout_borders="Rect(5,5,3,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <Button name="HelperFollowView" label="Follow" layout_borders="Rect(5,5,3,5)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <Button name="HelperAidingView" label="Aiding" layout_borders="Rect(5,5,3,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     </View>

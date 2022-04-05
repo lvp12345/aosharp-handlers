@@ -25,7 +25,6 @@ namespace Desu
 
         public static Window buffWindow;
         public static Window tauntWindow;
-        public static Window aidingWindow;
 
         public static string PluginDirectory;
 
@@ -42,7 +41,6 @@ namespace Desu
 
             RegisterSettingsWindow("Taunts", "EnforcerTauntsView.xml");
             RegisterSettingsWindow("Buffs", "EnforcerBuffsView.xml");
-            RegisterSettingsWindow("Aiding", "EnforcerAidingView.xml");
 
 
             //-------------LE procs-------------
@@ -86,10 +84,6 @@ namespace Desu
             {
                 SettingsController.AppendSettingsTab("Buffs", tauntWindow);
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
-            }
             else
             {
                 buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\EnforcerBuffsView.xml",
@@ -107,10 +101,6 @@ namespace Desu
             {
                 SettingsController.AppendSettingsTab("Taunts", buffWindow);
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Taunts", aidingWindow);
-            }
             else
             {
                 tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\EnforcerTauntsView.xml",
@@ -122,37 +112,10 @@ namespace Desu
             }
         }
 
-        private void AidingView(object s, ButtonBase button)
-        {
-            if (tauntWindow != null && tauntWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Aiding", tauntWindow);
-            }
-            else if (buffWindow != null && buffWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Aiding", buffWindow);
-            }
-            else
-            {
-                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\EnforcerAidingView.xml",
-                    windowSize: new Rect(0, 0, 270, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                aidingWindow.Show(true);
-            }
-        }
-
         protected override void OnUpdate(float deltaTime)
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
-                {
-                    helpView.Tag = SettingsController.settingsWindow;
-                    helpView.Clicked = AidingView;
-                }
-
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;

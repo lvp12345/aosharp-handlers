@@ -81,9 +81,6 @@
     <Content Include="UI\HelperAssistView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\HelperAidingView.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="UI\HelperFollowView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

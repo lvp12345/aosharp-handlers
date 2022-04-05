@@ -2,6 +2,8 @@
 <root>
     <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="(OST) Spam Blind Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamBlindAura" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="(POH) Spam Pet Snare Aura" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamSnareAura" layout_borders="Rect(10,1,5,1)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <Button name="BuffsView" label="Buffs" layout_borders="Rect(5,5,3,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>

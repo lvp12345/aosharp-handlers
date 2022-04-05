@@ -23,18 +23,21 @@ namespace Desu
         public static Window petWindow;
         public static Window calmingWindow;
         public static Window aidingWindow;
+        public static Window procWindow;
 
         public static View _aidView;
         public static View _buffView;
         public static View _debuffView;
         public static View _calmView;
         public static View _petView;
+        public static View _procView;
 
         private static Settings buff = new Settings("Buffs");
         private static Settings debuff = new Settings("Debuffs");
         private static Settings calm = new Settings("Calming");
         private static Settings pet = new Settings("Pets");
         private static Settings aid = new Settings("Aiding");
+        private static Settings proc = new Settings("Procs");
 
         public static string PluginDirectory;
 
@@ -51,7 +54,10 @@ namespace Desu
             settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
 
             settings.AddVariable("CalmingSelection", (int)CalmingSelection.SL);
-            settings.AddVariable("TypeSelection", (int)TypeSelection.None);
+            settings.AddVariable("ModeSelection", (int)ModeSelection.None);
+
+            settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FormsinTriplicate);
+            settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.WrongWindow);
 
             settings.AddVariable("NanoDeltaTeam", false);
 
@@ -81,11 +87,22 @@ namespace Desu
             SettingsController.RegisterSettingsWindow("Pets", pluginDir + "\\UI\\BureaucratPetsView.xml", pet);
             SettingsController.RegisterSettingsWindow("Debuffs", pluginDir + "\\UI\\BureaucratDebuffsView.xml", debuff);
             SettingsController.RegisterSettingsWindow("Calming", pluginDir + "\\UI\\BureaucratCalmingView.xml", calm);
+            SettingsController.RegisterSettingsWindow("Procs", pluginDir + "\\UI\\BureaucratProcsView.xml", proc);
 
             //LE Procs
-            //RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, LEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratWrongWindow, LEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratFormsInTriplicate, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, PleaseHold, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratFormsInTriplicate, FormsinTriplicate, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratSocialServices, SocialServices, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratNextWindowOver, NextWindowOver, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratWaitInThatQueue, WaitInThatQueue, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratMobilityEmbargo, MobilityEmbargo, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratWrongWindow, WrongWindow, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratTaxAudit, TaxAudit, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratLostPaperwork, LostPaperwork, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratDeflation, Deflation, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, InflationAdjustment, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, Papercut, CombatActionPriority.Low);
 
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), CratDebuffOthersInCombat, CombatActionPriority.Medium);
@@ -175,6 +192,16 @@ namespace Desu
                     buffWindow.AppendTab("Pets", _petView);
                 }
             }
+            else if (procWindow != null && procWindow.IsValid)
+            {
+                if (_petView == null)
+                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetsView.xml");
+
+                if (!procWindow.Views.Contains(_petView))
+                {
+                    procWindow.AppendTab("Pets", _petView);
+                }
+            }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
                 if (_petView == null)
@@ -229,6 +256,16 @@ namespace Desu
                     petWindow.AppendTab("Buffs", _buffView);
                 }
             }
+            else if (procWindow != null && procWindow.IsValid)
+            {
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratBuffsView.xml");
+
+                if (!procWindow.Views.Contains(_buffView))
+                {
+                    procWindow.AppendTab("Buffs", _buffView);
+                }
+            }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
                 if (_buffView == null)
@@ -270,6 +307,59 @@ namespace Desu
             }
         }
 
+        private void ProcView(object s, ButtonBase button)
+        {
+            if (petWindow != null && petWindow.IsValid)
+            {
+                if (_procView == null)
+                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratProcsView.xml");
+
+                if (!petWindow.Views.Contains(_procView))
+                {
+                    petWindow.AppendTab("Procs", _procView);
+                }
+            }
+            else if (buffWindow != null && buffWindow.IsValid)
+            {
+                if (_procView == null)
+                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratProcsView.xml");
+
+                if (!buffWindow.Views.Contains(_procView))
+                {
+                    buffWindow.AppendTab("Procs", _procView);
+                }
+            }
+            else if (calmingWindow != null && calmingWindow.IsValid)
+            {
+                if (_procView == null)
+                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratProcsView.xml");
+
+                if (!calmingWindow.Views.Contains(_procView))
+                {
+                    calmingWindow.AppendTab("Procs", _procView);
+                }
+            }
+            else if (aidingWindow != null && aidingWindow.IsValid)
+            {
+                if (_procView == null)
+                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratProcsView.xml");
+
+                if (!aidingWindow.Views.Contains(_procView))
+                {
+                    aidingWindow.AppendTab("Procs", _procView);
+                }
+            }
+            else
+            {
+                procWindow = Window.CreateFromXml("Procs", PluginDirectory + "\\UI\\BureaucratProcsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                procWindow.Show(true);
+            }
+        }
+
         private void DebuffView(object s, ButtonBase button)
         {
             if (petWindow != null && petWindow.IsValid)
@@ -280,6 +370,16 @@ namespace Desu
                 if (!petWindow.Views.Contains(_debuffView))
                 {
                     petWindow.AppendTab("Debuffs", _debuffView);
+                }
+            }
+            else if (procWindow != null && procWindow.IsValid)
+            {
+                if (_debuffView == null)
+                    _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratDebuffsView.xml");
+
+                if (!procWindow.Views.Contains(_debuffView))
+                {
+                    procWindow.AppendTab("Debuffs", _debuffView);
                 }
             }
             else if (buffWindow != null && buffWindow.IsValid)
@@ -335,6 +435,16 @@ namespace Desu
                     petWindow.AppendTab("Calming", _calmView);
                 }
             }
+            else if (procWindow != null && procWindow.IsValid)
+            {
+                if (_calmView == null)
+                    _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratCalmingView.xml");
+
+                if (!procWindow.Views.Contains(_calmView))
+                {
+                    procWindow.AppendTab("Calming", _calmView);
+                }
+            }
             else if (buffWindow != null && buffWindow.IsValid)
             {
                 if (_calmView == null)
@@ -386,6 +496,16 @@ namespace Desu
                 if (!petWindow.Views.Contains(_aidView))
                 {
                     petWindow.AppendTab("Aiding", _aidView);
+                }
+            }
+            else if (procWindow != null && procWindow.IsValid)
+            {
+                if (_aidView == null)
+                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
+
+                if (!procWindow.Views.Contains(_aidView))
+                {
+                    procWindow.AppendTab("Aiding", _aidView);
                 }
             }
             else if (buffWindow != null && buffWindow.IsValid)
@@ -450,6 +570,12 @@ namespace Desu
                 {
                     calmView.Tag = SettingsController.settingsWindow;
                     calmView.Clicked = CalmingView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = ProcView;
                 }
 
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
@@ -596,79 +722,9 @@ namespace Desu
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //Spell workplace = Spell.List.Where(x => x.Name == "Workplace Depression").FirstOrDefault();
-
             if (fightingTarget == null || !CanCast(spell)) { return false; }
 
             if (!IsSettingEnabled("Nukes")) { return false; }
-
-            //if (IsSettingEnabled("Calm12Man"))
-            //{
-            //    List<SimpleChar> target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-            //        .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-            //        .ToList();
-
-            //    if (target != null)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("AoeRoot"))
-            //{
-            //    SimpleChar target = DynelManager.NPCs
-            //        .Where(c => c.Name == "Flaming Vengeance" ||
-            //        c.Name == "Hand of the Colonel")
-            //        .Where(c => DoesNotHaveAoeRootRunning(c))
-            //        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .FirstOrDefault();
-
-            //    if (target != null)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("MalaiseTarget"))
-            //{
-            //    SimpleChar target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(x => x.Identity == fightingTarget.Identity)
-            //        .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
-            //        .FirstOrDefault();
-
-            //    if (target != null)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("OSMalaise"))
-            //{
-            //    List<SimpleChar> target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-            //        .Where(x => x.FightingTarget != null)
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
-            //        .ToList();
-
-            //    if (target.Count >= 1)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("LEInitDebuffs"))
-            //{
-            //    SimpleChar target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(x => x.Identity == fightingTarget.Identity)
-            //        .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .Where(x => !x.Buffs.Contains(NanoLine.GeneralRadiationACDebuff) && !x.Buffs.Contains(NanoLine.GeneralProjectileACDebuff))
-            //        .FirstOrDefault();
-
-            //    if (target != null)
-            //        return false;
-            //}
 
             if (Spell.Find(273631, out Spell workplace))
             {
@@ -676,14 +732,6 @@ namespace Desu
                     ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000)
                     || fightingTarget.MaxHealth > 1000000)) { return false; }
             }
-
-            //if (workplace != null)
-            //{
-            //    if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842) && 
-            //        ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000) 
-            //        || fightingTarget.MaxHealth > 1000000))
-            //        return false;
-            //}
 
             return true;
         }
@@ -693,72 +741,6 @@ namespace Desu
             if (fightingTarget == null || !CanCast(spell)) { return false; }
 
             if (!IsSettingEnabled("Nukes")) { return false; }
-
-            //if (IsSettingEnabled("Calm12Man"))
-            //{
-            //    List<SimpleChar> target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-            //        .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-            //        .ToList();
-
-            //    if (target != null)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("AoeRoot"))
-            //{
-            //    SimpleChar target = DynelManager.NPCs
-            //        .Where(c => c.Name == "Flaming Vengeance" ||
-            //        c.Name == "Hand of the Colonel")
-            //        .Where(c => DoesNotHaveAoeRootRunning(c))
-            //        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .FirstOrDefault();
-
-            //    if (target != null)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("MalaiseTarget"))
-            //{
-            //    SimpleChar target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(x => x.Identity == fightingTarget.Identity)
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
-            //        .FirstOrDefault();
-
-            //    if (target != null)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("OSMalaise"))
-            //{
-            //    List<SimpleChar> target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-            //        .Where(x => x.FightingTarget != null)
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .Where(x => !x.Buffs.Contains(NanoLine.InitiativeDebuffs))
-            //        .ToList();
-
-            //    if (target.Count >= 1)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("LEInitDebuffs"))
-            //{
-            //    SimpleChar target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(x => x.Identity == fightingTarget.Identity)
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .Where(x => !x.Buffs.Contains(NanoLine.GeneralRadiationACDebuff) && !x.Buffs.Contains(NanoLine.GeneralProjectileACDebuff))
-            //        .FirstOrDefault();
-
-            //    if (target != null)
-            //        return false;
-            //}
 
             if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)) { return false; }
 
@@ -795,9 +777,9 @@ namespace Desu
         private bool RKCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (CalmingSelection.RK != (CalmingSelection)settings["CalmingSelection"].AsInt32()
-                || !CanCast(spell) || TypeSelection.None == (TypeSelection)settings["TypeSelection"].AsInt32()) { return false; }
+                || !CanCast(spell) || ModeSelection.None == (ModeSelection)settings["ModeSelection"].AsInt32()) { return false; }
 
-            if (TypeSelection.All == (TypeSelection)settings["TypeSelection"].AsInt32())
+            if (ModeSelection.All == (ModeSelection)settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -815,7 +797,7 @@ namespace Desu
                 }
             }
 
-            if (TypeSelection.Adds == (TypeSelection)settings["TypeSelection"].AsInt32())
+            if (ModeSelection.Adds == (ModeSelection)settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -841,9 +823,9 @@ namespace Desu
         private bool SLCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (CalmingSelection.SL != (CalmingSelection)settings["CalmingSelection"].AsInt32()
-                || !CanCast(spell) || TypeSelection.None == (TypeSelection)settings["TypeSelection"].AsInt32()) { return false; }
+                || !CanCast(spell) || ModeSelection.None == (ModeSelection)settings["ModeSelection"].AsInt32()) { return false; }
 
-            if (TypeSelection.All == (TypeSelection)settings["TypeSelection"].AsInt32())
+            if (ModeSelection.All == (ModeSelection)settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -861,7 +843,7 @@ namespace Desu
                 }
             }
 
-            if (TypeSelection.Adds == (TypeSelection)settings["TypeSelection"].AsInt32())
+            if (ModeSelection.Adds == (ModeSelection)settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -887,9 +869,9 @@ namespace Desu
         private bool AoECalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (CalmingSelection.AOE != (CalmingSelection)settings["CalmingSelection"].AsInt32()
-                || !CanCast(spell) || TypeSelection.None == (TypeSelection)settings["TypeSelection"].AsInt32()) { return false; }
+                || !CanCast(spell) || ModeSelection.None == (ModeSelection)settings["ModeSelection"].AsInt32()) { return false; }
 
-            if (TypeSelection.All == (TypeSelection)settings["TypeSelection"].AsInt32())
+            if (ModeSelection.All == (ModeSelection)settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -907,7 +889,7 @@ namespace Desu
                 }
             }
 
-            if (TypeSelection.Adds == (TypeSelection)settings["TypeSelection"].AsInt32())
+            if (ModeSelection.Adds == (ModeSelection)settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -935,34 +917,6 @@ namespace Desu
             if (fightingTarget == null || !CanCast(spell)) { return false; }
 
             if (!IsSettingEnabled("MalaiseTarget")) { return false; }
-
-            //if (IsSettingEnabled("Calm12Man"))
-            //{
-            //    List<SimpleChar> target = DynelManager.NPCs
-            //        .Where(x => x.IsAlive)
-            //        .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-            //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-            //        .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-            //        .ToList();
-
-            //    if (target != null)
-            //        return false;
-            //}
-
-            //if (IsSettingEnabled("AoeRoot"))
-            //{
-            //    SimpleChar target = DynelManager.NPCs
-            //        .Where(c => c.Name == "Flaming Vengeance" ||
-            //        c.Name == "Hand of the Colonel")
-            //        .Where(c => DoesNotHaveAoeRootRunning(c))
-            //        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-            //        .FirstOrDefault();
-
-            //    if (target != null)
-            //        return false;
-            //}
-
-            //if (!SpellChecksOther(spell, fightingTarget)) { return false; }
 
             return SpellChecksOther(spell, spell.Nanoline, fightingTarget);
         }
@@ -1079,28 +1033,93 @@ namespace Desu
 
         #endregion
 
-        #region Logic
+        #region Perks
 
-        private bool IsAttackingUs(SimpleChar mob)
+
+        private bool FormsinTriplicate(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Team.IsInTeam)
-            {
-                if (Team.Members.Select(m => m.Character.FightingTarget != null).Any())
-                {
-                    return !Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);
-                }
+            if (ProcType1Selection.FormsinTriplicate != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
 
-                return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);
-            }
-
-            if (DynelManager.LocalPlayer.FightingTarget != null)
-            {
-                return mob.FightingTarget.Name == DynelManager.LocalPlayer.Name
-                    && DynelManager.LocalPlayer.FightingTarget.Identity != mob.Identity;
-            }
-
-            return mob.FightingTarget.Name == DynelManager.LocalPlayer.Name;
+            return LEProc(perk, fightingTarget, ref actionTarget);
         }
+
+        private bool NextWindowOver(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.NextWindowOver != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool PleaseHold(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.PleaseHold != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SocialServices(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SocialServices != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool WaitInThatQueue(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.WaitInThatQueue != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool Deflation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Deflation != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool InflationAdjustment(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.InflationAdjustment != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool LostPaperwork(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.LostPaperwork != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool MobilityEmbargo(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.MobilityEmbargo != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool Papercut(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Papercut != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool TaxAudit(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.TaxAudit != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool WrongWindow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.WrongWindow != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+
+        #endregion
+
+        #region Logic
 
         private bool CanPerkPuppeteer(Pet pet)
         {
@@ -1307,6 +1326,16 @@ namespace Desu
             public const int PositiveAggressiveDefensive = 88384;
         }
 
+        public enum ProcType1Selection
+        {
+            PleaseHold, FormsinTriplicate, SocialServices, NextWindowOver, WaitInThatQueue
+        }
+
+        public enum ProcType2Selection
+        {
+            MobilityEmbargo, WrongWindow, TaxAudit, LostPaperwork, Deflation, InflationAdjustment, Papercut
+        }
+
         public enum BuffingAuraSelection
         {
             AAOAAD, Crit, NanoResist
@@ -1319,7 +1348,7 @@ namespace Desu
         {
             SL, RK, AOE
         }
-        public enum TypeSelection
+        public enum ModeSelection
         {
             None, All, Adds
         }

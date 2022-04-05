@@ -576,6 +576,28 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        public bool IsAttackingUs(SimpleChar mob)
+        {
+            if (Team.IsInTeam)
+            {
+                if (Team.Members.Select(m => m.Character.FightingTarget != null).Any())
+                {
+                    return !Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);
+                }
+
+                return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget.Name);
+            }
+
+            if (DynelManager.LocalPlayer.FightingTarget != null)
+            {
+                return mob.FightingTarget.Name == DynelManager.LocalPlayer.Name
+                    && DynelManager.LocalPlayer.FightingTarget.Identity != mob.Identity;
+            }
+
+            return mob.FightingTarget.Name == DynelManager.LocalPlayer.Name;
+        }
+
+
         public bool IsNotFightingMe(SimpleChar target)
         {
             return target.IsAttacking && target.FightingTarget.Identity != DynelManager.LocalPlayer.Identity;

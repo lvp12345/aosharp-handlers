@@ -47,6 +47,7 @@ namespace Helper
 
         public static bool Sitting = false;
         public static bool HealingPet = false;
+        public static bool OpenBackpacks = false;
 
         public static Window followWindow;
         public static Window assistWindow;
@@ -173,20 +174,21 @@ namespace Helper
 
             Chat.RegisterCommand("yalm", YalmCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
-            //Chat.RegisterCommand("bags", (string command, string[] param, ChatWindow chatWindow) =>
-            //{
-            //    List<Backpack> _bags = Inventory.Backpacks;
 
-            //    List<Item> bags = Inventory.Items
-            //    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-            //    .ToList();
+            Chat.RegisterCommand("bags", (string command, string[] param, ChatWindow chatWindow) =>
+            {
+                List<Item> bags = Inventory.Items
+                .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                .ToList();
 
-            //    foreach (Item bag in bags)
-            //    {
-            //        bag.Use();
-            //        bag.Use();
-            //    }
-            //});
+                Chat.WriteLine($"{bags.Count()}");
+
+                foreach (Item bag in bags)
+                {
+                    bag.Use();
+                    bag.Use();
+                }
+            });
 
             Chat.RegisterCommand("doc", DocTarget);
 
@@ -208,17 +210,23 @@ namespace Helper
 
         private void OnZoned(object s, EventArgs e)
         {
-            List<Backpack> _bags = Inventory.Backpacks;
+            Task.Factory.StartNew(
+                async () =>
+                {
+                    await Task.Delay(100);
 
-            List<Item> bags = Inventory.Items
-            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-            .ToList();
+                    List<Item> bags = Inventory.Items
+                        .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                        .ToList();
 
-            foreach (Item bag in bags)
-            {
-                bag.Use();
-                bag.Use();
-            }
+                    Chat.WriteLine($"{bags.Count()}");
+
+                    foreach (Item bag in bags)
+                    {
+                        bag.Use();
+                        bag.Use();
+                    }
+                });
         }
 
 
@@ -448,6 +456,22 @@ namespace Helper
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (!OpenBackpacks)
+            {
+                List<Item> bags = Inventory.Items
+                    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                    .ToList();
+
+                Chat.WriteLine($"{bags.Count()}");
+
+                foreach (Item bag in bags)
+                {
+                    bag.Use();
+                    bag.Use();
+                }
+
+                OpenBackpacks = true;
+            }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {

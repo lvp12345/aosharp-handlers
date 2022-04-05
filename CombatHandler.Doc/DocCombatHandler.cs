@@ -17,7 +17,6 @@ namespace Desu
         public static Window buffWindow;
         public static Window debuffWindow;
         public static Window healingWindow;
-        public static Window aidingWindow;
 
         public DocCombatHandler(String pluginDir) : base(pluginDir)
         {
@@ -47,7 +46,6 @@ namespace Desu
             RegisterSettingsWindow("Healing", "DocHealingView.xml");
             RegisterSettingsWindow("Buffs", "DocBuffsView.xml");
             RegisterSettingsWindow("Debuffs", "DocDebuffsView.xml");
-            RegisterSettingsWindow("Aiding", "DocAidingView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, LEProc, CombatActionPriority.Low);
@@ -116,12 +114,6 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
-                {
-                    helpView.Tag = SettingsController.settingsWindow;
-                    helpView.Clicked = AidingView;
-                }
-
                 if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
                     healingView.Tag = SettingsController.settingsWindow;
@@ -351,10 +343,6 @@ namespace Desu
             {
                 SettingsController.AppendSettingsTab("Buffs", debuffWindow);
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
-            }
             else
             {
                 buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\DocBuffsView.xml",
@@ -375,10 +363,6 @@ namespace Desu
             else if (buffWindow != null && buffWindow.IsValid)
             {
                 SettingsController.AppendSettingsTab("Debuffs", buffWindow);
-            }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Debuffs", aidingWindow);
             }
             else
             {
@@ -401,10 +385,6 @@ namespace Desu
             {
                 SettingsController.AppendSettingsTab("Healing", debuffWindow);
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Healing", aidingWindow);
-            }
             else
             {
                 healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\DocHealingView.xml",
@@ -413,31 +393,6 @@ namespace Desu
                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
                 healingWindow.Show(true);
-            }
-        }
-
-        private void AidingView(object s, ButtonBase button)
-        {
-            if (healingWindow != null && healingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Aiding", healingWindow);
-            }
-            else if (buffWindow != null && buffWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Aiding", buffWindow);
-            }
-            else if (debuffWindow != null && debuffWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Aiding", debuffWindow);
-            }
-            else
-            {
-                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\DocAidingView.xml",
-                    windowSize: new Rect(0, 0, 270, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                aidingWindow.Show(true);
             }
         }
 

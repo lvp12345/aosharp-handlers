@@ -36,15 +36,12 @@ namespace CombatHandler.Engi
 
         public static Window petWindow;
         public static Window buffWindow;
-        public static Window aidingWindow;
 
-        public static View _aidView;
         public static View _buffView;
         public static View _petView;
 
         private static Settings buff = new Settings("Buffs");
         private static Settings pet = new Settings("Pets");
-        private static Settings aid = new Settings("Aiding");
 
         public static string PluginDirectory;
 
@@ -71,7 +68,6 @@ namespace CombatHandler.Engi
 
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
 
-            SettingsController.RegisterSettingsWindow("Aiding", pluginDir + "\\UI\\EngineerAidingView.xml", aid);
             SettingsController.RegisterSettingsWindow("Buffs", pluginDir + "\\UI\\EngineerBuffsView.xml", buff);
             SettingsController.RegisterSettingsWindow("Pets", pluginDir + "\\UI\\EngineerPetsView.xml", pet);
 
@@ -158,16 +154,6 @@ namespace CombatHandler.Engi
                     buffWindow.AppendTab("Pets", _petView);
                 }
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                if (_petView == null)
-                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPetsView.xml");
-
-                if (!aidingWindow.Views.Contains(_petView))
-                {
-                    aidingWindow.AppendTab("Pets", _petView);
-                }
-            }
             else
             {
                 petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\EngineerPetsView.xml",
@@ -191,16 +177,6 @@ namespace CombatHandler.Engi
                     petWindow.AppendTab("Buffs", _buffView);
                 }
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                if (_buffView == null)
-                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerBuffsView.xml");
-
-                if (!aidingWindow.Views.Contains(_buffView))
-                {
-                    aidingWindow.AppendTab("Buffs", _buffView);
-                }
-            }
             else
             {
                 buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\EngineerBuffsView.xml",
@@ -212,51 +188,12 @@ namespace CombatHandler.Engi
             }
         }
 
-        private void AidingView(object s, ButtonBase button)
-        {
-            if (petWindow != null && petWindow.IsValid)
-            {
-                if (_aidView == null)
-                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerAidingView.xml");
-
-                if (!petWindow.Views.Contains(_aidView))
-                {
-                    petWindow.AppendTab("Aiding", _aidView);
-                }
-            }
-            else if (buffWindow != null && buffWindow.IsValid)
-            {
-                if (_aidView == null)
-                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerAidingView.xml");
-
-                if (!buffWindow.Views.Contains(_aidView))
-                {
-                    buffWindow.AppendTab("Aiding", _aidView);
-                }
-            }
-            else
-            {
-                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\EngineerAidingView.xml",
-                    windowSize: new Rect(0, 0, 270, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                aidingWindow.Show(true);
-            }
-        }
-
         protected override void OnUpdate(float deltaTime)
         {
             SynchronizePetCombatStateWithOwner();
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
-                {
-                    helpView.Tag = SettingsController.settingsWindow;
-                    helpView.Clicked = AidingView;
-                }
-
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                 {
                     petView.Tag = SettingsController.settingsWindow;

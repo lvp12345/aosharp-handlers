@@ -22,10 +22,8 @@ namespace Desu
         public static Window debuffWindow;
         public static Window petWindow;
         public static Window calmingWindow;
-        public static Window aidingWindow;
         public static Window procWindow;
 
-        public static View _aidView;
         public static View _buffView;
         public static View _debuffView;
         public static View _calmView;
@@ -36,7 +34,6 @@ namespace Desu
         private static Settings debuff = new Settings("Debuffs");
         private static Settings calm = new Settings("Calming");
         private static Settings pet = new Settings("Pets");
-        private static Settings aid = new Settings("Aiding");
         private static Settings proc = new Settings("Procs");
 
         public static string PluginDirectory;
@@ -82,7 +79,6 @@ namespace Desu
 
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
-            SettingsController.RegisterSettingsWindow("Aiding", pluginDir + "\\UI\\BureaucratAidingView.xml", aid);
             SettingsController.RegisterSettingsWindow("Buffs", pluginDir + "\\UI\\BureaucratBuffsView.xml", buff);
             SettingsController.RegisterSettingsWindow("Pets", pluginDir + "\\UI\\BureaucratPetsView.xml", pet);
             SettingsController.RegisterSettingsWindow("Debuffs", pluginDir + "\\UI\\BureaucratDebuffsView.xml", debuff);
@@ -222,17 +218,6 @@ namespace Desu
                     calmingWindow.AppendTab("Pets", _petView);
                 }
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                if (_petView == null)
-                    _petView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetsView.xml");
-
-                if (!aidingWindow.Views.Contains(_petView))
-                {
-                    aidingWindow.AppendTab("Pets", _petView);
-                }
-                SettingsController.AppendSettingsTab("Pets", aidingWindow);
-            }
             else
             {
                 petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\BureaucratPetsView.xml",
@@ -286,16 +271,6 @@ namespace Desu
                     calmingWindow.AppendTab("Buffs", _buffView);
                 }
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                if (_buffView == null)
-                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratBuffsView.xml");
-
-                if (!aidingWindow.Views.Contains(_buffView))
-                {
-                    aidingWindow.AppendTab("Buffs", _buffView);
-                }
-            }
             else
             {
                 buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\BureaucratBuffsView.xml",
@@ -337,16 +312,6 @@ namespace Desu
                 if (!calmingWindow.Views.Contains(_procView))
                 {
                     calmingWindow.AppendTab("Procs", _procView);
-                }
-            }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                if (_procView == null)
-                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratProcsView.xml");
-
-                if (!aidingWindow.Views.Contains(_procView))
-                {
-                    aidingWindow.AppendTab("Procs", _procView);
                 }
             }
             else
@@ -402,16 +367,6 @@ namespace Desu
                     calmingWindow.AppendTab("Debuffs", _debuffView);
                 }
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                if (_debuffView == null)
-                    _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratDebuffsView.xml");
-
-                if (!aidingWindow.Views.Contains(_debuffView))
-                {
-                    aidingWindow.AppendTab("Debuffs", _debuffView);
-                }
-            }
             else
             {
                 debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\BureaucratDebuffsView.xml",
@@ -455,16 +410,6 @@ namespace Desu
                     buffWindow.AppendTab("Calming", _calmView);
                 }
             }
-            else if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                if (_calmView == null)
-                    _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratCalmingView.xml");
-
-                if (!aidingWindow.Views.Contains(_calmView))
-                {
-                    aidingWindow.AppendTab("Calming", _calmView);
-                }
-            }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
                 if (_calmView == null)
@@ -486,69 +431,6 @@ namespace Desu
             }
         }
 
-        private void AidingView(object s, ButtonBase button)
-        {
-            if (petWindow != null && petWindow.IsValid)
-            {
-                if (_aidView == null)
-                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
-
-                if (!petWindow.Views.Contains(_aidView))
-                {
-                    petWindow.AppendTab("Aiding", _aidView);
-                }
-            }
-            else if (procWindow != null && procWindow.IsValid)
-            {
-                if (_aidView == null)
-                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
-
-                if (!procWindow.Views.Contains(_aidView))
-                {
-                    procWindow.AppendTab("Aiding", _aidView);
-                }
-            }
-            else if (buffWindow != null && buffWindow.IsValid)
-            {
-                if (_aidView == null)
-                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
-
-                if (!buffWindow.Views.Contains(_aidView))
-                {
-                    buffWindow.AppendTab("Aiding", _aidView);
-                }
-            }
-            else if (calmingWindow != null && calmingWindow.IsValid)
-            {
-                if (_aidView == null)
-                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
-
-                if (!calmingWindow.Views.Contains(_aidView))
-                {
-                    calmingWindow.AppendTab("Aiding", _aidView);
-                }
-            }
-            else if (debuffWindow != null && debuffWindow.IsValid)
-            {
-                if (_aidView == null)
-                    _aidView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratAidingView.xml");
-
-                if (!debuffWindow.Views.Contains(_aidView))
-                {
-                    debuffWindow.AppendTab("Aiding", _aidView);
-                }
-            }
-            else
-            {
-                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\BureaucratAidingView.xml",
-                    windowSize: new Rect(0, 0, 340, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                aidingWindow.Show(true);
-            }
-        }
-
         private void OnZoned(object s, EventArgs e)
         {
             ResetTrimmers();
@@ -560,12 +442,6 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
-                {
-                    helpView.Tag = SettingsController.settingsWindow;
-                    helpView.Clicked = AidingView;
-                }
-
                 if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
                 {
                     calmView.Tag = SettingsController.settingsWindow;

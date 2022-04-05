@@ -17,8 +17,6 @@ namespace Desu
         public static string PluginDirectory;
 
         public static Window buffWindow;
-        public static Window aidingWindow;
-
         public KeeperCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("NanoAura", false);
@@ -34,7 +32,6 @@ namespace Desu
             RegisterSettingsWindow("Keeper Handler", "KeeperSettingsView.xml");
 
             RegisterSettingsWindow("Buffs", "KeeperBuffsView.xml");
-            RegisterSettingsWindow("Aiding", "KeeperAidingView.xml");
 
 
             RegisterPerkProcessors();
@@ -74,36 +71,12 @@ namespace Desu
 
         private void BuffView(object s, ButtonBase button)
         {
-            if (aidingWindow != null && aidingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Buffs", aidingWindow);
-            }
-            else
-            {
-                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\KeeperBuffsView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+            buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\KeeperBuffsView.xml",
+                windowSize: new Rect(0, 0, 240, 345),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-                buffWindow.Show(true);
-            }
-        }
-
-        private void AidingView(object s, ButtonBase button)
-        {
-            if (buffWindow != null && buffWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Aiding", buffWindow);
-            }
-            else
-            {
-                aidingWindow = Window.CreateFromXml("Aiding", PluginDirectory + "\\UI\\KeeperAidingView.xml",
-                    windowSize: new Rect(0, 0, 270, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                aidingWindow.Show(true);
-            }
+            buffWindow.Show(true);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -143,12 +116,6 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("AidingView", out Button helpView))
-                {
-                    helpView.Tag = SettingsController.settingsWindow;
-                    helpView.Clicked = AidingView;
-                }
-
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;

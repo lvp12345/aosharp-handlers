@@ -21,7 +21,6 @@ namespace Helper
 
         public static View followView;
         public static View assistView;
-        public static View aidView;
 
         public static string HelperAssistPlayer = String.Empty;
         public static string HelperFollowPlayer = String.Empty;

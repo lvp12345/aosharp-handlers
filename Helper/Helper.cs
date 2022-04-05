@@ -58,11 +58,11 @@ namespace Helper
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        private static AOSharp.Core.Settings settings = new AOSharp.Core.Settings("Helper");
+        private static Settings settings = new Settings("Helper");
 
-        private static AOSharp.Core.Settings assist = new AOSharp.Core.Settings("Assist");
-        private static AOSharp.Core.Settings follow = new AOSharp.Core.Settings("Follow");
-        private static AOSharp.Core.Settings info = new AOSharp.Core.Settings("Info");
+        private static Settings assist = new Settings("Assist");
+        private static Settings follow = new Settings("Follow");
+        private static Settings info = new Settings("Info");
 
         private static Item _bagItem;
 
@@ -100,26 +100,30 @@ namespace Helper
 
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
-            settings.AddVariable("Follow", false);
-            settings.AddVariable("OSFollow", false);
-            settings.AddVariable("NavFollow", false);
-            settings.AddVariable("AssistPlayer", false);
+            follow.AddVariable("FollowSelection", (int)FollowSelection.None);
+            assist.AddVariable("AttackSelection", (int)AttackSelection.Sync);
+
+            //settings.AddVariable("Follow", false);
+            //settings.AddVariable("OSFollow", false);
+            //settings.AddVariable("NavFollow", false);
+
+            //settings.AddVariable("AssistPlayer", false);
 
             settings.AddVariable("AutoSit", true);
 
             settings.AddVariable("SyncMove", false);
             settings.AddVariable("SyncUse", true);
-            settings.AddVariable("SyncAttack", true);
+            //settings.AddVariable("SyncAttack", true);
             settings.AddVariable("SyncChat", false);
             settings.AddVariable("SyncTrade", false);
 
             settings.AddVariable("MorphPathing", false);
             settings.AddVariable("Db3Shapes", false);
 
-            settings["Follow"] = false;
-            settings["OSFollow"] = false;
-            settings["NavFollow"] = false;
-            settings["SyncAttack"] = true;
+            //settings["Follow"] = false;
+            //settings["OSFollow"] = false;
+            //settings["NavFollow"] = false;
+            //settings["SyncAttack"] = true;
 
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
@@ -148,7 +152,6 @@ namespace Helper
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
-
             SettingsController.RegisterSettingsWindow("Helper", pluginDir + "\\UI\\HelperSettingWindow.xml", settings);
 
             SettingsController.RegisterSettingsWindow("Assist", pluginDir + "\\UI\\HelperAssistView.xml", assist);
@@ -171,20 +174,20 @@ namespace Helper
             Chat.RegisterCommand("yalm", YalmCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
 
-            Chat.RegisterCommand("bags", (string command, string[] param, ChatWindow chatWindow) =>
-            {
-                List<Item> bags = Inventory.Items
-                .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                .ToList();
+            //Chat.RegisterCommand("bags", (string command, string[] param, ChatWindow chatWindow) =>
+            //{
+            //    List<Item> bags = Inventory.Items
+            //    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+            //    .ToList();
 
-                Chat.WriteLine($"{bags.Count()}");
+            //    Chat.WriteLine($"{bags.Count()}");
 
-                foreach (Item bag in bags)
-                {
-                    bag.Use();
-                    bag.Use();
-                }
-            });
+            //    foreach (Item bag in bags)
+            //    {
+            //        bag.Use();
+            //        bag.Use();
+            //    }
+            //});
 
             Chat.RegisterCommand("doc", DocTarget);
 
@@ -226,12 +229,7 @@ namespace Helper
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
-            //Only the active window will issue commands
-            if (!IsActiveCharacter())
-                return;
-
-            if (n3Msg.Identity != DynelManager.LocalPlayer.Identity)
-                return;
+            if (!IsActiveCharacter() || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
 
             if (n3Msg.N3MessageType == N3MessageType.CharDCMove)
             {
@@ -247,8 +245,7 @@ namespace Helper
                 }
                 else
                 {
-                    if (!settings["SyncMove"].AsBool())
-                        return;
+                    if (!settings["SyncMove"].AsBool()) { return; }
 
                     IPCChannel.Broadcast(new MoveMessage()
                     {
@@ -261,8 +258,7 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.Trade)
             {
-                if (!settings["SyncTrade"].AsBool())
-                    return;
+                if (!settings["SyncTrade"].AsBool()) { return; }
 
                 TradeMessage charTradeIpcMsg = (TradeMessage)n3Msg;
 
@@ -290,13 +286,11 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
             {
-                if (!settings["SyncMove"].AsBool())
-                    return;
+                if (!settings["SyncMove"].AsBool()) { return; }
 
                 CharacterActionMessage charActionMsg = (CharacterActionMessage)n3Msg;
 
-                if (charActionMsg.Action != CharacterActionType.StandUp)
-                    return;
+                if (charActionMsg.Action != CharacterActionType.StandUp) { return; }
 
                 IPCChannel.Broadcast(new MoveMessage()
                 {
@@ -314,22 +308,16 @@ namespace Helper
                     Target = lookAtMsg.Target
                 });
             }
-            else if (n3Msg.N3MessageType == N3MessageType.Attack)
+            else if (n3Msg.N3MessageType == N3MessageType.Attack && AttackSelection.Sync == (AttackSelection)settings["AttackSelection"].AsInt32())
             {
-                if (!settings["SyncAttack"].AsBool())
-                    return;
-
                 AttackMessage attackMsg = (AttackMessage)n3Msg;
                 IPCChannel.Broadcast(new AttackIPCMessage()
                 {
                     Target = attackMsg.Target
                 });
             }
-            else if (n3Msg.N3MessageType == N3MessageType.StopFight)
+            else if (n3Msg.N3MessageType == N3MessageType.StopFight && AttackSelection.Sync == (AttackSelection)settings["AttackSelection"].AsInt32())
             {
-                if (!settings["SyncAttack"].AsBool())
-                    return;
-
                 StopFightMessage lookAtMsg = (StopFightMessage)n3Msg;
                 IPCChannel.Broadcast(new StopAttackIPCMessage());
             }
@@ -410,10 +398,8 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.KnubotOpenChatWindow)
             {
-                if (!settings["SyncChat"].AsBool())
-                {
-                    return;
-                }
+                if (!settings["SyncChat"].AsBool()) { return; }
+
                 KnuBotOpenChatWindowMessage n3OpenChatMessage = (KnuBotOpenChatWindowMessage)n3Msg;
                 IPCChannel.Broadcast(new NpcChatOpenMessage()
                 {
@@ -422,10 +408,8 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.KnubotCloseChatWindow)
             {
-                if (!settings["SyncChat"].AsBool())
-                {
-                    return;
-                }
+                if (!settings["SyncChat"].AsBool()) { return; }
+
                 KnuBotCloseChatWindowMessage n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
                 IPCChannel.Broadcast(new NpcChatCloseMessage()
                 {
@@ -434,10 +418,8 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.KnubotAnswer)
             {
-                if (!settings["SyncChat"].AsBool())
-                {
-                    return;
-                }
+                if (!settings["SyncChat"].AsBool()) { return; }
+
                 KnuBotAnswerMessage n3AnswerMsg = (KnuBotAnswerMessage)n3Msg;
                 IPCChannel.Broadcast(new NpcChatAnswerMessage()
                 {
@@ -450,6 +432,169 @@ namespace Helper
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (assistWindow != null && assistWindow.IsValid)
+            {
+                assistWindow.FindView("FollowNamedCharacter", out TextInputView textinput1);
+                assistWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
+                assistWindow.FindView("NavFollowDistanceBox", out TextInputView textinput3);
+                assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput4);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
+                        SettingsController.HelperFollowPlayer = textinput1.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput2.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput2.Text;
+                        SettingsController.HelperNavFollowPlayer = textinput2.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput3 != null && textinput3.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput3.Text, out int rangeValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
+                            SettingsController.HelperNavFollowDistance = rangeValue;
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput4 != null && textinput4.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput4.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput4.Text;
+                        SettingsController.HelperAssistPlayer = textinput4.Text;
+                        Config.Save();
+                    }
+                }
+            }
+
+            if (followWindow != null && followWindow.IsValid)
+            {
+                followWindow.FindView("FollowNamedCharacter", out TextInputView textinput1);
+                followWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
+                followWindow.FindView("NavFollowDistanceBox", out TextInputView textinput3);
+                followWindow.FindView("AssistNamedCharacter", out TextInputView textinput4);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
+                        SettingsController.HelperFollowPlayer = textinput1.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput2.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput2.Text;
+                        SettingsController.HelperNavFollowPlayer = textinput2.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput3 != null && textinput3.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput3.Text, out int rangeValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
+                            SettingsController.HelperNavFollowDistance = rangeValue;
+                            Config.Save();
+                        }
+                    }
+                }
+
+                if (textinput4 != null && textinput4.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput4.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput4.Text;
+                        SettingsController.HelperAssistPlayer = textinput4.Text;
+                        Config.Save();
+                    }
+                }
+            }
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int channelValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        {
+                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
+                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
+                            SettingsController.HelperChannel = channelValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
+                if (SettingsController.settingsWindow.FindView("HelperInfoView", out Button infoView))
+                {
+                    infoView.Tag = SettingsController.settingsWindow;
+                    infoView.Clicked = InfoView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("HelperFollowView", out Button followView))
+                {
+                    followView.Tag = SettingsController.settingsWindow;
+                    followView.Clicked = FollowView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("HelperAssistView", out Button assistView))
+                {
+                    assistView.Tag = SettingsController.settingsWindow;
+                    assistView.Clicked = AssistView;
+                }
+            }
+
+            if (SettingsController.HelperChannel == String.Empty)
+            {
+                SettingsController.HelperChannel = Config.IPCChannel.ToString();
+            }
+
+            if (SettingsController.HelperAssistPlayer == String.Empty)
+            {
+                SettingsController.HelperAssistPlayer = Config.AssistPlayer;
+            }
+
+            if (SettingsController.HelperFollowPlayer == String.Empty)
+            {
+                SettingsController.HelperFollowPlayer = Config.FollowPlayer;
+            }
+
+            if (SettingsController.HelperNavFollowPlayer == String.Empty)
+            {
+                SettingsController.HelperNavFollowPlayer = Config.NavFollowPlayer;
+            }
+
+            if (SettingsController.HelperNavFollowDistance != Config.NavFollowDistance)
+            {
+                SettingsController.HelperNavFollowDistance = Config.NavFollowDistance;
+            }
+
             if (!OpenBackpacks)
             {
                 List<Item> bags = Inventory.Items
@@ -572,14 +717,15 @@ namespace Helper
                 _useTimer = Time.NormalTime;
             }
 
-            if (settings["AssistPlayer"].AsBool() && Time.NormalTime > _assistTimer + 1)
+            if (AttackSelection.Assist == (AttackSelection)assist["AttackSelection"].AsInt32()
+                && Time.NormalTime > _assistTimer + 1)
             {
-                if (settings["SyncAttack"].AsBool())
-                {
-                    settings["SyncAttack"] = false;
-                    settings["AssistPlayer"] = false;
-                    Chat.WriteLine($"Can only have one form of sync attack active at once.");
-                }
+                //if (settings["SyncAttack"].AsBool())
+                //{
+                //    settings["SyncAttack"] = false;
+                //    settings["AssistPlayer"] = false;
+                //    Chat.WriteLine($"Can only have one form of sync attack active at once.");
+                //}
 
                 SimpleChar identity = DynelManager.Characters
                     .Where(c => SettingsController.HelperAssistPlayer != String.Empty)
@@ -613,15 +759,16 @@ namespace Helper
                 }
             }
 
-            if (IsActiveCharacter() && settings["Follow"].AsBool() && Time.NormalTime > _followTimer + 1)
+            if (FollowSelection.LeadFollow == (FollowSelection)follow["FollowSelection"].AsInt32()
+                && Time.NormalTime > _followTimer + 1)
             {
-                if (settings["OSFollow"].AsBool() || settings["NavFollow"].AsBool())
-                {
-                    settings["OSFollow"] = false;
-                    settings["Follow"] = false;
-                    settings["NavFollow"] = false;
-                    Chat.WriteLine($"Can only have one follow active at once.");
-                }
+                //if (settings["OSFollow"].AsBool() || settings["NavFollow"].AsBool())
+                //{
+                //    settings["OSFollow"] = false;
+                //    settings["Follow"] = false;
+                //    settings["NavFollow"] = false;
+                //    Chat.WriteLine($"Can only have one follow active at once.");
+                //}
 
                 IPCChannel.Broadcast(new FollowMessage()
                 {
@@ -630,23 +777,22 @@ namespace Helper
                 _followTimer = Time.NormalTime;
             }
 
-            if (settings["NavFollow"].AsBool() && Time.NormalTime > _followTimer + 1)
+            if (FollowSelection.NavFollow == (FollowSelection)follow["FollowSelection"].AsInt32()
+                && Time.NormalTime > _followTimer + 1)
             {
-                if (settings["Follow"].AsBool())
-                {
-                    settings["OSFollow"] = false;
-                    settings["Follow"] = false;
-                    settings["NavFollow"] = false;
-                    Chat.WriteLine($"Can only have one follow active at once.");
-                }
+                //if (settings["Follow"].AsBool() || settings["OSFollow"].AsBool())
+                //{
+                //    settings["OSFollow"] = false;
+                //    settings["Follow"] = false;
+                //    settings["NavFollow"] = false;
+                //    Chat.WriteLine($"Can only have one follow active at once.");
+                //}
 
                 Dynel identity = DynelManager.AllDynels
                     .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
                     .Where(x => SettingsController.HelperNavFollowPlayer != String.Empty)
                     .Where(x => x.Name == SettingsController.HelperNavFollowPlayer)
                     .FirstOrDefault();
-
-                if (identity == null) { return; }
 
                 if (identity != null)
                 {
@@ -664,15 +810,9 @@ namespace Helper
                 }
             }
 
-            if (settings["OSFollow"].AsBool() && Time.NormalTime > _followTimer + 1)
+            if (FollowSelection.OSFollow == (FollowSelection)follow["FollowSelection"].AsInt32()
+                && Time.NormalTime > _followTimer + 1)
             {
-                if (settings["Follow"].AsBool())
-                {
-                    settings["OSFollow"] = false;
-                    settings["Follow"] = false;
-                    Chat.WriteLine($"Can only have one follow active at once.");
-                }
-
                 if (SettingsController.HelperFollowPlayer != String.Empty)
                 {
                     Dynel identity = DynelManager.AllDynels
@@ -680,8 +820,6 @@ namespace Helper
                         .Where(x => SettingsController.HelperFollowPlayer != String.Empty)
                         .Where(x => x.Name == SettingsController.HelperFollowPlayer)
                         .FirstOrDefault();
-
-                    if (identity == null) { return; }
 
                     if (identity != null)
                     {
@@ -696,170 +834,6 @@ namespace Helper
                         _followTimer = Time.NormalTime;
                     }
                 }
-            }
-
-            if (assistWindow != null && assistWindow.IsValid)
-            {
-                assistWindow.FindView("FollowNamedCharacter", out TextInputView textinput1);
-                assistWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                assistWindow.FindView("NavFollowDistanceBox", out TextInputView textinput3);
-                assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput4);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
-                        SettingsController.HelperFollowPlayer = textinput1.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput2.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput2.Text;
-                        SettingsController.HelperNavFollowPlayer = textinput2.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput3 != null && textinput3.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput3.Text, out int rangeValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
-                            SettingsController.HelperNavFollowDistance = rangeValue;
-                            Config.Save();
-                        }
-                    }
-                }
-                if (textinput4 != null && textinput4.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput4.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput4.Text;
-                        SettingsController.HelperAssistPlayer = textinput4.Text;
-                        Config.Save();
-                    }
-                }
-            }
-
-            if (followWindow != null && followWindow.IsValid)
-            {
-                followWindow.FindView("FollowNamedCharacter", out TextInputView textinput1);
-                followWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                followWindow.FindView("NavFollowDistanceBox", out TextInputView textinput3);
-                followWindow.FindView("AssistNamedCharacter", out TextInputView textinput4);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
-                        SettingsController.HelperFollowPlayer = textinput1.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput2.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput2.Text;
-                        SettingsController.HelperNavFollowPlayer = textinput2.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput3 != null && textinput3.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput3.Text, out int rangeValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
-                            SettingsController.HelperNavFollowDistance = rangeValue;
-                            Config.Save();
-                        }
-                    }
-                }
-
-                if (textinput4 != null && textinput4.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput4.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput4.Text;
-                        SettingsController.HelperAssistPlayer = textinput4.Text;
-                        Config.Save();
-                    }
-                }
-            }
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
-            {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput1.Text, out int channelValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
-                        {
-                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
-                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
-                            SettingsController.HelperChannel = channelValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-
-
-                if (SettingsController.settingsWindow.FindView("HelperInfoView", out Button infoView))
-                {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("HelperFollowView", out Button followView))
-                {
-                    followView.Tag = SettingsController.settingsWindow;
-                    followView.Clicked = FollowView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("HelperAssistView", out Button assistView))
-                {
-                    assistView.Tag = SettingsController.settingsWindow;
-                    assistView.Clicked = AssistView;
-                }
-            }
-
-            if (SettingsController.HelperChannel == String.Empty)
-            {
-                SettingsController.HelperChannel = Config.IPCChannel.ToString();
-            }
-
-            if (SettingsController.HelperAssistPlayer == String.Empty)
-            {
-                SettingsController.HelperAssistPlayer = Config.AssistPlayer;
-            }
-
-            if (SettingsController.HelperFollowPlayer == String.Empty)
-            {
-                SettingsController.HelperFollowPlayer = Config.FollowPlayer;
-            }
-
-            if (SettingsController.HelperNavFollowPlayer == String.Empty)
-            {
-                SettingsController.HelperNavFollowPlayer = Config.NavFollowPlayer;
-            }
-
-            if (SettingsController.HelperNavFollowDistance != Config.NavFollowDistance)
-            {
-                SettingsController.HelperNavFollowDistance = Config.NavFollowDistance;
             }
         }
 
@@ -992,8 +966,6 @@ namespace Helper
 
         private void OnJumpMessage(int sender, IPCMessage msg)
         {
-
-            //Only followers will act on commands
             if (IsActiveWindow)
                 return;
 
@@ -1010,8 +982,6 @@ namespace Helper
 
         private void OnMoveMessage(int sender, IPCMessage msg)
         {
-
-            //Only followers will act on commands
             if (IsActiveWindow)
                 return;
 
@@ -1030,7 +1000,6 @@ namespace Helper
 
         private void OnTargetMessage(int sender, IPCMessage msg)
         {
-
             if (IsActiveWindow)
                 return;
 
@@ -1043,7 +1012,6 @@ namespace Helper
 
         private void OnAttackMessage(int sender, IPCMessage msg)
         {
-
             if (IsActiveWindow)
                 return;
 
@@ -1073,7 +1041,6 @@ namespace Helper
 
         private void OnStopAttackMessage(int sender, IPCMessage msg)
         {
-
             if (IsActiveWindow)
                 return;
 
@@ -1101,14 +1068,7 @@ namespace Helper
 
         private void OnUseItemMessage(int sender, IPCMessage msg)
         {
-            if (!settings["SyncUse"].AsBool())
-                return;
-
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
+            if (!settings["SyncUse"].AsBool() || IsActiveWindow || Game.IsZoning) { return; }
 
             UsableMessage usableMsg = (UsableMessage)msg;
 
@@ -1253,16 +1213,11 @@ namespace Helper
         private void OnUseMessage(int sender, IPCMessage msg)
         {
 
-            if (/*!Team.IsInTeam || */IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
+            if (IsActiveWindow || Game.IsZoning) { return; }
 
             UseMessage useMsg = (UseMessage)msg;
             //DynelManager.GetDynel<SimpleItem>(useMsg.Target)?.Use();
-            if (useMsg.PfId != Playfield.ModelIdentity.Instance)
-                return;
+            if (useMsg.PfId != Playfield.ModelIdentity.Instance) { return; }
 
             useDynel = useMsg.Target;
         }
@@ -1295,77 +1250,56 @@ namespace Helper
         private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
+            {
                 settings["SyncUse"] = !settings["SyncUse"].AsBool();
-
-            //if (param.Length == 0 && settings["SyncUse"].AsBool())
-            //{
-            //    settings["SyncUse"] = false;
-            //    Chat.WriteLine($"Sync use stopped.");
-            //    return;
-            //}
-            //if (param.Length == 0 && !settings["SyncUse"].AsBool())
-            //{
-            //    settings["SyncUse"] = true;
-            //    Chat.WriteLine($"Sync use started.");
-            //    return;
-            //}
+                Chat.WriteLine($"Sync use : {settings["SyncUse"].AsBool()}");
+            }
         }
 
         private void SyncChatSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
+            {
                 settings["SyncChat"] = !settings["SyncChat"].AsBool();
-
-            //if (param.Length == 0 && settings["SyncChat"].AsBool())
-            //{
-            //    settings["SyncChat"] = false;
-            //    Chat.WriteLine($"Sync chat stopped.");
-            //    return;
-            //}
-            //if (param.Length == 0 && !settings["SyncChat"].AsBool())
-            //{
-            //    settings["SyncChat"] = true;
-            //    Chat.WriteLine($"Sync chat started.");
-            //    return;
-            //}
+                Chat.WriteLine($"Sync chat : {settings["SyncChat"].AsBool()}");
+            }
         }
 
         private void SyncTradeSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
+            {
                 settings["SyncTrade"] = !settings["SyncTrade"].AsBool();
-
-            //if (param.Length == 0 && settings["SyncTrade"].AsBool())
-            //{
-            //    settings["SyncTrade"] = false;
-            //    Chat.WriteLine($"Sync trading disabled.");
-            //    return;
-            //}
-            //if (param.Length == 0 && !settings["SyncTrade"].AsBool())
-            //{
-            //    settings["SyncTrade"] = true;
-            //    Chat.WriteLine($"Sync trading enabled.");
-            //    return;
-            //}
+                Chat.WriteLine($"Sync trading : {settings["SyncTrade"].AsBool()}");
+            }
         }
 
         private void SyncSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
+            {
                 settings["SyncMove"] = !settings["SyncMove"].AsBool();
+                Chat.WriteLine($"Sync move : {settings["SyncMove"].AsBool()}");
+            }
+        }
 
-            //if (param.Length == 0 && settings["SyncMove"].AsBool())
-            //{
-            //    settings["SyncMove"] = false;
-            //    Chat.WriteLine($"Sync move stopped.");
-            //    return;
-            //}
-            //if (param.Length == 0 && !settings["SyncMove"].AsBool())
-            //{
-            //    settings["SyncMove"] = true;
-            //    Chat.WriteLine($"Sync move started.");
-            //    return;
-            //}
+
+        private void AutoSitSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                settings["AutoSit"] = !settings["AutoSit"].AsBool();
+                Chat.WriteLine($"Auto sit : {settings["AutoSit"].AsBool()}");
+            }
+        }
+
+        private void LeadFollowSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                settings["Follow"] = !settings["Follow"].AsBool();
+                Chat.WriteLine($"Lead follow : {settings["Follow"].AsBool()}");
+            }
         }
 
         private void YalmCommand(string command, string[] param, ChatWindow chatWindow)
@@ -1414,44 +1348,6 @@ namespace Helper
                     });
                 }
             }
-        }
-
-        private void AutoSitSwitch(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-                settings["AutoSit"] = !settings["AutoSit"].AsBool();
-
-            //if (param.Length == 0 && settings["AutoSit"].AsBool())
-            //{
-            //    settings["AutoSit"] = false;
-            //    Chat.WriteLine($"Auto sit stopped.");
-            //    return;
-            //}
-            //if (param.Length == 0 && !settings["AutoSit"].AsBool())
-            //{
-            //    settings["AutoSit"] = true;
-            //    Chat.WriteLine($"Auto sit started.");
-            //    return;
-            //}
-        }
-
-        private void LeadFollowSwitch(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-                settings["Follow"] = !settings["Follow"].AsBool();
-
-            //if (param.Length == 0 && settings["Follow"].AsBool())
-            //{
-            //    settings["Follow"] = false;
-            //    Chat.WriteLine($"Lead follow stopped.");
-            //    return;
-            //}
-            //if (param.Length == 0 && !settings["Follow"].AsBool())
-            //{
-            //    settings["Follow"] = true;
-            //    Chat.WriteLine($"Lead follow started.");
-            //    return;
-            //}
         }
 
         private void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
@@ -1635,8 +1531,6 @@ namespace Helper
                 {
                     if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
                         && DynelManager.LocalPlayer.MovementState != MovementState.Sit)
-                        //&& !DynelManager.LocalPlayer.Buffs.Contains(280488)
-                        //&& CanUseSitKit())
                     {
                         if (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
                         {
@@ -1793,8 +1687,6 @@ namespace Helper
                         windowStyle: WindowStyle.Default,
                         windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-                //SettingsController.assistView = View.CreateFromXml(PluginDirectory + "\\UI\\HelperAssistView.xml");
-
                 if (SettingsController.HelperFollowPlayer != String.Empty)
                 {
                     assistWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
@@ -1872,9 +1764,6 @@ namespace Helper
                         windowSize: new Rect(0, 0, 220, 345),
                         windowStyle: WindowStyle.Default,
                         windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-
-                //SettingsController.followView = View.CreateFromXml(PluginDirectory + "\\UI\\HelperFollowView.xml");
 
                 if (SettingsController.HelperAssistPlayer != String.Empty)
                 {
@@ -2041,6 +1930,15 @@ namespace Helper
             return 0;
         }
 
+        public enum FollowSelection
+        {
+            None, LeadFollow, OSFollow, NavFollow
+        }
+
+        public enum AttackSelection
+        {
+            None, Sync, Assist
+        }
 
         private static class RelevantNanos
         {

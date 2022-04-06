@@ -7,6 +7,7 @@
     <OptionCheckBox label="(S7) Guardian Calm" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CalmSector7" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="(12 man) LMN Calm" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Calm12Man" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="(POH/DB3) Root Colonels Hands/Fireballs Root " opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AoeRoot" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <Button name="BuffsView" label="Buffs" layout_borders="Rect(5,5,3,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>

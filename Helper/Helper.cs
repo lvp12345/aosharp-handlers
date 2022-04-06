@@ -308,16 +308,20 @@ namespace Helper
                     Target = lookAtMsg.Target
                 });
             }
-            else if (n3Msg.N3MessageType == N3MessageType.Attack && AttackSelection.Sync == (AttackSelection)settings["AttackSelection"].AsInt32())
+            else if (n3Msg.N3MessageType == N3MessageType.Attack )
             {
+                if (AttackSelection.Sync != (AttackSelection)assist["AttackSelection"].AsInt32()) { return; }
+
                 AttackMessage attackMsg = (AttackMessage)n3Msg;
                 IPCChannel.Broadcast(new AttackIPCMessage()
                 {
                     Target = attackMsg.Target
                 });
             }
-            else if (n3Msg.N3MessageType == N3MessageType.StopFight && AttackSelection.Sync == (AttackSelection)settings["AttackSelection"].AsInt32())
+            else if (n3Msg.N3MessageType == N3MessageType.StopFight)
             {
+                if (AttackSelection.Sync != (AttackSelection)assist["AttackSelection"].AsInt32()) { return; }
+
                 StopFightMessage lookAtMsg = (StopFightMessage)n3Msg;
                 IPCChannel.Broadcast(new StopAttackIPCMessage());
             }

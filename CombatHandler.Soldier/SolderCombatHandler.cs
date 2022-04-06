@@ -26,6 +26,8 @@ namespace Desu
             settings.AddVariable("Burst", false);
             settings.AddVariable("BurstTeam", false);
 
+            settings.AddVariable("AAOTeam", false);
+
             settings.AddVariable("Init", false);
             settings.AddVariable("InitTeam", false);
 
@@ -61,7 +63,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.HeavyComp, HeavyCompBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GenericBuff);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), TeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAOBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolMasteryBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), BurstBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
@@ -131,6 +133,30 @@ namespace Desu
         }
 
         #region Instanced Logic
+
+        private bool AAOBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("AAOTeam"))
+            {
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => !c.Buffs.Contains(NanoLine.AAOBuffs))
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
+                    .FirstOrDefault();
+
+                    if (teamMemberWithoutBuff != null)
+                    {
+                        actionTarget.Target = teamMemberWithoutBuff;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
 
         private bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

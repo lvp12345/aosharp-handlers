@@ -12,6 +12,7 @@
     <TextInputView name="ChannelBox" min_size="Point(60,14)" max_size="Point(60,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Auto sit" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__AutoSit" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Auto bags" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__AutoBags" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<OptionCheckBox label="Sync movement" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__SyncMove" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Sync using items" opt_category="AOSharp" opt_type="variant" opt_variable="Helper__SyncUse" layout_borders="Rect(10,1,5,1)"/>

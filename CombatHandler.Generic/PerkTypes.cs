@@ -184,7 +184,7 @@ namespace CombatHandler.Generic
             {PerkHash.LaserPaintTarget , PerkType.TARGETED_DAMAGE},
             {PerkHash.LayOnHands , PerkType.HEAL},
             {PerkHash.Leadership , PerkType.DISABLED},
-            {PerkHash.LegShot , PerkType.CUSTOM},
+            {PerkHash.LegShot , PerkType.OTHER},
             {PerkHash.LEProcAdventurerAesirAbsorption , PerkType.LE_PROC},
             {PerkHash.LEProcAdventurerBasicDressing , PerkType.LE_PROC},
             {PerkHash.LEProcAdventurerCharringBlow , PerkType.LE_PROC},
@@ -506,6 +506,6 @@ namespace CombatHandler.Generic
 
     enum PerkType
     {
-        SELF_BUFF, HEAL, NANO_HEAL, TARGETED_DAMAGE, DAMAGE_BUFF, GENERIC, LE_PROC, CUSTOM, PET_BUFF, DISABLED, CLEANSE, PET_HEAL, UNKNOWN
+        SELF_BUFF, HEAL, NANO_HEAL, TARGETED_DAMAGE, DAMAGE_BUFF, GENERIC, LE_PROC, CUSTOM, PET_BUFF, DISABLED, CLEANSE, PET_HEAL, UNKNOWN, OTHER
     }
 }

@@ -47,6 +47,8 @@ namespace Desu
             settings.AddVariable("NanoHealTeam", false);
             settings.AddVariable("EvadesTeam", false);
 
+            settings.AddVariable("LegShot", false);
+
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
             RegisterSettingsWindow("Buffs", "TraderBuffsView.xml");
@@ -57,6 +59,10 @@ namespace Desu
             RegisterPerkProcessor(PerkHash.LEProcTraderRigidLiquidation, LEProc);
             RegisterPerkProcessor(PerkHash.LEProcTraderDebtCollection, LEProc);
 
+            //Leg Shot
+            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+
+            //Perks
             RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
 
@@ -300,6 +306,13 @@ namespace Desu
             }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("LegShot")) { return false; }
+
+            return LegShotPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

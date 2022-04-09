@@ -66,6 +66,8 @@ namespace CombatHandler.Engi
             settings.AddVariable("SpamBlindAura", false);
             settings.AddVariable("SpamSnareAura", false);
 
+            settings.AddVariable("LegShot", false);
+
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
 
             SettingsController.RegisterSettingsWindow("Buffs", pluginDir + "\\UI\\EngineerBuffsView.xml", buff);
@@ -74,6 +76,9 @@ namespace CombatHandler.Engi
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, LEProc, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEngineerDroneMissiles, LEProc, CombatActionPriority.Low);
+
+            //Leg Shot
+            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolMasteryBuff);
@@ -253,6 +258,13 @@ namespace CombatHandler.Engi
             }
 
             return false;
+        }
+
+        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("LegShot")) { return false; }
+
+            return LegShotPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool ShouldSpamAoeSnare()

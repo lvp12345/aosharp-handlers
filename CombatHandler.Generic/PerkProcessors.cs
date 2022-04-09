@@ -28,12 +28,12 @@ namespace CombatHandler.Generic
                     return TargetedDamagePerk;
                 case PerkType.HEAL:
                     return HealPerk;
+                case PerkType.NANO_HEAL:
+                    return NanoPerk;
                 case PerkType.SELF_BUFF:
                     return SelfBuffPerk;
                 case PerkType.DAMAGE_BUFF:
                     return DamageBuffPerk;
-                case PerkType.SELF_NANO_HEAL:
-                case PerkType.TEAM_NANO_HEAL:
                 case PerkType.CLEANSE:
                 case PerkType.PET_BUFF:
                 case PerkType.PET_HEAL:
@@ -410,14 +410,35 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public bool SelfNanoHeal(PerkAction perkAction, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        public static bool NanoPerk(PerkAction perkAction, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingtarget == null)
-            {
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
                 return false;
+
+            // Prioritize keeping ourself alive
+            if (DynelManager.LocalPlayer.NanoPercent <= 70)
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
             }
 
-            return DynelManager.LocalPlayer.NanoPercent < 75;
+            // Try to keep our teammates alive if we're in a team
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.NanoPercent <= 75)
+                    .FirstOrDefault();
+
+                if (dyingTeamMember != null)
+                {
+                    actionTarget.Target = dyingTeamMember;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static bool TargetedDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

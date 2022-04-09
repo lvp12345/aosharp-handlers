@@ -22,7 +22,7 @@ namespace CombatHandler.Generic
         private static Dictionary<PerkHash, PerkType> BY_HASH = new Dictionary<PerkHash, PerkType>()
         {
             {PerkHash.AccelerateDecayingQuarks , PerkType.TARGETED_DAMAGE},
-            {PerkHash.AccessNotumSource , PerkType.TEAM_NANO_HEAL},
+            {PerkHash.AccessNotumSource , PerkType.NANO_HEAL},
             {PerkHash.AnnihilateNotumMolecules , PerkType.TARGETED_DAMAGE},
             {PerkHash.Antitrust , PerkType.TARGETED_DAMAGE},
             {PerkHash.ArmorPiercingShot , PerkType.TARGETED_DAMAGE},
@@ -368,7 +368,7 @@ namespace CombatHandler.Generic
             {PerkHash.MuzzleOverload , PerkType.TARGETED_DAMAGE},
             {PerkHash.MyOwnFortress , PerkType.TARGETED_DAMAGE},
             {PerkHash.NanoFeast , PerkType.TARGETED_DAMAGE},
-            {PerkHash.NanoHeal , PerkType.TEAM_NANO_HEAL},
+            {PerkHash.NanoHeal , PerkType.NANO_HEAL},
             {PerkHash.NanoShakes , PerkType.TARGETED_DAMAGE},
             {PerkHash.NanoTransmission , PerkType.DISABLED},
             {PerkHash.NapalmSpray , PerkType.TARGETED_DAMAGE},
@@ -377,7 +377,7 @@ namespace CombatHandler.Generic
             {PerkHash.NightKiller , PerkType.TARGETED_DAMAGE},
             {PerkHash.NocturnalStrike , PerkType.TARGETED_DAMAGE},
             {PerkHash.NotumOverflow , PerkType.TARGETED_DAMAGE},
-            {PerkHash.NotumShield , PerkType.TEAM_NANO_HEAL},
+            {PerkHash.NotumShield , PerkType.NANO_HEAL},
             {PerkHash.Numb , PerkType.TARGETED_DAMAGE},
             {PerkHash.Obliterate , PerkType.TARGETED_DAMAGE},
             {PerkHash.Opening , PerkType.TARGETED_DAMAGE},
@@ -417,7 +417,7 @@ namespace CombatHandler.Generic
             {PerkHash.RedDawn , PerkType.HEAL},
             {PerkHash.RedDusk , PerkType.TARGETED_DAMAGE},
             {PerkHash.RedeemLastWish , PerkType.SELF_BUFF},
-            {PerkHash.RegainNano , PerkType.SELF_NANO_HEAL},
+            {PerkHash.RegainNano , PerkType.NANO_HEAL},
             {PerkHash.ReinforceSlugs , PerkType.TARGETED_DAMAGE},
             {PerkHash.Reject , PerkType.TARGETED_DAMAGE},
             {PerkHash.Removal1 , PerkType.CLEANSE},
@@ -466,7 +466,7 @@ namespace CombatHandler.Generic
             {PerkHash.Symbiosis , PerkType.TARGETED_DAMAGE},
             {PerkHash.TackyHack , PerkType.TARGETED_DAMAGE},
             {PerkHash.TaintWounds , PerkType.TARGETED_DAMAGE},
-            {PerkHash.TapNotumSource , PerkType.SELF_NANO_HEAL},
+            {PerkHash.TapNotumSource , PerkType.NANO_HEAL},
             {PerkHash.TapVitae , PerkType.TARGETED_DAMAGE},
             {PerkHash.Taunt , PerkType.TARGETED_DAMAGE},
             {PerkHash.TauntBox , PerkType.DISABLED},
@@ -506,6 +506,6 @@ namespace CombatHandler.Generic
 
     enum PerkType
     {
-        SELF_BUFF, HEAL, TEAM_NANO_HEAL, SELF_NANO_HEAL, TARGETED_DAMAGE, DAMAGE_BUFF, GENERIC, LE_PROC, CUSTOM, PET_BUFF, DISABLED, CLEANSE, PET_HEAL, UNKNOWN
+        SELF_BUFF, HEAL, NANO_HEAL, TARGETED_DAMAGE, DAMAGE_BUFF, GENERIC, LE_PROC, CUSTOM, PET_BUFF, DISABLED, CLEANSE, PET_HEAL, UNKNOWN
     }
 }

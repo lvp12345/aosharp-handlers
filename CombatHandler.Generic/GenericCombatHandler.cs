@@ -234,12 +234,21 @@ namespace CombatHandler.Generic
             }
         }
 
+        public static bool LegShotPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null)
+                return false;
+
+            return true;
+        }
+
         protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Name == perk.Name) { return false; }
             }
+
             return true;
         }
 

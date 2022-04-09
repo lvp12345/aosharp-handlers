@@ -33,6 +33,8 @@ namespace Desu
 
             settings.AddVariable("NotumGrenades", false);
 
+            settings.AddVariable("LegShot", false);
+
             //settings.AddVariable("DamageTeam", false);
 
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
@@ -43,6 +45,9 @@ namespace Desu
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcSoldierGrazeJugularVein, LEProc);
             RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc);
+
+            //Leg Shot
+            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
@@ -230,6 +235,13 @@ namespace Desu
         private bool ARBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
+        }
+
+        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("LegShot")) { return false; }
+
+            return LegShotPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool NotumGrenades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

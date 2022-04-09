@@ -39,6 +39,7 @@ namespace CombatHandler.Generic
                 case PerkType.PET_HEAL:
                 case PerkType.DISABLED:
                 case PerkType.LE_PROC:
+                case PerkType.OTHER:
                     return null;
                 default:
                     Chat.WriteLine("Attempt to register unknown perk type for perk name: " + perkAction.Name);
@@ -53,7 +54,6 @@ namespace CombatHandler.Generic
             {PerkHash.InstallExplosiveDevice, InstallExplosiveDevice },
             {PerkHash.InstallNotumDepletionDevice, InstallNotumDepletionDevice },
             {PerkHash.QuickShot, QuickShot },
-            {PerkHash.LegShot, LegShot },
             {PerkHash.BattlegroupHeal1, BattleGroupHealPerk1 },
             {PerkHash.BattlegroupHeal2, BattleGroupHealPerk2 },
             {PerkHash.BattlegroupHeal3, BattleGroupHealPerk3 },
@@ -79,14 +79,6 @@ namespace CombatHandler.Generic
                 return false;
 
             return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
-        }
-
-        private static bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PerkAction.Find("Leg Shot", out PerkAction legshot) && !legshot.IsAvailable)
-                return false;
-
-            return LegShotPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private static bool QuickShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -445,26 +437,6 @@ namespace CombatHandler.Generic
         {
             actionTarget.ShouldSetTarget = true;
             return DamagePerk(perkAction, fightingTarget, ref actionTarget);
-        }
-
-        public static bool LegShotPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null)
-                return false;
-
-            if (fightingTarget.MaxHealth >= 1000000)
-            {
-                if (fightingTarget.Name == "Technological Officer Darwelsi")
-                    return false;
-
-                if (fightingTarget.Name == "Collector")
-                    return false;
-            }
-
-            if (fightingTarget.HealthPercent < 5)
-                return false;
-
-            return true;
         }
 
         public static bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

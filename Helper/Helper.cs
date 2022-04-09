@@ -110,6 +110,7 @@ namespace Helper
             //settings.AddVariable("AssistPlayer", false);
 
             settings.AddVariable("AutoSit", true);
+            settings.AddVariable("AutoBags", true);
 
             settings.AddVariable("SyncMove", false);
             settings.AddVariable("SyncUse", true);
@@ -209,21 +210,24 @@ namespace Helper
 
         private void OnZoned(object s, EventArgs e)
         {
-            Task.Factory.StartNew(
-                async () =>
-                {
-                    await Task.Delay(100);
-
-                    List<Item> bags = Inventory.Items
-                        .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                        .ToList();
-
-                    foreach (Item bag in bags)
+            if (settings["AutoBags"].AsBool())
+            {
+                Task.Factory.StartNew(
+                    async () =>
                     {
-                        bag.Use();
-                        bag.Use();
-                    }
-                });
+                        await Task.Delay(100);
+
+                        List<Item> bags = Inventory.Items
+                            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                            .ToList();
+
+                        foreach (Item bag in bags)
+                        {
+                            bag.Use();
+                            bag.Use();
+                        }
+                    });
+            }
         }
 
 
@@ -599,7 +603,7 @@ namespace Helper
                 SettingsController.HelperNavFollowDistance = Config.NavFollowDistance;
             }
 
-            if (!OpenBackpacks)
+            if (!OpenBackpacks && settings["AutoBags"].AsBool())
             {
                 List<Item> bags = Inventory.Items
                     .Where(c => c.UniqueIdentity.Type == IdentityType.Container)

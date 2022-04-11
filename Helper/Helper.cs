@@ -345,7 +345,7 @@ namespace Helper
                 }
                 else if (genericCmdMsg.Action == GenericCmdAction.Use && settings["SyncUse"].AsBool())
                 {
-                    if (Inventory.Find(genericCmdMsg.Target, out Item item) && !IsBackpack(item) && !IsOther(item))
+                    if (Inventory.Find(genericCmdMsg.Target, out Item item) && item.UniqueIdentity == Identity.None && !IsOther(item))
                     {
                         IPCChannel.Broadcast(new UsableMessage()
                         {
@@ -383,7 +383,7 @@ namespace Helper
                             Target = genericCmdMsg.Target
                         });
                     }
-                    else
+                    else 
                     {
                         foreach (Backpack bag in Inventory.Backpacks)
                         {
@@ -1088,14 +1088,30 @@ namespace Helper
             if (usableMsg.ItemLowId == 226308 || usableMsg.ItemLowId == 226290 || usableMsg.ItemLowId == 226291 || usableMsg.ItemLowId == 226307 || usableMsg.ItemLowId == 226288)
             {
                 Item NoviRings = Inventory.Items
-                .Where(c => c.Name.Contains("Pure Novictum Ring"))
-                .FirstOrDefault();
+                    .Where(c => c.Name.Contains("Pure Novictum Ring"))
+                    .FirstOrDefault();
 
                 if (NoviRings != null)
                 {
                     useItem = new Identity(IdentityType.Inventory, NoviRings.Slot.Instance);
                     useOnDynel = usableMsg.Target;
                     usableMsg.Target = Identity.None;
+                }
+                else
+                {
+                    foreach (Backpack bag in Inventory.Backpacks)
+                    {
+                        _bagItem = bag.Items
+                            .Where(c => c.Name.Contains("Pure Novictum Ring"))
+                            .FirstOrDefault();
+
+                        if (_bagItem != null)
+                        {
+                            useItem = _bagItem.Slot;
+                            useOnDynel = usableMsg.Target;
+                            usableMsg.Target = Identity.None;
+                        }
+                    }
                 }
             }
             if (usableMsg.ItemLowId == 226188 || usableMsg.ItemLowId == 226189 || usableMsg.ItemLowId == 226190 || usableMsg.ItemLowId == 226191 || usableMsg.ItemLowId == 226192)
@@ -1110,6 +1126,22 @@ namespace Helper
                     useOnDynel = usableMsg.Target;
                     usableMsg.Target = Identity.None;
                 }
+                else
+                {
+                    foreach (Backpack bag in Inventory.Backpacks)
+                    {
+                        _bagItem = bag.Items
+                            .Where(c => c.Name.Contains("Rimy Ring for"))
+                            .FirstOrDefault();
+
+                        if (_bagItem != null)
+                        {
+                            useItem = _bagItem.Slot;
+                            useOnDynel = usableMsg.Target;
+                            usableMsg.Target = Identity.None;
+                        }
+                    }
+                }
             }
             if (usableMsg.ItemLowId == 226065 || usableMsg.ItemLowId == 226066 || usableMsg.ItemLowId == 226067 || usableMsg.ItemLowId == 226068 || usableMsg.ItemLowId == 226069)
             {
@@ -1122,6 +1154,22 @@ namespace Helper
                     useItem = new Identity(IdentityType.Inventory, AchromRings.Slot.Instance);
                     useOnDynel = usableMsg.Target;
                     usableMsg.Target = Identity.None;
+                }
+                else
+                {
+                    foreach (Backpack bag in Inventory.Backpacks)
+                    {
+                        _bagItem = bag.Items
+                            .Where(c => c.Name.Contains("Achromic Ring for"))
+                            .FirstOrDefault();
+
+                        if (_bagItem != null)
+                        {
+                            useItem = _bagItem.Slot;
+                            useOnDynel = usableMsg.Target;
+                            usableMsg.Target = Identity.None;
+                        }
+                    }
                 }
             }
             if (usableMsg.ItemLowId == 226287 || usableMsg.ItemLowId == 226293 || usableMsg.ItemLowId == 226294 || usableMsg.ItemLowId == 226295 || usableMsg.ItemLowId == 226306)
@@ -1136,11 +1184,27 @@ namespace Helper
                     useOnDynel = usableMsg.Target;
                     usableMsg.Target = Identity.None;
                 }
+                else
+                {
+                    foreach (Backpack bag in Inventory.Backpacks)
+                    {
+                        _bagItem = bag.Items
+                            .Where(c => c.Name.Contains("Sanguine Ring for"))
+                            .FirstOrDefault();
+
+                        if (_bagItem != null)
+                        {
+                            useItem = _bagItem.Slot;
+                            useOnDynel = usableMsg.Target;
+                            usableMsg.Target = Identity.None;
+                        }
+                    }
+                }
             }
             if (usableMsg.ItemLowId == 226125 || usableMsg.ItemLowId == 226127 || usableMsg.ItemLowId == 226126 || usableMsg.ItemLowId == 226023 || usableMsg.ItemLowId == 226005)
             {
                 Item CaligRings = Inventory.Items
-                .Where(c => c.Name.Contains("Caliginous Ring "))
+                .Where(c => c.Name.Contains("Caliginous Ring"))
                 .FirstOrDefault();
 
                 if (CaligRings != null)
@@ -1148,6 +1212,22 @@ namespace Helper
                     useItem = new Identity(IdentityType.Inventory, CaligRings.Slot.Instance);
                     useOnDynel = usableMsg.Target;
                     usableMsg.Target = Identity.None;
+                }
+                else
+                {
+                    foreach (Backpack bag in Inventory.Backpacks)
+                    {
+                        _bagItem = bag.Items
+                            .Where(c => c.Name.Contains("Caliginous Ring"))
+                            .FirstOrDefault();
+
+                        if (_bagItem != null)
+                        {
+                            useItem = _bagItem.Slot;
+                            useOnDynel = usableMsg.Target;
+                            usableMsg.Target = Identity.None;
+                        }
+                    }
                 }
             }
             else

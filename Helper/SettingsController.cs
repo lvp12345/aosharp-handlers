@@ -17,7 +17,7 @@ namespace Helper
         private static bool IsCommandRegistered;
 
         public static Window settingsWindow;
-        public static View settingsView;
+        //public static View settingsView;
 
         public static View followView;
         public static View assistView;
@@ -108,7 +108,8 @@ namespace Helper
         public static void AppendSettingsTab(String settingsName, Window testWindow)
         {
             String settingsWindowXmlPath = settingsWindows[settingsName];
-            settingsView = View.CreateFromXml(settingsWindowXmlPath);
+            View settingsView = View.CreateFromXml(settingsWindowXmlPath);
+
             if (settingsView != null)
             {
                 testWindow.AppendTab(settingsName, settingsView);
@@ -116,6 +117,7 @@ namespace Helper
             }
             else
             {
+                Chat.WriteLine($"{settingsWindows[settingsName]}");
                 Chat.WriteLine("Failed to load settings schema from " + settingsWindowXmlPath);
             }
         }

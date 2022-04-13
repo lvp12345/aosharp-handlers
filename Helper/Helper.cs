@@ -674,13 +674,10 @@ namespace Helper
             if (settings["Db3Shapes"].AsBool() && Time.NormalTime > _shapeUsedTimer + 0.5)
             {
                 Dynel shape = DynelManager.AllDynels
-                    .Where(x => x.Identity.Type == IdentityType.Terminal)
-                    .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 5f)
-                    .Where(x => x.Name == "Triangle of Nano Power" || x.Name == "Cylinder of Speed"
-                    || x.Name == "Torus of Aim" || x.Name == "Square of Attack Power")
+                    .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 5f
+                        && (x.Name == "Triangle of Nano Power" || x.Name == "Cylinder of Speed"
+                    || x.Name == "Torus of Aim" || x.Name == "Square of Attack Power"))
                     .FirstOrDefault();
-
-                if (shape == null) { return; }
 
                 if (shape != null)
                 {

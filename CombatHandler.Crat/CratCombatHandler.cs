@@ -58,6 +58,7 @@ namespace Desu
 
             settings.AddVariable("NanoDeltaTeam", false);
 
+            settings.AddVariable("SyncPets", true);
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
 
@@ -438,7 +439,8 @@ namespace Desu
 
         protected override void OnUpdate(float deltaTime)
         {
-            SynchronizePetCombatStateWithOwner();
+            if (IsSettingEnabled("SyncPets"))
+                SynchronizePetCombatStateWithOwner();
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {

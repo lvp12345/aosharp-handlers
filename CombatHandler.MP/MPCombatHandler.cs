@@ -24,6 +24,7 @@ namespace Desu
 
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
+            settings.AddVariable("SyncPets", true);
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
             settings.AddVariable("MezzPet", false);

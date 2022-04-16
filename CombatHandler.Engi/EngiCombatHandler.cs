@@ -47,6 +47,7 @@ namespace CombatHandler.Engi
 
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
+            settings.AddVariable("SyncPets", true);
             settings.AddVariable("SpawnPets", true);
             settings.AddVariable("BuffPets", true);
             settings.AddVariable("HealPets", false);
@@ -195,7 +196,8 @@ namespace CombatHandler.Engi
 
         protected override void OnUpdate(float deltaTime)
         {
-            SynchronizePetCombatStateWithOwner();
+            if (IsSettingEnabled("SyncPets"))
+                SynchronizePetCombatStateWithOwner();
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {

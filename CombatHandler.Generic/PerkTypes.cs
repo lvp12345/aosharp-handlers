@@ -485,7 +485,7 @@ namespace CombatHandler.Generic
             {PerkHash.TremorHand , PerkType.TARGETED_DAMAGE},
             {PerkHash.TriangulateTarget , PerkType.TARGETED_DAMAGE},
             {PerkHash.TriggerHappy , PerkType.TARGETED_DAMAGE},
-            {PerkHash.TrollForm , PerkType.HEAL},
+            {PerkHash.TrollForm , PerkType.OTHER},
             {PerkHash.UnhallowedFury , PerkType.TARGETED_DAMAGE},
             {PerkHash.UnhallowedWrath , PerkType.TARGETED_DAMAGE},
             {PerkHash.UnsealedBlight , PerkType.DISABLED},

@@ -32,6 +32,8 @@ namespace Desu
             settings.AddVariable("PoHTaunt", false);
             settings.AddVariable("AOETaunt", false);
             settings.AddVariable("Absorbs", false);
+
+            settings.AddVariable("TrollForm", false);
             //settings.AddVariable("UseTauntTool", true);
 
             settings.AddVariable("OST", false);
@@ -45,6 +47,9 @@ namespace Desu
             //-------------LE procs-------------
             RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, LEProc, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, LEProc, CombatActionPriority.Low);
+
+            //Leg Shot
+            RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
             //Spells (Im not sure the spell lines are up to date to support the full line of SL mongos)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
@@ -210,6 +215,13 @@ namespace Desu
             }
 
             return false;
+        }
+
+        private bool TrollForm(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TrollForm")) { return false; }
+
+            return TrollFormPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

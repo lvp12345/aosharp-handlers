@@ -234,6 +234,14 @@ namespace CombatHandler.Generic
             }
         }
 
+        public static bool TrollFormPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null)
+                return false;
+
+            return true;
+        }
+
         public static bool LegShotPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null)

@@ -29,6 +29,7 @@ namespace Desu
         {
             settings.AddVariable("SingleTaunt", false);
             settings.AddVariable("OSTaunt", false);
+            settings.AddVariable("PoHTaunt", false);
             settings.AddVariable("AOETaunt", false);
             settings.AddVariable("Absorbs", false);
             //settings.AddVariable("UseTauntTool", true);
@@ -163,9 +164,23 @@ namespace Desu
                 }
             }
 
+            if (IsSettingEnabled("PoHTaunt"))
+            {
+                SimpleChar mob = DynelManager.NPCs
+                    .Where(c => c.Name == "Azdaja the Joyous" || c.Name == "The Awoken Nightmare, Phobettor")
+                    .FirstOrDefault();
+
+                if (mob != null)
+                {
+                    actionTarget.Target = mob;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
             if (!IsSettingEnabled("SingleTaunt")) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget != null
+            if (fightingTarget != null
                 && (DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh"
                 || DynelManager.LocalPlayer.FightingTarget.Name == "Collector"))
             {

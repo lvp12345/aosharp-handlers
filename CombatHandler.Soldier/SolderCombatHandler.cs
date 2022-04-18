@@ -6,13 +6,14 @@ using AOSharp.Core.UI;
 using System.Linq;
 using CombatHandler;
 using AOSharp.Common.GameData.UI;
+using System.Collections.Generic;
 
 namespace Desu
 {
     public class SoldCombathandler : GenericCombatHandler
     {
-        public const double singletauntrefresh = 8f;
-        private double _singletauntused;
+        public static double _singleTauntTick;
+        public static double _singleTaunt;
 
         public static Window buffWindow;
         public static Window tauntWindow;
@@ -22,6 +23,7 @@ namespace Desu
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SingleTaunt", false);
+            settings.AddVariable("OSTaunt", false);
 
             settings.AddVariable("Burst", false);
             settings.AddVariable("BurstTeam", false);
@@ -52,7 +54,7 @@ namespace Desu
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
-            RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt);
+            RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
             //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), DamageTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
@@ -253,27 +255,49 @@ namespace Desu
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
+            {
+                List<SimpleChar> mobs = DynelManager.NPCs
+                    .Where(c => c.IsAttacking && c.FightingTarget != null
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && IsNotFightingMe(c)
+                        && IsAttackingUs(c)
+                        && (c.FightingTarget.Profession != Profession.Enforcer
+                                || c.FightingTarget.Profession != Profession.Soldier
+                                || c.FightingTarget.Profession != Profession.MartialArtist))
+                    .ToList();
+
+                foreach (SimpleChar mob in mobs)
+                {
+                    if (mob != null)
+                    {
+                        _singleTauntTick = Time.NormalTime;
+                        actionTarget.Target = mob;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
             if (!IsSettingEnabled("SingleTaunt")) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
-
-            if (fightingTarget?.FightingTarget != null && fightingTarget?.FightingTarget.Profession == Profession.Enforcer) { return false; }
-
-            if (IsNotFightingMe(fightingTarget))
+            if (DynelManager.LocalPlayer.FightingTarget != null
+                && (DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh"
+                || DynelManager.LocalPlayer.FightingTarget.Name == "Collector"))
             {
-                actionTarget.Target = fightingTarget;
-                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
-            if (Time.NormalTime > _singletauntused + singletauntrefresh)
+            if (Time.NormalTime > _singleTaunt + 9)
             {
-                _singletauntused = Time.NormalTime;
-                actionTarget.Target = fightingTarget;
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.Target = fightingTarget;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;

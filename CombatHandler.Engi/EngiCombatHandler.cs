@@ -52,8 +52,6 @@ namespace CombatHandler.Engi
             settings.AddVariable("BuffPets", true);
             settings.AddVariable("HealPets", false);
 
-            settings.AddVariable("MastersBidding", false);
-
             settings.AddVariable("DivertHpTrimmer", true);
             settings.AddVariable("DivertOffTrimmer", true);
             settings.AddVariable("TauntTrimmer", true);
@@ -63,6 +61,7 @@ namespace CombatHandler.Engi
             settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
 
             settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.Off);
+            settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
 
             settings.AddVariable("SpamBlindAura", false);
             settings.AddVariable("SpamSnareAura", false);
@@ -119,6 +118,7 @@ namespace CombatHandler.Engi
 
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
+            RegisterSpellProcessor(RelevantNanos.SedativeInjectors, SedativeInjectors);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, PetDamage);
 
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticEnergyBox);
@@ -290,6 +290,39 @@ namespace CombatHandler.Engi
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffInitEngi(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PetProcSelection.MastersBidding != (PetProcSelection)settings["PetProcSelection"].AsInt32()) { return false; }
+
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
+
+            if (petToBuff != null)
+            {
+                spell.Cast(petToBuff.Character, true);
+            }
+
+            return false;
+        }
+        private bool SedativeInjectors(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PetProcSelection.SedativeInjectors != (PetProcSelection)settings["PetProcSelection"].AsInt32()) { return false; }
+
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
+
+            if (petToBuff != null)
+            {
+                spell.Cast(petToBuff.Character, true);
+            }
+
+            return false;
         }
 
         private bool ArmorAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -611,23 +644,6 @@ namespace CombatHandler.Engi
             return false;
         }
 
-        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            if (!IsSettingEnabled("MastersBidding")) { return false; }
-
-            Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
-
-            if (petToBuff != null)
-            {
-                spell.Cast(petToBuff.Character, true);
-            }
-
-            return false;
-        }
-
         protected bool CanTrim()
         {
             return _lastTrimTime + DelayBetweenTrims < Time.NormalTime;
@@ -686,6 +702,7 @@ namespace CombatHandler.Engi
             public const int CompositeAttribute = 223372;
             public const int CompositeNano = 223380;
             public const int MastersBidding = 268171;
+            public const int SedativeInjectors = 302254;
             public const int CompositeUtility = 287046;
             public const int CompositeRanged = 223348;
             public const int CompositeRangedSpec = 223364;
@@ -727,6 +744,11 @@ namespace CombatHandler.Engi
         {
             Off, Def
         }
+        public enum PetProcSelection
+        {
+            None, MastersBidding, SedativeInjectors
+        }
+
         public enum BuffingAuraSelection
         {
             Armor, Reflect, Damage, Shield

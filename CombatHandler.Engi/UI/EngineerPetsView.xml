@@ -9,7 +9,11 @@
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Heal Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealPets" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Masters Bidding" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MastersBidding" layout_borders="Rect(10,1,5,1)"/>
+    <OptionRadioButtonGroup label="Procs" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__PetProcSelection">
+      <RadioButton label="None" value="0"/>
+      <RadioButton label="Masters Bidding" value="1"/>
+      <RadioButton label="Sedative Injectors" value="2"/>
+    </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Perks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__PetPerkSelection">
       <RadioButton label="Off" value="0"/>

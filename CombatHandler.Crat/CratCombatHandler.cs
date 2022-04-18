@@ -894,7 +894,7 @@ namespace Desu
 
             SimpleChar target = DynelManager.NPCs
                 .Where(c => c.Name == "Flaming Vengeance" ||
-                c.Name == "Hand of the Colonel")
+                    c.Name == "Hand of the Colonel")
                 .Where(c => DoesNotHaveAoeRootRunning(c))
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                 .FirstOrDefault();

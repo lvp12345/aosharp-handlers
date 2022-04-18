@@ -14,14 +14,11 @@ namespace Desu
 {
     class EnfCombatHandler : GenericCombatHandler
     {
-        public const double absorbsrefresh = 8f;
-        public const double aoerefresh = 7.5f;
-        public const double aoerefreshost = 10f;
-        public const double singletauntrefresh = 8f;
-        private double _absorbsused;
-        private double _aoeused;
-        private double _aoeusedost;
-        private double _singletauntused;
+        public static double _absorbs;
+        public static double _aoeTaunt;
+        public static double _aoeTauntOst;
+        public static double _singleTaunt;
+        public static double _singleTauntTick;
 
         public static Window buffWindow;
         public static Window tauntWindow;
@@ -31,6 +28,7 @@ namespace Desu
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SingleTaunt", false);
+            settings.AddVariable("OSTaunt", false);
             settings.AddVariable("AOETaunt", false);
             settings.AddVariable("Absorbs", false);
             //settings.AddVariable("UseTauntTool", true);
@@ -49,10 +47,10 @@ namespace Desu
 
             //Spells (Im not sure the spell lines are up to date to support the full line of SL mongos)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AoeTaunt);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AoeTaunt, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChangeBuff);
-            RegisterSpellProcessor(RelevantNanos.FortifyBuffs, Fortify);
+            RegisterSpellProcessor(RelevantNanos.FortifyBuffs, Fortify, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
@@ -140,41 +138,60 @@ namespace Desu
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
+            if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
+            {
+                List<SimpleChar> mobs = DynelManager.NPCs
+                    .Where(c => c.IsAttacking && c.FightingTarget != null
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && IsNotFightingMe(c)
+                        && IsAttackingUs(c)
+                        && (c.FightingTarget.Profession != Profession.Enforcer
+                                || c.FightingTarget.Profession != Profession.Soldier
+                                || c.FightingTarget.Profession != Profession.MartialArtist))
+                    .ToList();
 
-            if (!IsSettingEnabled("SingleTaunt") || fightingTarget == null) { return false; }
+                foreach (SimpleChar mob in mobs)
+                {
+                    if (mob != null)
+                    {
+                        _singleTauntTick = Time.NormalTime;
+                        actionTarget.Target = mob;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
 
-            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+            if (!IsSettingEnabled("SingleTaunt")) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget != null 
+            if (DynelManager.LocalPlayer.FightingTarget != null
                 && (DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh"
                 || DynelManager.LocalPlayer.FightingTarget.Name == "Collector"))
             {
                 return true;
             }
 
-            //If our target has a different target than us we need to make sure we taunt
-            if (IsNotFightingMe(fightingTarget))
+            if (IsSettingEnabled("AOETaunt") && Time.NormalTime > _singleTaunt + 9)
             {
-                actionTarget.Target = fightingTarget;
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.Target = fightingTarget;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
-            if (IsSettingEnabled("AOETaunt") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _singletauntused + singletauntrefresh)
+            if (!IsSettingEnabled("AOETaunt"))
             {
-                _singletauntused = Time.NormalTime;
-                actionTarget.Target = fightingTarget;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
-            if (!IsSettingEnabled("AOETaunt") && Time.NormalTime > _singletauntused + singletauntrefresh)
-            {
-                _singletauntused = Time.NormalTime;
-                actionTarget.Target = fightingTarget;
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.Target = fightingTarget;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;
@@ -212,28 +229,26 @@ namespace Desu
 
         private bool Fortify(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
-
             if (!CanCast(spell)) { return false; }
 
-            if (IsSettingEnabled("OST") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _absorbsused + absorbsrefresh)
+            if (DynelManager.LocalPlayer.FightingTarget != null 
+                && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF)) { return false; }
+
+            List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
+
+            if (IsSettingEnabled("OST") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _absorbs + 8)
             {
-                _absorbsused = Time.NormalTime;
+                _absorbs = Time.NormalTime;
                 return true;
             }
 
             if (!IsSettingEnabled("Absorbs")) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF)) { return false; }
-
-            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
-
-
-            if (!IsSettingEnabled("OST") && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _absorbsused + absorbsrefresh)
+            if (!IsSettingEnabled("OST") && fightingTarget != null && Time.NormalTime > _absorbs + 15)
             {
-                _absorbsused = Time.NormalTime;
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
+                _absorbs = Time.NormalTime;
                 return true;
             }
 
@@ -242,38 +257,35 @@ namespace Desu
 
         private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            List<Spell> absorbbuff = Spell.List.Where(x => x.Nanoline == NanoLine.AbsorbACBuff).OrderBy(x => x.StackingOrder).ToList();
+            if (DynelManager.LocalPlayer.FightingTarget != null 
+                && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
 
             if (!CanCast(spell)) { return false; }
 
             if (IsSettingEnabled("OST"))
             {
-                if (Time.NormalTime > _aoeusedost + aoerefreshost)
+                if (Time.NormalTime > _aoeTauntOst + 10)
                 {
-                    _aoeusedost = Time.NormalTime;
+                    _aoeTauntOst = Time.NormalTime;
                     return true;
                 }
             }
 
-            if (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
-
             if (!IsSettingEnabled("AOETaunt") || fightingTarget == null) { return false; }
 
-            if (!IsSettingEnabled("Absorbs") && DynelManager.LocalPlayer.FightingTarget != null && Time.NormalTime > _aoeused + aoerefresh)
+            if (!IsSettingEnabled("Absorbs") && Time.NormalTime > _aoeTaunt + 9)
             {
-                _aoeused = Time.NormalTime;
+                _aoeTaunt = Time.NormalTime;
                 return true;
             }
 
-            if (IsSettingEnabled("Absorbs") && absorbbuff.FirstOrDefault() != null && Time.NormalTime > _absorbsused + absorbsrefresh 
-                && Time.NormalTime > _aoeused + aoerefresh && DynelManager.LocalPlayer.FightingTarget != null)
+            List<Spell> absorbbuff = Spell.List.Where(x => x.Nanoline == NanoLine.AbsorbACBuff).OrderBy(x => x.StackingOrder).ToList();
+
+            if (IsSettingEnabled("Absorbs") && absorbbuff.FirstOrDefault() != null && Time.NormalTime > _aoeTaunt + 9)
             {
-                _aoeused = Time.NormalTime;
+                _aoeTaunt = Time.NormalTime;
                 return true;
             }
-
-            //Make sure we have plenty of nano for spamming mongo
-            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
 
             return false;
         }

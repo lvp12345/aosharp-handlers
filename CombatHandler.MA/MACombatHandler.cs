@@ -15,6 +15,9 @@ namespace Desu
     {
         public static string PluginDirectory;
 
+        public static double _singleTauntTick;
+        public static double _singleTaunt;
+
         public static Window buffWindow;
         public static Window tauntWindow;
         public static Window healingWindow;
@@ -22,6 +25,7 @@ namespace Desu
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
             settings.AddVariable("SingleTaunt", false);
+            settings.AddVariable("OSTaunt", false);
 
             settings.AddVariable("Heal", false);
             settings.AddVariable("OSHeal", false);
@@ -180,16 +184,49 @@ namespace Desu
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SingleTaunt") || fightingTarget == null) { return false; }
-
-            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
-
-            //If our target has a different target than us we need to make sure we taunt
-            if (IsNotFightingMe(fightingTarget))
+            if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
             {
-                actionTarget.Target = fightingTarget;
-                actionTarget.ShouldSetTarget = true;
+                List<SimpleChar> mobs = DynelManager.NPCs
+                    .Where(c => c.IsAttacking && c.FightingTarget != null
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && IsNotFightingMe(c)
+                        && IsAttackingUs(c)
+                        && (c.FightingTarget.Profession != Profession.Enforcer
+                                || c.FightingTarget.Profession != Profession.Soldier
+                                || c.FightingTarget.Profession != Profession.MartialArtist))
+                    .ToList();
+
+                foreach (SimpleChar mob in mobs)
+                {
+                    if (mob != null)
+                    {
+                        _singleTauntTick = Time.NormalTime;
+                        actionTarget.Target = mob;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
+            if (!IsSettingEnabled("SingleTaunt")) { return false; }
+
+            if (DynelManager.LocalPlayer.FightingTarget != null
+                && (DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh"
+                || DynelManager.LocalPlayer.FightingTarget.Name == "Collector"))
+            {
                 return true;
+            }
+
+            if (Time.NormalTime > _singleTaunt + 9)
+            {
+                if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.Target = fightingTarget;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;

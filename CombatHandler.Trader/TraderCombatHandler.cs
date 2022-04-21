@@ -21,33 +21,33 @@ namespace Desu
 
         public TraderCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("DamageDrain", true);
-            settings.AddVariable("HealthDrain", false);
+            _settings.AddVariable("DamageDrain", true);
+            _settings.AddVariable("HealthDrain", false);
 
-            settings.AddVariable("RKNanoDrain", false);
-            settings.AddVariable("SLNanoDrain", false);
+            _settings.AddVariable("RKNanoDrain", false);
+            _settings.AddVariable("SLNanoDrain", false);
 
-            settings.AddVariable("Heal", true);
+            _settings.AddVariable("Heal", true);
 
-            settings.AddVariable("AAODrain", true);
-            settings.AddVariable("AADDrain", true);
+            _settings.AddVariable("AAODrain", true);
+            _settings.AddVariable("AADDrain", true);
 
-            settings.AddVariable("MyEnemy", true);
+            _settings.AddVariable("MyEnemy", true);
 
-            settings.AddVariable("RansackDrain", true);
-            settings.AddVariable("DepriveDrain", true);
+            _settings.AddVariable("RansackDrain", true);
+            _settings.AddVariable("DepriveDrain", true);
 
-            settings.AddVariable("ACDrains", true);
+            _settings.AddVariable("ACDrains", true);
 
-            settings.AddVariable("GTH", true);
+            _settings.AddVariable("GTH", true);
 
-            settings.AddVariable("Sacrifice", false);
-            settings.AddVariable("PurpleHeart", false);
+            _settings.AddVariable("Sacrifice", false);
+            _settings.AddVariable("PurpleHeart", false);
 
-            settings.AddVariable("NanoHealTeam", false);
-            settings.AddVariable("EvadesTeam", false);
+            _settings.AddVariable("NanoHealTeam", false);
+            _settings.AddVariable("EvadesTeam", false);
 
-            settings.AddVariable("LegShot", false);
+            _settings.AddVariable("LegShot", false);
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
@@ -196,18 +196,18 @@ namespace Desu
                 }
             }
 
-            if (settings["PurpleHeart"].AsBool() && settings["Sacrifice"].AsBool())
+            if (_settings["PurpleHeart"].AsBool() && _settings["Sacrifice"].AsBool())
             {
-                settings["PurpleHeart"] = false;
-                settings["Sacrifice"] = false;
+                _settings["PurpleHeart"] = false;
+                _settings["Sacrifice"] = false;
 
                 Chat.WriteLine("Only activate one Perk option.");
             }
 
-            if (settings["RKNanoDrain"].AsBool() && settings["SLNanoDrain"].AsBool())
+            if (_settings["RKNanoDrain"].AsBool() && _settings["SLNanoDrain"].AsBool())
             {
-                settings["RKNanoDrain"] = false;
-                settings["SLNanoDrain"] = false;
+                _settings["RKNanoDrain"] = false;
+                _settings["SLNanoDrain"] = false;
 
                 Chat.WriteLine("Only activate one Drain option.");
             }

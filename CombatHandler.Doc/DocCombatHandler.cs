@@ -20,26 +20,26 @@ namespace Desu
 
         public DocCombatHandler(String pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("InitDebuff", false);
-            settings.AddVariable("OSInitDebuff", false);
+            _settings.AddVariable("InitDebuff", false);
+            _settings.AddVariable("OSInitDebuff", false);
 
-            settings.AddVariable("DotA", false);
-            settings.AddVariable("DotB", false);
-            settings.AddVariable("DotC", false);
+            _settings.AddVariable("DotA", false);
+            _settings.AddVariable("DotB", false);
+            _settings.AddVariable("DotC", false);
 
 
-            settings.AddVariable("ShortHoT", false);
-            settings.AddVariable("ShortHoTTeam", false);
-            settings.AddVariable("Deathless", false);
+            _settings.AddVariable("ShortHoT", false);
+            _settings.AddVariable("ShortHoTTeam", false);
+            _settings.AddVariable("Deathless", false);
 
-            settings.AddVariable("ShortHP", false);
-            settings.AddVariable("ShortHPTeam", false);
+            _settings.AddVariable("ShortHP", false);
+            _settings.AddVariable("ShortHPTeam", false);
 
-            settings.AddVariable("Heal", true);
-            settings.AddVariable("OSHeal", false);
-            settings.AddVariable("CH", true);
+            _settings.AddVariable("Heal", true);
+            _settings.AddVariable("OSHeal", false);
+            _settings.AddVariable("CH", true);
 
-            settings.AddVariable("LockCH", false);
+            _settings.AddVariable("LockCH", false);
 
             RegisterSettingsWindow("Doctor Handler", "DocSettingsView.xml");
 
@@ -89,25 +89,25 @@ namespace Desu
         {
             if (IsSettingEnabled("Deathless") && (IsSettingEnabled("ShortHoT") || IsSettingEnabled("ShortHoTTeam")))
             {
-                settings["Deathless"] = false;
-                settings["ShortHoT"] = false;
-                settings["ShortHoTTeam"] = false;
+                _settings["Deathless"] = false;
+                _settings["ShortHoT"] = false;
+                _settings["ShortHoTTeam"] = false;
 
                 Chat.WriteLine($"Can only have one Short HoT active.");
             }
 
             if (IsSettingEnabled("ShortHoT") && IsSettingEnabled("ShortHoTTeam"))
             {
-                settings["ShortHot"] = false;
-                settings["ShortHoTTeam"] = false;
+                _settings["ShortHot"] = false;
+                _settings["ShortHoTTeam"] = false;
 
                 Chat.WriteLine($"Can only have one Short HoT active.");
             }
 
             if (IsSettingEnabled("ShortHP") && IsSettingEnabled("ShortHPTeam"))
             {
-                settings["ShortHP"] = false;
-                settings["ShortHPTeam"] = false;
+                _settings["ShortHP"] = false;
+                _settings["ShortHPTeam"] = false;
 
                 Chat.WriteLine($"Can only have one Short Hp active.");
             }

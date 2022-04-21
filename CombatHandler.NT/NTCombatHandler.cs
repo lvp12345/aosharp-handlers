@@ -20,17 +20,17 @@ namespace Desu
 
         public NTCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("AIDot", true);
+            _settings.AddVariable("AIDot", true);
 
-            settings.AddVariable("Pierce", false);
+            _settings.AddVariable("Pierce", false);
 
-            settings.AddVariable("AoeBlind", false);
+            _settings.AddVariable("AoeBlind", false);
 
-            settings.AddVariable("AOE", false);
-            settings.AddVariable("VE", false);
+            _settings.AddVariable("AOE", false);
+            _settings.AddVariable("VE", false);
 
-            settings.AddVariable("NanoHoTTeam", false);
-            settings.AddVariable("CostTeam", false);
+            _settings.AddVariable("NanoHoTTeam", false);
+            _settings.AddVariable("CostTeam", false);
 
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
 

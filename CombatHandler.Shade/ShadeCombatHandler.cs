@@ -23,16 +23,16 @@ namespace Desu
 
         public ShadeCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("Runspeed", false);
-            settings.AddVariable("RunspeedTeam", false);
+            _settings.AddVariable("Runspeed", false);
+            _settings.AddVariable("RunspeedTeam", false);
 
-            settings.AddVariable("InitDebuffProc", false);
-            settings.AddVariable("DamageProc", false);
-            settings.AddVariable("DoTProc", false);
-            settings.AddVariable("StunProc", false);
+            _settings.AddVariable("InitDebuffProc", false);
+            _settings.AddVariable("DamageProc", false);
+            _settings.AddVariable("DoTProc", false);
+            _settings.AddVariable("StunProc", false);
 
-            settings.AddVariable("HealthDrain", false);
-            settings.AddVariable("SpiritSiphon", false);
+            _settings.AddVariable("HealthDrain", false);
+            _settings.AddVariable("SpiritSiphon", false);
 
             RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
@@ -131,45 +131,45 @@ namespace Desu
 
             base.OnUpdate(deltaTime);
 
-            if (settings["InitDebuffProc"].AsBool() && settings["DamageProc"].AsBool())
+            if (_settings["InitDebuffProc"].AsBool() && _settings["DamageProc"].AsBool())
             {
-                settings["InitDebuffProc"] = false;
-                settings["DamageProc"] = false;
+                _settings["InitDebuffProc"] = false;
+                _settings["DamageProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
-            if (settings["InitDebuffProc"].AsBool() && settings["DoTProc"].AsBool())
+            if (_settings["InitDebuffProc"].AsBool() && _settings["DoTProc"].AsBool())
             {
-                settings["InitDebuffProc"] = false;
-                settings["DoTProc"] = false;
+                _settings["InitDebuffProc"] = false;
+                _settings["DoTProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
-            if (settings["InitDebuffProc"].AsBool() && settings["StunProc"].AsBool())
+            if (_settings["InitDebuffProc"].AsBool() && _settings["StunProc"].AsBool())
             {
-                settings["InitDebuffProc"] = false;
-                settings["StunProc"] = false;
+                _settings["InitDebuffProc"] = false;
+                _settings["StunProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
-            if (settings["DamageProc"].AsBool() && settings["StunProc"].AsBool())
+            if (_settings["DamageProc"].AsBool() && _settings["StunProc"].AsBool())
             {
-                settings["DamageProc"] = false;
-                settings["StunProc"] = false;
+                _settings["DamageProc"] = false;
+                _settings["StunProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
-            if (settings["DamageProc"].AsBool() && settings["DoTProc"].AsBool())
+            if (_settings["DamageProc"].AsBool() && _settings["DoTProc"].AsBool())
             {
-                settings["DamageProc"] = false;
-                settings["DoTProc"] = false;
+                _settings["DamageProc"] = false;
+                _settings["DoTProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
-            if (settings["StunProc"].AsBool() && settings["DoTProc"].AsBool())
+            if (_settings["StunProc"].AsBool() && _settings["DoTProc"].AsBool())
             {
-                settings["StunProc"] = false;
-                settings["DoTProc"] = false;
+                _settings["StunProc"] = false;
+                _settings["DoTProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }

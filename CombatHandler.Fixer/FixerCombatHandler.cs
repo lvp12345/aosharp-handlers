@@ -22,20 +22,20 @@ namespace Desu
 
         public FixerCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("RKRunspeed", false);
-            settings.AddVariable("RKRunspeedTeam", false);
+            _settings.AddVariable("RKRunspeed", false);
+            _settings.AddVariable("RKRunspeedTeam", false);
 
-            settings.AddVariable("SLRunspeed", false);
+            _settings.AddVariable("SLRunspeed", false);
 
-            settings.AddVariable("EvasionDebuff", false);
+            _settings.AddVariable("EvasionDebuff", false);
 
-            settings.AddVariable("ShadowwebSpinner", false);
-            settings.AddVariable("GridArmor", false);
+            _settings.AddVariable("ShadowwebSpinner", false);
+            _settings.AddVariable("GridArmor", false);
 
-            settings.AddVariable("LongHoT", false);
-            settings.AddVariable("ShortHoT", false);
-            settings.AddVariable("LongHoTTeam", false);
-            settings.AddVariable("ShortHoTTeam", false);
+            _settings.AddVariable("LongHoT", false);
+            _settings.AddVariable("ShortHoT", false);
+            _settings.AddVariable("LongHoTTeam", false);
+            _settings.AddVariable("ShortHoTTeam", false);
 
             RegisterSettingsWindow("Fixer Handler", "FixerSettingsView.xml");
 
@@ -110,10 +110,10 @@ namespace Desu
         {
             base.OnUpdate(deltaTime);
 
-            if (settings["RKRunspeed"].AsBool() && settings["SLRunspeed"].AsBool())
+            if (_settings["RKRunspeed"].AsBool() && _settings["SLRunspeed"].AsBool())
             {
-                settings["RKRunspeed"] = false;
-                settings["SLRunspeed"] = false;
+                _settings["RKRunspeed"] = false;
+                _settings["SLRunspeed"] = false;
 
                 Chat.WriteLine("Only activate one Runspeed option.");
             }

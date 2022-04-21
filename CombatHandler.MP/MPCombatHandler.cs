@@ -24,37 +24,37 @@ namespace Desu
 
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("SyncPets", true);
-            settings.AddVariable("SpawnPets", true);
-            settings.AddVariable("BuffPets", true);
-            settings.AddVariable("MezzPet", false);
+            _settings.AddVariable("SyncPets", true);
+            _settings.AddVariable("SpawnPets", true);
+            _settings.AddVariable("BuffPets", true);
+            _settings.AddVariable("MezzPet", false);
 
-            settings.AddVariable("MastersBidding", false);
+            _settings.AddVariable("MastersBidding", false);
 
-            settings.AddVariable("Cost", false);
-            settings.AddVariable("CostTeam", false);
+            _settings.AddVariable("Cost", false);
+            _settings.AddVariable("CostTeam", false);
 
-            settings.AddVariable("InterruptChance", false);
+            _settings.AddVariable("InterruptChance", false);
 
-            settings.AddVariable("DamageDebuffs", false);
-            settings.AddVariable("OSDamageDebuffs", false);
+            _settings.AddVariable("DamageDebuffs", false);
+            _settings.AddVariable("OSDamageDebuffs", false);
 
-            settings.AddVariable("NanoResistanceDebuff", false);
-            settings.AddVariable("NanoShutdownDebuff", false);
+            _settings.AddVariable("NanoResistanceDebuff", false);
+            _settings.AddVariable("NanoShutdownDebuff", false);
 
-            settings.AddVariable("Composites", false);
-            settings.AddVariable("CompositesTeam", false);
+            _settings.AddVariable("Composites", false);
+            _settings.AddVariable("CompositesTeam", false);
 
-            settings.AddVariable("MatterCrea", false);
-            settings.AddVariable("PyschoModi", false);
-            settings.AddVariable("TimeSpace", false);
-            settings.AddVariable("SenseImprov", false);
-            settings.AddVariable("BioMet", false);
-            settings.AddVariable("MattMet", false);
+            _settings.AddVariable("MatterCrea", false);
+            _settings.AddVariable("PyschoModi", false);
+            _settings.AddVariable("TimeSpace", false);
+            _settings.AddVariable("SenseImprov", false);
+            _settings.AddVariable("BioMet", false);
+            _settings.AddVariable("MattMet", false);
 
             //settings.AddVariable("CostTeam", false);
 
-            settings.AddVariable("Nukes", false);
+            _settings.AddVariable("Nukes", false);
 
             //settings.AddVariable("NanoBuffsSelection", (int)NanoBuffsSelection.SL);
             //settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
@@ -189,19 +189,19 @@ namespace Desu
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (settings["Composites"].AsBool() || settings["CompositesTeam"].AsBool() &&
-                (settings["MatterCrea"].AsBool() || settings["PyschoModi"].AsBool()
-                || settings["TimeSpace"].AsBool() || settings["SenseImprov"].AsBool()
-                || settings["BioMet"].AsBool() || settings["MattMet"].AsBool()))
+            if (_settings["Composites"].AsBool() || _settings["CompositesTeam"].AsBool() &&
+                (_settings["MatterCrea"].AsBool() || _settings["PyschoModi"].AsBool()
+                || _settings["TimeSpace"].AsBool() || _settings["SenseImprov"].AsBool()
+                || _settings["BioMet"].AsBool() || _settings["MattMet"].AsBool()))
             {
-                settings["Composites"] = false;
-                settings["CompositesTeam"] = false;
-                settings["MatterCrea"] = false;
-                settings["PyschoModi"] = false;
-                settings["TimeSpace"] = false;
-                settings["SenseImprov"] = false;
-                settings["BioMet"] = false;
-                settings["MattMet"] = false;
+                _settings["Composites"] = false;
+                _settings["CompositesTeam"] = false;
+                _settings["MatterCrea"] = false;
+                _settings["PyschoModi"] = false;
+                _settings["TimeSpace"] = false;
+                _settings["SenseImprov"] = false;
+                _settings["BioMet"] = false;
+                _settings["MattMet"] = false;
 
                 Chat.WriteLine("Only activate one option.");
             }

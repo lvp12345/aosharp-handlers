@@ -47,26 +47,26 @@ namespace CombatHandler.Engi
 
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("SyncPets", true);
-            settings.AddVariable("SpawnPets", true);
-            settings.AddVariable("BuffPets", true);
-            settings.AddVariable("HealPets", false);
+            _settings.AddVariable("SyncPets", true);
+            _settings.AddVariable("SpawnPets", true);
+            _settings.AddVariable("BuffPets", true);
+            _settings.AddVariable("HealPets", false);
 
-            settings.AddVariable("DivertHpTrimmer", true);
-            settings.AddVariable("DivertOffTrimmer", true);
-            settings.AddVariable("TauntTrimmer", true);
-            settings.AddVariable("AggDefTrimmer", true);
+            _settings.AddVariable("DivertHpTrimmer", true);
+            _settings.AddVariable("DivertOffTrimmer", true);
+            _settings.AddVariable("TauntTrimmer", true);
+            _settings.AddVariable("AggDefTrimmer", true);
 
-            settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
-            settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
+            _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
+            _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
 
-            settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.Off);
-            settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
+            _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.Off);
+            _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
 
-            settings.AddVariable("SpamBlindAura", false);
-            settings.AddVariable("SpamSnareAura", false);
+            _settings.AddVariable("SpamBlindAura", false);
+            _settings.AddVariable("SpamSnareAura", false);
 
-            settings.AddVariable("LegShot", false);
+            _settings.AddVariable("LegShot", false);
 
             RegisterSettingsWindow("Engineer Handler", "EngineerSettingsView.xml");
 
@@ -216,29 +216,29 @@ namespace CombatHandler.Engi
 
             base.OnUpdate(deltaTime);
 
-            if (BuffingAuraSelection.Shield != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
+            if (BuffingAuraSelection.Shield != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.ShieldAura);
             }
 
-            if (BuffingAuraSelection.Damage != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
+            if (BuffingAuraSelection.Damage != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.DamageAura);
             }
 
-            if (BuffingAuraSelection.Armor != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
+            if (BuffingAuraSelection.Armor != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.ArmorAura);
             }
 
-            if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
+            if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.ReflectAura);
             }
 
             if (!IsSettingEnabled("SpamBlindAura"))
             {
-                CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()
+                CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
                     ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
                 CancelHostileAuras(RelevantNanos.Blinds);
             }
@@ -294,7 +294,7 @@ namespace CombatHandler.Engi
 
         private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PetProcSelection.MastersBidding != (PetProcSelection)settings["PetProcSelection"].AsInt32()) { return false; }
+            if (PetProcSelection.MastersBidding != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
 
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
@@ -310,7 +310,7 @@ namespace CombatHandler.Engi
         }
         private bool SedativeInjectors(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PetProcSelection.SedativeInjectors != (PetProcSelection)settings["PetProcSelection"].AsInt32()) { return false; }
+            if (PetProcSelection.SedativeInjectors != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
 
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
@@ -327,28 +327,28 @@ namespace CombatHandler.Engi
 
         private bool ArmorAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BuffingAuraSelection.Armor != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            if (BuffingAuraSelection.Armor != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DamageAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BuffingAuraSelection.Damage != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            if (BuffingAuraSelection.Damage != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ReflectAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShieldAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BuffingAuraSelection.Shield != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            if (BuffingAuraSelection.Shield != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -365,14 +365,14 @@ namespace CombatHandler.Engi
                 }
             }
 
-            if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()
+            if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
                 || fightingTarget == null) { return false; }
 
             return PetTargetBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DebuffingAuraSelection.ShieldRipper != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()) { return false; }
+            if (DebuffingAuraSelection.ShieldRipper != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -390,7 +390,7 @@ namespace CombatHandler.Engi
 
             if (fightingTarget == null) { return false; }
 
-            if (DebuffingAuraSelection.Blind == (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32())
+            if (DebuffingAuraSelection.Blind == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32())
             {
                 if (Time.NormalTime - _recastBlinds > 9)
                 {
@@ -434,7 +434,7 @@ namespace CombatHandler.Engi
 
         private bool ChaoticEnergyBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PetPerkSelection.Off != (PetPerkSelection)settings["PetPerkSelection"].AsInt32()
+            if (PetPerkSelection.Off != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
                 || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkChaoticEnergy);
@@ -453,7 +453,7 @@ namespace CombatHandler.Engi
 
         private bool SiphonBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PetPerkSelection.Def != (PetPerkSelection)settings["PetPerkSelection"].AsInt32()
+            if (PetPerkSelection.Def != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
                 || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkSiphonBox);
@@ -473,7 +473,7 @@ namespace CombatHandler.Engi
 
         private bool TauntBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PetPerkSelection.Def != (PetPerkSelection)settings["PetPerkSelection"].AsInt32()
+            if (PetPerkSelection.Def != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
                 || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToPerk = FindPetsWithoutBuff(RelevantNanos.PerkTauntBox);

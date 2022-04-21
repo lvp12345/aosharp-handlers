@@ -22,20 +22,20 @@ namespace Desu
 
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("SingleTaunt", false);
-            settings.AddVariable("OSTaunt", false);
+            _settings.AddVariable("SingleTaunt", false);
+            _settings.AddVariable("OSTaunt", false);
 
-            settings.AddVariable("Burst", false);
-            settings.AddVariable("BurstTeam", false);
+            _settings.AddVariable("Burst", false);
+            _settings.AddVariable("BurstTeam", false);
 
-            settings.AddVariable("AAOTeam", false);
+            _settings.AddVariable("AAOTeam", false);
 
-            settings.AddVariable("Init", false);
-            settings.AddVariable("InitTeam", false);
+            _settings.AddVariable("Init", false);
+            _settings.AddVariable("InitTeam", false);
 
-            settings.AddVariable("NotumGrenades", false);
+            _settings.AddVariable("NotumGrenades", false);
 
-            settings.AddVariable("LegShot", false);
+            _settings.AddVariable("LegShot", false);
 
             //settings.AddVariable("DamageTeam", false);
 
@@ -58,7 +58,7 @@ namespace Desu
             //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), DamageTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GenericBuff);

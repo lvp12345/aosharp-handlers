@@ -47,36 +47,36 @@ namespace Desu
 
         public CratCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.AAOAAD);
-            settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
+            _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.AAOAAD);
+            _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
 
-            settings.AddVariable("CalmingSelection", (int)CalmingSelection.SL);
-            settings.AddVariable("ModeSelection", (int)ModeSelection.None);
+            _settings.AddVariable("CalmingSelection", (int)CalmingSelection.SL);
+            _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
 
-            settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FormsinTriplicate);
-            settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.WrongWindow);
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FormsinTriplicate);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.WrongWindow);
 
-            settings.AddVariable("NanoDeltaTeam", false);
+            _settings.AddVariable("NanoDeltaTeam", false);
 
-            settings.AddVariable("SyncPets", true);
-            settings.AddVariable("SpawnPets", true);
-            settings.AddVariable("BuffPets", true);
+            _settings.AddVariable("SyncPets", true);
+            _settings.AddVariable("SpawnPets", true);
+            _settings.AddVariable("BuffPets", true);
 
-            settings.AddVariable("MastersBidding", false);
+            _settings.AddVariable("MastersBidding", false);
 
-            settings.AddVariable("MalaiseTarget", true);
-            settings.AddVariable("LEInitDebuffs", true);
-            settings.AddVariable("OSMalaise", false);
+            _settings.AddVariable("MalaiseTarget", true);
+            _settings.AddVariable("LEInitDebuffs", true);
+            _settings.AddVariable("OSMalaise", false);
 
-            settings.AddVariable("DivertTrimmer", false);
-            settings.AddVariable("TauntTrimmer", false);
-            settings.AddVariable("AggDefTrimmer", false);
+            _settings.AddVariable("DivertTrimmer", false);
+            _settings.AddVariable("TauntTrimmer", false);
+            _settings.AddVariable("AggDefTrimmer", false);
 
-            settings.AddVariable("Nukes", false);
-            settings.AddVariable("AoeRoot", false);
+            _settings.AddVariable("Nukes", false);
+            _settings.AddVariable("AoeRoot", false);
 
-            settings.AddVariable("Calm12Man", false);
-            settings.AddVariable("CalmSector7", false);
+            _settings.AddVariable("Calm12Man", false);
+            _settings.AddVariable("CalmSector7", false);
 
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
@@ -554,42 +554,42 @@ namespace Desu
         }
         private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()) { return false; }
+            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()) { return false; }
+            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32()) { return false; }
+            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -654,10 +654,10 @@ namespace Desu
 
         private bool RKCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CalmingSelection.RK != (CalmingSelection)settings["CalmingSelection"].AsInt32()
-                || !CanCast(spell) || ModeSelection.None == (ModeSelection)settings["ModeSelection"].AsInt32()) { return false; }
+            if (CalmingSelection.RK != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
+                || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
 
-            if (ModeSelection.All == (ModeSelection)settings["ModeSelection"].AsInt32())
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -675,7 +675,7 @@ namespace Desu
                 }
             }
 
-            if (ModeSelection.Adds == (ModeSelection)settings["ModeSelection"].AsInt32())
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -700,10 +700,10 @@ namespace Desu
 
         private bool SLCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CalmingSelection.SL != (CalmingSelection)settings["CalmingSelection"].AsInt32()
-                || !CanCast(spell) || ModeSelection.None == (ModeSelection)settings["ModeSelection"].AsInt32()) { return false; }
+            if (CalmingSelection.SL != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
+                || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
 
-            if (ModeSelection.All == (ModeSelection)settings["ModeSelection"].AsInt32())
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -721,7 +721,7 @@ namespace Desu
                 }
             }
 
-            if (ModeSelection.Adds == (ModeSelection)settings["ModeSelection"].AsInt32())
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -746,10 +746,10 @@ namespace Desu
 
         private bool AoECalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CalmingSelection.AOE != (CalmingSelection)settings["CalmingSelection"].AsInt32()
-                || !CanCast(spell) || ModeSelection.None == (ModeSelection)settings["ModeSelection"].AsInt32()) { return false; }
+            if (CalmingSelection.AOE != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
+                || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
 
-            if (ModeSelection.All == (ModeSelection)settings["ModeSelection"].AsInt32())
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -767,7 +767,7 @@ namespace Desu
                 }
             }
 
-            if (ModeSelection.Adds == (ModeSelection)settings["ModeSelection"].AsInt32())
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
@@ -916,80 +916,80 @@ namespace Desu
 
         private bool FormsinTriplicate(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.FormsinTriplicate != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (ProcType1Selection.FormsinTriplicate != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool NextWindowOver(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.NextWindowOver != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (ProcType1Selection.NextWindowOver != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool PleaseHold(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.PleaseHold != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (ProcType1Selection.PleaseHold != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool SocialServices(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.SocialServices != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (ProcType1Selection.SocialServices != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
         private bool WaitInThatQueue(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.WaitInThatQueue != (ProcType1Selection)settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (ProcType1Selection.WaitInThatQueue != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool Deflation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType2Selection.Deflation != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (ProcType2Selection.Deflation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool InflationAdjustment(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType2Selection.InflationAdjustment != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (ProcType2Selection.InflationAdjustment != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool LostPaperwork(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType2Selection.LostPaperwork != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (ProcType2Selection.LostPaperwork != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
         private bool MobilityEmbargo(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType2Selection.MobilityEmbargo != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (ProcType2Selection.MobilityEmbargo != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
         private bool Papercut(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType2Selection.Papercut != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (ProcType2Selection.Papercut != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
         private bool TaxAudit(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType2Selection.TaxAudit != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (ProcType2Selection.TaxAudit != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
         private bool WrongWindow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType2Selection.WrongWindow != (ProcType2Selection)settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (ProcType2Selection.WrongWindow != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
@@ -1259,15 +1259,15 @@ namespace Desu
 
         private void CancelBuffAurasIfNeeded()
         {
-            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
+            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.AadBuffAuras);
             }
-            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
+            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.CritBuffAuras);
             }
-            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)settings["BuffingAuraSelection"].AsInt32())
+            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.NanoResBuffAuras);
             }
@@ -1279,15 +1279,15 @@ namespace Desu
             CancelHostileAuras(RelevantNanos.NanoPointsDebuffAuras);
             CancelHostileAuras(RelevantNanos.NanoResDebuffAuras);
 
-            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32())
+            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.CritDebuffAuras);
             }
-            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32())
+            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.NanoPointsDebuffAuras);
             }
-            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)settings["DebuffingAuraSelection"].AsInt32())
+            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.NanoResDebuffAuras);
             }

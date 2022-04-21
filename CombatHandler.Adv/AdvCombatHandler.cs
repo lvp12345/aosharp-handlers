@@ -20,15 +20,15 @@ namespace Desu
 
         public AdvCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("Heal", true);
-            settings.AddVariable("OSHeal", false);
+            _settings.AddVariable("Heal", true);
+            _settings.AddVariable("OSHeal", false);
 
-            settings.AddVariable("DragonMorph", false);
-            settings.AddVariable("LeetMorph", false);
-            settings.AddVariable("SaberMorph", false);
-            settings.AddVariable("WolfMorph", false);
+            _settings.AddVariable("DragonMorph", false);
+            _settings.AddVariable("LeetMorph", false);
+            _settings.AddVariable("SaberMorph", false);
+            _settings.AddVariable("WolfMorph", false);
 
-            settings.AddVariable("ArmorBuff", false);
+            _settings.AddVariable("ArmorBuff", false);
 
             //settings.AddVariable("Heal", true); // Morph leet and crit?
             //settings.AddVariable("Heal", true); // Morph sabre and damage?
@@ -113,62 +113,62 @@ namespace Desu
         {
             base.OnUpdate(deltaTime);
 
-            if (settings["DragonMorph"].AsBool() && settings["LeetMorph"].AsBool())
+            if (_settings["DragonMorph"].AsBool() && _settings["LeetMorph"].AsBool())
             {
-                settings["DragonMorph"] = false;
-                settings["LeetMorph"] = false;
+                _settings["DragonMorph"] = false;
+                _settings["LeetMorph"] = false;
 
                 Chat.WriteLine("Only activate one Morph option.");
             }
-            if (settings["DragonMorph"].AsBool() && settings["SaberMorph"].AsBool())
+            if (_settings["DragonMorph"].AsBool() && _settings["SaberMorph"].AsBool())
             {
-                settings["DragonMorph"] = false;
-                settings["SaberMorph"] = false;
+                _settings["DragonMorph"] = false;
+                _settings["SaberMorph"] = false;
 
                 Chat.WriteLine("Only activate one Morph option.");
             }
-            if (settings["DragonMorph"].AsBool() && settings["WolfMorph"].AsBool())
+            if (_settings["DragonMorph"].AsBool() && _settings["WolfMorph"].AsBool())
             {
-                settings["DragonMorph"] = false;
-                settings["WolfMorph"] = false;
+                _settings["DragonMorph"] = false;
+                _settings["WolfMorph"] = false;
 
                 Chat.WriteLine("Only activate one Morph option.");
             }
-            if (settings["SaberMorph"].AsBool() && settings["LeetMorph"].AsBool())
+            if (_settings["SaberMorph"].AsBool() && _settings["LeetMorph"].AsBool())
             {
-                settings["SaberMorph"] = false;
-                settings["LeetMorph"] = false;
+                _settings["SaberMorph"] = false;
+                _settings["LeetMorph"] = false;
 
                 Chat.WriteLine("Only activate one Morph option.");
             }
-            if (settings["SaberMorph"].AsBool() && settings["WolfMorph"].AsBool())
+            if (_settings["SaberMorph"].AsBool() && _settings["WolfMorph"].AsBool())
             {
-                settings["SaberMorph"] = false;
-                settings["WolfMorph"] = false;
+                _settings["SaberMorph"] = false;
+                _settings["WolfMorph"] = false;
 
                 Chat.WriteLine("Only activate one Morph option.");
             }
-            if (settings["LeetMorph"].AsBool() && settings["WolfMorph"].AsBool())
+            if (_settings["LeetMorph"].AsBool() && _settings["WolfMorph"].AsBool())
             {
-                settings["LeetMorph"] = false;
-                settings["WolfMorph"] = false;
+                _settings["LeetMorph"] = false;
+                _settings["WolfMorph"] = false;
 
                 Chat.WriteLine("Only activate one Morph option.");
             }
 
-            if (!settings["DragonMorph"].AsBool())
+            if (!_settings["DragonMorph"].AsBool())
             {
                 CancelBuffs(RelevantNanos.DragonMorph);
             }
-            if (!settings["LeetMorph"].AsBool())
+            if (!_settings["LeetMorph"].AsBool())
             {
                 CancelBuffs(RelevantNanos.LeetMorph);
             }
-            if (!settings["SaberMorph"].AsBool())
+            if (!_settings["SaberMorph"].AsBool())
             {
                 CancelBuffs(RelevantNanos.SaberMorph);
             }
-            if (!settings["WolfMorph"].AsBool())
+            if (!_settings["WolfMorph"].AsBool())
             {
                 CancelBuffs(RelevantNanos.WolfMorph);
             }

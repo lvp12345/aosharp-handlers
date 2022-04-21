@@ -22,27 +22,27 @@ namespace CombatHandler.Agent
 
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("DotStrainA", false);
+            _settings.AddVariable("DotStrainA", false);
 
-            settings.AddVariable("CritTeam", false);
+            _settings.AddVariable("CritTeam", false);
 
-            settings.AddVariable("InitDebuff", false);
-            settings.AddVariable("OSInitDebuff", false);
-
-
-            settings.AddVariable("Heal", false);
-            settings.AddVariable("OSHeal", false);
+            _settings.AddVariable("InitDebuff", false);
+            _settings.AddVariable("OSInitDebuff", false);
 
 
-            settings.AddVariable("EvasionDebuff", false);
+            _settings.AddVariable("Heal", false);
+            _settings.AddVariable("OSHeal", false);
 
 
-            settings.AddVariable("Damage", false);
-            settings.AddVariable("Detaunt", false);
+            _settings.AddVariable("EvasionDebuff", false);
 
 
-            settings.AddVariable("LazerAim", false);
-            settings.AddVariable("NotumChargedRounds", false);
+            _settings.AddVariable("Damage", false);
+            _settings.AddVariable("Detaunt", false);
+
+
+            _settings.AddVariable("LazerAim", false);
+            _settings.AddVariable("NotumChargedRounds", false);
 
 
             RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");

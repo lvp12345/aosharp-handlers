@@ -24,17 +24,17 @@ namespace Desu
 
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("SingleTaunt", false);
-            settings.AddVariable("OSTaunt", false);
+            _settings.AddVariable("SingleTaunt", false);
+            _settings.AddVariable("OSTaunt", false);
 
-            settings.AddVariable("Heal", false);
-            settings.AddVariable("OSHeal", false);
+            _settings.AddVariable("Heal", false);
+            _settings.AddVariable("OSHeal", false);
 
-            settings.AddVariable("EvadesTeam", false);
+            _settings.AddVariable("EvadesTeam", false);
 
-            settings.AddVariable("Zazen", false);
+            _settings.AddVariable("Zazen", false);
 
-            settings.AddVariable("ShortDamage", false);
+            _settings.AddVariable("ShortDamage", false);
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 

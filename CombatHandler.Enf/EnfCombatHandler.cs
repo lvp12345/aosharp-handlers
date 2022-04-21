@@ -27,16 +27,16 @@ namespace Desu
 
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("SingleTaunt", false);
-            settings.AddVariable("OSTaunt", false);
-            settings.AddVariable("PoHTaunt", false);
-            settings.AddVariable("AOETaunt", false);
-            settings.AddVariable("Absorbs", false);
+            _settings.AddVariable("SingleTaunt", false);
+            _settings.AddVariable("OSTaunt", false);
+            _settings.AddVariable("PoHTaunt", false);
+            _settings.AddVariable("AOETaunt", false);
+            _settings.AddVariable("Absorbs", false);
 
-            settings.AddVariable("TrollForm", false);
+            _settings.AddVariable("TrollForm", false);
             //settings.AddVariable("UseTauntTool", true);
 
-            settings.AddVariable("OST", false);
+            _settings.AddVariable("OST", false);
 
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 

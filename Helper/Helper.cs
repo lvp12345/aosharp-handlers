@@ -53,16 +53,14 @@ namespace Helper
         public static Window assistWindow;
         public static Window infoWindow;
 
-        public static View followWindowView;
-
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        private static Settings settings = new Settings("Helper");
+        private static Settings _settings = new Settings("Helper");
 
-        private static Settings assist = new Settings("Assist");
-        private static Settings follow = new Settings("Follow");
-        private static Settings info = new Settings("Info");
+        private static Settings _assist = new Settings("Assist");
+        private static Settings _follow = new Settings("Follow");
+        private static Settings _info = new Settings("Info");
 
         private static Item _bagItem;
 
@@ -100,31 +98,19 @@ namespace Helper
 
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
-            follow.AddVariable("FollowSelection", (int)FollowSelection.None);
-            assist.AddVariable("AttackSelection", (int)AttackSelection.Sync);
+            _follow.AddVariable("FollowSelection", (int)FollowSelection.None);
+            _assist.AddVariable("AttackSelection", (int)AttackSelection.Sync);
 
-            //settings.AddVariable("Follow", false);
-            //settings.AddVariable("OSFollow", false);
-            //settings.AddVariable("NavFollow", false);
+            _settings.AddVariable("AutoSit", true);
+            _settings.AddVariable("AutoBags", true);
 
-            //settings.AddVariable("AssistPlayer", false);
+            _settings.AddVariable("SyncMove", false);
+            _settings.AddVariable("SyncUse", true);
+            _settings.AddVariable("SyncChat", false);
+            _settings.AddVariable("SyncTrade", false);
 
-            settings.AddVariable("AutoSit", true);
-            settings.AddVariable("AutoBags", true);
-
-            settings.AddVariable("SyncMove", false);
-            settings.AddVariable("SyncUse", true);
-            //settings.AddVariable("SyncAttack", true);
-            settings.AddVariable("SyncChat", false);
-            settings.AddVariable("SyncTrade", false);
-
-            settings.AddVariable("MorphPathing", false);
-            settings.AddVariable("Db3Shapes", false);
-
-            //settings["Follow"] = false;
-            //settings["OSFollow"] = false;
-            //settings["NavFollow"] = false;
-            //settings["SyncAttack"] = true;
+            _settings.AddVariable("MorphPathing", false);
+            _settings.AddVariable("Db3Shapes", false);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
@@ -153,11 +139,11 @@ namespace Helper
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
-            SettingsController.RegisterSettingsWindow("Helper", pluginDir + "\\UI\\HelperSettingWindow.xml", settings);
+            SettingsController.RegisterSettingsWindow("Helper", pluginDir + "\\UI\\HelperSettingWindow.xml", _settings);
 
-            SettingsController.RegisterSettingsWindow("Assist", pluginDir + "\\UI\\HelperAssistView.xml", assist);
-            SettingsController.RegisterSettingsWindow("Follow", pluginDir + "\\UI\\HelperFollowView.xml", follow);
-            SettingsController.RegisterSettingsWindow("Info", pluginDir + "\\UI\\HelperInfoView.xml", info);
+            SettingsController.RegisterSettingsWindow("Assist", pluginDir + "\\UI\\HelperAssistView.xml", _assist);
+            SettingsController.RegisterSettingsWindow("Follow", pluginDir + "\\UI\\HelperFollowView.xml", _follow);
+            SettingsController.RegisterSettingsWindow("Info", pluginDir + "\\UI\\HelperInfoView.xml", _info);
 
             Chat.RegisterCommand("sync", SyncSwitch);
             Chat.RegisterCommand("leadfollow", LeadFollowSwitch);
@@ -210,7 +196,7 @@ namespace Helper
 
         private void OnZoned(object s, EventArgs e)
         {
-            if (settings["AutoBags"].AsBool())
+            if (_settings["AutoBags"].AsBool())
             {
                 Task.Factory.StartNew(
                     async () =>
@@ -239,7 +225,7 @@ namespace Helper
             {
                 CharDCMoveMessage charDCMoveMsg = (CharDCMoveMessage)n3Msg;
 
-                if (charDCMoveMsg.MoveType == MovementAction.JumpStart && !settings["SyncMove"].AsBool())
+                if (charDCMoveMsg.MoveType == MovementAction.JumpStart && !_settings["SyncMove"].AsBool())
                 {
                     IPCChannel.Broadcast(new JumpMessage()
                     {
@@ -249,7 +235,7 @@ namespace Helper
                 }
                 else
                 {
-                    if (!settings["SyncMove"].AsBool()) { return; }
+                    if (!_settings["SyncMove"].AsBool()) { return; }
 
                     IPCChannel.Broadcast(new MoveMessage()
                     {
@@ -262,7 +248,7 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.Trade)
             {
-                if (!settings["SyncTrade"].AsBool()) { return; }
+                if (!_settings["SyncTrade"].AsBool()) { return; }
 
                 TradeMessage charTradeIpcMsg = (TradeMessage)n3Msg;
 
@@ -290,7 +276,7 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
             {
-                if (!settings["SyncMove"].AsBool()) { return; }
+                if (!_settings["SyncMove"].AsBool()) { return; }
 
                 CharacterActionMessage charActionMsg = (CharacterActionMessage)n3Msg;
 
@@ -314,7 +300,7 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.Attack )
             {
-                if (AttackSelection.Sync != (AttackSelection)assist["AttackSelection"].AsInt32()) { return; }
+                if (AttackSelection.Sync != (AttackSelection)_assist["AttackSelection"].AsInt32()) { return; }
 
                 AttackMessage attackMsg = (AttackMessage)n3Msg;
                 IPCChannel.Broadcast(new AttackIPCMessage()
@@ -324,7 +310,7 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.StopFight)
             {
-                if (AttackSelection.Sync != (AttackSelection)assist["AttackSelection"].AsInt32()) { return; }
+                if (AttackSelection.Sync != (AttackSelection)_assist["AttackSelection"].AsInt32()) { return; }
 
                 StopFightMessage lookAtMsg = (StopFightMessage)n3Msg;
                 IPCChannel.Broadcast(new StopAttackIPCMessage());
@@ -343,7 +329,7 @@ namespace Helper
                         PfId = Playfield.ModelIdentity.Instance
                     });
                 }
-                else if (genericCmdMsg.Action == GenericCmdAction.Use && settings["SyncUse"].AsBool())
+                else if (genericCmdMsg.Action == GenericCmdAction.Use && _settings["SyncUse"].AsBool())
                 {
                     if (Inventory.Find(genericCmdMsg.Target, out Item item) && item.UniqueIdentity == Identity.None && !IsOther(item))
                     {
@@ -406,7 +392,7 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.KnubotOpenChatWindow)
             {
-                if (!settings["SyncChat"].AsBool()) { return; }
+                if (!_settings["SyncChat"].AsBool()) { return; }
 
                 KnuBotOpenChatWindowMessage n3OpenChatMessage = (KnuBotOpenChatWindowMessage)n3Msg;
                 IPCChannel.Broadcast(new NpcChatOpenMessage()
@@ -416,7 +402,7 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.KnubotCloseChatWindow)
             {
-                if (!settings["SyncChat"].AsBool()) { return; }
+                if (!_settings["SyncChat"].AsBool()) { return; }
 
                 KnuBotCloseChatWindowMessage n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
                 IPCChannel.Broadcast(new NpcChatCloseMessage()
@@ -426,7 +412,7 @@ namespace Helper
             }
             else if (n3Msg.N3MessageType == N3MessageType.KnubotAnswer)
             {
-                if (!settings["SyncChat"].AsBool()) { return; }
+                if (!_settings["SyncChat"].AsBool()) { return; }
 
                 KnuBotAnswerMessage n3AnswerMsg = (KnuBotAnswerMessage)n3Msg;
                 IPCChannel.Broadcast(new NpcChatAnswerMessage()
@@ -603,7 +589,7 @@ namespace Helper
                 SettingsController.HelperNavFollowDistance = Config.NavFollowDistance;
             }
 
-            if (!OpenBackpacks && settings["AutoBags"].AsBool())
+            if (!OpenBackpacks && _settings["AutoBags"].AsBool())
             {
                 List<Item> bags = Inventory.Items
                     .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
@@ -650,7 +636,7 @@ namespace Helper
                 _updateTick = Time.NormalTime;
             }
 
-            if (settings["MorphPathing"].AsBool() && Time.NormalTime > _morphPathingTimer + 3)
+            if (_settings["MorphPathing"].AsBool() && Time.NormalTime > _morphPathingTimer + 3)
             {
                 if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281109))
                 {
@@ -671,7 +657,7 @@ namespace Helper
                 _morphPathingTimer = Time.NormalTime;
             }
 
-            if (settings["Db3Shapes"].AsBool() && Time.NormalTime > _shapeUsedTimer + 0.5)
+            if (_settings["Db3Shapes"].AsBool() && Time.NormalTime > _shapeUsedTimer + 0.5)
             {
                 Dynel shape = DynelManager.AllDynels
                     .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 5f
@@ -722,7 +708,7 @@ namespace Helper
                 _useTimer = Time.NormalTime;
             }
 
-            if (AttackSelection.Assist == (AttackSelection)assist["AttackSelection"].AsInt32()
+            if (AttackSelection.Assist == (AttackSelection)_assist["AttackSelection"].AsInt32()
                 && Time.NormalTime > _assistTimer + 1)
             {
                 //if (settings["SyncAttack"].AsBool())
@@ -764,7 +750,7 @@ namespace Helper
                 }
             }
 
-            if (FollowSelection.LeadFollow == (FollowSelection)follow["FollowSelection"].AsInt32()
+            if (FollowSelection.LeadFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 //if (settings["OSFollow"].AsBool() || settings["NavFollow"].AsBool())
@@ -782,7 +768,7 @@ namespace Helper
                 _followTimer = Time.NormalTime;
             }
 
-            if (FollowSelection.NavFollow == (FollowSelection)follow["FollowSelection"].AsInt32()
+            if (FollowSelection.NavFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 //if (settings["Follow"].AsBool() || settings["OSFollow"].AsBool())
@@ -815,7 +801,7 @@ namespace Helper
                 }
             }
 
-            if (FollowSelection.OSFollow == (FollowSelection)follow["FollowSelection"].AsInt32()
+            if (FollowSelection.OSFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 if (SettingsController.HelperFollowPlayer != String.Empty)
@@ -871,7 +857,7 @@ namespace Helper
             else
             {
                 Chat.WriteLine($"Cannot find {targetDynel.Name}. Make sure to type captial first letter.");
-                settings["NavFollow"] = false;
+                _settings["NavFollow"] = false;
                 return;
             }
         }
@@ -1073,7 +1059,7 @@ namespace Helper
 
         private void OnUseItemMessage(int sender, IPCMessage msg)
         {
-            if (!settings["SyncUse"].AsBool() || IsActiveWindow || Game.IsZoning) { return; }
+            if (!_settings["SyncUse"].AsBool() || IsActiveWindow || Game.IsZoning) { return; }
 
             UsableMessage usableMsg = (UsableMessage)msg;
 
@@ -1336,8 +1322,8 @@ namespace Helper
         {
             if (param.Length == 0)
             {
-                settings["SyncUse"] = !settings["SyncUse"].AsBool();
-                Chat.WriteLine($"Sync use : {settings["SyncUse"].AsBool()}");
+                _settings["SyncUse"] = !_settings["SyncUse"].AsBool();
+                Chat.WriteLine($"Sync use : {_settings["SyncUse"].AsBool()}");
             }
         }
 
@@ -1345,8 +1331,8 @@ namespace Helper
         {
             if (param.Length == 0)
             {
-                settings["SyncChat"] = !settings["SyncChat"].AsBool();
-                Chat.WriteLine($"Sync chat : {settings["SyncChat"].AsBool()}");
+                _settings["SyncChat"] = !_settings["SyncChat"].AsBool();
+                Chat.WriteLine($"Sync chat : {_settings["SyncChat"].AsBool()}");
             }
         }
 
@@ -1354,8 +1340,8 @@ namespace Helper
         {
             if (param.Length == 0)
             {
-                settings["SyncTrade"] = !settings["SyncTrade"].AsBool();
-                Chat.WriteLine($"Sync trading : {settings["SyncTrade"].AsBool()}");
+                _settings["SyncTrade"] = !_settings["SyncTrade"].AsBool();
+                Chat.WriteLine($"Sync trading : {_settings["SyncTrade"].AsBool()}");
             }
         }
 
@@ -1363,8 +1349,8 @@ namespace Helper
         {
             if (param.Length == 0)
             {
-                settings["SyncMove"] = !settings["SyncMove"].AsBool();
-                Chat.WriteLine($"Sync move : {settings["SyncMove"].AsBool()}");
+                _settings["SyncMove"] = !_settings["SyncMove"].AsBool();
+                Chat.WriteLine($"Sync move : {_settings["SyncMove"].AsBool()}");
             }
         }
 
@@ -1373,8 +1359,8 @@ namespace Helper
         {
             if (param.Length == 0)
             {
-                settings["AutoSit"] = !settings["AutoSit"].AsBool();
-                Chat.WriteLine($"Auto sit : {settings["AutoSit"].AsBool()}");
+                _settings["AutoSit"] = !_settings["AutoSit"].AsBool();
+                Chat.WriteLine($"Auto sit : {_settings["AutoSit"].AsBool()}");
             }
         }
 
@@ -1382,8 +1368,8 @@ namespace Helper
         {
             if (param.Length == 0)
             {
-                settings["Follow"] = !settings["Follow"].AsBool();
-                Chat.WriteLine($"Lead follow : {settings["Follow"].AsBool()}");
+                _settings["Follow"] = !_settings["Follow"].AsBool();
+                Chat.WriteLine($"Lead follow : {_settings["Follow"].AsBool()}");
             }
         }
 
@@ -1576,7 +1562,7 @@ namespace Helper
 
             if (healpet == null || kit == null) { return; }
 
-            if (settings["AutoSit"].AsBool())
+            if (_settings["AutoSit"].AsBool())
             {
                 if (CanUseSitKit() && Time.NormalTime > _sitPetUsedTimer + 16
                     && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f && healpet.Character.IsInLineOfSight)
@@ -1610,7 +1596,7 @@ namespace Helper
 
             if (kit == null) { return; }
 
-            if (spell != null && settings["AutoSit"].AsBool())
+            if (spell != null && _settings["AutoSit"].AsBool())
             {
                 if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
                 {

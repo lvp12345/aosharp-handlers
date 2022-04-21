@@ -20,7 +20,7 @@ namespace CombatHandler.Generic
 
         private string pluginDir;
 
-        protected AOSharp.Core.Settings settings;
+        protected AOSharp.Core.Settings _settings;
 
         protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
         {
@@ -83,7 +83,7 @@ namespace CombatHandler.Generic
             this.pluginDir = pluginDir;
             Game.TeleportEnded += TeleportEnded;
 
-            settings = new AOSharp.Core.Settings("CombatHandler");
+            _settings = new AOSharp.Core.Settings("CombatHandler");
 
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
@@ -196,7 +196,7 @@ namespace CombatHandler.Generic
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, settings);
+            SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, _settings);
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -1259,7 +1259,7 @@ namespace CombatHandler.Generic
 
         protected bool IsSettingEnabled(string settingName)
         {
-            return settings[settingName].AsBool();
+            return _settings[settingName].AsBool();
         }
 
         protected bool HasNCU(Spell spell, SimpleChar target)

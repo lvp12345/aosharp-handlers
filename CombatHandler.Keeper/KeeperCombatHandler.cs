@@ -19,15 +19,15 @@ namespace Desu
         public static Window buffWindow;
         public KeeperCombatHandler(string pluginDir) : base(pluginDir)
         {
-            settings.AddVariable("NanoAura", false);
-            settings.AddVariable("HealAura", false);
-            settings.AddVariable("ReflectAura", false);
-            settings.AddVariable("AAOAura", false);
-            settings.AddVariable("DamageAura", false);
-            settings.AddVariable("DerootAura", false);
-            settings.AddVariable("ReaperAura", false);
-            settings.AddVariable("SancAura", false);
-            settings.AddVariable("SpamAntifear", false);
+            _settings.AddVariable("NanoAura", false);
+            _settings.AddVariable("HealAura", false);
+            _settings.AddVariable("ReflectAura", false);
+            _settings.AddVariable("AAOAura", false);
+            _settings.AddVariable("DamageAura", false);
+            _settings.AddVariable("DerootAura", false);
+            _settings.AddVariable("ReaperAura", false);
+            _settings.AddVariable("SancAura", false);
+            _settings.AddVariable("SpamAntifear", false);
 
             RegisterSettingsWindow("Keeper Handler", "KeeperSettingsView.xml");
 
@@ -83,32 +83,32 @@ namespace Desu
         {
             if (IsSettingEnabled("HealAura") && IsSettingEnabled("NanoAura"))
             {
-                settings["HealAura"] = false;
-                settings["NanoAura"] = false;
+                _settings["HealAura"] = false;
+                _settings["NanoAura"] = false;
 
                 Chat.WriteLine($"Can only have one Aura active.");
             }
 
             if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("AAOAura"))
             {
-                settings["ReflectAura"] = false;
-                settings["AAOAura"] = false;
+                _settings["ReflectAura"] = false;
+                _settings["AAOAura"] = false;
 
                 Chat.WriteLine($"Can only have one Aura active.");
             }
 
             if (IsSettingEnabled("DamageAura") && IsSettingEnabled("DerootAura"))
             {
-                settings["DamageAura"] = false;
-                settings["DerootAura"] = false;
+                _settings["DamageAura"] = false;
+                _settings["DerootAura"] = false;
 
                 Chat.WriteLine($"Can only have one Aura active.");
             }
 
             if (IsSettingEnabled("SancAura") && IsSettingEnabled("ReaperAura"))
             {
-                settings["SancAura"] = false;
-                settings["ReaperAura"] = false;
+                _settings["SancAura"] = false;
+                _settings["ReaperAura"] = false;
 
                 Chat.WriteLine($"Can only have one Aura active.");
             }

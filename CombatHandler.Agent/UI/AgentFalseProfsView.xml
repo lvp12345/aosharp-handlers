@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+    <OptionRadioButtonGroup label="" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__FalseProfSelection">
+      <RadioButton label="None" value="0"/>
+      <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+      <RadioButton label="Metaphysicist" value="1"/>
+      <RadioButton label="Soldier" value="2"/>
+      <RadioButton label="Enforcer" value="3"/>
+      <RadioButton label="Engineer" value="4"/>
+      <RadioButton label="Doctor" value="5"/>
+      <RadioButton label="Fixer" value="6"/>
+      <RadioButton label="Beauracrat" value="7"/>
+      <RadioButton label="Martial Artist" value="8"/>
+      <RadioButton label="Nano Technician" value="9"/>
+      <RadioButton label="Trader" value="10"/>
+      <RadioButton label="Adventurer" value="11"/>
+    </OptionRadioButtonGroup>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+  </BorderView>
+</root>

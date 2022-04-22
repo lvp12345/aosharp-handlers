@@ -58,6 +58,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\AgentFalseProfsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\AgentProcView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

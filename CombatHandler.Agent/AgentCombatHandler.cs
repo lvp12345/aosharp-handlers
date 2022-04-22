@@ -16,6 +16,7 @@ namespace CombatHandler.Agent
         public static Window buffWindow;
         public static Window debuffWindow;
         public static Window procWindow;
+        public static Window falseProfWindow;
         public static Window healingWindow;
 
         public static string PluginDirectory;
@@ -44,6 +45,8 @@ namespace CombatHandler.Agent
             _settings.AddVariable("LazerAim", false);
             _settings.AddVariable("NotumChargedRounds", false);
 
+            _settings.AddVariable("FalseProfSelection", (int)FalseProfSelection.None);
+
 
             RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
@@ -51,6 +54,7 @@ namespace CombatHandler.Agent
             RegisterSettingsWindow("Procs", "AgentProcView.xml");
             RegisterSettingsWindow("Buffs", "AgentDebuffsView.xml");
             RegisterSettingsWindow("Debuffs", "AgentBuffsView.xml");
+            RegisterSettingsWindow("False Professions", "AgentFalseProfsView.xml");
 
             ////LE Procs
             RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, LEProc);
@@ -70,7 +74,17 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
             //RegisterSpellProcessor(RelevantNanos.CH, CompleteHealing, CombatActionPriority.Medium);
 
-            RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoc);
+            RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);
+            RegisterSpellProcessor(RelevantNanos.FalseProfAdv, FalseProfAdventurer);
+            RegisterSpellProcessor(RelevantNanos.FalseProfCrat, FalseProfBeauracrat);
+            RegisterSpellProcessor(RelevantNanos.FalseProfEnf, FalseProfEnforcer);
+            RegisterSpellProcessor(RelevantNanos.FalseProfEng, FalseProfEngineer);
+            RegisterSpellProcessor(RelevantNanos.FalseProfFixer, FalseProfFixer);
+            RegisterSpellProcessor(RelevantNanos.FalseProfMa, FalseProfMartialArtist);
+            RegisterSpellProcessor(RelevantNanos.FalseProfMp, FalseProfMetaphysicist);
+            RegisterSpellProcessor(RelevantNanos.FalseProfNt, FalseProfNanoTechnician);
+            RegisterSpellProcessor(RelevantNanos.FalseProfSol, FalseProfSoldier);
+            RegisterSpellProcessor(RelevantNanos.FalseProfTrader, FalseProfTrader);
 
             RegisterSpellProcessor(RelevantNanos.DetauntProcs, DetauntProc);
             RegisterSpellProcessor(RelevantNanos.DotProcs, DamageProc);
@@ -113,6 +127,35 @@ namespace CombatHandler.Agent
             }
         }
 
+        private void FalseProfView(object s, ButtonBase button)
+        {
+            if (buffWindow != null && procWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("False Professions", procWindow);
+            }
+            else if (procWindow != null && procWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("False Professions", procWindow);
+            }
+            else if (debuffWindow != null && debuffWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("False Professions", debuffWindow);
+            }
+            else if (healingWindow != null && healingWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("False Professions", healingWindow);
+            }
+            else
+            {
+                falseProfWindow = Window.CreateFromXml("False Professions", PluginDirectory + "\\UI\\AgentFalseProfsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                falseProfWindow.Show(true);
+            }
+        }
+
         private void BuffView(object s, ButtonBase button)
         {
             if (procWindow != null && procWindow.IsValid)
@@ -126,6 +169,10 @@ namespace CombatHandler.Agent
             else if (healingWindow != null && healingWindow.IsValid)
             {
                 SettingsController.AppendSettingsTab("Buffs", healingWindow);
+            }
+            else if (falseProfWindow != null && falseProfWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Buffs", falseProfWindow);
             }
             else
             {
@@ -152,6 +199,10 @@ namespace CombatHandler.Agent
             {
                 SettingsController.AppendSettingsTab("Debuffs", healingWindow);
             }
+            else if (falseProfWindow != null && falseProfWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Debuffs", falseProfWindow);
+            }
             else
             {
                 debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\AgentDebuffsView.xml",
@@ -176,6 +227,10 @@ namespace CombatHandler.Agent
             else if (procWindow != null && procWindow.IsValid)
             {
                 SettingsController.AppendSettingsTab("Healing", procWindow);
+            }
+            else if (falseProfWindow != null && falseProfWindow.IsValid)
+            {
+                SettingsController.AppendSettingsTab("Healing", falseProfWindow);
             }
             else
             {
@@ -220,6 +275,12 @@ namespace CombatHandler.Agent
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = ProcView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("FalseProfsView", out Button falseProfView))
+                {
+                    falseProfView.Tag = SettingsController.settingsWindow;
+                    falseProfView.Clicked = FalseProfView;
                 }
             }
 
@@ -318,9 +379,85 @@ namespace CombatHandler.Agent
 
         #region Instanced Logic
 
-        private bool FalseProfDoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //private bool FalseProfDoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+
+        //    return GenericBuff(spell, fightingTarget, ref actionTarget);
+        //}
+
+        private bool FalseProfEnforcer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+            if (FalseProfSelection.Enforcer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfEngineer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.Engineer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfNanoTechnician(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.NanoTechnician != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfTrader(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.Trader != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfBeauracrat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.Beauracrat != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfMartialArtist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.MartialArtist != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfFixer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.Fixer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfAdventurer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.Adventurer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfDoctor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.Doctor != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool FalseProfSoldier(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.Soldier != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+        private bool FalseProfMetaphysicist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (FalseProfSelection.Metaphysicist != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -423,10 +560,26 @@ namespace CombatHandler.Agent
 
         #region Misc
 
+        public enum FalseProfSelection
+        {
+            None, Metaphysicist, Soldier, Enforcer, Engineer, Doctor, Fixer, Beauracrat, MartialArtist, NanoTechnician, Trader, Adventurer
+        }
+
+
         private static class RelevantNanos
         {
             public static int[] DetauntProcs = { 226437, 226435, 226433, 226431, 226429, 226427 };
             public static int[] FalseProfDoc = { 117210, 117221, 32033 };
+            public static int[] FalseProfEng = { 117213, 117224, 32034 };
+            public static int[] FalseProfSol = { 117216, 117227, 32038 };
+            public static int[] FalseProfCrat = { 117209, 117220, 32032 };
+            public static int[] FalseProfTrader = { 117211, 117222, 32040 };
+            public static int[] FalseProfAdv = { 117214, 117225, 32030 };
+            public static int[] FalseProfMp = { 117210, 117221, 32033 };
+            public static int[] FalseProfFixer = { 117212, 117223, 32039 };
+            public static int[] FalseProfEnf = { 117217, 117228, 32041 };
+            public static int[] FalseProfMa = { 117215, 117226, 32035 };
+            public static int[] FalseProfNt = { 117207, 117218, 32037 };
             public static int[] DotProcs = { 226425, 226423, 226421, 226419, 226417, 226415, 226413, 226410 };
             public static int[] TeamCritBuffs = { 160791, 160789, 160787 };
             public static int AssassinsAimedShot = 275007;

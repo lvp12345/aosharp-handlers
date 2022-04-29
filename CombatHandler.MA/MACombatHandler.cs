@@ -40,7 +40,7 @@ namespace Desu
 
             RegisterSettingsWindow("Buffs", "MABuffsView.xml");
             RegisterSettingsWindow("Healing", "MAHealingView.xml");
-            RegisterSettingsWindow("Taunts", "MATauntsViewView.xml");
+            RegisterSettingsWindow("Taunts", "MATauntsView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, LEProc, CombatActionPriority.Low);

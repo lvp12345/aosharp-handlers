@@ -43,6 +43,7 @@ namespace Helper
         private static double _followTimer;
         private static double _assistTimer;
         private static double _morphPathingTimer;
+        private static double _bellyPathingTimer;
         private static double _zixMorphTimer;
 
         public static bool Sitting = false;
@@ -73,6 +74,13 @@ namespace Helper
             new Vector3(75.5, 29.0, 58.6),
             new Vector3(75.5, 29.0, 58.6)
             //new Vector3(76.1, 29.0, 28.3)
+        };
+
+        List<Vector3> BellyPath = new List<Vector3>
+        {
+            new Vector3(143.1f, 90.0f, 108.2f),
+            new Vector3(156.1f, 90.0f, 102.3f),
+            new Vector3(178.0f, 90.0f, 97.6f)
         };
 
         List<Vector3> MorphHorse = new List<Vector3>
@@ -110,6 +118,7 @@ namespace Helper
             _settings.AddVariable("SyncTrade", false);
 
             _settings.AddVariable("MorphPathing", false);
+            _settings.AddVariable("BellyPathing", false);
             _settings.AddVariable("Db3Shapes", false);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
@@ -634,6 +643,28 @@ namespace Helper
                 }
 
                 _updateTick = Time.NormalTime;
+            }
+
+            if (_settings["BellyPathing"].AsBool() && Time.NormalTime > _bellyPathingTimer + 1)
+            {
+                Dynel Pustule = DynelManager.AllDynels
+                    .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 7f
+                        && x.Name == "Glowing Pustule")
+                    .FirstOrDefault();
+
+                if (Pustule != null)
+                {
+                    Pustule.Use();
+                    return;
+                }
+
+                if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(143.1f, 90.0f, 108.2f)) < 15f
+                    && !MovementController.Instance.IsNavigating)
+                {
+                    MovementController.Instance.SetPath(BellyPath);
+                }
+
+                _bellyPathingTimer = Time.NormalTime;
             }
 
             if (_settings["MorphPathing"].AsBool() && Time.NormalTime > _morphPathingTimer + 3)

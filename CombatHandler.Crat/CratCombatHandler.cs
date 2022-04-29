@@ -893,8 +893,9 @@ namespace Desu
             if (!IsSettingEnabled("AoeRoot") || !CanCast(spell)) { return false; }
 
             SimpleChar target = DynelManager.NPCs
-                .Where(c => c.Name == "Flaming Vengeance" ||
-                    c.Name == "Hand of the Colonel")
+                .Where(c => c.Name == "Flaming Vengeance" 
+                    || c.Name == "Hand of the Colonel"
+                    || c.Name == "Harbinger of Pestilence")
                 .Where(c => DoesNotHaveAoeRootRunning(c))
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                 .FirstOrDefault();

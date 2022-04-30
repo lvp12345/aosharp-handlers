@@ -658,7 +658,7 @@ namespace Helper
                     return;
                 }
 
-                if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(143.1f, 90.0f, 108.2f)) < 15f
+                if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(132.0f, 90.0f, 117.0f)) < 10f
                     && !MovementController.Instance.IsNavigating)
                 {
                     MovementController.Instance.SetPath(BellyPath);

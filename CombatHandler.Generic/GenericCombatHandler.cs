@@ -75,7 +75,8 @@ namespace CombatHandler.Generic
                     "Guard",
                     "Awakened Xan",
                     "Fanatic",
-                    "Peacekeeper Coursey"
+                    "Peacekeeper Coursey",
+                    "Harbinger of Pestilence"
         };
 
         public GenericCombatHandler(string pluginDir)

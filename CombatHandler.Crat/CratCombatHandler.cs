@@ -636,7 +636,7 @@ namespace Desu
             SimpleChar target = DynelManager.NPCs
                 .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
                 .Where(c => c.IsInLineOfSight)
-                .Where(x => x.Name == "Kyr'Ozch Guardian")
+                .Where(c => c.Name == "Kyr'Ozch Guardian")
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
                 .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
                 .Where(c => c.MaxHealth < 1000000)
@@ -895,7 +895,8 @@ namespace Desu
             SimpleChar target = DynelManager.NPCs
                 .Where(c => c.Name == "Flaming Vengeance" 
                     || c.Name == "Hand of the Colonel"
-                    || c.Name == "Harbinger of Pestilence")
+                    || c.Name == "Harbinger of Pestilence"
+                    || c.Name == "Outzone Supplier")
                 .Where(c => !c.Buffs.Contains(spell.Nanoline))
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                 .FirstOrDefault();

@@ -896,7 +896,7 @@ namespace Desu
                 .Where(c => c.Name == "Flaming Vengeance" 
                     || c.Name == "Hand of the Colonel"
                     || c.Name == "Harbinger of Pestilence")
-                .Where(c => DoesNotHaveAoeRootRunning(c))
+                .Where(c => !c.Buffs.Contains(spell.Nanoline))
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
                 .FirstOrDefault();
 

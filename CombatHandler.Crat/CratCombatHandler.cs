@@ -888,17 +888,30 @@ namespace Desu
             return ToggledDebuffOthersInCombat("OSMalaise", spell, fightingTarget, ref actionTarget);
         }
 
+        private bool RootLogic(SimpleChar target, Spell spell)
+        {
+            if (target.Buffs.Contains(NanoLine.Root))
+            {
+                if (target.Buffs.FirstOrDefault(c => c.Nanoline == NanoLine.Root).RemainingTime < 30f)
+                    return true;
+            }
+
+            if (!target.Buffs.Contains(NanoLine.Root))
+                return true;
+
+            return false;
+        }
+
         private bool AoeRoot(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("AoeRoot") || !CanCast(spell)) { return false; }
 
-            SimpleChar target = DynelManager.NPCs
+            SimpleChar target = DynelManager.Characters
                 .Where(c => c.Name == "Flaming Vengeance" 
                     || c.Name == "Hand of the Colonel"
-                    || c.Name == "Harbinger of Pestilence"
-                    || c.Name == "Outzone Supplier")
-                .Where(c => !c.Buffs.Contains(spell.Nanoline))
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                    || c.Name == "Harbinger of Pestilence")
+                .Where(c => RootLogic(c, spell))
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 50f)
                 .FirstOrDefault();
 
             if (target != null)

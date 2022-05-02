@@ -29,7 +29,7 @@ namespace Desu
         {
             _settings.AddVariable("SingleTaunt", false);
             _settings.AddVariable("OSTaunt", false);
-            _settings.AddVariable("PoHTaunt", false);
+            _settings.AddVariable("RaidTaunt", false);
             _settings.AddVariable("AOETaunt", false);
             _settings.AddVariable("Absorbs", false);
 
@@ -169,10 +169,12 @@ namespace Desu
                 }
             }
 
-            if (IsSettingEnabled("PoHTaunt"))
+            if (IsSettingEnabled("RaidTaunt"))
             {
                 SimpleChar mob = DynelManager.NPCs
-                    .Where(c => c.Name == "Azdaja the Joyous" || c.Name == "The Awoken Nightmare, Phobettor")
+                    .Where(c => c.Name == "Azdaja the Joyous" 
+                    || c.Name == "The Awoken Nightmare, Phobettor"
+                    || c.Name == "Abmouth Supremus")
                     .FirstOrDefault();
 
                 if (mob != null)

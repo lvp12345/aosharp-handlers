@@ -83,6 +83,12 @@ namespace Helper
             new Vector3(178.0f, 90.0f, 97.6f)
         };
 
+        List<Vector3> OutBellyPath = new List<Vector3>
+        {
+            new Vector3(214.8f, 100.6f, 126.5f),
+            new Vector3(210.6f, 100.2f, 129.7f)
+        };
+
         List<Vector3> MorphHorse = new List<Vector3>
         {
             new Vector3(128.4, 29.0, 59.6),
@@ -655,19 +661,24 @@ namespace Helper
                 if (Pustule != null)
                 {
                     Pustule.Use();
-                    return;
                 }
 
-                if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(132.0f, 90.0f, 117.0f)) < 10f
+                if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(132.0f, 90.0f, 117.0f)) < 2f
                     && !MovementController.Instance.IsNavigating)
                 {
                     MovementController.Instance.SetPath(BellyPath);
                 }
 
+                if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(217.0f, 94.0f, 148.0f)) < 2f
+                    && !MovementController.Instance.IsNavigating)
+                {
+                    MovementController.Instance.SetPath(OutBellyPath);
+                }
+
                 _bellyPathingTimer = Time.NormalTime;
             }
 
-            if (_settings["MorphPathing"].AsBool() && Time.NormalTime > _morphPathingTimer + 3)
+            if (_settings["MorphPathing"].AsBool() && Time.NormalTime > _morphPathingTimer + 2)
             {
                 if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281109))
                 {

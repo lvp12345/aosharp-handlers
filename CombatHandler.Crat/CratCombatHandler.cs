@@ -106,7 +106,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), MalaiseTargetDebuff, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, LEInitTargetDebuff);
             RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, LEInitTargetDebuff);
-            RegisterSpellProcessor(RelevantNanos.AoeRoots, AoeRoot, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Shackles, AoeRoot, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalmDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.AoECalms, AoECalmDebuff, CombatActionPriority.High);
@@ -1174,6 +1174,7 @@ namespace Desu
             public const int SkilledGunSlinger = 263251;
             public const int GreaterGunSlinger = 263250;
             public const int MastersBidding = 268171;
+            public const int Shackles = 82463;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
             public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Identity.Instance != GreaterGunSlinger && spell.Identity.Instance != SkilledGunSlinger).ToArray();

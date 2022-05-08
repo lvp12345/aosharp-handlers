@@ -63,7 +63,7 @@ namespace Desu
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke);
             RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
-            RegisterSpellProcessor(RelevantNanos.PierceReflect, PierceNuke);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
             RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
             RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);

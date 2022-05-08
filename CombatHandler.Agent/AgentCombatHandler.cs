@@ -45,6 +45,8 @@ namespace CombatHandler.Agent
             _settings.AddVariable("LazerAim", false);
             _settings.AddVariable("NotumChargedRounds", false);
 
+            _settings.AddVariable("Concentration", false);
+
             _settings.AddVariable("FalseProfSelection", (int)FalseProfSelection.None);
 
 
@@ -543,6 +545,8 @@ namespace CombatHandler.Agent
 
         private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Concentration")) { return false; }
+
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 

@@ -10,7 +10,8 @@
     <TextView value="/syncuse - toggles sync using items." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/syncchat - toggles sync chatting." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/synctrade - toggles sync trading." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="/autsit - toggles auto sitting." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="/autosit - toggles auto sitting." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="/autobags - toggles auto sitting." layout_borders="Rect(0,0,0,2)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/reform - reforms the team." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/form - forms the team /form raid to convert after makes the team." layout_borders="Rect(0,0,0,2)"/>
@@ -18,8 +19,6 @@
     <TextView value="/convert - converts the team to a raid." layout_borders="Rect(0,0,0,2)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/leadfollow - toggles follow the leader of the team while window is acitve." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="/assistplayer - toggles assisting named player." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="/navfollow - toggles nav follow (follow by sending positions)." layout_borders="Rect(0,0,0,2)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
   </BorderView>
 </root>

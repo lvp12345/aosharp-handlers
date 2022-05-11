@@ -7,7 +7,6 @@
         <OptionCheckBox label="Troll form" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TrollForm" layout_borders="Rect(10,1,5,1)"/>
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
         <OptionCheckBox label="(OST) Mongo and Absorbs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__OST" layout_borders="Rect(10,1,5,1)"/>
-        <TextView value="" layout_borders="Rect(0,0,0,2)"/>
         <OptionCheckBox label="(POH/Subway) Spam taunt" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RaidTaunt" layout_borders="Rect(10,1,5,1)"/>
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>

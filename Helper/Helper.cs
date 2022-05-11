@@ -160,10 +160,11 @@ namespace Helper
             SettingsController.RegisterSettingsWindow("Follow", pluginDir + "\\UI\\HelperFollowView.xml", _follow);
             SettingsController.RegisterSettingsWindow("Info", pluginDir + "\\UI\\HelperInfoView.xml", _info);
 
-            Chat.RegisterCommand("sync", SyncSwitch);
             Chat.RegisterCommand("leadfollow", LeadFollowSwitch);
             Chat.RegisterCommand("autosit", AutoSitSwitch);
+            Chat.RegisterCommand("autobags", AutoBagsSwitch);
 
+            Chat.RegisterCommand("sync", SyncSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
@@ -1396,6 +1397,14 @@ namespace Helper
             }
         }
 
+        private void AutoBagsSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["AutoBags"] = !_settings["AutoBags"].AsBool();
+                Chat.WriteLine($"Auto bags : {_settings["AutoBags"].AsBool()}");
+            }
+        }
 
         private void AutoSitSwitch(string command, string[] param, ChatWindow chatWindow)
         {

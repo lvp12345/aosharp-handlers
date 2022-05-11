@@ -132,8 +132,11 @@ namespace CombatHandler.Generic
             //RegisterItemProcessor(RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, HealthAndNanoStim, CombatActionPriority.High);
             //RegisterItemProcessor(RelevantItems.HealthAndNanoStim200, RelevantItems.HealthAndNanoStim400, HealthAndNanoStim, CombatActionPriority.High);
 
-            RegisterItemProcessor(RelevantItems.RezCan, RelevantItems.RezCan, UseRezCan);
-            RegisterItemProcessor(RelevantItems.ExperienceStim, RelevantItems.ExperienceStim, ExperienceStim);
+            //RegisterItemProcessor(RelevantItems.RezCan1, RelevantItems.RezCan1, RezCan);
+            //RegisterItemProcessor(RelevantItems.ExpCan1, RelevantItems.ExpCan1, ExpCan);
+
+            RegisterItemProcessor(new int[] { RelevantItems.RezCan1, RelevantItems.RezCan2 }, RezCan);
+            RegisterItemProcessor(new int[] { RelevantItems.ExpCan1, RelevantItems.ExpCan2 }, ExpCan);
 
             RegisterItemProcessor(new int[] { RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, 
             RelevantItems.HealthAndNanoStim400, }, HealthAndNanoStim, CombatActionPriority.High);
@@ -646,7 +649,7 @@ namespace CombatHandler.Generic
 
         #region Items
 
-        private bool UseRezCan(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool RezCan(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)) { return false; }
 
@@ -679,7 +682,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        private bool ExperienceStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ExpCan(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)) { return false; }
 
@@ -1389,8 +1392,10 @@ namespace CombatHandler.Generic
             public const int BlessedWithThunderHigh = 204327;
             public const int GnuffsEternalRiftCrystal = 303179;
             public const int Drone = 303188;
-            public const int RezCan = 301070;
-            public const int ExperienceStim = 288769;
+            public const int RezCan1 = 301070;
+            public const int RezCan2 = 303390;
+            public const int ExpCan1 = 288769;
+            public const int ExpCan2 = 303376;
             public const int PremSitKit = 297274;
             public const int AreteSitKit = 292256;
             public const int SitKit1 = 291082;

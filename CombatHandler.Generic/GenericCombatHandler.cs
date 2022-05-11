@@ -137,6 +137,7 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(new int[] { RelevantItems.RezCan1, RelevantItems.RezCan2 }, RezCan);
             RegisterItemProcessor(new int[] { RelevantItems.ExpCan1, RelevantItems.ExpCan2 }, ExpCan);
+            RegisterItemProcessor(new int[] { RelevantItems.InsuranceCan1, RelevantItems.InsuranceCan2 }, InsuranceCan);
 
             RegisterItemProcessor(new int[] { RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, 
             RelevantItems.HealthAndNanoStim400, }, HealthAndNanoStim, CombatActionPriority.High);
@@ -680,6 +681,18 @@ namespace CombatHandler.Generic
             }
 
             return false;
+        }
+
+        private bool InsuranceCan(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
+                || DynelManager.LocalPlayer.GetStat(Stat.UnsavedXP) == 0
+                || DynelManager.LocalPlayer.Buffs.Contains(300727)) { return false; }
+
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = false;
+            return true;
+
         }
 
         private bool ExpCan(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1396,6 +1409,8 @@ namespace CombatHandler.Generic
             public const int RezCan2 = 303390;
             public const int ExpCan1 = 288769;
             public const int ExpCan2 = 303376;
+            public const int InsuranceCan1 = 300728;
+            public const int InsuranceCan2 = 303389;
             public const int PremSitKit = 297274;
             public const int AreteSitKit = 292256;
             public const int SitKit1 = 291082;

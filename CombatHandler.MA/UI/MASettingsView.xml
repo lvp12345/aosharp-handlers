@@ -11,6 +11,8 @@
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <Button name="TauntsView" label="Taunts" layout_borders="Rect(5,5,3,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+        <Button name="ProcsView" label="Procs" layout_borders="Rect(5,5,3,5)"/>
+        <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
       </View>
     </BorderView>

@@ -18,9 +18,20 @@ namespace Desu
         public static double _singleTauntTick;
         public static double _singleTaunt;
 
-        public static Window buffWindow;
-        public static Window tauntWindow;
-        public static Window healingWindow;
+        public static Window _buffWindow;
+        public static Window _tauntWindow;
+        public static Window _healingWindow;
+        public static Window _procWindow;
+
+        public static View _buffView;
+        public static View _tauntView;
+        public static View _healingView;
+        public static View _procView;
+
+        private static Settings buff = new Settings("Buffs");
+        private static Settings taunt = new Settings("Taunts");
+        private static Settings healing = new Settings("Healing");
+        private static Settings proc = new Settings("Procs");
 
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -30,6 +41,9 @@ namespace Desu
             _settings.AddVariable("Heal", false);
             _settings.AddVariable("OSHeal", false);
 
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AbsoluteFist);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.SelfReconstruction);
+
             _settings.AddVariable("EvadesTeam", false);
 
             _settings.AddVariable("Zazen", false);
@@ -38,13 +52,24 @@ namespace Desu
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
-            RegisterSettingsWindow("Buffs", "MABuffsView.xml");
-            RegisterSettingsWindow("Healing", "MAHealingView.xml");
-            RegisterSettingsWindow("Taunts", "MATauntsView.xml");
+            SettingsController.RegisterSettingsWindow("Buffs", pluginDir + "\\UI\\MABuffsView.xml", buff);
+            SettingsController.RegisterSettingsWindow("Healing", pluginDir + "\\UI\\MAHealingView.xml", healing);
+            SettingsController.RegisterSettingsWindow("Taunts", pluginDir + "\\UI\\MATauntsView.xml", taunt);
+            SettingsController.RegisterSettingsWindow("Procs", pluginDir + "\\UI\\MAProcsView.xml", proc);
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, LEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, AbsoluteFist, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenKi, StrengthenKi, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDisruptKi, DisruptKi, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSmashingFist, SmashingFist, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenSpirit, StrengthenSpirit, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStingingFist, StingingFist, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSelfReconstruction, SelfReconstruction, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, DebilitatingStrike, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistHealingMeditation, HealingMeditation, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAttackLigaments, AttackLigaments, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, MedicinalRemedy, CombatActionPriority.Low);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.ReduceInertia, TeamBuffExcludeInnerSanctum);
@@ -86,66 +111,175 @@ namespace Desu
             PluginDirectory = pluginDir;
         }
 
-        private void BuffView(object s, ButtonBase button)
+        private void ProcView(object s, ButtonBase button)
         {
-            if (tauntWindow != null && tauntWindow.IsValid)
+            if (_healingWindow != null && _healingWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Buffs", tauntWindow);
+                if (_procView == null)
+                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
+
+                if (!_healingWindow.Views.Contains(_procView))
+                {
+                    _healingWindow.AppendTab("Procs", _procView);
+                }
             }
-            else if (healingWindow != null && healingWindow.IsValid)
+            else if (_buffWindow != null && _healingWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Buffs", healingWindow);
+                if (_procView == null)
+                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
+
+                if (!_procWindow.Views.Contains(_procView))
+                {
+                    _procWindow.AppendTab("Procs", _procView);
+                }
+            }
+            else if (_tauntWindow != null && _procWindow.IsValid)
+            {
+                if (_procView == null)
+                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
+
+                if (!_tauntWindow.Views.Contains(_procView))
+                {
+                    _tauntWindow.AppendTab("Procs", _procView);
+                }
             }
             else
             {
-                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MABuffsView.xml",
+                _procWindow = Window.CreateFromXml("Procs", PluginDirectory + "\\UI\\MAProcsView.xml",
                     windowSize: new Rect(0, 0, 240, 345),
                     windowStyle: WindowStyle.Default,
                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-                buffWindow.Show(true);
+                _procWindow.Show(true);
+            }
+        }
+
+        private void BuffView(object s, ButtonBase button)
+        {
+            if (_healingWindow != null && _healingWindow.IsValid)
+            {
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
+
+                if (!_healingWindow.Views.Contains(_buffView))
+                {
+                    _healingWindow.AppendTab("Buffs", _buffView);
+                }
+            }
+            else if (_procWindow != null && _procWindow.IsValid)
+            {
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
+
+                if (!_procWindow.Views.Contains(_buffView))
+                {
+                    _procWindow.AppendTab("Buffs", _buffView);
+                }
+            }
+            else if (_tauntWindow != null && _procWindow.IsValid)
+            {
+                if (_buffView == null)
+                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
+
+                if (!_tauntWindow.Views.Contains(_buffView))
+                {
+                    _tauntWindow.AppendTab("Buffs", _buffView);
+                }
+            }
+            else
+            {
+                _buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MABuffsView.xml",
+                    windowSize: new Rect(0, 0, 240, 345),
+                    windowStyle: WindowStyle.Default,
+                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                _buffWindow.Show(true);
             }
         }
 
         private void HealingView(object s, ButtonBase button)
         {
-            if (buffWindow != null && buffWindow.IsValid)
+            if (_buffWindow != null && _buffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Healing", buffWindow);
+                if (_healingView == null)
+                    _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
+
+                if (!_buffWindow.Views.Contains(_healingView))
+                {
+                    _buffWindow.AppendTab("Healing", _healingView);
+                }
             }
-            else if (tauntWindow != null && tauntWindow.IsValid)
+            else if (_procWindow != null && _procWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Healing", tauntWindow);
+                if (_healingView == null)
+                    _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
+
+                if (!_procWindow.Views.Contains(_healingView))
+                {
+                    _procWindow.AppendTab("Healing", _healingView);
+                }
+            }
+            else if (_tauntWindow != null && _tauntWindow.IsValid)
+            {
+                if (_healingView == null)
+                    _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
+
+                if (!_tauntWindow.Views.Contains(_healingView))
+                {
+                    _tauntWindow.AppendTab("Healing", _healingView);
+                }
             }
             else
             {
-                healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\MAHealingView.xml",
+                _healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\MAHealingView.xml",
                     windowSize: new Rect(0, 0, 240, 345),
                     windowStyle: WindowStyle.Default,
                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-                healingWindow.Show(true);
+                _healingWindow.Show(true);
             }
         }
 
         private void TauntView(object s, ButtonBase button)
         {
-            if (buffWindow != null && buffWindow.IsValid)
+            if (_buffWindow != null && _buffWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Taunts", buffWindow);
+                if (_tauntView == null)
+                    _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
+
+                if (!_buffWindow.Views.Contains(_tauntView))
+                {
+                    _buffWindow.AppendTab("Taunts", _tauntView);
+                }
             }
-            else if (healingWindow != null && healingWindow.IsValid)
+            else if (_healingWindow != null && _healingWindow.IsValid)
             {
-                SettingsController.AppendSettingsTab("Taunts", healingWindow);
+                if (_tauntView == null)
+                    _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
+
+                if (!_healingWindow.Views.Contains(_tauntView))
+                {
+                    _healingWindow.AppendTab("Taunts", _tauntView);
+                }
+            }
+            else if (_procWindow != null && _procWindow.IsValid)
+            {
+                if (_tauntView == null)
+                    _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
+
+                if (!_procWindow.Views.Contains(_tauntView))
+                {
+                    _procWindow.AppendTab("Taunts", _tauntView);
+                }
             }
             else
             {
-                tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\MATauntsView.xml",
+                _tauntWindow = Window.CreateFromXml("Taunts", PluginDirectory + "\\UI\\MATauntsView.xml",
                     windowSize: new Rect(0, 0, 240, 345),
                     windowStyle: WindowStyle.Default,
                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-                tauntWindow.Show(true);
+                _tauntWindow.Show(true);
             }
         }
 
@@ -169,6 +303,12 @@ namespace Desu
                 {
                     tauntView.Tag = SettingsController.settingsWindow;
                     tauntView.Clicked = TauntView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = ProcView;
                 }
             }
 
@@ -387,6 +527,94 @@ namespace Desu
             }
 
             return FindMemberWithHealthBelow(85, ref actionTarget); ;
+        }
+
+        #region Perks
+
+        private bool AbsoluteFist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.AbsoluteFist != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DisruptKi(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.DisruptKi != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SmashingFist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SmashingFist != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool StingingFist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.StingingFist != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool StrengthenKi(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.StrengthenKi != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool StrengthenSpirit(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.StrengthenSpirit != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool AttackLigaments(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.AttackLigaments != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebilitatingStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.DebilitatingStrike != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool HealingMeditation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.HealingMeditation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool MedicinalRemedy(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.MedicinalRemedy != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool SelfReconstruction(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.SelfReconstruction != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        public enum ProcType1Selection
+        {
+            AbsoluteFist, StrengthenKi, DisruptKi, SmashingFist, StrengthenSpirit, StingingFist
+        }
+
+        public enum ProcType2Selection
+        {
+            SelfReconstruction, DebilitatingStrike, HealingMeditation, AttackLigaments, MedicinalRemedy
         }
 
         private static class RelevantNanos

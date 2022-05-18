@@ -1155,6 +1155,7 @@ namespace CombatHandler.Generic
                     .Where(c => c.HealthPercent <= healthPercentTreshold)
                     .OrderBy(c => c.Profession == Profession.Doctor)
                     .OrderBy(c => c.Profession == Profession.Enforcer)
+                    .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)

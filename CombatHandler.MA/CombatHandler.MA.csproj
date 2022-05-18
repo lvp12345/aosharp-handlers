@@ -58,6 +58,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\MAProcsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\MAHealingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

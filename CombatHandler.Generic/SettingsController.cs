@@ -14,9 +14,11 @@ namespace CombatHandler
     {
         private static List<AOSharp.Core.Settings> settingsToSave = new List<AOSharp.Core.Settings>();
         public static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
+        public static List<string> settingsViews = new List<string>();
         private static bool IsCommandRegistered;
 
         public static Window settingsWindow;
+        public static View settingsView;
 
         public static void RegisterCharacters(AOSharp.Core.Settings settings)
         {
@@ -73,7 +75,8 @@ namespace CombatHandler
         public static void AppendSettingsTab(String settingsName, Window testWindow)
         {
             String settingsWindowXmlPath = settingsWindows[settingsName];
-            View settingsView = View.CreateFromXml(settingsWindowXmlPath);
+            settingsView = View.CreateFromXml(settingsWindowXmlPath);
+
             if (settingsView != null)
             {
                 testWindow.AppendTab(settingsName, settingsView);

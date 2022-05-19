@@ -377,7 +377,7 @@ namespace CombatHandler.Generic
             {PerkHash.NightKiller , PerkType.TARGETED_DAMAGE},
             {PerkHash.NocturnalStrike , PerkType.TARGETED_DAMAGE},
             {PerkHash.NotumOverflow , PerkType.TARGETED_DAMAGE},
-            {PerkHash.NotumShield , PerkType.NANO_HEAL},
+            {PerkHash.NotumShield , PerkType.OTHER},
             {PerkHash.Numb , PerkType.TARGETED_DAMAGE},
             {PerkHash.Obliterate , PerkType.TARGETED_DAMAGE},
             {PerkHash.Opening , PerkType.TARGETED_DAMAGE},

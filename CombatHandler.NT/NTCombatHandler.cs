@@ -130,7 +130,10 @@ namespace Desu
         {
             if (IsSettingEnabled("NanoHoTTeam"))
             {
-                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+                if (Team.IsInTeam)
+                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
@@ -140,7 +143,10 @@ namespace Desu
         {
             if (IsSettingEnabled("CostTeam"))
             {
-                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+                if (Team.IsInTeam)
+                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);

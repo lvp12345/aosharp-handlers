@@ -44,6 +44,8 @@ namespace Desu
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AbsoluteFist);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.SelfReconstruction);
 
+            _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
+
             _settings.AddVariable("EvadesTeam", false);
 
             _settings.AddVariable("Zazen", false);
@@ -96,7 +98,10 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistZazenStance).OrderByStackingOrder(), ZazenStance);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.DamageTypeMelee, DamageTypeMelee);
+            RegisterSpellProcessor(RelevantNanos.DamageTypeFire, DamageTypeFire);
+            RegisterSpellProcessor(RelevantNanos.DamageTypeEnergy, DamageTypeEnergy);
+            RegisterSpellProcessor(RelevantNanos.DamageTypeChemical, DamageTypeChemical);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GenericBuff);
@@ -318,6 +323,31 @@ namespace Desu
         private bool ZazenStance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || !CanCast(spell) || !IsSettingEnabled("Zazen")) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DamageTypeEnergy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DamageTypeSelection.Energy != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+        private bool DamageTypeFire(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DamageTypeSelection.Fire != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+        private bool DamageTypeMelee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DamageTypeSelection.Melee != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+        private bool DamageTypeChemical(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DamageTypeSelection.Chemical != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -616,6 +646,10 @@ namespace Desu
         {
             SelfReconstruction, DebilitatingStrike, HealingMeditation, AttackLigaments, MedicinalRemedy
         }
+        public enum DamageTypeSelection
+        {
+            Melee, Fire, Energy, Chemical
+        }
 
         private static class RelevantNanos
         {
@@ -624,6 +658,10 @@ namespace Desu
             public const int ReduceInertia = 28903;
             public static int[] TeamCritBuffs = { 160574, 160575, 160576 };
             public static int[] Taunts = { 301936, 100214, 100216, 100215, 100217, 28866 };
+            public static int[] DamageTypeMelee = { 270798, 28892 };
+            public static int[] DamageTypeFire = { 81827, 81824, 28876 };
+            public static int[] DamageTypeEnergy = { 81825, 81823, 81826, 81829 };
+            public static int[] DamageTypeChemical = { 81822, 81830 };
         }
 
         private static class RelevantItems

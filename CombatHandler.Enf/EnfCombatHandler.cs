@@ -149,6 +149,7 @@ namespace Desu
                 List<SimpleChar> mobs = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.IsInLineOfSight
+                        && debuffTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && IsNotFightingMe(c)
                         && IsAttackingUs(c)
@@ -293,7 +294,7 @@ namespace Desu
 
             if (IsSettingEnabled("OST"))
             {
-                if (Time.NormalTime > _aoeTauntOst + 10)
+                if (Time.NormalTime > _aoeTauntOst + 7) // 10
                 {
                     _aoeTauntOst = Time.NormalTime;
                     return true;

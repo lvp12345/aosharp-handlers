@@ -260,7 +260,7 @@ namespace Desu
                 List<SimpleChar> mobs = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.IsInLineOfSight
-                        && debuffTargetsToIgnore.Contains(c.Name)
+                        && !debuffTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && IsNotFightingMe(c)
                         && IsAttackingUs(c)

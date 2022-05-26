@@ -46,7 +46,7 @@ namespace ResearchManager
             //Network.PacketReceived += Network_PacketReceived;
 
 
-            Chat.WriteLine("Research Loaded!");
+            Chat.WriteLine("ResearchManager Loaded!");
             Chat.WriteLine("/research for settings.");
         }
 

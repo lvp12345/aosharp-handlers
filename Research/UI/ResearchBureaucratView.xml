@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <View view_layout="vertical" name="parent">
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toggle" layout_borders="Rect(10,1,5,1)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Human Resources" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line1" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Team Building" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line2" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Process Theory" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line3" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Executive Decisions" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line4" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Professional Development" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line5" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Market Awareness" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line6" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Hostile Negotiations" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line7" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line8" layout_borders="Rect(10,1,5,1)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+  </View>
+</root>

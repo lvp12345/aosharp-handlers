@@ -4,14 +4,14 @@
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
       <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toggle" layout_borders="Rect(10,1,5,1)"/>
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-      <OptionCheckBox label="End Certification" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line1" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Threat Assessment" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line2" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Direct Action" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line3" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Fitness" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line4" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Intuition" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line5" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Stealth" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line6" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Marksmanship" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line7" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line8" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="End Certification" opt_category="AOSharp" opt_type="variant" opt_variable="Research__End Certification" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Threat Assessment" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Threat Assessment" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Direct Action" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Direct Action" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Fitness" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Fitness" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Intuition" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Intuition" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Stealth" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Stealth" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Marksmanship" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Marksmanship" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Apotheosis" layout_borders="Rect(10,1,5,1)"/>
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </View>
 </root>

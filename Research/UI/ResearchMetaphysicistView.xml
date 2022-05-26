@@ -4,14 +4,14 @@
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
       <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toggle" layout_borders="Rect(10,1,5,1)"/>
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-      <OptionCheckBox label="Foresight" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line1" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Sympathy" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line2" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Spatial Awareness" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line3" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Trauma" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line4" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Perseverences" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line5" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Jealousy" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line6" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Angst" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line7" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line8" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Foresight" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Foresight" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Sympathy" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Sympathy" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Spatial Awareness" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Spatial Awareness" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Trauma" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Trauma" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Perseverences" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Perseverences" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Jealousy" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Jealousy" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Angst" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Angst" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Apotheosis" layout_borders="Rect(10,1,5,1)"/>
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </View>
 </root>

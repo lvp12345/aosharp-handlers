@@ -7,8 +7,8 @@
     <ProjectGuid>{B6560BBE-C49A-4ACD-98CC-4E194AF089F4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Research</RootNamespace>
-    <AssemblyName>Research</AssemblyName>
+    <RootNamespace>ResearchManager</RootNamespace>
+    <AssemblyName>ResearchManager</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -50,7 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Research.cs" />
+    <Compile Include="ResearchManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />
   </ItemGroup>

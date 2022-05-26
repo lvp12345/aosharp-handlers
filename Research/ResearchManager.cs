@@ -11,9 +11,9 @@ using AOSharp.Core.Inventory;
 using AOSharp.Common.Unmanaged.Interfaces;
 using System.Linq;
 
-namespace Research
+namespace ResearchManager
 {
-    public class Research : AOPluginEntry
+    public class ResearchManager : AOPluginEntry
     {
         public static string PluginDirectory;
 
@@ -42,35 +42,8 @@ namespace Research
             _settings.AddVariable("Line7", false);
             _settings.AddVariable("Line8", false);
 
-            //Chat.RegisterCommand("test", (string command, string[] param, ChatWindow chatWindow) =>
-            //{
-            //    if (_goal < N3EngineClientAnarchy.GetPersonalResearchGoals().Count)
-            //    {
-            //        _goal++;
-
-            //        Perk _research = Perk.GetByInstance(_researchGoals[_goal].ResearchId);
-
-            //        PerkLine _perkLine = _research.PerkLine;
-
-            //        Chat.WriteLine($"Next - level {Perk.GetPerkLineLevel(_perkLine)}, perkline {_perkLine} ");
-
-            //        DynelManager.LocalPlayer.SetStat(Stat.PersonalResearchGoal, _researchGoals[_goal].ResearchId);
-            //    }
-            //    else if (_goal == N3EngineClientAnarchy.GetPersonalResearchGoals().Count)
-            //    {
-            //        _goal = 0;
-
-            //        DynelManager.LocalPlayer.SetStat(Stat.PersonalResearchGoal, _researchGoals[_goal].ResearchId);
-
-            //        Perk _research = Perk.GetByInstance(_researchGoals[_goal].ResearchId);
-
-            //        PerkLine _perkLine = _research.PerkLine;
-
-            //        Chat.WriteLine($"Last - level {Perk.GetPerkLineLevel(_perkLine)}, perkline {_perkLine} ");
-            //    }
-            //});
-
             Game.OnUpdate += OnUpdate;
+            //Network.PacketReceived += Network_PacketReceived;
 
 
             Chat.WriteLine("Research Loaded!");
@@ -82,15 +55,27 @@ namespace Research
             SettingsController.CleanUp();
         }
 
+        // attach to event handler ??
+        // packet - Research Update? triggers when level up, can be used to attach event handler ??
+
+        //private void Network_PacketReceived(object s, byte[] packet)
+        //{
+        //    N3MessageType msgType = (N3MessageType)((packet[16] << 24) + (packet[17] << 16) + (packet[18] << 8) + packet[19]);
+        //    //Chat.WriteLine($"{msgType}");
+
+        //    if (msgType == N3MessageType.ResearchUpdate)
+        //        Chat.WriteLine(BitConverter.ToString(packet).Replace("-", ""));
+        //}
+
         private void OnUpdate(object s, float deltaTime)
         {
             if (_settings["Toggle"].AsBool() && !Game.IsZoning)
             {
-                _researchGoals = N3EngineClientAnarchy.GetPersonalResearchGoals()
+                _researchGoals = Research.Goals
                     .Where(c => c.Available == true)
                     .ToList();
 
-                _completedResearchGoals = N3EngineClientAnarchy.GetCompletedPersonalResearchGoals();
+                _completedResearchGoals = Research.Completed;
 
                 InitRemoveResearch();
                 InitAddResearch();
@@ -101,7 +86,9 @@ namespace Research
                     _researchGoalsActive.Remove(_goal + 1);
 
                     _goal++;
-                    DynelManager.LocalPlayer.SetStat(Stat.PersonalResearchGoal, _researchGoals[_goal].ResearchId);
+
+                    Research.Train(_researchGoals[_goal].ResearchId);
+                    //DynelManager.LocalPlayer.SetStat(Stat.PersonalResearchGoal, _researchGoals[_goal].ResearchId);
                 }
             }
         }

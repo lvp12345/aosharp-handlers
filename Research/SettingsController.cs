@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using AOSharp.Common.GameData.UI;
 
-namespace Research
+namespace ResearchManager
 {
     public static class SettingsController
     {

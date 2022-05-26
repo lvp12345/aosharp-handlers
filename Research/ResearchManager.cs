@@ -83,7 +83,9 @@ namespace ResearchManager
                 if (_completedResearchGoals.Contains((uint)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
                 {
                     Chat.WriteLine($"Research line finished - {N3EngineClientAnarchy.GetPerkName(_researchGoals[_goal].ResearchId)}");
-                    _researchGoalsActive.Remove(_goal + 1);
+
+                    if (_researchGoalsActive.Contains(_goal + 1))
+                        _researchGoalsActive.Remove(_goal + 1);
 
                     _goal++;
 

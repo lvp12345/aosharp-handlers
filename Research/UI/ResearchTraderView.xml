@@ -4,14 +4,14 @@
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
       <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toggle" layout_borders="Rect(10,1,5,1)"/>
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-      <OptionCheckBox label="Eye for a Deal" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line1" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Fast Talk" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line2" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Sensible Investment" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line3" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Aggressive Pricing" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line4" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Door-To-Door Salesman" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line5" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Sensitive Negotiations" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line6" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Hostile Takeover" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line7" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line8" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Eye for a Deal" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Eye for a Deal" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Fast Talk" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Fast Talk" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Sensible Investment" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Sensible Investment" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Aggressive Pricing" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Aggressive Pricing" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Door-To-Door Salesman" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Door-To-Door Salesman" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Sensitive Negotiations" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Sensitive Negotiations" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Hostile Takeover" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Hostile Takeover" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Apotheosis" layout_borders="Rect(10,1,5,1)"/>
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </View>
 </root>

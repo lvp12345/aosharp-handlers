@@ -43,7 +43,7 @@ namespace ResearchManager
         {
             if (!IsCommandRegistered)
             {
-                Chat.RegisterCommand("infbuddy", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("research", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {

@@ -4,14 +4,14 @@
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
       <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toggle" layout_borders="Rect(10,1,5,1)"/>
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-      <OptionCheckBox label="Bedside Manner" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line1" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Rehabilitation" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line2" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Diagnosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line3" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Internship" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line4" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Underground Doctor" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line5" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Toxicology" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line6" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Aggressive Surgery" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line7" layout_borders="Rect(10,1,5,1)"/>
-      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Line8" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Bedside Manner" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Bedside Manner" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Rehabilitation" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Rehabilitation" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Diagnosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Diagnosis" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Internship" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Internship" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Underground Doctor" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Underground Doctor" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Toxicology" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toxicology" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Aggressive Surgery" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Aggressive Surgery" layout_borders="Rect(10,1,5,1)"/>
+      <OptionCheckBox label="Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Apotheosis" layout_borders="Rect(10,1,5,1)"/>
       <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </View>
 </root>

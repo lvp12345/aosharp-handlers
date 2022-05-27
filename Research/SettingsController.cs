@@ -47,7 +47,7 @@ namespace ResearchManager
                 {
                     try
                     {
-                        settingsWindow = Window.Create(new Rect(50, 50, 220, 300), "Research", "Settings", WindowStyle.Default, WindowFlags.None);
+                        settingsWindow = Window.Create(new Rect(50, 50, 220, 340), "Research", "Settings", WindowStyle.Default, WindowFlags.None);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {

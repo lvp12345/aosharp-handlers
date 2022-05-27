@@ -152,6 +152,26 @@ namespace ResearchManager
                         }
                 }
 
+                //this ?? best way i can guess of checking something is complete
+                if (!Research.Goals
+                        .Where(c => c.ResearchId == (uint)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)
+                            && Research.Completed.Contains((uint)c.ResearchId))
+                        .Any()) 
+                {
+                    _completedResearchGoals.Add((uint)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal));
+                }
+
+                foreach (ResearchGoal goal in Research.Goals.Where(c => _completedResearchGoals.Contains((uint)c.ResearchId)))
+                {
+                    if (Research.Completed.Contains((uint)goal.ResearchId))
+                    {
+                        //Chat.WriteLine($"_completedResearchGoals + {N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
+                        _completedResearchGoals.Add((uint)goal.ResearchId);
+                        _switch = true;
+                    }
+                }
+
+                //Tick for adding true completed
                 foreach (ResearchGoal goal in Research.Goals.Where(c => !_completedResearchGoals.Contains((uint)c.ResearchId)))
                 {
                     if (Research.Completed.Contains((uint)goal.ResearchId) 

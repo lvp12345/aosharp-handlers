@@ -230,7 +230,7 @@ namespace Desu
 
         public static void Network_N3MessageSent(object s, N3Message n3Msg)
         {
-            if (IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+            if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
 
             //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
 

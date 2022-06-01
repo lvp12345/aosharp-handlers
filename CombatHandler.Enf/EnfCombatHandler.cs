@@ -1,19 +1,25 @@
 ﻿using AOSharp.Common.GameData;
-using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
-using AOSharp.Core.Inventory;
-using AOSharp.Core.UI;
-using AOSharp.Core.UI.Options;
-using CombatHandler;
 using CombatHandler.Generic;
-using System;
-using System.Collections.Generic;
+using AOSharp.Core.UI;
 using System.Linq;
+using System;
+using AOSharp.Common.GameData.UI;
+using AOSharp.Core.IPC;
+using System.Threading.Tasks;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using System.Threading;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using CombatHandler;
+using System.Collections.Generic;
+using AOSharp.Core.Inventory;
 
 namespace Desu
 {
     class EnfCombatHandler : GenericCombatHandler
     {
+        public static IPCChannel IPCChannel;
+
         public static double _absorbs;
         public static double _aoeTaunt;
         public static double _aoeTauntOst;
@@ -25,8 +31,31 @@ namespace Desu
 
         public static string PluginDirectory;
 
+        private static double _ncuUpdateTime;
+
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
+            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+
+            Chat.RegisterCommand("channel", (string command, string[] param, ChatWindow chatWindow) =>
+            {
+                Chat.WriteLine($"Channel set : {param[0]}");
+                IPCChannel.SetChannelId(Convert.ToByte(param[0]));
+                Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(param[0]);
+                Config.Save();
+
+            });
+
+            Network.N3MessageSent += Network_N3MessageSent;
+            Team.TeamRequest += Team_TeamRequest;
+
             _settings.AddVariable("SingleTaunt", false);
             _settings.AddVariable("OSTaunt", false);
             _settings.AddVariable("RaidTaunt", false);
@@ -34,6 +63,7 @@ namespace Desu
             _settings.AddVariable("Absorbs", false);
 
             _settings.AddVariable("TrollForm", false);
+
             //settings.AddVariable("UseTauntTool", true);
 
             _settings.AddVariable("OST", false);
@@ -82,6 +112,187 @@ namespace Desu
             PluginDirectory = pluginDir;
         }
 
+
+        public static bool IsRaidEnabled(string[] param)
+        {
+            return param.Length > 0 && "raid".Equals(param[0]);
+        }
+
+        public static Identity[] GetRegisteredCharactersInvite()
+        {
+            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
+            int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
+            Identity[] firstTeamCharacters = new Identity[firstTeamCount];
+            Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
+            return firstTeamCharacters;
+        }
+
+        public static Identity[] GetRemainingRegisteredCharacters()
+        {
+            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
+            int characterCount = registeredCharacters.Length - 6;
+            Identity[] remainingCharacters = new Identity[characterCount];
+            if (characterCount > 0)
+            {
+                Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
+            }
+            return remainingCharacters;
+        }
+
+        public static void SendTeamInvite(Identity[] targets)
+        {
+            foreach (Identity target in targets)
+            {
+                if (target != DynelManager.LocalPlayer.Identity)
+                    Team.Invite(target);
+            }
+        }
+
+        public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
+        {
+            if (SettingsController.IsCharacterRegistered(e.Requester))
+            {
+                e.Accept();
+            }
+        }
+
+        public static void Network_N3MessageSent(object s, N3Message n3Msg)
+        {
+            if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+            //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
+
+            if (n3Msg.N3MessageType == N3MessageType.LookAt)
+            {
+                LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
+                IPCChannel.Broadcast(new TargetMessage()
+                {
+                    Target = lookAtMsg.Target
+                });
+            }
+            else if (n3Msg.N3MessageType == N3MessageType.Attack)
+            {
+                AttackMessage attackMsg = (AttackMessage)n3Msg;
+                IPCChannel.Broadcast(new AttackIPCMessage()
+                {
+                    Target = attackMsg.Target
+                });
+            }
+            else if (n3Msg.N3MessageType == N3MessageType.StopFight)
+            {
+                StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
+                IPCChannel.Broadcast(new StopAttackIPCMessage());
+            }
+        }
+
+        public static void OnDisband(int sender, IPCMessage msg)
+        {
+            Team.Leave();
+        }
+
+        public static void OnStopAttackMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            DynelManager.LocalPlayer.StopAttack();
+        }
+
+        public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            Team.Disband();
+            IPCChannel.Broadcast(new DisbandMessage());
+        }
+
+        public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (Team.IsLeader)
+                Team.ConvertToRaid();
+            else
+                Chat.WriteLine("Needs to be used from leader.");
+        }
+
+        public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            Team.Disband();
+            IPCChannel.Broadcast(new DisbandMessage());
+            Task task = new Task(() =>
+            {
+                Thread.Sleep(1000);
+                FormCommand("form", param, chatWindow);
+            });
+            task.Start();
+        }
+
+        public static void FormCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (!DynelManager.LocalPlayer.IsInTeam())
+            {
+                SendTeamInvite(GetRegisteredCharactersInvite());
+
+                if (IsRaidEnabled(param))
+                {
+                    Task task = new Task(() =>
+                    {
+                        Thread.Sleep(1000);
+                        Team.ConvertToRaid();
+                        Thread.Sleep(1000);
+                        SendTeamInvite(GetRemainingRegisteredCharacters());
+                    });
+                    task.Start();
+                }
+            }
+            else
+            {
+                Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
+            }
+        }
+
+        public static void OnTargetMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            TargetMessage targetMsg = (TargetMessage)msg;
+            Targeting.SetTarget(targetMsg.Target);
+        }
+
+        public static void OnAttackMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
+            Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
+            DynelManager.LocalPlayer.Attack(targetDynel, true);
+        }
+
+        public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
+        {
+            try
+            {
+                if (Game.IsZoning)
+                    return;
+
+                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
+                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e);
+            }
+        }
+
+
         private void BuffView(object s, ButtonBase button)
         {
             if (tauntWindow != null && tauntWindow.IsValid)
@@ -118,6 +329,17 @@ namespace Desu
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            {
+                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+                IPCChannel.Broadcast(ncuMessage);
+
+                OnRemainingNCUMessage(0, ncuMessage);
+
+                _ncuUpdateTime = Time.NormalTime;
+            }
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))

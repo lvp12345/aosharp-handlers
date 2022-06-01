@@ -12,7 +12,7 @@ namespace CombatHandler
 {
     public static class SettingsController
     {
-        private static List<AOSharp.Core.Settings> settingsToSave = new List<AOSharp.Core.Settings>();
+        private static List<Settings> settingsToSave = new List<Settings>();
         public static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
         public static List<string> settingsViews = new List<string>();
         private static bool IsCommandRegistered;
@@ -20,20 +20,37 @@ namespace CombatHandler
         public static Window settingsWindow;
         public static View settingsView;
 
-        public static void RegisterCharacters(AOSharp.Core.Settings settings)
+        public static Dictionary<Identity, int> RemainingNCU = new Dictionary<Identity, int>();
+
+        public static int GetRemainingNCU(Identity target)
+        {
+            return RemainingNCU.ContainsKey(target) ? RemainingNCU[target] : 0;
+        }
+
+        public static Identity[] GetRegisteredCharacters()
+        {
+            return RemainingNCU.Keys.ToArray();
+        }
+
+        public static bool IsCharacterRegistered(Identity target)
+        {
+            return RemainingNCU.ContainsKey(target);
+        }
+
+        public static void RegisterCharacters(Settings settings)
         {
             RegisterChatCommandIfNotRegistered();
             settingsToSave.Add(settings);
         }
 
-        public static void RegisterSettingsWindow(string settingsName, string settingsWindowPath, AOSharp.Core.Settings settings)
+        public static void RegisterSettingsWindow(string settingsName, string settingsWindowPath, Settings settings)
         {
             RegisterChatCommandIfNotRegistered();
             settingsWindows[settingsName] = settingsWindowPath;
             settingsToSave.Add(settings);
         }
 
-        public static void RegisterSettings(AOSharp.Core.Settings settings)
+        public static void RegisterSettings(Settings settings)
         {
             RegisterChatCommandIfNotRegistered();
             settingsToSave.Add(settings);

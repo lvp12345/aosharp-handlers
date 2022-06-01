@@ -33,9 +33,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Agent", "Comb
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Adv", "CombatHandler.Adv\CombatHandler.Adv.csproj", "{3CA722B1-8974-4621-A98E-01A124296F34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helper", "Helper\Helper.csproj", "{5B5488B2-FEC0-4C69-8933-98151C575220}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncManager", "SyncManager\SyncManager.csproj", "{1A01624E-0238-4032-9186-00C0BE281235}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResearchManager", "Research\ResearchManager.csproj", "{B6560BBE-C49A-4ACD-98CC-4E194AF089F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpManager", "HelpManager\HelpManager.csproj", "{5B5488B2-FEC0-4C69-8933-98151C575220}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResearchManager", "ResearchManager\ResearchManager.csproj", "{B6560BBE-C49A-4ACD-98CC-4E194AF089F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +105,10 @@ Global
 		{3CA722B1-8974-4621-A98E-01A124296F34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CA722B1-8974-4621-A98E-01A124296F34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CA722B1-8974-4621-A98E-01A124296F34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A01624E-0238-4032-9186-00C0BE281235}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A01624E-0238-4032-9186-00C0BE281235}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A01624E-0238-4032-9186-00C0BE281235}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A01624E-0238-4032-9186-00C0BE281235}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5B5488B2-FEC0-4C69-8933-98151C575220}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5B5488B2-FEC0-4C69-8933-98151C575220}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B5488B2-FEC0-4C69-8933-98151C575220}.Release|Any CPU.ActiveCfg = Release|Any CPU

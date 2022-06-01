@@ -55,6 +55,12 @@ namespace Desu
             Network.N3MessageSent += Network_N3MessageSent;
             Team.TeamRequest += Team_TeamRequest;
 
+            Chat.RegisterCommand("reform", ReformCommand);
+            Chat.RegisterCommand("form", FormCommand);
+            Chat.RegisterCommand("disband", DisbandCommand);
+            Chat.RegisterCommand("convert", RaidCommand);
+
+
             _settings.AddVariable("DotStrainA", false);
 
             _settings.AddVariable("CritTeam", false);

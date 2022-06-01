@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="SyncManager" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <Button name="HelperInfoView" label="Info" layout_borders="Rect(5,5,3,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="Channel" layout_borders="Rect(5,5,5,5)"/>
+    <TextInputView name="ChannelBox" min_size="Point(60,14)" max_size="Point(60,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Sync movement" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncMove" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Sync using items" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncUse" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Sync chat" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncChat" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Sync trade" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncTrade" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>	
+</root>

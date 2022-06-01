@@ -2,7 +2,7 @@
 using System;
 using AOSharp.Core.UI;
 
-namespace CombatHandler.Agent
+namespace Desu
 {
     public class Main : AOPluginEntry
     {

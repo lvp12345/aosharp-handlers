@@ -1,10 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
 namespace CombatHandler.Generic
@@ -14,13 +21,26 @@ namespace CombatHandler.Generic
         private const float PostZonePetCheckBuffer = 5;
         public int EvadeCycleTimeoutSeconds = 180;
 
+        //public static IPCChannel IPCChannel;
+
         private double _lastPetSyncTime = Time.NormalTime;
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
 
+        //public static IPCChannel IPCChannel = new IPCChannel(0);
+        public static Config Config { get; private set; }
+
         private string pluginDir;
 
-        protected AOSharp.Core.Settings _settings;
+        protected Settings _settings;
+
+        private static double _ncuUpdateTime;
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+
+        public static bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
         {
@@ -84,7 +104,36 @@ namespace CombatHandler.Generic
             this.pluginDir = pluginDir;
             Game.TeleportEnded += TeleportEnded;
 
-            _settings = new AOSharp.Core.Settings("CombatHandler");
+            _settings = new Settings("CombatHandler");
+
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{Game.ClientInst}\\Config.json");
+
+            //IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+
+            //if (IPCChannel != null)
+            //{
+            //    IPCChannel.SetChannelId(0);
+            //    Chat.WriteLine("set");
+            //}
+            //else
+            //    IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+
+            //Chat.RegisterCommand("channel", (string command, string[] param, ChatWindow chatWindow) =>
+            //{
+            //    Chat.WriteLine($"Channel set : {param[0]}");
+            //    IPCChannel.SetChannelId(Convert.ToByte(param[0]));
+            //    Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(param[0]);
+            //    Config.Save();
+
+            //});
+
+            //IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+
+            //IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
+            //IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
+
+            //IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+
 
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
@@ -114,13 +163,6 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.DesecratedFlesh, RelevantItems.DesecratedFlesh, DescFlesh, CombatActionPriority.High);
             RegisterItemProcessor(RelevantItems.AssaultClassTank, RelevantItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-            //RegisterItemProcessor(new int[] { RelevantItems.FlurryOfBlowsLow, RelevantItems.StrengthOfTheImmortal,
-            //RelevantItems.MightOfTheRevenant, RelevantItems.BarrowStrength, RelevantItems.GnuffsEternalRiftCrystal }, DamageItem, CombatActionPriority.High);
-
-            //RegisterItemProcessor(new int[] { RelevantItems.MeteoriteSpikes, RelevantItems.LavaCapsule,
-            //RelevantItems.HSR1, RelevantItems.KizzermoleGumboil, RelevantItems.UponAWaveOfSummerLow, 
-            //RelevantItems.BlessedWithThunderLow }, TargetedDamageItem);
-
             RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.HSRLow, RelevantItems.HSRHigh, TargetedDamageItem);
@@ -128,12 +170,6 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(RelevantItems.UponAWaveOfSummerLow, RelevantItems.UponAWaveOfSummerHigh, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.BlessedWithThunderLow, RelevantItems.BlessedWithThunderHigh, TargetedDamageItem);
-
-            //RegisterItemProcessor(RelevantItems.HealthAndNanoStim1, RelevantItems.HealthAndNanoStim200, HealthAndNanoStim, CombatActionPriority.High);
-            //RegisterItemProcessor(RelevantItems.HealthAndNanoStim200, RelevantItems.HealthAndNanoStim400, HealthAndNanoStim, CombatActionPriority.High);
-
-            //RegisterItemProcessor(RelevantItems.RezCan1, RelevantItems.RezCan1, RezCan);
-            //RegisterItemProcessor(RelevantItems.ExpCan1, RelevantItems.ExpCan1, ExpCan);
 
             RegisterItemProcessor(new int[] { RelevantItems.RezCan1, RelevantItems.RezCan2 }, RezCan);
             RegisterItemProcessor(new int[] { RelevantItems.ExpCan1, RelevantItems.ExpCan2 }, ExpCan);
@@ -179,20 +215,192 @@ namespace CombatHandler.Generic
                 RegisterSpellProcessor(RelevantNanos.CompositeRangedSpecial, GenericBuff);
             }
 
-            switch (DynelManager.LocalPlayer.Breed)
-            {
-                case Breed.Solitus:
-                    break;
-                case Breed.Opifex:
-                    break;
-                case Breed.Nanomage:
-                    break;
-                case Breed.Atrox:
-                    break;
-            }
-
             Game.TeleportEnded += OnZoned;
+            //Team.TeamRequest += Team_TeamRequest;
+            //Network.N3MessageSent += Network_N3MessageSent;
         }
+
+        //public static bool IsRaidEnabled(string[] param)
+        //{
+        //    return param.Length > 0 && "raid".Equals(param[0]);
+        //}
+
+        //public static Identity[] GetRegisteredCharactersInvite()
+        //{
+        //    Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
+        //    int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
+        //    Identity[] firstTeamCharacters = new Identity[firstTeamCount];
+        //    Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
+        //    return firstTeamCharacters;
+        //}
+
+        //public static Identity[] GetRemainingRegisteredCharacters()
+        //{
+        //    Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
+        //    int characterCount = registeredCharacters.Length - 6;
+        //    Identity[] remainingCharacters = new Identity[characterCount];
+        //    if (characterCount > 0)
+        //    {
+        //        Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
+        //    }
+        //    return remainingCharacters;
+        //}
+
+        //public static void SendTeamInvite(Identity[] targets)
+        //{
+        //    foreach (Identity target in targets)
+        //    {
+        //        if (target != DynelManager.LocalPlayer.Identity)
+        //            Team.Invite(target);
+        //    }
+        //}
+
+        //public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
+        //{
+        //    if (SettingsController.IsCharacterRegistered(e.Requester))
+        //    {
+        //        e.Accept();
+        //    }
+        //}
+
+        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
+        //{
+        //    if (IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+        //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
+
+        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
+        //    {
+        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
+        //        IPCChannel.Broadcast(new TargetMessage()
+        //        {
+        //            Target = lookAtMsg.Target
+        //        });
+        //    }
+        //    else if (n3Msg.N3MessageType == N3MessageType.Attack)
+        //    {
+        //        AttackMessage attackMsg = (AttackMessage)n3Msg;
+        //        IPCChannel.Broadcast(new AttackIPCMessage()
+        //        {
+        //            Target = attackMsg.Target
+        //        });
+        //    }
+        //    else if (n3Msg.N3MessageType == N3MessageType.StopFight)
+        //    {
+        //        StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
+        //        IPCChannel.Broadcast(new StopAttackIPCMessage());
+        //    }
+        //}
+
+        //public static void OnDisband(int sender, IPCMessage msg)
+        //{
+        //    Team.Leave();
+        //}
+
+
+        //public static void OnStopAttackMessage(int sender, IPCMessage msg)
+        //{
+        //    if (IsActiveWindow)
+        //        return;
+
+        //    if (Game.IsZoning)
+        //        return;
+
+        //    DynelManager.LocalPlayer.StopAttack();
+        //}
+
+        //public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    Team.Disband();
+        //    IPCChannel.Broadcast(new DisbandMessage());
+        //}
+
+        //public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    if (Team.IsLeader)
+        //        Team.ConvertToRaid();
+        //    else
+        //        Chat.WriteLine("Needs to be used from leader.");
+        //}
+
+        //public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    Team.Disband();
+        //    IPCChannel.Broadcast(new DisbandMessage());
+        //    Task task = new Task(() =>
+        //    {
+        //        Thread.Sleep(1000);
+        //        FormCommand("form", param, chatWindow);
+        //    });
+        //    task.Start();
+        //}
+
+        //public static void FormCommand(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    if (!DynelManager.LocalPlayer.IsInTeam())
+        //    {
+        //        SendTeamInvite(GetRegisteredCharactersInvite());
+
+        //        if (IsRaidEnabled(param))
+        //        {
+        //            Task task = new Task(() =>
+        //            {
+        //                Thread.Sleep(1000);
+        //                Team.ConvertToRaid();
+        //                Thread.Sleep(1000);
+        //                SendTeamInvite(GetRemainingRegisteredCharacters());
+        //            });
+        //            task.Start();
+        //        }
+        //    }
+        //    else
+        //    {
+        //        Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
+        //    }
+        //}
+
+        //public static void OnTargetMessage(int sender, IPCMessage msg)
+        //{
+        //    if (IsActiveWindow)
+        //        return;
+
+        //    if (Game.IsZoning)
+        //        return;
+
+        //    TargetMessage targetMsg = (TargetMessage)msg;
+        //    Targeting.SetTarget(targetMsg.Target);
+        //}
+
+        //public static void OnAttackMessage(int sender, IPCMessage msg)
+        //{
+        //    Chat.WriteLine("yes");
+
+        //    if (IsActiveWindow)
+        //        return;
+
+        //    if (Game.IsZoning)
+        //        return;
+
+        //    AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
+        //    Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
+        //    DynelManager.LocalPlayer.Attack(targetDynel, true);
+        //}
+
+        //public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
+        //{
+        //    try
+        //    {
+        //        if (Game.IsZoning)
+        //            return;
+
+        //        RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
+        //        SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Chat.WriteLine(e);
+        //    }
+        //}
 
         private void OnZoned(object s, EventArgs e)
         {
@@ -207,6 +415,27 @@ namespace CombatHandler.Generic
         protected override void OnUpdate(float deltaTime)
         {
             SettingsController.CleanUp();
+
+            //if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            //{
+            //    RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+            //    IPCChannel.Broadcast(ncuMessage);
+
+            //    OnRemainingNCUMessage(0, ncuMessage);
+
+            //    //Chat.WriteLine($"{SettingsController.RemainingNCU[ncuMessage.Character]}");
+
+            //    foreach (KeyValuePair<Identity, int> kvp in SettingsController.RemainingNCU)
+            //    {
+            //        Chat.WriteLine($"{kvp.Key.Instance}");
+            //        Chat.WriteLine($"{kvp.Value}");
+            //    }
+
+            //    _ncuUpdateTime = Time.NormalTime;
+            //}
+
+
 
             base.OnUpdate(deltaTime);
 
@@ -1206,7 +1435,7 @@ namespace CombatHandler.Generic
 
             if (Playfield.ModelIdentity.Instance == 152) { return false; }
 
-            if (fightingTarget.IsPlayer && !Helper.SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
+            if (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
 
             if (fightingTarget.Buffs.Find(nanoline, out Buff buff))
             {
@@ -1282,7 +1511,7 @@ namespace CombatHandler.Generic
 
         protected bool HasNCU(Spell spell, SimpleChar target)
         {
-            return Helper.SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
+            return SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
         }
 
         private void TeleportEnded(object sender, EventArgs e)

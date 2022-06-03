@@ -650,6 +650,21 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        protected bool DebuffTarget(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            // Check if we are fighting and if debuffing is enabled
+            if (fightingTarget == null) { return false; }
+
+            if (SpellChecksOther(spell, nanoline, fightingTarget))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = fightingTarget;
+                return true;
+            }
+
+            return false;
+        }
+
         protected bool ToggledDebuffTarget(string settingName, Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             // Check if we are fighting and if debuffing is enabled

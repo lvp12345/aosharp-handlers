@@ -43,15 +43,6 @@ namespace Desu
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Chat.RegisterCommand("channel", (string command, string[] param, ChatWindow chatWindow) =>
-            {
-                Chat.WriteLine($"Channel set : {param[0]}");
-                IPCChannel.SetChannelId(Convert.ToByte(param[0]));
-                Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(param[0]);
-                Config.Save();
-
-            });
-
             Network.N3MessageSent += Network_N3MessageSent;
             Team.TeamRequest += Team_TeamRequest;
 
@@ -114,6 +105,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
             //RegisterSpellProcessor(RelevantNanos.CH, CompleteHealing, CombatActionPriority.Medium);
 
+            //False Profs
             RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);
             RegisterSpellProcessor(RelevantNanos.FalseProfAdv, FalseProfAdventurer);
             RegisterSpellProcessor(RelevantNanos.FalseProfCrat, FalseProfBeauracrat);

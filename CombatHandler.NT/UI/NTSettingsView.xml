@@ -4,6 +4,9 @@
     <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
       <View v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
         <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+        <TextView value="Channel" layout_borders="Rect(5,5,5,5)"/>
+        <TextInputView name="ChannelBox" min_size="Point(60,14)" max_size="Point(60,14)" layout_borders="Rect(4,4,4,4)"/>
+        <TextView value="" layout_borders="Rect(5,5,5,5)"/>
         <OptionCheckBox label="Pierce Reflects" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Pierce" layout_borders="Rect(10,1,5,1)"/>
         <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
         <OptionCheckBox label="AoE" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AOE" layout_borders="Rect(10,1,5,1)"/>

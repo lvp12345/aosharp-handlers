@@ -63,6 +63,12 @@ namespace Desu
             _settings.AddVariable("SancAura", false);
             _settings.AddVariable("SpamAntifear", false);
 
+            //Auras
+            _settings.AddVariable("AuraSet1Selection", (int)AuraSet1Selection.Heal);
+            _settings.AddVariable("AuraSet2Selection", (int)AuraSet2Selection.Damage);
+            _settings.AddVariable("AuraSet3Selection", (int)AuraSet3Selection.AAO);
+            _settings.AddVariable("AuraSet4Selection", (int)AuraSet4Selection.Sanc);
+
             RegisterSettingsWindow("Keeper Handler", "KeeperSettingsView.xml");
 
             RegisterSettingsWindow("Buffs", "KeeperBuffsView.xml");
@@ -307,53 +313,74 @@ namespace Desu
                 _ncuUpdateTime = Time.NormalTime;
             }
 
-            if (IsSettingEnabled("HealAura") && IsSettingEnabled("NanoAura"))
-            {
-                _settings["HealAura"] = false;
-                _settings["NanoAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("ReflectAura") && IsSettingEnabled("AAOAura"))
-            {
-                _settings["ReflectAura"] = false;
-                _settings["AAOAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("DamageAura") && IsSettingEnabled("DerootAura"))
-            {
-                _settings["DamageAura"] = false;
-                _settings["DerootAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-            if (IsSettingEnabled("SancAura") && IsSettingEnabled("ReaperAura"))
-            {
-                _settings["SancAura"] = false;
-                _settings["ReaperAura"] = false;
-
-                Chat.WriteLine($"Can only have one Aura active.");
-            }
-
-
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int channelValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        {
+                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
+                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
+                            SettingsController.CombatHandlerChannel = channelValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
                     buffView.Clicked = BuffView;
                 }
+
+                if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.HealAuras);
+                }
+                if (AuraSet1Selection.Nano != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.NanoAuras);
+                }
+                if (AuraSet2Selection.Damage != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.DamageAuras);
+                }
+                if (AuraSet2Selection.DeRoot != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.DerootAuras);
+                }
+                if (AuraSet3Selection.AAO != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.AAOAuras);
+                }
+                if (AuraSet3Selection.Reflect != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.ReflectAuras);
+                }
+                if (AuraSet4Selection.Sanc != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.SancAuras);
+                }
+                if (AuraSet4Selection.Reaper != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.ReaperAuras);
+                }
+            }
+
+            if (SettingsController.CombatHandlerChannel == String.Empty)
+            {
+                SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
             }
 
             base.OnUpdate(deltaTime);
 
-            CancelBuffs(IsSettingEnabled("NanoAura") ? RelevantNanos.HealAuras : RelevantNanos.NanoAuras);
-            CancelBuffs(IsSettingEnabled("ReflectAura") ? RelevantNanos.AAOAuras : RelevantNanos.ReflectAuras);
-            CancelBuffs(IsSettingEnabled("DerootAura") ? RelevantNanos.DamageAuras : RelevantNanos.DerootAuras);
+            //CancelBuffs(IsSettingEnabled("NanoAura") ? RelevantNanos.HealAuras : RelevantNanos.NanoAuras);
+            //CancelBuffs(IsSettingEnabled("ReflectAura") ? RelevantNanos.AAOAuras : RelevantNanos.ReflectAuras);
+            //CancelBuffs(IsSettingEnabled("DerootAura") ? RelevantNanos.DamageAuras : RelevantNanos.DerootAuras);
         }
 
         private bool AntifearSpam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -365,59 +392,56 @@ namespace Desu
 
         private bool ReaperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("SancAura")) { return false; }
+            if (AuraSet4Selection.Reaper != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SanctifierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ReaperAura")) { return false; }
+            if (AuraSet4Selection.Sanc != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool VengeanceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DerootAura")) { return false; }
+            if (AuraSet2Selection.Damage != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool EnervateAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("DamageAura")) { return false; }
+            if (AuraSet2Selection.DeRoot != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ImminenceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ReflectAura")) { return false; }
+            if (AuraSet3Selection.Reflect != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BarrierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("AAOAura")) { return false; }
+            if (AuraSet3Selection.AAO != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool HpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NanoAura")) { return false; }
+            if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool NpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("HealAura"))
-            {
-                return false;
-            }
+            if (AuraSet1Selection.Nano != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -453,6 +477,22 @@ namespace Desu
                 .Where(s => s.Name.Contains("Reaper")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
             public static readonly int[] SancAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperProcBuff)
                 .Where(s => s.Name.Contains("Sanctifier")).OrderByStackingOrder().Select(s => s.Identity.Instance).ToArray();
+        }
+        public enum AuraSet1Selection
+        {
+            Heal, Nano
+        }
+        public enum AuraSet2Selection
+        {
+            Damage, DeRoot
+        }
+        public enum AuraSet3Selection
+        {
+            AAO, Reflect
+        }
+        public enum AuraSet4Selection
+        {
+            Sanc, Reaper
         }
     }
 }

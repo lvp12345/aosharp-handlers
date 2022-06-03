@@ -30,6 +30,8 @@ namespace SyncManager
         private static Identity useItem;
         public static string PluginDirectory;
 
+        public static bool _openBags = false;
+
         private static double _useTimer;
 
         public static Window infoWindow;
@@ -54,6 +56,7 @@ namespace SyncManager
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             _settings.AddVariable("SyncMove", false);
+            _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
             _settings.AddVariable("SyncChat", false);
             _settings.AddVariable("SyncTrade", false);
@@ -74,15 +77,16 @@ namespace SyncManager
 
             SettingsController.RegisterSettingsWindow("Info", pluginDir + "\\UI\\SyncManagerInfoView.xml", _info);
 
-            Chat.RegisterCommand("sync", SyncSwitch);
+            Chat.RegisterCommand("syncmove", SyncSwitch);
+            Chat.RegisterCommand("syncbags", SyncBagsSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
+            Game.TeleportEnded += OnZoned;
             //Team.TeamRequest = Team_TeamRequest;
-            //Game.TeleportEnded += OnZoned;
 
 
             Chat.WriteLine("SyncManager Loaded!");
@@ -98,6 +102,28 @@ namespace SyncManager
         //{
 
         //}
+
+        private void OnZoned(object s, EventArgs e)
+        {
+            if (_settings["SyncBags"].AsBool())
+            {
+                Task.Factory.StartNew(
+                    async () =>
+                    {
+                        await Task.Delay(100);
+
+                        List<Item> bags = Inventory.Items
+                            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                            .ToList();
+
+                        foreach (Item bag in bags)
+                        {
+                            bag.Use();
+                            bag.Use();
+                        }
+                    });
+            }
+        }
 
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
@@ -312,6 +338,21 @@ namespace SyncManager
             if (SettingsController.SyncManagerChannel == String.Empty)
             {
                 SettingsController.SyncManagerChannel = Config.IPCChannel.ToString();
+            }
+
+            if (!_openBags && _settings["SyncBags"].AsBool())
+            {
+                List<Item> bags = Inventory.Items
+                    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                    .ToList();
+
+                foreach (Item bag in bags)
+                {
+                    bag.Use();
+                    bag.Use();
+                }
+
+                _openBags = true;
             }
 
             if (Time.NormalTime > _useTimer + 0.1)
@@ -678,6 +719,14 @@ namespace SyncManager
             {
                 _settings["SyncMove"] = !_settings["SyncMove"].AsBool();
                 Chat.WriteLine($"Sync move : {_settings["SyncMove"].AsBool()}");
+            }
+        }
+        private void SyncBagsSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["SyncBags"] = !_settings["SyncBags"].AsBool();
+                Chat.WriteLine($"Sync bags : {_settings["SyncBags"].AsBool()}");
             }
         }
 

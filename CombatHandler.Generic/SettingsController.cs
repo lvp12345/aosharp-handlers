@@ -17,6 +17,8 @@ namespace CombatHandler
         public static List<string> settingsViews = new List<string>();
         private static bool IsCommandRegistered;
 
+        public static string CombatHandlerChannel = String.Empty;
+
         public static Window settingsWindow;
         public static View settingsView;
 
@@ -76,6 +78,14 @@ namespace CombatHandler
                             foreach (string settingsName in settingsWindows.Keys.Where(x => x.Contains("Handler")))
                             {
                                 AppendSettingsTab(settingsName, settingsWindow);
+
+                                if (CombatHandlerChannel != String.Empty)
+                                {
+                                    settingsWindow.FindView("ChannelBox", out TextInputView textinput);
+
+                                    if (textinput != null)
+                                        textinput.Text = CombatHandlerChannel;
+                                }
                             }
                         }
                     }

@@ -42,7 +42,6 @@ namespace HelpManager
 
         public static bool Sitting = false;
         public static bool HealingPet = false;
-        public static bool OpenBackpacks = false;
 
         public static Window followWindow;
         public static Window assistWindow;
@@ -106,7 +105,6 @@ namespace HelpManager
             _assist.AddVariable("AttackSelection", (int)AttackSelection.None);
 
             _settings.AddVariable("AutoSit", true);
-            _settings.AddVariable("AutoBags", true);
 
             _settings.AddVariable("MorphPathing", false);
             _settings.AddVariable("BellyPathing", false);
@@ -131,7 +129,6 @@ namespace HelpManager
 
             Chat.RegisterCommand("leadfollow", LeadFollowSwitch);
             Chat.RegisterCommand("autosit", AutoSitSwitch);
-            Chat.RegisterCommand("autobags", AutoBagsSwitch);
 
             Chat.RegisterCommand("yalm", YalmCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
@@ -155,7 +152,7 @@ namespace HelpManager
 
 
             Game.OnUpdate += OnUpdate;
-            Game.TeleportEnded += OnZoned;
+            //Game.TeleportEnded += OnZoned;
 
 
             Chat.WriteLine("HelpManager Loaded!");
@@ -169,24 +166,7 @@ namespace HelpManager
 
         private void OnZoned(object s, EventArgs e)
         {
-            if (_settings["AutoBags"].AsBool())
-            {
-                Task.Factory.StartNew(
-                    async () =>
-                    {
-                        await Task.Delay(100);
 
-                        List<Item> bags = Inventory.Items
-                            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                            .ToList();
-
-                        foreach (Item bag in bags)
-                        {
-                            bag.Use();
-                            bag.Use();
-                        }
-                    });
-            }
         }
 
 
@@ -353,21 +333,6 @@ namespace HelpManager
             if (SettingsController.HelpManagerNavFollowDistance != Config.NavFollowDistance)
             {
                 SettingsController.HelpManagerNavFollowDistance = Config.NavFollowDistance;
-            }
-
-            if (!OpenBackpacks && _settings["AutoBags"].AsBool())
-            {
-                List<Item> bags = Inventory.Items
-                    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                    .ToList();
-
-                foreach (Item bag in bags)
-                {
-                    bag.Use();
-                    bag.Use();
-                }
-
-                OpenBackpacks = true;
             }
 
             if (Time.NormalTime > _updateTick + 8f)
@@ -721,15 +686,6 @@ namespace HelpManager
             }
             else
                 CancelBuffs(RelevantNanos.Yalms);
-        }
-
-        private void AutoBagsSwitch(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                _settings["AutoBags"] = !_settings["AutoBags"].AsBool();
-                Chat.WriteLine($"Auto bags : {_settings["AutoBags"].AsBool()}");
-            }
         }
 
         private void LeadFollowSwitch(string command, string[] param, ChatWindow chatWindow)
@@ -1109,11 +1065,6 @@ namespace HelpManager
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
             infoWindow.Show(true);
-        }
-
-        private bool IsActiveCharacter()
-        {
-            return IsActiveWindow;
         }
 
         private bool BeingAttacked()

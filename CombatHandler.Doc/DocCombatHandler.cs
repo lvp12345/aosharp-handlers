@@ -344,6 +344,22 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int channelValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        {
+                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
+                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
+                            SettingsController.CombatHandlerChannel = channelValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
                     healingView.Tag = SettingsController.settingsWindow;
@@ -361,6 +377,11 @@ namespace Desu
                     debuffView.Tag = SettingsController.settingsWindow;
                     debuffView.Clicked = DebuffView;
                 }
+            }
+
+            if (SettingsController.CombatHandlerChannel == String.Empty)
+            {
+                SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
             }
 
             base.OnUpdate(deltaTime);

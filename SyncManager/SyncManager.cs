@@ -64,7 +64,7 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
+            //IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UseItem, OnUseItemMessage);
@@ -155,34 +155,34 @@ namespace SyncManager
                     });
                 }
             }
-            else if (n3Msg.N3MessageType == N3MessageType.Trade)
-            {
-                if (!_settings["SyncTrade"].AsBool()) { return; }
+            //else if (n3Msg.N3MessageType == N3MessageType.Trade)
+            //{
+            //    if (!_settings["SyncTrade"].AsBool()) { return; }
 
-                TradeMessage charTradeIpcMsg = (TradeMessage)n3Msg;
+            //    TradeMessage charTradeIpcMsg = (TradeMessage)n3Msg;
 
-                if (charTradeIpcMsg.Action == TradeAction.Confirm)
-                {
-                    IPCChannel.Broadcast(new TradeHandleMessage()
-                    {
-                        Unknown1 = charTradeIpcMsg.Unknown1,
-                        Action = charTradeIpcMsg.Action,
-                        Target = charTradeIpcMsg.Target,
-                        Container = charTradeIpcMsg.Container,
-                    });
-                }
+            //    if (charTradeIpcMsg.Action == TradeAction.Confirm)
+            //    {
+            //        IPCChannel.Broadcast(new TradeHandleMessage()
+            //        {
+            //            Unknown1 = charTradeIpcMsg.Unknown1,
+            //            Action = charTradeIpcMsg.Action,
+            //            Target = charTradeIpcMsg.Target,
+            //            Container = charTradeIpcMsg.Container,
+            //        });
+            //    }
 
-                if (charTradeIpcMsg.Action == TradeAction.Accept)
-                {
-                    IPCChannel.Broadcast(new TradeHandleMessage()
-                    {
-                        Unknown1 = charTradeIpcMsg.Unknown1,
-                        Action = charTradeIpcMsg.Action,
-                        Target = charTradeIpcMsg.Target,
-                        Container = charTradeIpcMsg.Container,
-                    });
-                }
-            }
+            //    if (charTradeIpcMsg.Action == TradeAction.Accept)
+            //    {
+            //        IPCChannel.Broadcast(new TradeHandleMessage()
+            //        {
+            //            Unknown1 = charTradeIpcMsg.Unknown1,
+            //            Action = charTradeIpcMsg.Action,
+            //            Target = charTradeIpcMsg.Target,
+            //            Container = charTradeIpcMsg.Container,
+            //        });
+            //    }
+            //}
             else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
             {
                 if (!_settings["SyncMove"].AsBool()) { return; }
@@ -398,21 +398,21 @@ namespace SyncManager
             MovementController.Instance.SetMovement(moveMsg.MoveType);
         }
 
-        private void OnTradeMessage(int sender, IPCMessage msg)
-        {
-            if (Game.IsZoning)
-                return;
+        //private void OnTradeMessage(int sender, IPCMessage msg)
+        //{
+        //    if (Game.IsZoning)
+        //        return;
 
-            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
-            TradeMessage charTradeMsg = new TradeMessage()
-            {
-                Unknown1 = charTradeIpcMsg.Unknown1,
-                Action = charTradeIpcMsg.Action,
-                Target = charTradeIpcMsg.Target,
-                Container = charTradeIpcMsg.Container,
-            };
-            Network.Send(charTradeMsg);
-        }
+        //    TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
+        //    TradeMessage charTradeMsg = new TradeMessage()
+        //    {
+        //        Unknown1 = charTradeIpcMsg.Unknown1,
+        //        Action = charTradeIpcMsg.Action,
+        //        Target = charTradeIpcMsg.Target,
+        //        Container = charTradeIpcMsg.Container,
+        //    };
+        //    Network.Send(charTradeMsg);
+        //}
 
         private void OnStopAttackMessage(int sender, IPCMessage msg)
         {

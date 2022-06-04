@@ -758,7 +758,7 @@ namespace CombatHandler.Generic
 
         protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !CanCast(spell) || RelevantNanos.IgnoreNanos.Contains(spell.Identity.Instance)) { return false; }
+            if (fightingTarget != null || !CanCast(spell) || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             if (SpellChecksPlayer(spell))
             {
@@ -1179,12 +1179,12 @@ namespace CombatHandler.Generic
 
         protected bool PetSpawner(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!petData.ContainsKey(spell.Identity.Instance)) { return false; }
+            if (!petData.ContainsKey(spell.Id)) { return false; }
 
-            PetType petType = petData[spell.Identity.Instance].PetType;
+            PetType petType = petData[spell.Id].PetType;
 
             //Ignore spell if we already have the shell in our inventory
-            if (Inventory.Find(petData[spell.Identity.Instance].ShellId, out Item shell)) { return false; }
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) { return false; }
 
             return NoShellPetSpawner(petType, spell, fightingTarget, ref actionTarget);
         }
@@ -1514,7 +1514,7 @@ namespace CombatHandler.Generic
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {
-                if (buffsToCancel.Contains(buff.Identity.Instance))
+                if (buffsToCancel.Contains(buff.Id))
                     buff.Remove();
             }
         }
@@ -1544,7 +1544,7 @@ namespace CombatHandler.Generic
 
         protected bool IsInsideInnerSanctum()
         {
-            return DynelManager.LocalPlayer.Buffs.Any(buff => buff.Identity.Instance == RelevantNanos.InnerSanctumDebuff);
+            return DynelManager.LocalPlayer.Buffs.Any(buff => buff.Id == RelevantNanos.InnerSanctumDebuff);
         }
 
         #endregion

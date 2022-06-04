@@ -629,9 +629,9 @@ namespace HelpManager
         {
             YalmOnMessage yalmMsg = (YalmOnMessage)msg;
 
-            Spell yalm = Spell.List.FirstOrDefault(x => x.Identity.Instance == yalmMsg.Spell);
+            Spell yalm = Spell.List.FirstOrDefault(x => x.Id == yalmMsg.Spell);
 
-            Spell yalm2 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+            Spell yalm2 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
 
             if (yalm != null)
             {
@@ -668,7 +668,7 @@ namespace HelpManager
             }
             else
             {
-                Spell yalm3 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+                Spell yalm3 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
 
                 if (yalm3 != null)
                     yalm3.Cast(false);
@@ -741,7 +741,7 @@ namespace HelpManager
             }
             else 
             {
-                Spell yalmbuff = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Identity.Instance));
+                Spell yalmbuff = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
 
                 if (yalmbuff != null)
                 {
@@ -749,7 +749,7 @@ namespace HelpManager
 
                     IPCChannel.Broadcast(new YalmOnMessage()
                     {
-                        Spell = yalmbuff.Identity.Instance
+                        Spell = yalmbuff.Id
                     });
                 }
             }
@@ -912,7 +912,7 @@ namespace HelpManager
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {
-                if (buffsToCancel.Contains(buff.Identity.Instance))
+                if (buffsToCancel.Contains(buff.Id))
                     buff.Remove();
             }
         }

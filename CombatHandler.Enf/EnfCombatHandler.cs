@@ -512,7 +512,7 @@ namespace Desu
             if (DynelManager.LocalPlayer.FightingTarget != null 
                 && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Identity.Instance == RelevantNanos.BIO_COCOON_BUFF)) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BIO_COCOON_BUFF)) { return false; }
 
             List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
 
@@ -584,7 +584,7 @@ namespace Desu
             public static readonly int[] MeleeEnergy = { 203215, 203207, 203209, 203211, 203213 };
             public static readonly int[] TargetedHpBuff = { 273629, 95708, 95700, 95701, 95702, 95704, 95706, 95707 };
             public static readonly int[] FortifyBuffs = { 273320, 270350, 117686, 117688, 117682, 117687, 117685, 117684, 117683, 117680, 117681 };
-            public static readonly Spell[] TargetedDamageShields = Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder().Where(spell => spell.Identity.Instance != ICE_BURN).ToArray();
+            public static readonly Spell[] TargetedDamageShields = Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder().Where(spell => spell.Id != ICE_BURN).ToArray();
             public const int MONGO_KRAKEN = 273322;
             public const int MONGO_DEMOLISH = 270786;
             public const int FOCUSED_ANGER = 29641;

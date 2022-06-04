@@ -651,17 +651,17 @@ namespace Desu
         {
             public const int TeamDeathlessBlessing = 269455;
             public static readonly Spell[] IndividualShortHoT = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder()
-                .Where(spell => spell.Identity.Instance != TeamDeathlessBlessing).ToArray();
+                .Where(spell => spell.Id != TeamDeathlessBlessing).ToArray();
             public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
                 42399, 43882, 43874, 43880, 42401 };
 
             public const int ImprovedLC = 275011;
             public static readonly Spell[] IndividualShortHP = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
-                .Where(spell => spell.Identity.Instance != ImprovedLC).ToArray();
+                .Where(spell => spell.Id != ImprovedLC).ToArray();
 
             public const int TiredLimbs = 99578;
             public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder()
-                .Where(spell => spell.Identity.Instance != TiredLimbs).ToArray();
+                .Where(spell => spell.Id != TiredLimbs).ToArray();
 
             public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
 

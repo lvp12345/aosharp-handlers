@@ -486,6 +486,8 @@ namespace HelpManager
                 }
             }
 
+            Chat.WriteLine($"{FollowSelection.OSFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()}");
+
             if (FollowSelection.LeadFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
@@ -943,30 +945,6 @@ namespace HelpManager
                         windowStyle: WindowStyle.Default,
                         windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-                if (SettingsController.HelpManagerFollowPlayer != String.Empty)
-                {
-                    assistWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelpManagerFollowPlayer;
-                }
-
-                if (SettingsController.HelpManagerNavFollowPlayer != String.Empty)
-                {
-                    assistWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
-
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelpManagerNavFollowPlayer;
-                }
-
-                if (SettingsController.HelpManagerNavFollowDistance.ToString() != String.Empty)
-                {
-                    assistWindow.FindView("NavFollowDistanceBox", out TextInputView textinput);
-
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelpManagerNavFollowDistance.ToString();
-                }
-
                 if (SettingsController.HelpManagerAssistPlayer != String.Empty)
                 {
                     assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
@@ -1020,14 +998,6 @@ namespace HelpManager
                         windowSize: new Rect(0, 0, 220, 345),
                         windowStyle: WindowStyle.Default,
                         windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                if (SettingsController.HelpManagerAssistPlayer != String.Empty)
-                {
-                    followWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
-
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelpManagerAssistPlayer;
-                }
 
                 if (SettingsController.HelpManagerFollowPlayer != String.Empty)
                 {
@@ -1108,30 +1078,6 @@ namespace HelpManager
             }
 
             return false;
-        }
-
-        public static bool IsBackpack(Item item)
-        {
-            return item.LowId == 275381 || item.LowId == 143832 || item.LowId == 157684 || item.LowId == 157689 || item.LowId == 157686 ||
-                item.LowId == 157691 || item.LowId == 157692 || item.LowId == 157693 || item.LowId == 157683 || item.LowId == 157682 ||
-                item.LowId == 157685 || item.LowId == 157687 || item.LowId == 157688 || item.LowId == 157694 || item.LowId == 157695 ||
-                item.LowId == 157690 || item.LowId == 99241 || item.LowId == 304586 || item.LowId == 158790 || item.LowId == 99228 ||
-                item.LowId == 223770 || item.LowId == 152039 || item.LowId == 156831 || item.LowId == 259016 || item.LowId == 259382 ||
-                item.LowId == 287417 || item.LowId == 287418 || item.LowId == 287419 || item.LowId == 287420 || item.LowId == 287421 ||
-                item.LowId == 287422 || item.LowId == 287423 || item.LowId == 287424 || item.LowId == 287425 || item.LowId == 287426 ||
-                item.LowId == 287427 || item.LowId == 287428 || item.LowId == 287429 || item.LowId == 287430 || item.LowId == 287431 ||
-                item.LowId == 287432 || item.LowId == 287433 | item.LowId == 287434 || item.LowId == 287435 || item.LowId == 287436 ||
-                item.LowId == 287437 || item.LowId == 287438 || item.LowId == 287439 || item.LowId == 287440 || item.LowId == 287441 ||
-                item.LowId == 287442 || item.LowId == 287443 || item.LowId == 287444 || item.LowId == 287445 || item.LowId == 287446 ||
-                item.LowId == 287447 || item.LowId == 287448 || item.LowId == 287609 || item.LowId == 287610 || item.LowId == 287611 ||
-                item.LowId == 287612 || item.LowId == 287613 || item.LowId == 287614 || item.LowId == 287615 || item.LowId == 287616 ||
-                item.LowId == 287617 || item.LowId == 287618 || item.LowId == 287619 || item.LowId == 287620;
-        }
-
-        public static bool IsOther(Item item)
-        {
-            return item.LowId == 305476 || item.LowId == 204698 || item.LowId == 156576 || item.LowId == 267168 || item.LowId == 267167
-                || item.Name.Contains("Health");
         }
 
         private float PetMaxNanoPool()

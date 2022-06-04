@@ -66,6 +66,7 @@ namespace Desu
             _settings.AddVariable("RaidTaunt", false);
             _settings.AddVariable("AOETaunt", false);
             _settings.AddVariable("Absorbs", false);
+            _settings.AddVariable("TauntProc", false);
 
             _settings.AddVariable("TrollForm", false);
 
@@ -93,7 +94,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChangeBuff);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, Fortify, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
@@ -529,6 +530,13 @@ namespace Desu
                 _absorbs = Time.NormalTime;
                 return true;
             }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell) || !IsSettingEnabled("TauntProc")) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }

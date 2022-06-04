@@ -1269,7 +1269,7 @@ namespace Desu
                 buff = buffFromNanoLine;
                 return true;
             }
-            int spellId = spell.Identity.Instance;
+            int spellId = spell.Id;
             if (RelevantNanos.PetNanoToBuff.ContainsKey(spellId))
             {
                 int buffId = RelevantNanos.PetNanoToBuff[spellId];
@@ -1305,7 +1305,7 @@ namespace Desu
 
         private bool IsAoeRoot(Buff buff)
         {
-            return RelevantNanos.AoeRootDebuffs.Any(id => id == buff.Identity.Instance);
+            return RelevantNanos.AoeRootDebuffs.Any(id => id == buff.Id);
         }
 
         #endregion
@@ -1418,7 +1418,7 @@ namespace Desu
             public const int Shackles = 82463;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
-            public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Identity.Instance != GreaterGunSlinger && spell.Identity.Instance != SkilledGunSlinger).ToArray();
+            public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Id != GreaterGunSlinger && spell.Id != SkilledGunSlinger).ToArray();
             public static readonly int[] SingleTargetNukes = { 273307, WorkplaceDepression, 270250, 78400, 30082, 78394, 78395, 82000, 78396, 78397, 30091, 78399, 81996, 30083, 81997, 30068, 81998, 78398, 81999, 29618 };
             public static readonly int[] AoeRoots = { 224129, 224127, 224125, 224123, 224121, 224119, 82166, 82164, 82163, 82161, 82160, 82159, 82158, 82157, 82156 };
             public static readonly int[] AoeRootDebuffs = { 82137, 244634, 244633, 244630, 244631, 244632, 82138, 82139, 244629, 82140, 82141, 82142, 82143, 82144, 82145 };

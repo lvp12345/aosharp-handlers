@@ -8,12 +8,12 @@ namespace HelpManager.IPCMessages
 {
     public enum IPCOpcode
     {
-        Follow = 2200,
-        NavFollow = 2201,
-        Assist = 2203,
-        YalmOn = 2204,
-        YalmUse = 2205,
-        YalmOff = 2206,
-        ClearBuffs = 2207
+        Follow = 1800,
+        NavFollow = 1801,
+        Assist = 1802,
+        YalmOn = 1803,
+        YalmUse = 1804,
+        YalmOff = 1805,
+        ClearBuffs = 1806
     }
 }

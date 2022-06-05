@@ -486,8 +486,6 @@ namespace HelpManager
                 }
             }
 
-            Chat.WriteLine($"{FollowSelection.OSFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()}");
-
             if (FollowSelection.LeadFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {

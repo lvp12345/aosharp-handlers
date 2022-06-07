@@ -293,7 +293,7 @@ namespace Desu
         private void BuffView(object s, ButtonBase button)
         {
             buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\KeeperBuffsView.xml",
-                windowSize: new Rect(0, 0, 240, 345),
+                windowSize: new Rect(0, 0, 240, 215),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 

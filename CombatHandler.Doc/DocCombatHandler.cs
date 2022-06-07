@@ -39,15 +39,6 @@ namespace Desu
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Chat.RegisterCommand("channel", (string command, string[] param, ChatWindow chatWindow) =>
-            {
-                Chat.WriteLine($"Channel set : {param[0]}");
-                IPCChannel.SetChannelId(Convert.ToByte(param[0]));
-                Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(param[0]);
-                Config.Save();
-
-            });
-
             Network.N3MessageSent += Network_N3MessageSent;
             Team.TeamRequest += Team_TeamRequest;
 
@@ -56,24 +47,19 @@ namespace Desu
             Chat.RegisterCommand("disband", DisbandCommand);
             Chat.RegisterCommand("convert", RaidCommand);
 
-
-            _settings.AddVariable("InitDebuff", false);
-            _settings.AddVariable("OSInitDebuff", false);
+            _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
+            _settings.AddVariable("HealSelection", (int)HealSelection.SingleTeam);
 
             _settings.AddVariable("DotA", false);
             _settings.AddVariable("DotB", false);
             _settings.AddVariable("DotC", false);
 
 
-            _settings.AddVariable("ShortHoT", false);
-            _settings.AddVariable("ShortHoTTeam", false);
-            _settings.AddVariable("Deathless", false);
+            _settings.AddVariable("NanoResistTeam", false);
 
-            _settings.AddVariable("ShortHP", false);
-            _settings.AddVariable("ShortHPTeam", false);
+            _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
+            _settings.AddVariable("ShortHoTSelection", (int)ShortHoTSelection.None);
 
-            _settings.AddVariable("Heal", true);
-            _settings.AddVariable("OSHeal", false);
             _settings.AddVariable("CH", true);
 
             _settings.AddVariable("LockCH", false);
@@ -92,7 +78,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.ImprovedLC, TeamHealing, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.Medium);
 
             RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
 
@@ -108,12 +94,11 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.TeamDeathlessBlessing, TeamDeathlessBlessing);
             RegisterSpellProcessor(RelevantNanos.IndividualShortHoT, ShortHoTBuff);
 
-            RegisterSpellProcessor(RelevantNanos.ImprovedLC, LifeChanneler);
+            RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
             RegisterSpellProcessor(RelevantNanos.IndividualShortHP, ShortHPBuff);
 
             //Debuffs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffTarget);
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, OSInitDebuff, CombatActionPriority.Low);
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffs, CombatActionPriority.Low);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(), DOTADebuffTarget);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(), DOTBDebuffTarget);
@@ -317,29 +302,35 @@ namespace Desu
                 _ncuUpdateTime = Time.NormalTime;
             }
 
-            if (IsSettingEnabled("Deathless") && (IsSettingEnabled("ShortHoT") || IsSettingEnabled("ShortHoTTeam")))
+            if (healingWindow != null && healingWindow.IsValid)
             {
-                _settings["Deathless"] = false;
-                _settings["ShortHoT"] = false;
-                _settings["ShortHoTTeam"] = false;
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                healingWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
 
-                Chat.WriteLine($"Can only have one Short HoT active.");
-            }
-
-            if (IsSettingEnabled("ShortHoT") && IsSettingEnabled("ShortHoTTeam"))
-            {
-                _settings["ShortHot"] = false;
-                _settings["ShortHoTTeam"] = false;
-
-                Chat.WriteLine($"Can only have one Short HoT active.");
-            }
-
-            if (IsSettingEnabled("ShortHP") && IsSettingEnabled("ShortHPTeam"))
-            {
-                _settings["ShortHP"] = false;
-                _settings["ShortHPTeam"] = false;
-
-                Chat.WriteLine($"Can only have one Short Hp active.");
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocHealPercentage = healValue;
+                            SettingsController.DocHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = chhealValue;
+                            SettingsController.DocCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -384,6 +375,16 @@ namespace Desu
                 SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
             }
 
+            if (SettingsController.DocCompleteHealPercentage == String.Empty)
+            {
+                SettingsController.DocCompleteHealPercentage = Config.DocCompleteHealPercentage.ToString();
+            }
+
+            if (SettingsController.DocHealPercentage == String.Empty)
+            {
+                SettingsController.DocHealPercentage = Config.DocHealPercentage.ToString();
+            }
+
             base.OnUpdate(deltaTime);
         }
 
@@ -391,55 +392,46 @@ namespace Desu
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CH") || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("CH") || !CanCast(spell)
+                || SettingsController.DocCompleteHealPercentage == string.Empty) { return false; }
 
-            return FindMemberWithHealthBelow(50, ref actionTarget);
+            return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.DocCompleteHealPercentage), ref actionTarget);
         }
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
+            if (!CanCast(spell) || HealSelection.Team != (HealSelection)_settings["HealSelection"].AsInt32()
+                 || SettingsController.DocHealPercentage == string.Empty) { return false; }
 
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members
-                        .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                            .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
-                    .ToList();
-
-                if (dyingTeamMember.Count < 4) { return false; }
-            }
-
-            return FindMemberWithHealthBelow(85, ref actionTarget);
+            return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.DocHealPercentage), ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+            if (!CanCast(spell) || SettingsController.DocHealPercentage == string.Empty) { return false; }
 
-            if (!CanCast(spell)) { return false; }
-
-            // Try to keep our teammates alive if we're in a team
-            if (DynelManager.LocalPlayer.IsInTeam())
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members
-                        .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                            .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
-                    .ToList();
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                        .Where(c => Team.Members
+                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                        .ToList();
 
-                if (dyingTeamMember.Count >= 4) { return false; }
+                    if (dyingTeamMember.Count >= 4) { return false; }
+                }
+
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.DocHealPercentage), ref actionTarget);
+            }
+            else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                return FindPlayerWithHealthBelow(Convert.ToInt32(SettingsController.DocHealPercentage), ref actionTarget);
             }
 
-            if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
-            {
-                return FindPlayerWithHealthBelow(85, ref actionTarget);
-            }
-
-            return FindMemberWithHealthBelow(85, ref actionTarget);
+            return false;
         }
 
         #endregion
@@ -469,15 +461,27 @@ namespace Desu
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool LifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!CanCast(spell) || SettingsController.DocHealPercentage == string.Empty) { return false; }
+
+            if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.DocHealPercentage), ref actionTarget);
+            }
+
             if (HasBuffNanoLine(NanoLine.DoctorShortHPBuffs, DynelManager.LocalPlayer)) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool NanoResistanceBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsSettingEnabled("NanoResistTeam"))
+            {
+                return AllTeamBuff(spell, fightingTarget, ref actionTarget);
+            }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
@@ -490,12 +494,11 @@ namespace Desu
 
         private bool ShortHoTBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ShortHoT"))
+            if (ShortHoTSelection.Self == (ShortHoTSelection)_settings["ShortHoTSelection"].AsInt32())
             {
                 return AllBuff(spell, fightingTarget, ref actionTarget);
             }
-
-            if (IsSettingEnabled("ShortHoTTeam"))
+            if (ShortHoTSelection.Team == (ShortHoTSelection)_settings["ShortHoTSelection"].AsInt32())
             {
                 return AllTeamBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -505,12 +508,11 @@ namespace Desu
 
         private bool ShortHPBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("ShortHP"))
+            if (ShortHpSelection.Self == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
             {
                 return AllBuff(spell, fightingTarget, ref actionTarget);
             }
-
-            if (IsSettingEnabled("ShortHPTeam"))
+            if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
             {
                 return AllTeamBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -520,7 +522,7 @@ namespace Desu
 
         private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Deathless")) { return false; }
+            if (ShortHoTSelection.TeamDeathlessBlessing != (ShortHoTSelection)_settings["ShortHoTSelection"].AsInt32()) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.IndividualShortHoTs))
             {
@@ -534,38 +536,54 @@ namespace Desu
 
         #region Debuffs
 
-        private bool DocToggledDebuffTarget(String settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (SomeoneNeedsHealing()) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            return ToggledDebuffTarget(settingName, spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
+            if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+            {
+                SimpleChar debuffTarget = DynelManager.NPCs
+                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => c.FightingTarget != null) //Is in combat
+                    .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz))
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c)) //Needs debuff refreshed
+                    .OrderBy(c => c.MaxHealth)
+                    .FirstOrDefault();
 
-        private bool InitDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return DocToggledDebuffTarget("InitDebuff", spell, fightingTarget, ref actionTarget);
+                if (debuffTarget != null)
+                {
+                    actionTarget = (debuffTarget, true);
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return DocToggledDebuffTarget("DotA", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("DotA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DOTBDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return DocToggledDebuffTarget("DotB", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("DotB", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DOTCDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return DocToggledDebuffTarget("DotC", spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool OSInitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (SomeoneNeedsHealing()) { return false; }
-
-            return ToggledDebuffOthersInCombat("OSInitDebuff", spell, fightingTarget, ref actionTarget);
+            return ToggledDebuffTarget("DotC", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -630,10 +648,90 @@ namespace Desu
         {
             if (buffWindow != null && buffWindow.IsValid)
             {
+                buffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                buffWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.DocHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.DocHealPercentage;
+                }
+
+                if (SettingsController.DocCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.DocCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocHealPercentage = healValue;
+                            SettingsController.DocHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = chhealValue;
+                            SettingsController.DocCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", buffWindow);
             }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
+                debuffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                debuffWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.DocHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.DocHealPercentage;
+                }
+
+                if (SettingsController.DocCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.DocCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocHealPercentage = healValue;
+                            SettingsController.DocHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = chhealValue;
+                            SettingsController.DocCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", debuffWindow);
             }
             else
@@ -643,8 +741,65 @@ namespace Desu
                     windowStyle: WindowStyle.Default,
                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                healingWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.DocHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.DocHealPercentage;
+                }
+
+                if (SettingsController.DocCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.DocCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocHealPercentage = healValue;
+                            SettingsController.DocHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = chhealValue;
+                            SettingsController.DocCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 healingWindow.Show(true);
             }
+        }
+
+        public enum HealSelection
+        {
+            SingleTeam, SingleOS, Team, ImprovedLifeChanneler
+        }
+        public enum InitDebuffSelection
+        {
+            None, Target, OS
+        }
+        public enum ShortHpSelection
+        {
+            None, Self, Team
+        }
+        public enum ShortHoTSelection
+        {
+            None, Self, Team, TeamDeathlessBlessing
         }
 
         private static class RelevantNanos
@@ -670,6 +825,9 @@ namespace Desu
                 43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
                 28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
+            public static int[] TeamHeals = new[] { 273312, 273315, 270349, 43891, 223291, 43892, 43893, 43894, 43895, 43896, 43897, 43898, 43899,
+                43900, 43901, 43903, 43902, 42404, 43905, 43904, 42395, 43907, 43908, 43906, 42398, 43910, 43909, 42402,
+                43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408 };
         }
 
         #endregion

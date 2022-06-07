@@ -97,6 +97,12 @@ namespace ResearchManager
                 if (!_completedResearchGoals.Contains((uint)goal.ResearchId))
                 {
                     _completedResearchGoals.Add((uint)goal.ResearchId);
+
+                    if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool())
+                    {
+                        _settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"] = false;
+                    }
+
                     Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
                 }
             }
@@ -109,6 +115,12 @@ namespace ResearchManager
                 if (_goal.ResearchId == 0 && !_completedResearchGoals.Contains(goal))
                 {
                     _completedResearchGoals.Add(goal);
+
+                    if (_settings[$"{N3EngineClientAnarchy.GetPerkName(_goal.ResearchId)}"].AsBool())
+                    {
+                        _settings[$"{N3EngineClientAnarchy.GetPerkName(_goal.ResearchId)}"] = false;
+                    }
+
                     Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName((int)goal)}");
                 }
             }

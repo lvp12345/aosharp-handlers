@@ -113,8 +113,6 @@ namespace ResearchManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            Chat.WriteLine($"{N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))}");
-
             //Tick add active and remove active
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _timerPopList + 1)

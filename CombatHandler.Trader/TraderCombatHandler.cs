@@ -53,10 +53,10 @@ namespace Desu
             _settings.AddVariable("DamageDrain", true);
             _settings.AddVariable("HealthDrain", false);
 
-            _settings.AddVariable("RKNanoDrain", false);
-            _settings.AddVariable("SLNanoDrain", false);
+            //_settings.AddVariable("RKNanoDrain", false);
+            //_settings.AddVariable("SLNanoDrain", false);
 
-            _settings.AddVariable("Heal", true);
+            //_settings.AddVariable("Heal", true);
 
             _settings.AddVariable("AAODrain", true);
             _settings.AddVariable("AADDrain", true);
@@ -75,9 +75,10 @@ namespace Desu
 
             _settings.AddVariable("LegShot", false);
             _settings.AddVariable("PerkSelection", (int)PerkSelection.Sacrifice);
-
+            _settings.AddVariable("HealSelection", (int)HealSelection.None);
             _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
             _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
+            _settings.AddVariable("NanoDrainSelection", (int)NanoDrainSelection.None);
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
@@ -364,10 +365,52 @@ namespace Desu
         {
             if (buffWindow != null && buffWindow.IsValid)
             {
+                buffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+
+                if (SettingsController.TraderHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.TraderHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].TraderHealPercentage = healValue;
+                            SettingsController.TraderHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", buffWindow);
             }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
+                debuffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+
+                if (SettingsController.TraderHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.TraderHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].TraderHealPercentage = healValue;
+                            SettingsController.TraderHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", debuffWindow);
             }
             else
@@ -376,6 +419,27 @@ namespace Desu
                     windowSize: new Rect(0, 0, 240, 345),
                     windowStyle: WindowStyle.Default,
                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+
+                if (SettingsController.TraderHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.TraderHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].TraderHealPercentage = healValue;
+                            SettingsController.TraderHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
 
                 healingWindow.Show(true);
             }
@@ -393,6 +457,25 @@ namespace Desu
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            if (healingWindow != null && healingWindow.IsValid)
+            {
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].TraderHealPercentage = healValue;
+                            SettingsController.TraderHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+            }
+
 
             if ((RansackSelection.OS == (RansackSelection)_settings["RansackSelection"].AsInt32()
                 || DepriveSelection.OS == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
@@ -451,6 +534,11 @@ namespace Desu
                 SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
             }
 
+            if (SettingsController.TraderHealPercentage == String.Empty)
+            {
+                SettingsController.TraderHealPercentage = Config.TraderHealPercentage.ToString();
+            }
+
             base.OnUpdate(deltaTime);
         }
 
@@ -482,22 +570,36 @@ namespace Desu
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
+            if (!CanCast(spell) || SettingsController.TraderHealPercentage == string.Empty) { return false; }
 
-            // Try to keep our teammates alive if we're in a team
-            if (DynelManager.LocalPlayer.IsInTeam())
+            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members
-                        .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                            .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
-                    .ToList();
-
-                if (dyingTeamMember.Count >= 4) { return false; }
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.TraderHealPercentage), ref actionTarget);
             }
 
-            return FindMemberWithHealthBelow(85, ref actionTarget);
+            if (HealSelection.SingleOS != (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                return FindPlayerWithHealthBelow(Convert.ToInt32(SettingsController.TraderHealPercentage), ref actionTarget);
+            }
+
+            if (HealSelection.Team != (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                        .Where(c => Team.Members
+                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                        .ToList();
+
+                    if (dyingTeamMember.Count >= 4) { return false; }
+                }
+
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.TraderHealPercentage), ref actionTarget);
+            }
+
+            return false;
         }
 
         protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -549,7 +651,9 @@ namespace Desu
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("SLNanoDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (NanoDrainSelection.Shadowlands != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()) { return false; }
+
+            return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
         private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -558,7 +662,9 @@ namespace Desu
 
         private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("RKNanoDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (NanoDrainSelection.RubiKa != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()) { return false; }
+
+            return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -704,6 +810,14 @@ namespace Desu
         public enum PerkSelection
         {
             Sacrifice, PurpleHeart
+        }
+        public enum HealSelection
+        {
+            None, SingleTeam, SingleOS, Team
+        }
+        public enum NanoDrainSelection
+        {
+            None, RubiKa, Shadowlands
         }
         public enum RansackSelection
         {

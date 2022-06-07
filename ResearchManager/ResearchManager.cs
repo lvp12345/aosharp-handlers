@@ -103,7 +103,7 @@ namespace ResearchManager
                         _settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"] = false;
                     }
 
-                    Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
+                    //Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
                 }
             }
 
@@ -121,7 +121,7 @@ namespace ResearchManager
                         _settings[$"{N3EngineClientAnarchy.GetPerkName(_goal.ResearchId)}"] = false;
                     }
 
-                    Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName((int)goal)}");
+                    //Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName((int)goal)}");
                 }
             }
 
@@ -139,7 +139,22 @@ namespace ResearchManager
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _timerPopList + 1)
             {
-                foreach (ResearchGoal goal in Research.Goals)
+                foreach (ResearchGoal goal in Research.Goals.Where(c => !c.Available))
+                {
+                    if (!_completedResearchGoals.Contains((uint)goal.ResearchId))
+                    {
+                        _completedResearchGoals.Add((uint)goal.ResearchId);
+
+                        if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool())
+                        {
+                            _settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"] = false;
+                        }
+
+                        //Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
+                    }
+                }
+
+                foreach (ResearchGoal goal in Research.Goals.Where(c => c.Available))
                 {
                     if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool() && !_completedResearchGoals.Contains((uint)goal.ResearchId)
                         && goal.ResearchId != 0)

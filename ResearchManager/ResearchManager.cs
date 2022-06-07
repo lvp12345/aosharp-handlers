@@ -62,34 +62,34 @@ namespace ResearchManager
             Chat.WriteLine("/research for settings.");
 
             //Init to add settings
-            //foreach (int goal in Research.Completed)
-            //{
-            //    if (!_researchGoalsWholeStr.Contains($"{N3EngineClientAnarchy.GetPerkName(goal)}"))
-            //        _researchGoalsWholeStr.Add($"{N3EngineClientAnarchy.GetPerkName(goal)}");
+            foreach (int goal in Research.Completed)
+            {
+                if (!_researchGoalsWholeStr.Contains($"{N3EngineClientAnarchy.GetPerkName(goal)}"))
+                    _researchGoalsWholeStr.Add($"{N3EngineClientAnarchy.GetPerkName(goal)}");
 
-            //    if (_researchGoalsWholeStr.Count == 8)
-            //    {
-            //        foreach (string str in _researchGoalsWholeStr)
-            //        {
-            //            _settings.AddVariable($"{str}", false);
-            //        }
-            //    }
-            //}
+                if (_researchGoalsWholeStr.Count == 8)
+                {
+                    foreach (string str in _researchGoalsWholeStr)
+                    {
+                        _settings.AddVariable($"{str}", false);
+                    }
+                }
+            }
 
             //Init to add settings
-            //foreach (ResearchGoal goal in Research.Goals)
-            //{
-            //    if (!_researchGoalsWholeStr.Contains($"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"))
-            //        _researchGoalsWholeStr.Add($"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
+            foreach (ResearchGoal goal in Research.Goals)
+            {
+                if (!_researchGoalsWholeStr.Contains($"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"))
+                    _researchGoalsWholeStr.Add($"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
 
-            //    if (_researchGoalsWholeStr.Count == 8)
-            //    {
-            //        foreach (string str in _researchGoalsWholeStr)
-            //        {
-            //            _settings.AddVariable($"{str}", false);
-            //        }
-            //    }
-            //}
+                if (_researchGoalsWholeStr.Count == 8)
+                {
+                    foreach (string str in _researchGoalsWholeStr)
+                    {
+                        _settings.AddVariable($"{str}", false);
+                    }
+                }
+            }
 
             //Init to get completed not available
             //foreach (ResearchGoal goal in Research.Goals.Where(c => !c.Available))

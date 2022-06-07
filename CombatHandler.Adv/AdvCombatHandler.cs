@@ -38,15 +38,6 @@ namespace Desu
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Chat.RegisterCommand("channel", (string command, string[] param, ChatWindow chatWindow) =>
-            {
-                Chat.WriteLine($"Channel set : {param[0]}");
-                IPCChannel.SetChannelId(Convert.ToByte(param[0]));
-                Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(param[0]);
-                Config.Save();
-
-            });
-
             Network.N3MessageSent += Network_N3MessageSent;
             Team.TeamRequest += Team_TeamRequest;
 
@@ -55,8 +46,7 @@ namespace Desu
             Chat.RegisterCommand("disband", DisbandCommand);
             Chat.RegisterCommand("convert", RaidCommand);
 
-            _settings.AddVariable("Heal", true);
-            _settings.AddVariable("OSHeal", false);
+            _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
             _settings.AddVariable("DragonMorph", false);
             _settings.AddVariable("LeetMorph", false);
@@ -65,9 +55,7 @@ namespace Desu
 
             _settings.AddVariable("ArmorBuff", false);
 
-            //settings.AddVariable("Heal", true); // Morph leet and crit?
-            //settings.AddVariable("Heal", true); // Morph sabre and damage?
-            //settings.AddVariable("OSHeal", false); // Morph healing?
+            _settings.AddVariable("CH", false);
 
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
@@ -120,6 +108,37 @@ namespace Desu
                 OnRemainingNCUMessage(0, ncuMessage);
 
                 _ncuUpdateTime = Time.NormalTime;
+            }
+
+            if (healingWindow != null && healingWindow.IsValid)
+            {
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                healingWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocHealPercentage = healValue;
+                            SettingsController.DocHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = chhealValue;
+                            SettingsController.DocCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
             }
 
             if (_settings["DragonMorph"].AsBool() && _settings["LeetMorph"].AsBool())
@@ -216,6 +235,15 @@ namespace Desu
             if (SettingsController.CombatHandlerChannel == String.Empty)
             {
                 SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
+            }
+            if (SettingsController.AdvCompleteHealPercentage == String.Empty)
+            {
+                SettingsController.AdvCompleteHealPercentage = Config.AdvCompleteHealPercentage.ToString();
+            }
+
+            if (SettingsController.AdvHealPercentage == String.Empty)
+            {
+                SettingsController.AdvHealPercentage = Config.AdvHealPercentage.ToString();
             }
 
             base.OnUpdate(deltaTime);
@@ -406,6 +434,46 @@ namespace Desu
         {
             if (morphWindow != null && morphWindow.IsValid)
             {
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                healingWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.AdvHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.AdvHealPercentage;
+                }
+
+                if (SettingsController.AdvCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.AdvCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AdvHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AdvHealPercentage = healValue;
+                            SettingsController.AdvHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage = chhealValue;
+                            SettingsController.AdvCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", morphWindow);
             }
             else
@@ -414,6 +482,45 @@ namespace Desu
                      windowSize: new Rect(0, 0, 240, 345),
                      windowStyle: WindowStyle.Default,
                      windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                healingWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.AdvHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.AdvHealPercentage;
+                }
+
+                if (SettingsController.AdvCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.AdvCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AdvHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AdvHealPercentage = healValue;
+                            SettingsController.AdvHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage = chhealValue;
+                            SettingsController.AdvCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
 
                 healingWindow.Show(true);
             }
@@ -509,93 +616,43 @@ namespace Desu
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
+            if (!CanCast(spell) || HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
-            return FindMemberWithHealthBelow(85, ref actionTarget);
+            return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.AdvHealPercentage), ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+            if (!CanCast(spell) || SettingsController.AdvHealPercentage == string.Empty) { return false; }
 
-            if (!CanCast(spell)) { return false; }
-
-            if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                return FindPlayerWithHealthBelow(85, ref actionTarget);
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.AdvHealPercentage), ref actionTarget);
+            }
+            else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                return FindPlayerWithHealthBelow(Convert.ToInt32(SettingsController.AdvHealPercentage), ref actionTarget);
             }
 
-            return FindMemberWithHealthBelow(85, ref actionTarget);
+            return false;
         }
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return FindMemberWithHealthBelow(30, ref actionTarget);
+            if (!IsSettingEnabled("CH") || !CanCast(spell)
+                || SettingsController.DocCompleteHealPercentage == string.Empty) { return false; }
+
+            return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.AdvCompleteHealPercentage), ref actionTarget);
         }
-
-        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
-
-        //    // Try to keep our teammates alive if we're in a team
-        //    if (DynelManager.LocalPlayer.IsInTeam())
-        //    {
-        //        List<SimpleChar> dyingTeamMember = DynelManager.Characters
-        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-        //            .Where(c => c.HealthPercent <= 80)
-        //            .Where(c => c.HealthPercent >= 50)
-        //            .ToList();
-
-        //        if (dyingTeamMember.Count < 4)
-        //        {
-        //            return false;
-        //        }
-        //        else
-        //        {
-        //            return true;
-        //        }
-        //    }
-
-        //    return false;
-        //}
-
-        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
-
-        //    if (!CanCast(spell)) { return false; }
-
-        //    // Try to keep our teammates alive if we're in a team
-        //    if (DynelManager.LocalPlayer.IsInTeam() && IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal"))
-        //    {
-        //        List<SimpleChar> dyingTeamMember = DynelManager.Characters
-        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-        //            .Where(c => c.HealthPercent <= 80)
-        //            .Where(c => c.HealthPercent >= 50)
-        //            .ToList();
-
-        //        if (dyingTeamMember.Count >= 4)
-        //        {
-        //            return false;
-        //        }
-        //        else
-        //        {
-        //            return FindMemberWithHealthBelow(85, ref actionTarget);
-        //        }
-        //    }
-        //    if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
-        //    {
-        //        return FindPlayerWithHealthBelow(85, ref actionTarget);
-        //    }
-        //    else
-        //    {
-        //        return FindMemberWithHealthBelow(85, ref actionTarget);
-        //    }
-        //}
 
         #endregion
 
         #region Misc
+
+        public enum HealSelection
+        {
+            None, SingleTeam, SingleOS
+        }
         private static class RelevantNanos
         {
             public static int[] HEALS = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,

@@ -28,6 +28,10 @@ namespace CombatHandler
         public int AgentCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AgentCompleteHealPercentage : 20;
         [JsonIgnore]
         public int MAHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].MAHealPercentage : 90;
+        [JsonIgnore]
+        public int AdvHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AdvHealPercentage : 90;
+        [JsonIgnore]
+        public int AdvCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AdvCompleteHealPercentage : 20;
 
         public static Config Load(string path)
         {
@@ -84,6 +88,8 @@ namespace CombatHandler
         public int AgentHealPercentage { get; set; } = 90;
         public int AgentCompleteHealPercentage { get; set; } = 20;
         public int MAHealPercentage { get; set; } = 90;
+        public int AdvHealPercentage { get; set; } = 90;
+        public int AdvCompleteHealPercentage { get; set; } = 20;
     }
 }
 

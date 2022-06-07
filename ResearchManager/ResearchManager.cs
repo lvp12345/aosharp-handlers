@@ -98,10 +98,10 @@ namespace ResearchManager
                 {
                     _completedResearchGoals.Add((uint)goal.ResearchId);
 
-                    if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool())
-                    {
-                        _settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"] = false;
-                    }
+                    //if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool())
+                    //{
+                    //    _settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"] = false;
+                    //}
 
                     //Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
                 }
@@ -116,10 +116,10 @@ namespace ResearchManager
                 {
                     _completedResearchGoals.Add(goal);
 
-                    if (_settings[$"{N3EngineClientAnarchy.GetPerkName(_goal.ResearchId)}"].AsBool())
-                    {
-                        _settings[$"{N3EngineClientAnarchy.GetPerkName(_goal.ResearchId)}"] = false;
-                    }
+                    //if (_settings[$"{N3EngineClientAnarchy.GetPerkName(_goal.ResearchId)}"].AsBool())
+                    //{
+                    //    _settings[$"{N3EngineClientAnarchy.GetPerkName(_goal.ResearchId)}"] = false;
+                    //}
 
                     //Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName((int)goal)}");
                 }
@@ -139,6 +139,14 @@ namespace ResearchManager
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _timerPopList + 1)
             {
+                foreach (ResearchGoal goal in Research.Goals.Where(c => !c.Available))
+                {
+                    if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool() && _completedResearchGoals.Contains((uint)goal.ResearchId))
+                    {
+                        _settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"] = false;
+                    }
+                }
+
                 foreach (ResearchGoal goal in Research.Goals.Where(c => c.Available))
                 {
                     if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool() && !_completedResearchGoals.Contains((uint)goal.ResearchId)
@@ -173,6 +181,7 @@ namespace ResearchManager
 
                     if (_researchGoalsActive.Contains(_currentGoal))
                     {
+                        Chat.WriteLine($"Here breaking");
                         _researchGoalsActive.Remove(_currentGoal);
                         _settings[$"{N3EngineClientAnarchy.GetPerkName(_currentGoal.ResearchId)}"] = false;
                         Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(_currentGoal.ResearchId)}");

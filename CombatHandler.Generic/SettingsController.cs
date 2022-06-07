@@ -24,6 +24,8 @@ namespace CombatHandler
         public static string AgentHealPercentage = String.Empty;
         public static string AgentCompleteHealPercentage = String.Empty;
         public static string MAHealPercentage = String.Empty;
+        public static string AdvHealPercentage = String.Empty;
+        public static string AdvCompleteHealPercentage = String.Empty;
 
         public static Window settingsWindow;
         public static View settingsView;

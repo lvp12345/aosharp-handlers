@@ -112,6 +112,7 @@ namespace ResearchManager
                 {
                     //Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
                     _researchGoalsActive.Remove(_currentGoalFinished.FirstOrDefault());
+                    _settings[$"{N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}"] = false;
                     //Chat.WriteLine($"Removing Active - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
 
                     foreach (ResearchGoal _currentGoal in _researchGoalsActive.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)

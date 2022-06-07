@@ -30,15 +30,6 @@ namespace Desu
         public static Window _healingWindow;
         public static Window _procWindow;
 
-        public static View _buffView;
-        public static View _tauntView;
-        public static View _healingView;
-        public static View _procView;
-
-        private static Settings buff = new Settings("Buffs");
-        private static Settings taunt = new Settings("Taunts");
-        private static Settings healing = new Settings("Healing");
-        private static Settings proc = new Settings("Procs");
 
         private static double _ncuUpdateTime;
 
@@ -53,14 +44,6 @@ namespace Desu
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Chat.RegisterCommand("channel", (string command, string[] param, ChatWindow chatWindow) =>
-            {
-                Chat.WriteLine($"Channel set : {param[0]}");
-                IPCChannel.SetChannelId(Convert.ToByte(param[0]));
-                Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(param[0]);
-                Config.Save();
-
-            });
 
             Network.N3MessageSent += Network_N3MessageSent;
             Team.TeamRequest += Team_TeamRequest;
@@ -79,6 +62,8 @@ namespace Desu
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AbsoluteFist);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.SelfReconstruction);
 
+            _settings.AddVariable("HealSelection", (int)HealSelection.None);
+
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
 
             _settings.AddVariable("EvadesTeam", false);
@@ -89,10 +74,10 @@ namespace Desu
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
-            SettingsController.RegisterSettingsWindow("Buffs", pluginDir + "\\UI\\MABuffsView.xml", buff);
-            SettingsController.RegisterSettingsWindow("Healing", pluginDir + "\\UI\\MAHealingView.xml", healing);
-            SettingsController.RegisterSettingsWindow("Taunts", pluginDir + "\\UI\\MATauntsView.xml", taunt);
-            SettingsController.RegisterSettingsWindow("Procs", pluginDir + "\\UI\\MAProcsView.xml", proc);
+            RegisterSettingsWindow("Healing", "MAHealingView.xml");
+            RegisterSettingsWindow("Buffs", "MABuffsView.xml");
+            RegisterSettingsWindow("Taunts", "MATauntsView.xml");
+            RegisterSettingsWindow("Procs", "MAProcsView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, AbsoluteFist, CombatActionPriority.Low);
@@ -336,33 +321,15 @@ namespace Desu
         {
             if (_healingWindow != null && _healingWindow.IsValid)
             {
-                if (_procView == null)
-                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
-
-                if (!_healingWindow.Views.Contains(_procView))
-                {
-                    _healingWindow.AppendTab("Procs", _procView);
-                }
+                SettingsController.AppendSettingsTab("Procs", _healingWindow);
             }
             else if (_buffWindow != null && _healingWindow.IsValid)
             {
-                if (_procView == null)
-                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
-
-                if (!_procWindow.Views.Contains(_procView))
-                {
-                    _procWindow.AppendTab("Procs", _procView);
-                }
+                SettingsController.AppendSettingsTab("Procs", _buffWindow);
             }
             else if (_tauntWindow != null && _procWindow.IsValid)
             {
-                if (_procView == null)
-                    _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
-
-                if (!_tauntWindow.Views.Contains(_procView))
-                {
-                    _tauntWindow.AppendTab("Procs", _procView);
-                }
+                SettingsController.AppendSettingsTab("Procs", _tauntWindow);
             }
             else
             {
@@ -379,33 +346,15 @@ namespace Desu
         {
             if (_healingWindow != null && _healingWindow.IsValid)
             {
-                if (_buffView == null)
-                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
-
-                if (!_healingWindow.Views.Contains(_buffView))
-                {
-                    _healingWindow.AppendTab("Buffs", _buffView);
-                }
+                SettingsController.AppendSettingsTab("Buffs", _healingWindow);
             }
             else if (_procWindow != null && _procWindow.IsValid)
             {
-                if (_buffView == null)
-                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
-
-                if (!_procWindow.Views.Contains(_buffView))
-                {
-                    _procWindow.AppendTab("Buffs", _buffView);
-                }
+                SettingsController.AppendSettingsTab("Buffs", _procWindow);
             }
             else if (_tauntWindow != null && _procWindow.IsValid)
             {
-                if (_buffView == null)
-                    _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
-
-                if (!_tauntWindow.Views.Contains(_buffView))
-                {
-                    _tauntWindow.AppendTab("Buffs", _buffView);
-                }
+                SettingsController.AppendSettingsTab("Buffs", _tauntWindow);
             }
             else
             {
@@ -422,32 +371,71 @@ namespace Desu
         {
             if (_buffWindow != null && _buffWindow.IsValid)
             {
-                if (_healingView == null)
-                    _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
+                _buffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
 
-                if (!_buffWindow.Views.Contains(_healingView))
+                if (SettingsController.MAHealPercentage != String.Empty)
                 {
-                    _buffWindow.AppendTab("Healing", _healingView);
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.MAHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].MAHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].MAHealPercentage = healValue;
+                            SettingsController.MAHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
                 }
             }
             else if (_procWindow != null && _procWindow.IsValid)
             {
-                if (_healingView == null)
-                    _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
+                _procWindow.FindView("HealPercentageBox", out TextInputView textinput1);
 
-                if (!_procWindow.Views.Contains(_healingView))
+                if (SettingsController.MAHealPercentage != String.Empty)
                 {
-                    _procWindow.AppendTab("Healing", _healingView);
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.MAHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].MAHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].MAHealPercentage = healValue;
+                            SettingsController.MAHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
                 }
             }
             else if (_tauntWindow != null && _tauntWindow.IsValid)
             {
-                if (_healingView == null)
-                    _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
+                _tauntWindow.FindView("HealPercentageBox", out TextInputView textinput1);
 
-                if (!_tauntWindow.Views.Contains(_healingView))
+                if (SettingsController.MAHealPercentage != String.Empty)
                 {
-                    _tauntWindow.AppendTab("Healing", _healingView);
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.MAHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].MAHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].MAHealPercentage = healValue;
+                            SettingsController.MAHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
                 }
             }
             else
@@ -457,6 +445,27 @@ namespace Desu
                     windowStyle: WindowStyle.Default,
                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
+                _healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+
+                if (SettingsController.MAHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.MAHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].MAHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].MAHealPercentage = healValue;
+                            SettingsController.MAHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 _healingWindow.Show(true);
             }
         }
@@ -465,33 +474,15 @@ namespace Desu
         {
             if (_buffWindow != null && _buffWindow.IsValid)
             {
-                if (_tauntView == null)
-                    _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
-
-                if (!_buffWindow.Views.Contains(_tauntView))
-                {
-                    _buffWindow.AppendTab("Taunts", _tauntView);
-                }
+                SettingsController.AppendSettingsTab("Taunts", _buffWindow);
             }
             else if (_healingWindow != null && _healingWindow.IsValid)
             {
-                if (_tauntView == null)
-                    _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
-
-                if (!_healingWindow.Views.Contains(_tauntView))
-                {
-                    _healingWindow.AppendTab("Taunts", _tauntView);
-                }
+                SettingsController.AppendSettingsTab("Taunts", _healingWindow);
             }
             else if (_procWindow != null && _procWindow.IsValid)
             {
-                if (_tauntView == null)
-                    _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
-
-                if (!_procWindow.Views.Contains(_tauntView))
-                {
-                    _procWindow.AppendTab("Taunts", _tauntView);
-                }
+                SettingsController.AppendSettingsTab("Taunts", _procWindow);
             }
             else
             {
@@ -516,6 +507,25 @@ namespace Desu
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            if (_healingWindow != null && _healingWindow.IsValid)
+            {
+                _healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].MAHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].MAHealPercentage = healValue;
+                            SettingsController.MAHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+            }
+
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
@@ -562,6 +572,11 @@ namespace Desu
             if (SettingsController.CombatHandlerChannel == String.Empty)
             {
                 SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
+            }
+
+            if (SettingsController.MAHealPercentage == String.Empty)
+            {
+                SettingsController.MAHealPercentage = Config.TraderHealPercentage.ToString();
             }
 
             base.OnUpdate(deltaTime);
@@ -788,23 +803,25 @@ namespace Desu
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
+            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
-            return FindMemberWithHealthBelow(85, ref actionTarget);
+            return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.MAHealPercentage), ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+            if (!CanCast(spell) || SettingsController.MAHealPercentage == string.Empty) { return false; }
 
-            if (!CanCast(spell)) { return false; }
-
-            if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                return FindPlayerWithHealthBelow(85, ref actionTarget);
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.MAHealPercentage), ref actionTarget);
+            }
+            else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                return FindPlayerWithHealthBelow(Convert.ToInt32(SettingsController.MAHealPercentage), ref actionTarget);
             }
 
-            return FindMemberWithHealthBelow(85, ref actionTarget); ;
+            return false;
         }
 
         #region Perks
@@ -884,7 +901,10 @@ namespace Desu
         }
 
         #endregion
-
+        public enum HealSelection
+        {
+            None, SingleTeam, SingleOS
+        }
         public enum ProcType1Selection
         {
             AbsoluteFist, StrengthenKi, DisruptKi, SmashingFist, StrengthenSpirit, StingingFist

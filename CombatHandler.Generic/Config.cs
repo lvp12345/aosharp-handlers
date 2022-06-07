@@ -20,6 +20,14 @@ namespace CombatHandler
         public int DocHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].DocHealPercentage : 90;
         [JsonIgnore]
         public int DocCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].DocCompleteHealPercentage : 20;
+        [JsonIgnore]
+        public int TraderHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].TraderHealPercentage : 90;
+        [JsonIgnore]
+        public int AgentHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AgentHealPercentage : 90;
+        [JsonIgnore]
+        public int AgentCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AgentCompleteHealPercentage : 20;
+        [JsonIgnore]
+        public int MAHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].MAHealPercentage : 90;
 
         public static Config Load(string path)
         {
@@ -72,6 +80,10 @@ namespace CombatHandler
         public int IPCChannel { get; set; } = 0;
         public int DocHealPercentage { get; set; } = 90;
         public int DocCompleteHealPercentage { get; set; } = 20;
+        public int TraderHealPercentage { get; set; } = 90;
+        public int AgentHealPercentage { get; set; } = 90;
+        public int AgentCompleteHealPercentage { get; set; } = 20;
+        public int MAHealPercentage { get; set; } = 90;
     }
 }
 

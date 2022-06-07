@@ -20,6 +20,10 @@ namespace CombatHandler
         public static string CombatHandlerChannel = String.Empty;
         public static string DocHealPercentage = String.Empty;
         public static string DocCompleteHealPercentage = String.Empty;
+        public static string TraderHealPercentage = String.Empty;
+        public static string AgentHealPercentage = String.Empty;
+        public static string AgentCompleteHealPercentage = String.Empty;
+        public static string MAHealPercentage = String.Empty;
 
         public static Window settingsWindow;
         public static View settingsView;

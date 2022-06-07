@@ -60,13 +60,12 @@ namespace Desu
             _settings.AddVariable("OSInitDebuff", false);
 
 
-            _settings.AddVariable("Heal", false);
-            _settings.AddVariable("OSHeal", false);
+            _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
 
             _settings.AddVariable("EvasionDebuff", false);
 
-
+            _settings.AddVariable("CH", false);
             _settings.AddVariable("Damage", false);
             _settings.AddVariable("Detaunt", false);
 
@@ -102,8 +101,8 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgentProcBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcentrationCriticalLine).OrderByStackingOrder(), Concentration);
 
-            RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
-            //RegisterSpellProcessor(RelevantNanos.CH, CompleteHealing, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.CH, CompleteHealing, CombatActionPriority.High);
 
             //False Profs
             RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);
@@ -151,6 +150,24 @@ namespace Desu
             {
                 SynchronizePetCombatStateWithOwner();
                 AssignTargetToHealPet();
+            }
+
+            if (healingWindow != null && healingWindow.IsValid)
+            {
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
+                            SettingsController.AgentHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -205,6 +222,10 @@ namespace Desu
             if (SettingsController.CombatHandlerChannel == String.Empty)
             {
                 SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
+            }
+            if (SettingsController.AgentHealPercentage == String.Empty)
+            {
+                SettingsController.AgentHealPercentage = Config.AgentHealPercentage.ToString();
             }
 
             base.OnUpdate(deltaTime);
@@ -516,18 +537,178 @@ namespace Desu
         {
             if (buffWindow != null && buffWindow.IsValid)
             {
+                buffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                buffWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.AgentHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.AgentHealPercentage;
+                }
+
+                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
+                            SettingsController.AgentHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
+                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", buffWindow);
             }
             else if (debuffWindow != null && debuffWindow.IsValid)
             {
+                debuffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                debuffWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.AgentHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.AgentHealPercentage;
+                }
+
+                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
+                            SettingsController.AgentHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
+                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", debuffWindow);
             }
             else if (procWindow != null && procWindow.IsValid)
             {
+                procWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                procWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.AgentHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.AgentHealPercentage;
+                }
+
+                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
+                            SettingsController.AgentHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
+                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", procWindow);
             }
             else if (falseProfWindow != null && falseProfWindow.IsValid)
             {
+                falseProfWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                falseProfWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.AgentHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.AgentHealPercentage;
+                }
+
+                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
+                            SettingsController.AgentHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
+                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+
                 SettingsController.AppendSettingsTab("Healing", falseProfWindow);
             }
             else
@@ -536,6 +717,46 @@ namespace Desu
                     windowSize: new Rect(0, 0, 240, 345),
                     windowStyle: WindowStyle.Default,
                     windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
+                healingWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (SettingsController.AgentHealPercentage != String.Empty)
+                {
+                    if (textinput1 != null)
+                        textinput1.Text = SettingsController.AgentHealPercentage;
+                }
+
+                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
+                {
+                    if (textinput2 != null)
+                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
+                }
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput1.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
+                            SettingsController.AgentHealPercentage = healValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
+                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
+                            Config.Save();
+                        }
+                    }
+                }
 
                 healingWindow.Show(true);
             }
@@ -598,27 +819,26 @@ namespace Desu
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
+            if (!CanCast(spell) || SettingsController.AgentHealPercentage == string.Empty) { return false; }
 
-            if (!CanCast(spell)) { return false; }
-
-            if (IsSettingEnabled("OSHeal") && !IsSettingEnabled("Heal"))
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                return FindPlayerWithHealthBelow(85, ref actionTarget);
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.DocHealPercentage), ref actionTarget);
+            }
+            else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                return FindPlayerWithHealthBelow(Convert.ToInt32(SettingsController.AgentHealPercentage), ref actionTarget);
             }
 
-            return FindMemberWithHealthBelow(85, ref actionTarget);
+            return false;
         }
 
-        //private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("CH"))
-        //    {
-        //        return false;
-        //    }
+        private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CH")) { return false; }
 
-        //    return FindMemberWithHealthBelow(50, ref actionTarget);
-        //}
+            return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.AgentCompleteHealPercentage), ref actionTarget);
+        }
 
         #endregion
 
@@ -811,8 +1031,10 @@ namespace Desu
         {
             None, Metaphysicist, Soldier, Enforcer, Engineer, Doctor, Fixer, Beauracrat, MartialArtist, NanoTechnician, Trader, Adventurer
         }
-
-
+        public enum HealSelection
+        {
+            None, SingleTeam, SingleOS
+        }
         private static class RelevantNanos
         {
             public static int[] DetauntProcs = { 226437, 226435, 226433, 226431, 226429, 226427 };

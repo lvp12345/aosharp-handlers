@@ -48,7 +48,7 @@ namespace Desu
             Chat.RegisterCommand("convert", RaidCommand);
 
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
-            _settings.AddVariable("HealSelection", (int)HealSelection.SingleTeam);
+            _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
             _settings.AddVariable("DotA", false);
             _settings.AddVariable("DotB", false);
@@ -400,10 +400,28 @@ namespace Desu
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell) || HealSelection.Team != (HealSelection)_settings["HealSelection"].AsInt32()
-                 || SettingsController.DocHealPercentage == string.Empty) { return false; }
+            if (!CanCast(spell) || SettingsController.DocHealPercentage == string.Empty) { return false; }
 
-            return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.DocHealPercentage), ref actionTarget);
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32()
+                || HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                        .Where(c => Team.Members
+                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                        .ToList();
+
+                    if (dyingTeamMember.Count < 4) { return false; }
+                }
+
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.DocHealPercentage), ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -787,7 +805,7 @@ namespace Desu
 
         public enum HealSelection
         {
-            SingleTeam, SingleOS, Team, ImprovedLifeChanneler
+            None, SingleTeam, SingleOS, Team, ImprovedLifeChanneler
         }
         public enum InitDebuffSelection
         {

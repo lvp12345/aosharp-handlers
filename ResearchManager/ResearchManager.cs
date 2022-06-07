@@ -157,7 +157,7 @@ namespace ResearchManager
             //Tick the brain
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && _researchGoalsActive.Count >= 1
-                && Time.NormalTime > _timerWorker + 5)
+                && Time.NormalTime > _timerWorker + 2)
             {
                 ResearchGoal _currentGoal = _researchGoalsActive.Where(c => c.ResearchId != 0 && N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                     == N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))

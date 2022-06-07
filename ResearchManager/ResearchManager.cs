@@ -168,9 +168,6 @@ namespace ResearchManager
                 && _researchGoalsActive.Count >= 1
                 && Time.NormalTime > _timerWorker + 5)
             {
-                //List<ResearchGoal> _goalNotAvail = Research.Goals.Where(c => !c.Available && c.ResearchId == DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)
-                //                                    && !_completedResearchGoals.Contains((uint)c.ResearchId)).ToList();
-
                 _goalListFinished = _researchGoalsActive.Where(c => Research.Completed.Contains((uint)c.ResearchId)).ToList();
 
                 _goalList = Research.Goals.Where(c => !Research.Completed.Contains((uint)c.ResearchId)).ToList();
@@ -189,16 +186,8 @@ namespace ResearchManager
                     .Where(c => !_completedResearchGoals.Contains((uint)c.ResearchId))
                     .ToList();
 
-                //if (_goalNotAvail.Count >= 1)
-                //{
-                //    _completedResearchGoals
-                //        .Add((uint)_goalNotAvail.FirstOrDefault().ResearchId);
-                //}
-
                 if (!_currentGoal.Available)
                 {
-                    _settings[$"{_currentLineName}"] = false;
-
                     ResearchGoal _goal = _researchGoalsActiveList.FirstOrDefault(c => c.ResearchId == _currentLineHash);
                     
                     if (!_completedResearchGoals.Contains((uint)_currentLineHash))
@@ -210,6 +199,7 @@ namespace ResearchManager
                     if (_researchGoalsActive.Contains(_goal))
                     {
                         _researchGoalsActive.Remove(_goal);
+                        _settings[$"{_currentLineName}"] = false;
                         Chat.WriteLine($"Finished - {_currentLineName}");
                     }
 

@@ -18,6 +18,8 @@ namespace CombatHandler
         private static bool IsCommandRegistered;
 
         public static string CombatHandlerChannel = String.Empty;
+        public static string DocHealPercentage = String.Empty;
+        public static string DocCompleteHealPercentage = String.Empty;
 
         public static Window settingsWindow;
         public static View settingsView;

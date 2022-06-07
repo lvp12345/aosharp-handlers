@@ -5,9 +5,9 @@
       <View v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
         <TextView value="Channel" layout_borders="Rect(5,5,5,5)"/>
-        <TextInputView name="ChannelBox" min_size="Point(60,14)" max_size="Point(60,14)" layout_borders="Rect(4,4,4,4)"/>
+        <TextInputView name="ChannelBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-        <OptionCheckBox label="(12Man/POH/Subway) Spam Anti-Fear" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamAntifear" layout_borders="Rect(10,1,5,1)"/>
+        <OptionCheckBox label="(12Man/POH/Sub) Spam Anti-Fear" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpamAntifear" layout_borders="Rect(10,1,5,1)"/>
         <TextView value="" layout_borders="Rect(0,0,0,2)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <Button name="BuffsView" label="Buffs" layout_borders="Rect(5,5,3,5)"/>

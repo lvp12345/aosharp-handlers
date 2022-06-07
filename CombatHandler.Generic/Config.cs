@@ -16,6 +16,10 @@ namespace CombatHandler
 
         [JsonIgnore]
         public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
+        [JsonIgnore]
+        public int DocHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].DocHealPercentage : 90;
+        [JsonIgnore]
+        public int DocCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].DocCompleteHealPercentage : 20;
 
         public static Config Load(string path)
         {
@@ -66,6 +70,8 @@ namespace CombatHandler
     public class CharacterSettings
     {
         public int IPCChannel { get; set; } = 0;
+        public int DocHealPercentage { get; set; } = 90;
+        public int DocCompleteHealPercentage { get; set; } = 20;
     }
 }
 

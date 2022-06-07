@@ -1,13 +1,16 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionCheckBox label="Init Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitDebuff" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="OS Init Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__OSInitDebuff" layout_borders="Rect(10,1,5,1)"/>
+  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="DoT A" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotA" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="DoT B" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotB" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="DoT C" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DotC" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitDebuffSelection">
+      <RadioButton label="None" value="0"/>
+      <RadioButton label="Target" value="1"/>
+      <RadioButton label="OS" value="2"/>
+    </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>
 </root>

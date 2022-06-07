@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="Buffing Auras" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label=" " layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AuraSet1Selection">
       <RadioButton label="Heal" value="0"/>
@@ -19,5 +18,6 @@
       <RadioButton label="Sanc" value="0"/>
       <RadioButton label="Reaper" value="1"/>
     </OptionRadioButtonGroup>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </BorderView>
 </root>

@@ -482,7 +482,7 @@ namespace Desu
                 && Time.NormalTime > _drainTick + 1)
             {
                 _drainTarget = DynelManager.NPCs
-                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name))
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name))
                     .Where(c => c.IsInLineOfSight)
                     .Where(c => !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz))
                     .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)

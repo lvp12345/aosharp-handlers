@@ -561,7 +561,7 @@ namespace Desu
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
             {
                 SimpleChar debuffTarget = DynelManager.NPCs
-                    .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
                     .Where(c => c.FightingTarget != null) //Is in combat
                     .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
                     .Where(c => c.IsInLineOfSight)
@@ -583,6 +583,8 @@ namespace Desu
             if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
                 && fightingTarget != null)
             {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
                 return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 

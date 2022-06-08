@@ -858,7 +858,7 @@ namespace Desu
         private SimpleChar GetTargetToMezz()
         {
             return DynelManager.Characters
-                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
                 .Where(c => DynelManager.LocalPlayer.FightingTarget.Identity != c.Identity)
                 .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player of a pet
                 .Where(c => c.IsAttacking) //Is in combat

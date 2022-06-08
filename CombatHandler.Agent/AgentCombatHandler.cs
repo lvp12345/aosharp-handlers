@@ -56,8 +56,7 @@ namespace Desu
 
             _settings.AddVariable("CritTeam", false);
 
-            _settings.AddVariable("InitDebuff", false);
-            _settings.AddVariable("OSInitDebuff", false);
+            _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
 
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
@@ -125,8 +124,9 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
 
             //Debuffs/DoTs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffTarget, CombatActionPriority.Low);
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, OSInitDebuff, CombatActionPriority.Low);
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffs, CombatActionPriority.Low);
+            //RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffTarget, CombatActionPriority.Low);
+            //RegisterSpellProcessor(RelevantNanos.InitDebuffs, OSInitDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DotStrainA);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff);
 
@@ -954,12 +954,7 @@ namespace Desu
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool AgentToggledDebuffTarget(String settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (SomeoneNeedsHealing()) { return false; }
 
-            return ToggledDebuffTarget(settingName, spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
 
         private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -971,20 +966,6 @@ namespace Desu
             }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool InitDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (SomeoneNeedsHealing()) { return false; }
-
-            return AgentToggledDebuffTarget("InitDebuff", spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool OSInitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (SomeoneNeedsHealing()) { return false; }
-
-            return ToggledDebuffOthersInCombat("OSInitDebuff", spell, fightingTarget, ref actionTarget);
         }
 
 
@@ -1006,11 +987,46 @@ namespace Desu
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
+        private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell)) { return false; }
+
+            if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+            {
+                SimpleChar debuffTarget = DynelManager.NPCs
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                    .Where(c => c.FightingTarget != null) //Is in combat
+                    .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
+                    .Where(c => c.IsInLineOfSight)
+                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz))
+                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c)) //Needs debuff refreshed
+                    .OrderBy(c => c.MaxHealth)
+                    .FirstOrDefault();
+
+                if (debuffTarget != null)
+                {
+                    actionTarget = (debuffTarget, true);
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
+
         private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Concentration")) { return false; }
-
-            if (!CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Concentration") || !CanCast(spell)) { return false; }
 
             if (SpellChecksPlayer(spell))
             {
@@ -1041,6 +1057,10 @@ namespace Desu
         public enum HealSelection
         {
             None, SingleTeam, SingleOS
+        }
+        public enum InitDebuffSelection
+        {
+            None, Target, OS
         }
         private static class RelevantNanos
         {

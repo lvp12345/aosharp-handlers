@@ -48,16 +48,35 @@ namespace CombatHandler.Generic
                     "Mature Abyss Orchid",
                     "Abyss Orchid Sprout",
                     "Tower of Astodan",
+                    "Spirit of Judgement",
+                    "Guardian Spirit of Purification",
+                    "Green Tower",
+                    "Blue Tower",
+                    "Alien Cocoon",
+                    "Sheila Marlene",
+                    "Rookie Alien Hunter",
+                    "Sean Powell",
+                    "Unicorn Guard",
+                    "Essence Fragment",
+                    "Awakened Xan",
+                    "Fanatic",
+                    "Harbinger of Pestilence",
+                    "Pandemonium Idol"
+        };
+
+        protected static HashSet<string> debuffOSTargetsToIgnore = new HashSet<string>
+        {
+                    "Immortal Guardian",
+                    "Mature Abyss Orchid",
+                    "Abyss Orchid Sprout",
+                    "Tower of Astodan",
                     "Unicorn Commander Labbe",
-                    "Altar of Torture",
-                    "Altar of Purification",
                     "Calan-Cur",
                     "Spirit of Judgement",
                     "Wandering Spirit",
                     "Altar of Torture",
                     "Altar of Purification",
                     "Unicorn Coordinator Magnum Blaine",
-                    "Xan Spirit",
                     "Watchful Spirit",
                     "Amesha Vizaresh",
                     "Guardian Spirit of Purification",
@@ -96,7 +115,8 @@ namespace CombatHandler.Generic
                     "Awakened Xan",
                     "Fanatic",
                     "Peacekeeper Coursey",
-                    "Harbinger of Pestilence"
+                    "Harbinger of Pestilence",
+                    "Pandemonium Idol"
         };
 
         public GenericCombatHandler(string pluginDir)
@@ -685,7 +705,7 @@ namespace CombatHandler.Generic
             if (!IsSettingEnabled(toggleName) || !CanCast(spell)) { return false; }
 
             SimpleChar debuffTarget = DynelManager.NPCs
-                .Where(c => !debuffTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
                 .Where(c => c.FightingTarget != null) //Is in combat
                 .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
                 .Where(c => c.IsInLineOfSight)

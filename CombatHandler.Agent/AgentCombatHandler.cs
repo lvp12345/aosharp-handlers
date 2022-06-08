@@ -98,7 +98,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExecutionerBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RifleBuffs).OrderByStackingOrder(), RifleBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgentProcBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcentrationCriticalLine).OrderByStackingOrder(), Concentration, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcentrationCriticalLine).OrderByStackingOrder(), Concentration, CombatActionPriority.Medium);
 
             RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.CH, CompleteHealing, CombatActionPriority.High);
@@ -1026,7 +1026,7 @@ namespace Desu
 
         private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Concentration") || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Concentration") || !CanCast(spell) || fightingTarget == null) { return false; }
 
             if (SpellChecksPlayer(spell))
             {

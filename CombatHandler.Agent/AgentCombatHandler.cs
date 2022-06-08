@@ -99,7 +99,7 @@ namespace Desu
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExecutionerBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RifleBuffs).OrderByStackingOrder(), RifleBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgentProcBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcentrationCriticalLine).OrderByStackingOrder(), Concentration);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcentrationCriticalLine).OrderByStackingOrder(), Concentration, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.CH, CompleteHealing, CombatActionPriority.High);
@@ -125,7 +125,7 @@ namespace Desu
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
 
             //Debuffs/DoTs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffTarget);
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffTarget, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.InitDebuffs, OSInitDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DotStrainA);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff);
@@ -823,7 +823,7 @@ namespace Desu
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.DocHealPercentage), ref actionTarget);
+                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.AgentHealPercentage), ref actionTarget);
             }
             else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
             {
@@ -1010,7 +1010,14 @@ namespace Desu
         {
             if (!IsSettingEnabled("Concentration")) { return false; }
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            if (!CanCast(spell)) { return false; }
+
+            if (SpellChecksPlayer(spell))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private bool DotStrainA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

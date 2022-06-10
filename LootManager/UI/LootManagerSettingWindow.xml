@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Helper" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <Button name="LootManagerInfoView" label="Info" layout_borders="Rect(5,5,3,5)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="LootBuddy__Toggle" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Apply Rules" opt_category="AOSharp" opt_type="variant" opt_variable="LootBuddy__ApplyRules" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Single Item" opt_category="AOSharp" opt_type="variant" opt_variable="LootBuddy__SingleItem" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="Name" layout_borders="Rect(0,0,0,2)"/>
+    <TextInputView name="NameValue" min_size="Point(145,14)" max_size="Point(145,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextView value="Item Id" layout_borders="Rect(0,0,0,2)"/>
+    <TextInputView name="ItemIdValue" min_size="Point(145,14)" max_size="Point(145,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextView value="Min Ql" layout_borders="Rect(0,0,0,2)"/>
+    <TextInputView name="MinQlValue" min_size="Point(145,14)" max_size="Point(145,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextView value="Max Ql" layout_borders="Rect(0,0,0,2)"/>
+    <TextInputView name="MaxQlValue" min_size="Point(145,14)" max_size="Point(145,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <Button name="AddItemView" label="Add" layout_borders="Rect(5,5,3,5)"/>
+    <Button name="RemoveItemView" label="Remove" layout_borders="Rect(5,5,3,5)"/>
+    <Button name="ClearView" label="Clear" layout_borders="Rect(5,5,3,5)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <View name="searchRoot">
+      <Haxxor/>
+    </View>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>	
+</root>

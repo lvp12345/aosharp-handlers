@@ -27,6 +27,8 @@ namespace LootManager
 
         public static string PluginDirectory;
 
+        public static Corpse corpsesToLoot;
+
         public static Container extrabag1 = Inventory.Backpacks.FirstOrDefault(x => x.Name == "extra1");
         public static Container extrabag2 = Inventory.Backpacks.FirstOrDefault(x => x.Name == "extra2");
         public static Container extrabag3 = Inventory.Backpacks.FirstOrDefault(x => x.Name == "extra3");
@@ -682,6 +684,23 @@ namespace LootManager
 
         private void OnUpdate(object sender, float deltaTime)
         {
+            if (LootBuddySettings["Toggle"].AsBool())
+            {
+                if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 6))
+                {
+                    _lastCheckTime = Time.NormalTime;
+
+                    corpsesToLoot = DynelManager.Corpses
+                        .Where(corpse => corpse.DistanceFrom(DynelManager.LocalPlayer) < 7)
+                        .FirstOrDefault();
+
+                    if (corpsesToLoot != null)
+                    {
+                        corpsesToLoot.Open();
+                    }
+                }
+            }
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("NameValue", out TextInputView textinput1);

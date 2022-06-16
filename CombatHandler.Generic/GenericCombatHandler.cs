@@ -1415,8 +1415,8 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= healthPercentTreshold)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight)
                     .OrderBy(c => c.Profession == Profession.Doctor)
                     .OrderBy(c => c.Profession == Profession.Enforcer)
                     .OrderBy(c => c.HealthPercent)
@@ -1442,9 +1442,8 @@ namespace CombatHandler.Generic
             }
 
             SimpleChar dyingTeamMember = DynelManager.Characters
-                .Where(c => c.IsPlayer)
-                .Where(c => c.HealthPercent <= healthPercentTreshold)
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                .Where(c => c.IsPlayer && c.HealthPercent <= healthPercentTreshold
+                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && c.IsInLineOfSight)
                 .OrderBy(c => c.Profession == Profession.Doctor)
                 .OrderBy(c => c.Profession == Profession.Enforcer)
                 .FirstOrDefault();

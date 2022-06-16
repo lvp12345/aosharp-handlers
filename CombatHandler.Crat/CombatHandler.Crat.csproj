@@ -48,6 +48,7 @@
     <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
     <Compile Include="IPCMessages\TargetMessage.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="PetsList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

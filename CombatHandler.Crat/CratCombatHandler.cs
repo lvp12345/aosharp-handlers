@@ -13,6 +13,7 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using CombatHandler;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
+using CombatHandler.Crat;
 
 namespace Desu
 {
@@ -186,12 +187,12 @@ namespace Desu
 
             //Pet Spawners
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), CarloSpawner);
-            RegisterSpellProcessor(RelevantNanos.Pets.Select(x => x.Key).ToArray(), RobotSpawner);
+            RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), RobotSpawner);
 
             //Pet Shells
-            foreach (int shellId in RelevantNanos.Pets.Values.Select(x => x.ShellId))
+            foreach (PetSpellData petData in PetsList.Pets.Values)
             {
-                RegisterItemProcessor(shellId, shellId, RobotSpawnerItem);
+                RegisterItemProcessor(petData.ShellId, petData.ShellId2, RobotSpawnerItem);
             }
 
             //Pet Trimmers
@@ -1327,7 +1328,7 @@ namespace Desu
 
         protected virtual bool RobotSpawnerItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetSpawnerItem(RelevantNanos.Pets, item, fightingTarget, ref actionTarget);
+            return PetSpawnerItem(PetsList.Pets, item, fightingTarget, ref actionTarget);
         }
 
         protected bool CarloSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1337,7 +1338,7 @@ namespace Desu
 
         protected bool RobotSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetSpawner(RelevantNanos.Pets, spell, fightingTarget, ref actionTarget);
+            return PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget);
         }
 
         private bool DoesNotHaveAoeRootRunning(SimpleChar target)
@@ -1492,12 +1493,6 @@ namespace Desu
                 {CorporateStrategy, 285695}
             };
 
-            public static Dictionary<int, PetSpellData> Pets = new Dictionary<int, PetSpellData>
-            {
-                { 273300, new PetSpellData(273301, PetType.Attack) },
-                { 235386, new PetSpellData(239828, PetType.Attack) },
-                { 46391, new PetSpellData(96213, PetType.Attack) }
-            };
         }
 
         private static class RelevantTrimmers

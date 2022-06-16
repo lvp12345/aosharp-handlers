@@ -70,11 +70,10 @@ namespace CombatHandler.Crat
                 { 46386, new PetSpellData(150720, 150721, PetType.Attack) }, // Director-Grade Worker-Droid
                 { 46385, new PetSpellData(150720, 150721, PetType.Attack) }, // Executive-Grade Worker-Droid
                 { 46351, new PetSpellData(150721, 150721, PetType.Attack) }, // Supervisor-Grade Worker-Droid
-                { 46399, new PetSpellData(150721, 150722, PetType.Attack) }, // Advanced Worker
+                { 46399, new PetSpellData(150722, 150721, PetType.Attack) }, // Advanced Worker
                 { 46363, new PetSpellData(150721, 150722, PetType.Attack) }, // Faithful Worker-Droid
                 { 46362, new PetSpellData(150722, 96235, PetType.Attack) }, // Limited Worker-Droid
                 { 46397, new PetSpellData(150722, 96235, PetType.Attack) } // Basic Worker-Droid
-
         };
     }
 }

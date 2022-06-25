@@ -116,7 +116,9 @@ namespace CombatHandler.Generic
                     "Fanatic",
                     "Peacekeeper Coursey",
                     "Harbinger of Pestilence",
-                    "Pandemonium Idol"
+                    "Pandemonium Idol",
+                    "Laser Drone",
+                    "Heatstream"
         };
 
         public GenericCombatHandler(string pluginDir)

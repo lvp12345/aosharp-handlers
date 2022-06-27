@@ -118,10 +118,14 @@ namespace CombatHandler.Generic
                     "Harbinger of Pestilence",
                     "Pandemonium Idol",
                     "Laser Drone",
-                    "Heatstream",
+                    "Heatbeam",
                     "Thermal Detonator",
                     "Unstable Sentry Drone",
-                    "Stasis Containment Field"
+                    "Stasis Containment Field",
+                    "Assault Drone",
+                    "Scalding Flame",
+                    "Automated Defense System",
+                    "Medical Drone"
         };
 
         public GenericCombatHandler(string pluginDir)

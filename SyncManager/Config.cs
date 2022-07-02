@@ -65,7 +65,25 @@ namespace SyncManager
 
     public class CharacterSettings
     {
-        public int IPCChannel { get; set; } = 0;
+        public event EventHandler<int> IPCChannelChangedEvent;
+        private int _ipcChannel = 0;
+
+        //Breaking out auto-property
+        public int IPCChannel
+        {
+            get
+            {
+                return _ipcChannel;
+            }
+            set
+            {
+                if (_ipcChannel != value)
+                {
+                    _ipcChannel = value;
+                    IPCChannelChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
     }
 }
 

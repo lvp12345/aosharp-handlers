@@ -21,24 +21,16 @@ namespace CombatHandler.Generic
         private const float PostZonePetCheckBuffer = 5;
         public int EvadeCycleTimeoutSeconds = 180;
 
-        //public static IPCChannel IPCChannel;
-
         private double _lastPetSyncTime = Time.NormalTime;
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
 
-        //public static IPCChannel IPCChannel = new IPCChannel(0);
-        public static Config Config { get; private set; }
-
-        private string pluginDir;
+        protected readonly string PluginDir;
 
         protected Settings _settings;
 
-        private static double _ncuUpdateTime;
-
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
-
 
         public static bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
@@ -128,41 +120,16 @@ namespace CombatHandler.Generic
                     "Medical Drone"
         };
 
+        public static IPCChannel IPCChannel;
+        public static Config Config { get; private set; }
+
         public GenericCombatHandler(string pluginDir)
         {
-            this.pluginDir = pluginDir;
-            Game.TeleportEnded += TeleportEnded;
-
-            _settings = new Settings("CombatHandler");
-
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{Game.ClientInst}\\Config.json");
 
-            //IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+            PluginDir = pluginDir;
 
-            //if (IPCChannel != null)
-            //{
-            //    IPCChannel.SetChannelId(0);
-            //    Chat.WriteLine("set");
-            //}
-            //else
-            //    IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
-
-            //Chat.RegisterCommand("channel", (string command, string[] param, ChatWindow chatWindow) =>
-            //{
-            //    Chat.WriteLine($"Channel set : {param[0]}");
-            //    IPCChannel.SetChannelId(Convert.ToByte(param[0]));
-            //    Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(param[0]);
-            //    Config.Save();
-
-            //});
-
-            //IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
-
-            //IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
-
-            //IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
-
+            _settings = new Settings("CombatHandler");
 
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
@@ -245,56 +212,56 @@ namespace CombatHandler.Generic
             }
 
             Game.TeleportEnded += OnZoned;
-            //Team.TeamRequest += Team_TeamRequest;
+            Game.TeleportEnded += TeleportEnded;
+            Team.TeamRequest += Team_TeamRequest;
+            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
             //Network.N3MessageSent += Network_N3MessageSent;
+
+            Chat.RegisterCommand("reform", ReformCommand);
+            Chat.RegisterCommand("form", FormCommand);
+            Chat.RegisterCommand("disband", DisbandCommand);
+            Chat.RegisterCommand("convert", RaidCommand);
+
+            //foreach (var kvp in Config.CharSettings)
+            //{
+            //    kvp.Value.IPCChannelChangedEvent += (sender, e) =>
+            //    {
+            //        Chat.WriteLine("we're doin the things");
+            //        IPCChannel.SetChannelId(Convert.ToByte(e));
+            //        Config.Save();
+            //    };
+            //}
         }
 
-        //public static bool IsRaidEnabled(string[] param)
-        //{
-        //    return param.Length > 0 && "raid".Equals(param[0]);
-        //}
+        private void OnZoned(object s, EventArgs e)
+        {
+            _lastZonedTime = Time.NormalTime;
+        }
 
-        //public static Identity[] GetRegisteredCharactersInvite()
-        //{
-        //    Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
-        //    int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
-        //    Identity[] firstTeamCharacters = new Identity[firstTeamCount];
-        //    Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
-        //    return firstTeamCharacters;
-        //}
+        public static void IPCChannel_Changed(object s, int e)
+        {
+            IPCChannel.SetChannelId(Convert.ToByte(e));
 
-        //public static Identity[] GetRemainingRegisteredCharacters()
-        //{
-        //    Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
-        //    int characterCount = registeredCharacters.Length - 6;
-        //    Identity[] remainingCharacters = new Identity[characterCount];
-        //    if (characterCount > 0)
-        //    {
-        //        Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
-        //    }
-        //    return remainingCharacters;
-        //}
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
 
-        //public static void SendTeamInvite(Identity[] targets)
-        //{
-        //    foreach (Identity target in targets)
-        //    {
-        //        if (target != DynelManager.LocalPlayer.Identity)
-        //            Team.Invite(target);
-        //    }
-        //}
+        public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
+        {
+            if (SettingsController.IsCharacterRegistered(e.Requester))
+            {
+                e.Accept();
+            }
+        }
 
-        //public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
-        //{
-        //    if (SettingsController.IsCharacterRegistered(e.Requester))
-        //    {
-        //        e.Accept();
-        //    }
-        //}
+        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        {
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+        }
 
         //public static void Network_N3MessageSent(object s, N3Message n3Msg)
         //{
-        //    if (IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+        //    if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
 
         //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
 
@@ -321,12 +288,6 @@ namespace CombatHandler.Generic
         //    }
         //}
 
-        //public static void OnDisband(int sender, IPCMessage msg)
-        //{
-        //    Team.Leave();
-        //}
-
-
         //public static void OnStopAttackMessage(int sender, IPCMessage msg)
         //{
         //    if (IsActiveWindow)
@@ -336,56 +297,6 @@ namespace CombatHandler.Generic
         //        return;
 
         //    DynelManager.LocalPlayer.StopAttack();
-        //}
-
-        //public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    Team.Disband();
-        //    IPCChannel.Broadcast(new DisbandMessage());
-        //}
-
-        //public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    if (Team.IsLeader)
-        //        Team.ConvertToRaid();
-        //    else
-        //        Chat.WriteLine("Needs to be used from leader.");
-        //}
-
-        //public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    Team.Disband();
-        //    IPCChannel.Broadcast(new DisbandMessage());
-        //    Task task = new Task(() =>
-        //    {
-        //        Thread.Sleep(1000);
-        //        FormCommand("form", param, chatWindow);
-        //    });
-        //    task.Start();
-        //}
-
-        //public static void FormCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    if (!DynelManager.LocalPlayer.IsInTeam())
-        //    {
-        //        SendTeamInvite(GetRegisteredCharactersInvite());
-
-        //        if (IsRaidEnabled(param))
-        //        {
-        //            Task task = new Task(() =>
-        //            {
-        //                Thread.Sleep(1000);
-        //                Team.ConvertToRaid();
-        //                Thread.Sleep(1000);
-        //                SendTeamInvite(GetRemainingRegisteredCharacters());
-        //            });
-        //            task.Start();
-        //        }
-        //    }
-        //    else
-        //    {
-        //        Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
-        //    }
         //}
 
         //public static void OnTargetMessage(int sender, IPCMessage msg)
@@ -402,8 +313,6 @@ namespace CombatHandler.Generic
 
         //public static void OnAttackMessage(int sender, IPCMessage msg)
         //{
-        //    Chat.WriteLine("yes");
-
         //    if (IsActiveWindow)
         //        return;
 
@@ -415,56 +324,117 @@ namespace CombatHandler.Generic
         //    DynelManager.LocalPlayer.Attack(targetDynel, true);
         //}
 
-        //public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
-        //{
-        //    try
-        //    {
-        //        if (Game.IsZoning)
-        //            return;
-
-        //        RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
-        //        SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Chat.WriteLine(e);
-        //    }
-        //}
-
-        private void OnZoned(object s, EventArgs e)
+        public static bool IsRaidEnabled(string[] param)
         {
-            _lastZonedTime = Time.NormalTime;
+            return param.Length > 0 && "raid".Equals(param[0]);
         }
 
-        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        public static Identity[] GetRegisteredCharactersInvite()
         {
-            SettingsController.RegisterSettingsWindow(settingsName, pluginDir + "\\UI\\" + xmlName, _settings);
+            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
+            int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
+            Identity[] firstTeamCharacters = new Identity[firstTeamCount];
+            Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
+            return firstTeamCharacters;
+        }
+
+        public static Identity[] GetRemainingRegisteredCharacters()
+        {
+            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
+            int characterCount = registeredCharacters.Length - 6;
+            Identity[] remainingCharacters = new Identity[characterCount];
+            if (characterCount > 0)
+            {
+                Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
+            }
+            return remainingCharacters;
+        }
+
+        public static void SendTeamInvite(Identity[] targets)
+        {
+            foreach (Identity target in targets)
+            {
+                if (target != DynelManager.LocalPlayer.Identity)
+                    Team.Invite(target);
+            }
+        }
+
+        public static void OnDisband(int sender, IPCMessage msg)
+        {
+            Team.Leave();
+        }
+
+        public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            Team.Disband();
+            IPCChannel.Broadcast(new DisbandMessage());
+        }
+
+        public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (Team.IsLeader)
+                Team.ConvertToRaid();
+            else
+                Chat.WriteLine("Needs to be used from leader.");
+        }
+
+        public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            Team.Disband();
+            IPCChannel.Broadcast(new DisbandMessage());
+            Task.Factory.StartNew(
+                async () =>
+                {
+                    await Task.Delay(1000);
+                    FormCommand("form", param, chatWindow);
+                });
+        }
+
+        public static void FormCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (!DynelManager.LocalPlayer.IsInTeam())
+            {
+                SendTeamInvite(GetRegisteredCharactersInvite());
+
+                if (IsRaidEnabled(param))
+                {
+                    Task.Factory.StartNew(
+                        async () =>
+                        {
+                            await Task.Delay(100);
+                            Team.ConvertToRaid();
+                            await Task.Delay(1000);
+                            SendTeamInvite(GetRemainingRegisteredCharacters());
+                            await Task.Delay(100);
+                        });
+                }
+            }
+            else
+            {
+                Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
+            }
         }
 
         protected override void OnUpdate(float deltaTime)
         {
             SettingsController.CleanUp();
 
-            //if (Time.NormalTime > _ncuUpdateTime + 0.5f)
-            //{
-            //    RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+            //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
 
-            //    IPCChannel.Broadcast(ncuMessage);
+            //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
 
-            //    OnRemainingNCUMessage(0, ncuMessage);
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
 
-            //    //Chat.WriteLine($"{SettingsController.RemainingNCU[ncuMessage.Character]}");
-
-            //    foreach (KeyValuePair<Identity, int> kvp in SettingsController.RemainingNCU)
-            //    {
-            //        Chat.WriteLine($"{kvp.Key.Instance}");
-            //        Chat.WriteLine($"{kvp.Value}");
-            //    }
-
-            //    _ncuUpdateTime = Time.NormalTime;
-            //}
-
-
+                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
+                {
+                    if (int.TryParse(channelBox.Text, out int channelValue))
+                    {
+                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                    }
+                }
+            }
 
             base.OnUpdate(deltaTime);
 
@@ -1582,8 +1552,8 @@ namespace CombatHandler.Generic
         [Flags]
         public enum CharacterWieldedWeapon
         {
-            Fists = 0x0,            // 0x00000000000000000000b Fists / invalid
-            MartialArts = 0x01,             // 0x00000000000000000001b martialarts / fists
+            Fists = 0x0,              // 0x00000000000000000000b Fists / invalid
+            MartialArts = 0x01,       // 0x00000000000000000001b martialarts / fists
             Melee = 0x02,             // 0x00000000000000000010b
             Ranged = 0x04,            // 0x00000000000000000100b
             Bow = 0x08,               // 0x00000000000000001000b
@@ -1597,10 +1567,10 @@ namespace CombatHandler.Generic
             AssaultRifle = 0x800,     // 0x00000000100000000000b
             Rifle = 0x1000,           // 0x00000001000000000000b
             Shotgun = 0x2000,         // 0x00000010000000000000b
-            Grenade = 0x8000,     // 0x00000100000000000000b // 0x00001000000000000000b grenade / martial arts
+            Grenade = 0x8000,         // 0x00000100000000000000b // 0x00001000000000000000b grenade / martial arts
             MeleeEnergy = 0x4000,     // 0x00001000000000000000b // 0x00000100000000000000b
             RangedEnergy = 0x10000,   // 0x00010000000000000000b
-            Grenade2 = 0x20000,        // 0x00100000000000000000b
+            Grenade2 = 0x20000,       // 0x00100000000000000000b
             HeavyWeapons = 0x40000,   // 0x01000000000000000000b
         }
 

@@ -2,7 +2,7 @@
 using System;
 using AOSharp.Core.UI;
 
-namespace Desu
+namespace CombatHandler.Shade
 {
     public class Main : AOPluginEntry
     {

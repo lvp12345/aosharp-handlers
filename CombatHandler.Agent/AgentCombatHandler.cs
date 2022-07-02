@@ -1,6 +1,5 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using CombatHandler.Generic;
 using AOSharp.Core.UI;
 using System.Linq;
 using System;
@@ -10,47 +9,42 @@ using System.Threading.Tasks;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System.Threading;
 using SmokeLounge.AOtomation.Messaging.Messages;
-using CombatHandler;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
+using CombatHandler.Generic;
 
-namespace Desu
+namespace CombatHandler.Agent
 {
     public class AgentCombatHandler : GenericCombatHandler
     {
-        public static IPCChannel IPCChannel;
+        private static string PluginDirectory;
+
+        private static int AgentHealPercentage;
+        private static int AgentCompleteHealPercentage;
 
         private double _lastSwitchedHealTime = 0;
 
-        public static Window buffWindow;
-        public static Window debuffWindow;
-        public static Window procWindow;
-        public static Window falseProfWindow;
-        public static Window healingWindow;
+        private static Window _buffWindow;
+        private static Window _debuffWindow;
+        private static Window _procWindow;
+        private static Window _falseProfWindow;
+        private static Window _healingWindow;
+
+        private static View _buffView;
+        private static View _debuffView;
+        private static View _procView;
+        private static View _falseProfView;
+        private static View _healingView;
 
         private static double _ncuUpdateTime;
-
-        public static string PluginDirectory;
 
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
-
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
-
-            Network.N3MessageSent += Network_N3MessageSent;
-            Team.TeamRequest += Team_TeamRequest;
-
-            Chat.RegisterCommand("reform", ReformCommand);
-            Chat.RegisterCommand("form", FormCommand);
-            Chat.RegisterCommand("disband", DisbandCommand);
-            Chat.RegisterCommand("convert", RaidCommand);
-
+            Config.CharSettings[Game.ClientInst].AgentHealPercentageChangedEvent += AgentHealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentageChangedEvent += AgentCompleteHealPercentage_Changed;
 
             _settings.AddVariable("DotStrainA", false);
 
@@ -76,14 +70,7 @@ namespace Desu
 
             _settings.AddVariable("FalseProfSelection", (int)FalseProfSelection.None);
 
-
             RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
-
-            RegisterSettingsWindow("Healing", "AgentHealingView.xml");
-            RegisterSettingsWindow("Procs", "AgentProcView.xml");
-            RegisterSettingsWindow("Buffs", "AgentDebuffsView.xml");
-            RegisterSettingsWindow("Debuffs", "AgentBuffsView.xml");
-            RegisterSettingsWindow("False Professions", "AgentFalseProfsView.xml");
 
             ////LE Procs
             RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, LEProc);
@@ -133,277 +120,21 @@ namespace Desu
             PluginDirectory = pluginDir;
         }
 
-        protected override void OnUpdate(float deltaTime)
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow };
+
+        public static void AgentHealPercentage_Changed(object s, int e)
         {
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
-            {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
-
-                IPCChannel.Broadcast(ncuMessage);
-
-                OnRemainingNCUMessage(0, ncuMessage);
-
-                _ncuUpdateTime = Time.NormalTime;
-            }
-
-            if (CanLookupPetsAfterZone())
-            {
-                SynchronizePetCombatStateWithOwner();
-                AssignTargetToHealPet();
-            }
-
-            if (healingWindow != null && healingWindow.IsValid)
-            {
-                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput1.Text, out int healValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
-                            SettingsController.AgentHealPercentage = healValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-            }
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
-            {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput1.Text, out int channelValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
-                        {
-                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
-                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
-                            SettingsController.CombatHandlerChannel = channelValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-
-                if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
-                {
-                    healingView.Tag = SettingsController.settingsWindow;
-                    healingView.Clicked = HealingView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = BuffView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
-                {
-                    debuffView.Tag = SettingsController.settingsWindow;
-                    debuffView.Clicked = DebuffView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = ProcView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("FalseProfsView", out Button falseProfView))
-                {
-                    falseProfView.Tag = SettingsController.settingsWindow;
-                    falseProfView.Clicked = FalseProfView;
-                }
-            }
-
-            if (SettingsController.CombatHandlerChannel == String.Empty)
-            {
-                SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
-            }
-            if (SettingsController.AgentHealPercentage == String.Empty)
-            {
-                SettingsController.AgentHealPercentage = Config.AgentHealPercentage.ToString();
-            }
-
-            base.OnUpdate(deltaTime);
-
-            if (IsSettingEnabled("Damage") && !IsSettingEnabled("Detaunt"))
-            {
-                CancelBuffs(RelevantNanos.DetauntProcs);
-            }
-            if (IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage"))
-            {
-                CancelBuffs(RelevantNanos.DotProcs);
-            }
+            Config.CharSettings[Game.ClientInst].AgentHealPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
         }
 
-        public static bool IsRaidEnabled(string[] param)
+        public static void AgentCompleteHealPercentage_Changed(object s, int e)
         {
-            return param.Length > 0 && "raid".Equals(param[0]);
+            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
         }
-
-        public static Identity[] GetRegisteredCharactersInvite()
-        {
-            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
-            int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
-            Identity[] firstTeamCharacters = new Identity[firstTeamCount];
-            Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
-            return firstTeamCharacters;
-        }
-
-        public static Identity[] GetRemainingRegisteredCharacters()
-        {
-            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
-            int characterCount = registeredCharacters.Length - 6;
-            Identity[] remainingCharacters = new Identity[characterCount];
-            if (characterCount > 0)
-            {
-                Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
-            }
-            return remainingCharacters;
-        }
-
-        public static void SendTeamInvite(Identity[] targets)
-        {
-            foreach (Identity target in targets)
-            {
-                if (target != DynelManager.LocalPlayer.Identity)
-                    Team.Invite(target);
-            }
-        }
-
-        public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
-        {
-            if (SettingsController.IsCharacterRegistered(e.Requester))
-            {
-                e.Accept();
-            }
-        }
-
-        public static void Network_N3MessageSent(object s, N3Message n3Msg)
-        {
-            if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
-
-            //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
-
-            if (n3Msg.N3MessageType == N3MessageType.LookAt)
-            {
-                LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
-                IPCChannel.Broadcast(new TargetMessage()
-                {
-                    Target = lookAtMsg.Target
-                });
-            }
-            else if (n3Msg.N3MessageType == N3MessageType.Attack)
-            {
-                AttackMessage attackMsg = (AttackMessage)n3Msg;
-                IPCChannel.Broadcast(new AttackIPCMessage()
-                {
-                    Target = attackMsg.Target
-                });
-            }
-            else if (n3Msg.N3MessageType == N3MessageType.StopFight)
-            {
-                StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
-                IPCChannel.Broadcast(new StopAttackIPCMessage());
-            }
-        }
-
-        public static void OnDisband(int sender, IPCMessage msg)
-        {
-            Team.Leave();
-        }
-
-
-        public static void OnStopAttackMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            DynelManager.LocalPlayer.StopAttack();
-        }
-
-        public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            Team.Disband();
-            IPCChannel.Broadcast(new DisbandMessage());
-        }
-
-        public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (Team.IsLeader)
-                Team.ConvertToRaid();
-            else
-                Chat.WriteLine("Needs to be used from leader.");
-        }
-
-        public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            Team.Disband();
-            IPCChannel.Broadcast(new DisbandMessage());
-            Task task = new Task(() =>
-            {
-                Thread.Sleep(1000);
-                FormCommand("form", param, chatWindow);
-            });
-            task.Start();
-        }
-
-        public static void FormCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (!DynelManager.LocalPlayer.IsInTeam())
-            {
-                SendTeamInvite(GetRegisteredCharactersInvite());
-
-                if (IsRaidEnabled(param))
-                {
-                    Task task = new Task(() =>
-                    {
-                        Thread.Sleep(1000);
-                        Team.ConvertToRaid();
-                        Thread.Sleep(1000);
-                        SendTeamInvite(GetRemainingRegisteredCharacters());
-                    });
-                    task.Start();
-                }
-            }
-            else
-            {
-                Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
-            }
-        }
-
-        public static void OnTargetMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            TargetMessage targetMsg = (TargetMessage)msg;
-            Targeting.SetTarget(targetMsg.Target);
-        }
-
-        public static void OnAttackMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
-            Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
-            DynelManager.LocalPlayer.Attack(targetDynel, true);
-        }
-
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -421,344 +152,213 @@ namespace Desu
         }
 
 
-        private void ProcView(object s, ButtonBase button)
+        private void HandleProcViewClick(object s, ButtonBase button)
         {
-            if (buffWindow != null && buffWindow.IsValid)
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
             {
-                SettingsController.AppendSettingsTab("Procs", buffWindow);
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentProcView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "AgentProcView" }, _procView);
             }
-            else if (debuffWindow != null && debuffWindow.IsValid)
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
             {
-                SettingsController.AppendSettingsTab("Procs", debuffWindow);
-            }
-            else if (healingWindow != null && healingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Procs", healingWindow);
-            }
-            else
-            {
-                procWindow = Window.CreateFromXml("Procs", PluginDirectory + "\\UI\\AgentProcView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                procWindow.Show(true);
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "AgentProcView" }, _procView, out var container);
+                _procWindow = container;
             }
         }
 
-        private void FalseProfView(object s, ButtonBase button)
+        private void HandleFalseProfViewClick(object s, ButtonBase button)
         {
-            if (buffWindow != null && procWindow.IsValid)
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
             {
-                SettingsController.AppendSettingsTab("False Professions", procWindow);
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _falseProfView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentFalseProfsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "False Professions", XmlViewName = "AgentFalseProfsView" }, _falseProfView);
             }
-            else if (procWindow != null && procWindow.IsValid)
+            else if (_falseProfWindow == null || (_falseProfWindow != null && !_falseProfWindow.IsValid))
             {
-                SettingsController.AppendSettingsTab("False Professions", procWindow);
-            }
-            else if (debuffWindow != null && debuffWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("False Professions", debuffWindow);
-            }
-            else if (healingWindow != null && healingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("False Professions", healingWindow);
-            }
-            else
-            {
-                falseProfWindow = Window.CreateFromXml("False Professions", PluginDirectory + "\\UI\\AgentFalseProfsView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                falseProfWindow.Show(true);
+                SettingsController.CreateSettingsTab(_falseProfWindow, PluginDir, new WindowOptions() { Name = "False Professions", XmlViewName = "AgentFalseProfsView" }, _falseProfView, out var container);
+                _falseProfWindow = container;
             }
         }
 
-        private void BuffView(object s, ButtonBase button)
+        private void HandleBuffViewClick(object s, ButtonBase button)
         {
-            if (procWindow != null && procWindow.IsValid)
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
             {
-                SettingsController.AppendSettingsTab("Buffs", procWindow);
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentBuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "AgentBuffsView" }, _buffView);
             }
-            else if (debuffWindow != null && debuffWindow.IsValid)
+            else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
-                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
-            }
-            else if (healingWindow != null && healingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Buffs", healingWindow);
-            }
-            else if (falseProfWindow != null && falseProfWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Buffs", falseProfWindow);
-            }
-            else
-            {
-                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\AgentBuffsView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                buffWindow.Show(true);
+                SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "AgentBuffsView" }, _buffView, out var container);
+                _buffWindow = container;
             }
         }
 
-        private void DebuffView(object s, ButtonBase button)
+        private void HandleDebuffViewClick(object s, ButtonBase button)
         {
-            if (buffWindow != null && buffWindow.IsValid)
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
             {
-                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentDebuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Debuffs", XmlViewName = "AgentDebuffsView" }, _debuffView);
             }
-            else if (procWindow != null && procWindow.IsValid)
+            else if (_debuffWindow == null || (_debuffWindow != null && !_debuffWindow.IsValid))
             {
-                SettingsController.AppendSettingsTab("Debuffs", procWindow);
-            }
-            else if (healingWindow != null && healingWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Debuffs", healingWindow);
-            }
-            else if (falseProfWindow != null && falseProfWindow.IsValid)
-            {
-                SettingsController.AppendSettingsTab("Debuffs", falseProfWindow);
-            }
-            else
-            {
-                debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\AgentDebuffsView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                debuffWindow.Show(true);
+                SettingsController.CreateSettingsTab(_debuffWindow, PluginDir, new WindowOptions() { Name = "Debuffs", XmlViewName = "AgentDebuffsView" }, _debuffView, out var container);
+                _debuffWindow = container;
             }
         }
 
-        private void HealingView(object s, ButtonBase button)
+        private void HandleHealingViewClick(object s, ButtonBase button)
         {
-            if (buffWindow != null && buffWindow.IsValid)
+
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
             {
-                buffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
-                buffWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentHealingView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "AgentHealingView" }, _healingView);
 
-                if (SettingsController.AgentHealPercentage != String.Empty)
+                window.FindView("HealPercentageBox", out TextInputView textinput1);
+                window.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
                 {
-                    if (textinput1 != null)
-                        textinput1.Text = SettingsController.AgentHealPercentage;
+                    textinput1.Text = $"{AgentHealPercentage}";
                 }
 
-                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
+                if (textinput2 != null && string.IsNullOrEmpty(textinput2.Text))
                 {
-                    if (textinput2 != null)
-                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
+                    textinput2.Text = $"{AgentCompleteHealPercentage}";
                 }
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput1.Text, out int healValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
-                            SettingsController.AgentHealPercentage = healValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput2.Text, out int chhealValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
-                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-
-                SettingsController.AppendSettingsTab("Healing", buffWindow);
             }
-            else if (debuffWindow != null && debuffWindow.IsValid)
+            else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
             {
-                debuffWindow.FindView("HealPercentageBox", out TextInputView textinput1);
-                debuffWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "AgentHealingView" }, _healingView, out var container);
+                _healingWindow = container;
 
-                if (SettingsController.AgentHealPercentage != String.Empty)
+                container.FindView("HealPercentageBox", out TextInputView textinput1);
+                container.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+
+                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
                 {
-                    if (textinput1 != null)
-                        textinput1.Text = SettingsController.AgentHealPercentage;
+                    textinput1.Text = $"{AgentHealPercentage}";
                 }
 
-                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
+                if (textinput2 != null && string.IsNullOrEmpty(textinput2.Text))
                 {
-                    if (textinput2 != null)
-                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
+                    textinput2.Text = $"{AgentCompleteHealPercentage}";
                 }
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput1.Text, out int healValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
-                            SettingsController.AgentHealPercentage = healValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput2.Text, out int chhealValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
-                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-
-                SettingsController.AppendSettingsTab("Healing", debuffWindow);
             }
-            else if (procWindow != null && procWindow.IsValid)
+        }
+
+
+        protected override void OnUpdate(float deltaTime)
+        {
+            base.OnUpdate(deltaTime);
+
+            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
-                procWindow.FindView("HealPercentageBox", out TextInputView textinput1);
-                procWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
-                if (SettingsController.AgentHealPercentage != String.Empty)
-                {
-                    if (textinput1 != null)
-                        textinput1.Text = SettingsController.AgentHealPercentage;
-                }
+                IPCChannel.Broadcast(ncuMessage);
 
-                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
-                {
-                    if (textinput2 != null)
-                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
-                }
+                OnRemainingNCUMessage(0, ncuMessage);
 
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput1.Text, out int healValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
-                            SettingsController.AgentHealPercentage = healValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput2.Text, out int chhealValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
-                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-
-                SettingsController.AppendSettingsTab("Healing", procWindow);
+                _ncuUpdateTime = Time.NormalTime;
             }
-            else if (falseProfWindow != null && falseProfWindow.IsValid)
+
+            var window = SettingsController.FindValidWindow(_windows);
+
+            if (window != null && window.IsValid)
             {
-                falseProfWindow.FindView("HealPercentageBox", out TextInputView textinput1);
-                falseProfWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                window.FindView("HealPercentageBox", out TextInputView textinput1);
+                window.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
 
-                if (SettingsController.AgentHealPercentage != String.Empty)
-                {
-                    if (textinput1 != null)
-                        textinput1.Text = SettingsController.AgentHealPercentage;
-                }
-
-                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
-                {
-                    if (textinput2 != null)
-                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
-                }
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
+                if (textinput1 != null && !string.IsNullOrEmpty(textinput1.Text))
                 {
                     if (int.TryParse(textinput1.Text, out int healValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
                         {
                             Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
-                            SettingsController.AgentHealPercentage = healValue.ToString();
+                            AgentHealPercentage = healValue;
                             Config.Save();
                         }
                     }
                 }
-                if (textinput2 != null && textinput2.Text != String.Empty)
+                if (textinput2 != null && !string.IsNullOrEmpty(textinput2.Text))
                 {
-                    if (int.TryParse(textinput2.Text, out int chhealValue))
+                    if (int.TryParse(textinput2.Text, out int completeHealValue))
                     {
-                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
+                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != completeHealValue)
                         {
-                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
-                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
+                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = completeHealValue;
+                            AgentCompleteHealPercentage = completeHealValue;
                             Config.Save();
                         }
                     }
                 }
-
-                SettingsController.AppendSettingsTab("Healing", falseProfWindow);
             }
-            else
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                healingWindow = Window.CreateFromXml("Healing", PluginDirectory + "\\UI\\AgentHealingView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                healingWindow.FindView("HealPercentageBox", out TextInputView textinput1);
-                healingWindow.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
-
-                if (SettingsController.AgentHealPercentage != String.Empty)
+                if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
-                    if (textinput1 != null)
-                        textinput1.Text = SettingsController.AgentHealPercentage;
+                    healingView.Tag = SettingsController.settingsWindow;
+                    healingView.Clicked = HandleHealingViewClick;
                 }
 
-                if (SettingsController.AgentCompleteHealPercentage != String.Empty)
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
-                    if (textinput2 != null)
-                        textinput2.Text = SettingsController.AgentCompleteHealPercentage;
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = HandleBuffViewClick;
                 }
 
-                if (textinput1 != null && textinput1.Text != String.Empty)
+                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                 {
-                    if (int.TryParse(textinput1.Text, out int healValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
-                            SettingsController.AgentHealPercentage = healValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput2.Text, out int chhealValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != chhealValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = chhealValue;
-                            SettingsController.AgentCompleteHealPercentage = chhealValue.ToString();
-                            Config.Save();
-                        }
-                    }
+                    debuffView.Tag = SettingsController.settingsWindow;
+                    debuffView.Clicked = HandleDebuffViewClick;
                 }
 
-                healingWindow.Show(true);
+                if (SettingsController.settingsWindow.FindView("ProcView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("FalseProfsView", out Button falseProfView))
+                {
+                    falseProfView.Tag = SettingsController.settingsWindow;
+                    falseProfView.Clicked = HandleFalseProfViewClick;
+                }
+            }
+
+            if (CanLookupPetsAfterZone())
+            {
+                SynchronizePetCombatStateWithOwner();
+                AssignTargetToHealPet();
+            }
+
+            if (IsSettingEnabled("Damage") && !IsSettingEnabled("Detaunt"))
+            {
+                CancelBuffs(RelevantNanos.DetauntProcs);
+            }
+            if (IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage"))
+            {
+                CancelBuffs(RelevantNanos.DotProcs);
             }
         }
 
@@ -819,15 +419,15 @@ namespace Desu
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell) || SettingsController.AgentHealPercentage == string.Empty) { return false; }
+            if (!CanCast(spell) || AgentHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.AgentHealPercentage), ref actionTarget);
+                return FindMemberWithHealthBelow(AgentHealPercentage, ref actionTarget);
             }
             else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                return FindPlayerWithHealthBelow(Convert.ToInt32(SettingsController.AgentHealPercentage), ref actionTarget);
+                return FindPlayerWithHealthBelow(AgentHealPercentage, ref actionTarget);
             }
 
             return false;
@@ -835,9 +435,9 @@ namespace Desu
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CH")) { return false; }
+            if (!IsSettingEnabled("CH") || AgentCompleteHealPercentage == 0) { return false; }
 
-            return FindMemberWithHealthBelow(Convert.ToInt32(SettingsController.AgentCompleteHealPercentage), ref actionTarget);
+            return FindMemberWithHealthBelow(AgentCompleteHealPercentage, ref actionTarget);
         }
 
         #endregion

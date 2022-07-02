@@ -1,6 +1,5 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using CombatHandler.Generic;
 using AOSharp.Core.UI;
 using System.Linq;
 using System;
@@ -10,54 +9,33 @@ using System.Threading.Tasks;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System.Threading;
 using SmokeLounge.AOtomation.Messaging.Messages;
-using CombatHandler;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
+using CombatHandler.Generic;
 
-namespace Desu
+namespace CombatHandler.Metaphysicist
 {
     public class MPCombatHandler : GenericCombatHandler
     {
-        public static IPCChannel IPCChannel;
+        private static string PluginDirectory;
+
+        private static Window _buffWindow;
+        private static Window _debuffWindow;
+        private static Window _petWindow;
+
+        private static View _buffView;
+        private static View _debuffView;
+        private static View _petView;
 
         private double _lastSwitchedHealTime = 0;
         private double _lastSwitchedMezzTime = 0;
-
-        public static string PluginDirectory;
-
-        public static Window buffWindow;
-        public static Window debuffWindow;
-        public static Window petWindow;
 
         private static double _ncuUpdateTime;
 
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
-
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
-
-            Chat.RegisterCommand("channel", (string command, string[] param, ChatWindow chatWindow) =>
-            {
-                Chat.WriteLine($"Channel set : {param[0]}");
-                IPCChannel.SetChannelId(Convert.ToByte(param[0]));
-                Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(param[0]);
-                Config.Save();
-
-            });
-
-            Network.N3MessageSent += Network_N3MessageSent;
-            Team.TeamRequest += Team_TeamRequest;
-
-            Chat.RegisterCommand("reform", ReformCommand);
-            Chat.RegisterCommand("form", FormCommand);
-            Chat.RegisterCommand("disband", DisbandCommand);
-            Chat.RegisterCommand("convert", RaidCommand);
 
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
@@ -95,10 +73,6 @@ namespace Desu
             //settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
 
             RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
-
-            RegisterSettingsWindow("Pets", "MPPetsView.xml");
-            RegisterSettingsWindow("Buffs", "MPBuffsView.xml");
-            RegisterSettingsWindow("Debuffs", "MPDebuffsView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, LEProc, CombatActionPriority.Low);
@@ -159,169 +133,7 @@ namespace Desu
             PluginDirectory = pluginDir;
         }
 
-        public static bool IsRaidEnabled(string[] param)
-        {
-            return param.Length > 0 && "raid".Equals(param[0]);
-        }
-
-        public static Identity[] GetRegisteredCharactersInvite()
-        {
-            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
-            int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
-            Identity[] firstTeamCharacters = new Identity[firstTeamCount];
-            Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
-            return firstTeamCharacters;
-        }
-
-        public static Identity[] GetRemainingRegisteredCharacters()
-        {
-            Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
-            int characterCount = registeredCharacters.Length - 6;
-            Identity[] remainingCharacters = new Identity[characterCount];
-            if (characterCount > 0)
-            {
-                Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
-            }
-            return remainingCharacters;
-        }
-
-        public static void SendTeamInvite(Identity[] targets)
-        {
-            foreach (Identity target in targets)
-            {
-                if (target != DynelManager.LocalPlayer.Identity)
-                    Team.Invite(target);
-            }
-        }
-
-        public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
-        {
-            if (SettingsController.IsCharacterRegistered(e.Requester))
-            {
-                e.Accept();
-            }
-        }
-
-        public static void Network_N3MessageSent(object s, N3Message n3Msg)
-        {
-            if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
-
-            //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
-
-            if (n3Msg.N3MessageType == N3MessageType.LookAt)
-            {
-                LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
-                IPCChannel.Broadcast(new TargetMessage()
-                {
-                    Target = lookAtMsg.Target
-                });
-            }
-            else if (n3Msg.N3MessageType == N3MessageType.Attack)
-            {
-                AttackMessage attackMsg = (AttackMessage)n3Msg;
-                IPCChannel.Broadcast(new AttackIPCMessage()
-                {
-                    Target = attackMsg.Target
-                });
-            }
-            else if (n3Msg.N3MessageType == N3MessageType.StopFight)
-            {
-                StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
-                IPCChannel.Broadcast(new StopAttackIPCMessage());
-            }
-        }
-
-        public static void OnDisband(int sender, IPCMessage msg)
-        {
-            Team.Leave();
-        }
-
-
-        public static void OnStopAttackMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            DynelManager.LocalPlayer.StopAttack();
-        }
-
-        public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            Team.Disband();
-            IPCChannel.Broadcast(new DisbandMessage());
-        }
-
-        public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (Team.IsLeader)
-                Team.ConvertToRaid();
-            else
-                Chat.WriteLine("Needs to be used from leader.");
-        }
-
-        public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            Team.Disband();
-            IPCChannel.Broadcast(new DisbandMessage());
-            Task task = new Task(() =>
-            {
-                Thread.Sleep(1000);
-                FormCommand("form", param, chatWindow);
-            });
-            task.Start();
-        }
-
-        public static void FormCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (!DynelManager.LocalPlayer.IsInTeam())
-            {
-                SendTeamInvite(GetRegisteredCharactersInvite());
-
-                if (IsRaidEnabled(param))
-                {
-                    Task task = new Task(() =>
-                    {
-                        Thread.Sleep(1000);
-                        Team.ConvertToRaid();
-                        Thread.Sleep(1000);
-                        SendTeamInvite(GetRemainingRegisteredCharacters());
-                    });
-                    task.Start();
-                }
-            }
-            else
-            {
-                Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
-            }
-        }
-
-        public static void OnTargetMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            TargetMessage targetMsg = (TargetMessage)msg;
-            Targeting.SetTarget(targetMsg.Target);
-        }
-
-        public static void OnAttackMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
-            Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
-            DynelManager.LocalPlayer.Attack(targetDynel, true);
-        }
+        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _debuffWindow };
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -339,72 +151,61 @@ namespace Desu
             }
         }
 
-
-        private void PetView(object s, ButtonBase button)
+        private void HandlePetViewClick(object s, ButtonBase button)
         {
-            if (buffWindow != null && buffWindow.IsValid)
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
             {
-                SettingsController.AppendSettingsTab("Pets", buffWindow);
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _petView = View.CreateFromXml(PluginDirectory + "\\UI\\MPPetsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Pets", XmlViewName = "MPPetsView" }, _petView);
             }
-            else if (debuffWindow != null && debuffWindow.IsValid)
+            else if (_petWindow == null || (_petWindow != null && !_petWindow.IsValid))
             {
-                SettingsController.AppendSettingsTab("Pets", debuffWindow);
-            }
-            else
-            {
-                petWindow = Window.CreateFromXml("Pets", PluginDirectory + "\\UI\\MPPetsView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                petWindow.Show(true);
+                SettingsController.CreateSettingsTab(_petWindow, PluginDir, new WindowOptions() { Name = "Pets", XmlViewName = "MPPetsView" }, _petView, out var container);
+                _petWindow = container;
             }
         }
 
-        private void BuffView(object s, ButtonBase button)
+        private void HandleBuffViewClick(object s, ButtonBase button)
         {
-            if (petWindow != null && petWindow.IsValid)
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
             {
-                SettingsController.AppendSettingsTab("Buffs", petWindow);
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MPBuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "MPBuffsView" }, _buffView);
             }
-            else if (debuffWindow != null && debuffWindow.IsValid)
+            else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
-                SettingsController.AppendSettingsTab("Buffs", debuffWindow);
-            }
-            else
-            {
-                buffWindow = Window.CreateFromXml("Buffs", PluginDirectory + "\\UI\\MPBuffsView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                buffWindow.Show(true);
+                SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "MPBuffsView" }, _buffView, out var container);
+                _buffWindow = container;
             }
         }
 
-        private void DebuffView(object s, ButtonBase button)
+        private void HandleDebuffViewClick(object s, ButtonBase button)
         {
-            if (petWindow != null && petWindow.IsValid)
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
             {
-                SettingsController.AppendSettingsTab("Debuffs", petWindow);
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\MPDebuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Debuffs", XmlViewName = "MPDebuffsView" }, _debuffView);
             }
-            else if (buffWindow != null && buffWindow.IsValid)
+            else if (_debuffWindow == null || (_debuffWindow != null && !_debuffWindow.IsValid))
             {
-                SettingsController.AppendSettingsTab("Debuffs", buffWindow);
-            }
-            else
-            {
-                debuffWindow = Window.CreateFromXml("Debuffs", PluginDirectory + "\\UI\\MPDebuffsView.xml",
-                    windowSize: new Rect(0, 0, 240, 345),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                debuffWindow.Show(true);
+                SettingsController.CreateSettingsTab(_debuffWindow, PluginDir, new WindowOptions() { Name = "Debuffs", XmlViewName = "MPDebuffsView" }, _debuffView, out var container);
+                _debuffWindow = container;
             }
         }
 
         protected override void OnUpdate(float deltaTime)
         {
+            base.OnUpdate(deltaTime);
+
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -442,47 +243,24 @@ namespace Desu
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput1.Text, out int channelValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
-                        {
-                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
-                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
-                            SettingsController.CombatHandlerChannel = channelValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                 {
                     petView.Tag = SettingsController.settingsWindow;
-                    petView.Clicked = PetView;
+                    petView.Clicked = HandlePetViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = BuffView;
+                    buffView.Clicked = HandleBuffViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                 {
                     debuffView.Tag = SettingsController.settingsWindow;
-                    debuffView.Clicked = DebuffView;
+                    debuffView.Clicked = HandleDebuffViewClick;
                 }
             }
-
-            if (SettingsController.CombatHandlerChannel == String.Empty)
-            {
-                SettingsController.CombatHandlerChannel = Config.IPCChannel.ToString();
-            }
-
-            base.OnUpdate(deltaTime);
         }
 
         private bool ChannelRage(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

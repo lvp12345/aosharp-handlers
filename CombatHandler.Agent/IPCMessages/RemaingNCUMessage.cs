@@ -9,7 +9,7 @@ using AOSharp.Core.IPC;
 using SmokeLounge.AOtomation.Messaging.Serialization;
 using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
 
-namespace Desu
+namespace CombatHandler.Agent
 {
     [AoContract((int)IPCOpcode.RemainingNCU)]
     public class RemainingNCUMessage : IPCMessage

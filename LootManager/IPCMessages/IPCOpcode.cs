@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CombatHandler.Bureaucrat
+namespace CombatHandler.Generic
 {
     public enum IPCOpcode
     {
-        RemainingNCU = 2000
+        Disband = 2001,
     }
 }

@@ -3,7 +3,7 @@ using AOSharp.Core.Combat;
 using System;
 using AOSharp.Core.UI;
 
-namespace Desu
+namespace CombatHandler.Adventurer
 {
     public class Main : AOPluginEntry
     {

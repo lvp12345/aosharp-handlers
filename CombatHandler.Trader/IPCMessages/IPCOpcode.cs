@@ -4,14 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Desu
+namespace CombatHandler.Trader
 {
     public enum IPCOpcode
     {
-        RemainingNCU = 2000,
-        Disband = 2001,
-        Target = 2002,
-        Attack = 2003,
-        StopAttack = 2004,
+        RemainingNCU = 2000
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using static CombatHandler.Generic.GenericCombatHandler;
 
-namespace CombatHandler.Engi
+namespace CombatHandler.Engineer
 {
     public class PetsList
     {

@@ -26,15 +26,6 @@ namespace CombatHandler.Generic
         public static List<string> settingsViews = new List<string>();
         private static bool IsCommandRegistered;
 
-        //public static string CombatHandlerChannel = String.Empty;
-        //public static string DocHealPercentage = String.Empty;
-        //public static string DocCompleteHealPercentage = String.Empty;
-        //public static string TraderHealPercentage = String.Empty;
-        //public static string AgentHealPercentage = String.Empty;
-        //public static string AgentCompleteHealPercentage = String.Empty;
-        //public static string AdvHealPercentage = String.Empty;
-        //public static string AdvCompleteHealPercentage = String.Empty;
-
         public static string _staticName = string.Empty;
 
         public static Config Config { get; private set; }
@@ -97,12 +88,15 @@ namespace CombatHandler.Generic
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
-                            AppendSettingsTab("Handler", settingsWindow);
+                            foreach (string settingsName in settingsWindows.Keys.Where(x => x.Contains("Handler")))
+                            {
+                                AppendSettingsTab(settingsName, settingsWindow);
 
-                            settingsWindow.FindView("ChannelBox", out TextInputView channelValue);
+                                settingsWindow.FindView("ChannelBox", out TextInputView channelValue);
 
-                            if (channelValue != null)
-                                channelValue.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                                if (channelValue != null)
+                                    channelValue.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                            }
                         }
                     }
                     catch (Exception e)

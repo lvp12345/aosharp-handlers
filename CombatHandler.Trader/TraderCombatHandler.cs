@@ -95,7 +95,7 @@ namespace Desu
 
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing); // Self
-            RegisterSpellProcessor(RelevantNanos.TeamHeal, TeamHealing); // Team
+            RegisterSpellProcessor(RelevantNanos.TeamHeal, Healing); // Team
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEHeal);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
@@ -542,25 +542,6 @@ namespace Desu
             base.OnUpdate(deltaTime);
         }
 
-        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Heal") || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members
-                        .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                            .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
-                    .ToList();
-
-                if (dyingTeamMember.Count < 4) { return false; }
-            }
-
-            return FindMemberWithHealthBelow(85, ref actionTarget);
-        }
-
         private bool LEHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanCast(spell)) { return false; }
@@ -821,11 +802,11 @@ namespace Desu
         }
         public enum RansackSelection
         {
-            Target, OS
+            None, Target, OS
         }
         public enum DepriveSelection
         {
-            Target, OS
+            None, Target, OS
         }
 
         private static class RelevantNanos

@@ -7,11 +7,14 @@ using AOSharp.Common.GameData;
 using AOSharp.Core.IPC;
 using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
 
-namespace Desu
+namespace SyncManager.IPCMessages
 {
-    [AoContract((int)IPCOpcode.StopAttack)]
-    public class StopAttackIPCMessage : IPCMessage
+    [AoContract((int)IPCOpcode.Target)]
+    public class TargetMessage : IPCMessage
     {
-        public override short Opcode => (short)IPCOpcode.StopAttack;
+        public override short Opcode => (short)IPCOpcode.Target;
+
+        [AoMember(0)]
+        public Identity Target { get; set; }
     }
 }

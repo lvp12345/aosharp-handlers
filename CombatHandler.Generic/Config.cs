@@ -6,7 +6,7 @@ using AOSharp.Core.UI;
 using System.Xml;
 using Newtonsoft.Json;
 
-namespace CombatHandler
+namespace CombatHandler.Generic
 {
     public class Config
     {
@@ -81,15 +81,169 @@ namespace CombatHandler
 
     public class CharacterSettings
     {
-        public int IPCChannel { get; set; } = 0;
-        public int DocHealPercentage { get; set; } = 90;
-        public int DocCompleteHealPercentage { get; set; } = 20;
-        public int TraderHealPercentage { get; set; } = 90;
-        public int AgentHealPercentage { get; set; } = 90;
-        public int AgentCompleteHealPercentage { get; set; } = 20;
-        public int MAHealPercentage { get; set; } = 90;
-        public int AdvHealPercentage { get; set; } = 90;
-        public int AdvCompleteHealPercentage { get; set; } = 20;
+        public event EventHandler<int> IPCChannelChangedEvent;
+        private int _ipcChannel = 0;
+
+        //Breaking out auto-property
+        public int IPCChannel {
+            get
+            {
+                return _ipcChannel;
+            }
+            set
+            {
+                if (_ipcChannel != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _ipcChannel = value;
+                    IPCChannelChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> TraderHealPercentageChangedEvent;
+        private int _traderHealPercentage = 90;
+        public int TraderHealPercentage
+        {
+            get
+            {
+                return _traderHealPercentage;
+            }
+            set
+            {
+                if (_traderHealPercentage != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _traderHealPercentage = value;
+                    TraderHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> MAHealPercentageChangedEvent;
+        private int _maHealPercentage = 90;
+        public int MAHealPercentage
+        {
+            get
+            {
+                return _maHealPercentage;
+            }
+            set
+            {
+                if (_maHealPercentage != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _maHealPercentage = value;
+                    MAHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> DocHealPercentageChangedEvent;
+        private int _docHealPercentage = 90;
+        public int DocHealPercentage
+        {
+            get
+            {
+                return _docHealPercentage;
+            }
+            set
+            {
+                if (_docHealPercentage != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _docHealPercentage = value;
+                    DocHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> DocCompleteHealPercentageChangedEvent;
+        private int _docCompleteHealPercentage = 20;
+        public int DocCompleteHealPercentage
+        {
+            get
+            {
+                return _docCompleteHealPercentage;
+            }
+            set
+            {
+                if (_docCompleteHealPercentage != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _docCompleteHealPercentage = value;
+                    DocCompleteHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> AgentHealPercentageChangedEvent;
+        private int _agentHealPercentage = 90;
+        public int AgentHealPercentage
+        {
+            get
+            {
+                return _agentHealPercentage;
+            }
+            set
+            {
+                if (_agentHealPercentage != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _agentHealPercentage = value;
+                    AgentHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> AgentCompleteHealPercentageChangedEvent;
+        private int _agentCompleteHealPercentage = 20;
+        public int AgentCompleteHealPercentage
+        {
+            get
+            {
+                return _agentCompleteHealPercentage;
+            }
+            set
+            {
+                if (_agentCompleteHealPercentage != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _agentCompleteHealPercentage = value;
+                    AgentCompleteHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> AdvHealPercentageChangedEvent;
+        private int _advHealPercentage = 90;
+        public int AdvHealPercentage
+        {
+            get
+            {
+                return _advHealPercentage;
+            }
+            set
+            {
+                if (_advHealPercentage != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _advHealPercentage = value;
+                    AdvHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> AdvCompleteHealPercentageChangedEvent;
+        private int _advCompleteHealPercentage = 20;
+        public int AdvCompleteHealPercentage
+        {
+            get
+            {
+                return _advCompleteHealPercentage;
+            }
+            set
+            {
+                if (_advCompleteHealPercentage != value)
+                {
+                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
+                    _advCompleteHealPercentage = value;
+                    AdvCompleteHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
     }
 }
 

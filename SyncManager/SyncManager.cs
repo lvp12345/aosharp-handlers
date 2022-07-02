@@ -55,6 +55,7 @@ namespace SyncManager
 
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
+
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
@@ -64,7 +65,10 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
 
-            //IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UseItem, OnUseItemMessage);
@@ -126,6 +130,35 @@ namespace SyncManager
         }
 
 
+        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
+        //{
+        //    if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+        //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
+
+        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
+        //    {
+        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
+        //        IPCChannel.Broadcast(new TargetMessage()
+        //        {
+        //            Target = lookAtMsg.Target
+        //        });
+        //    }
+        //    else if (n3Msg.N3MessageType == N3MessageType.Attack)
+        //    {
+        //        AttackMessage attackMsg = (AttackMessage)n3Msg;
+        //        IPCChannel.Broadcast(new AttackIPCMessage()
+        //        {
+        //            Target = attackMsg.Target
+        //        });
+        //    }
+        //    else if (n3Msg.N3MessageType == N3MessageType.StopFight)
+        //    {
+        //        StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
+        //        IPCChannel.Broadcast(new StopAttackIPCMessage());
+        //    }
+        //}
+
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
             if (!IsActiveCharacter() || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
@@ -154,6 +187,27 @@ namespace SyncManager
                         Rotation = charDCMoveMsg.Heading
                     });
                 }
+            }
+            else if (n3Msg.N3MessageType == N3MessageType.LookAt)
+            {
+                LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
+                IPCChannel.Broadcast(new TargetMessage()
+                {
+                    Target = lookAtMsg.Target
+                });
+            }
+            else if (n3Msg.N3MessageType == N3MessageType.Attack)
+            {
+                AttackMessage attackMsg = (AttackMessage)n3Msg;
+                IPCChannel.Broadcast(new AttackIPCMessage()
+                {
+                    Target = attackMsg.Target
+                });
+            }
+            else if (n3Msg.N3MessageType == N3MessageType.StopFight)
+            {
+                StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
+                IPCChannel.Broadcast(new StopAttackIPCMessage());
             }
             //else if (n3Msg.N3MessageType == N3MessageType.Trade)
             //{
@@ -398,21 +452,53 @@ namespace SyncManager
             MovementController.Instance.SetMovement(moveMsg.MoveType);
         }
 
-        //private void OnTradeMessage(int sender, IPCMessage msg)
-        //{
-        //    if (Game.IsZoning)
-        //        return;
+        private void OnTradeMessage(int sender, IPCMessage msg)
+        {
+            if (Game.IsZoning)
+                return;
 
-        //    TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
-        //    TradeMessage charTradeMsg = new TradeMessage()
-        //    {
-        //        Unknown1 = charTradeIpcMsg.Unknown1,
-        //        Action = charTradeIpcMsg.Action,
-        //        Target = charTradeIpcMsg.Target,
-        //        Container = charTradeIpcMsg.Container,
-        //    };
-        //    Network.Send(charTradeMsg);
-        //}
+            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
+
+            if (charTradeIpcMsg.Action == TradeAction.Confirm)
+            {
+                Network.Send(new TradeMessage()
+                {
+                    Unknown1 = 2,
+                    Action = (TradeAction)3,
+                });
+            }
+            else if (charTradeIpcMsg.Action == TradeAction.Accept)
+            {
+                Network.Send(new TradeMessage()
+                {
+                    Unknown1 = 2,
+                    Action = (TradeAction)1,
+                });
+            }
+
+            //TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
+            //TradeMessage charTradeMsg = new TradeMessage()
+            //{
+            //    Unknown1 = charTradeIpcMsg.Unknown1,
+            //    Action = charTradeIpcMsg.Action,
+            //    Target = charTradeIpcMsg.Target,
+            //    Container = charTradeIpcMsg.Container,
+            //};
+            //Network.Send(charTradeMsg);
+        }
+
+        private void OnAttackMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
+            Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
+            DynelManager.LocalPlayer.Attack(targetDynel, true);
+        }
 
         private void OnStopAttackMessage(int sender, IPCMessage msg)
         {

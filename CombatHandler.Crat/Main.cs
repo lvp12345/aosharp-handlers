@@ -2,7 +2,7 @@
 using System;
 using AOSharp.Core.UI;
 
-namespace Desu
+namespace CombatHandler.Bureaucrat
 {
     public class Main : AOPluginEntry
     {

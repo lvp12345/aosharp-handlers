@@ -47,12 +47,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPCMessages\AttackIPCMessage.cs" />
-    <Compile Include="IPCMessages\DisbandMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\RemaingNCUMessage.cs" />
-    <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
-    <Compile Include="IPCMessages\TargetMessage.cs" />
     <Compile Include="MACombatHandler.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

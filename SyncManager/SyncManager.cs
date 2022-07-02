@@ -55,6 +55,7 @@ namespace SyncManager
 
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
+            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
 
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
@@ -102,10 +103,13 @@ namespace SyncManager
             SettingsController.CleanUp();
         }
 
-        //private void OnZoned(object s, EventArgs e)
-        //{
+        public static void IPCChannel_Changed(object s, int e)
+        {
+            IPCChannel.SetChannelId(Convert.ToByte(e));
 
-        //}
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
 
         private void OnZoned(object s, EventArgs e)
         {
@@ -366,19 +370,13 @@ namespace SyncManager
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
 
-                if (textinput1 != null && textinput1.Text != String.Empty)
+                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
                 {
-                    if (int.TryParse(textinput1.Text, out int channelValue))
+                    if (int.TryParse(channelBox.Text, out int channelValue))
                     {
-                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
-                        {
-                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
-                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
-                            SettingsController.SyncManagerChannel = channelValue.ToString();
-                            Config.Save();
-                        }
+                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
                     }
                 }
 
@@ -387,11 +385,6 @@ namespace SyncManager
                     infoView.Tag = SettingsController.settingsWindow;
                     infoView.Clicked = InfoView;
                 }
-            }
-
-            if (SettingsController.SyncManagerChannel == String.Empty)
-            {
-                SettingsController.SyncManagerChannel = Config.IPCChannel.ToString();
             }
 
             if (!_openBags && _settings["SyncBags"].AsBool())

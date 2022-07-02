@@ -417,6 +417,8 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
+            base.OnUpdate(deltaTime);
+
             SettingsController.CleanUp();
 
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
@@ -435,8 +437,6 @@ namespace CombatHandler.Generic
                     }
                 }
             }
-
-            base.OnUpdate(deltaTime);
 
             if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
             {

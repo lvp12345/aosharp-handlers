@@ -17,9 +17,8 @@ namespace SyncManager
         private static bool IsCommandRegistered;
 
         public static Window settingsWindow;
-        //public static View settingsView;
-
-        public static string SyncManagerChannel = String.Empty;
+        public static View settingsView;
+        public static Config Config { get; private set; }
 
         public static void RegisterCharacters(Settings settings)
         {
@@ -59,13 +58,10 @@ namespace SyncManager
                         {
                             AppendSettingsTab("Sync Manager", settingsWindow);
 
-                            if (SyncManagerChannel != String.Empty)
-                            {
-                                settingsWindow.FindView("ChannelBox", out TextInputView textinput);
+                            settingsWindow.FindView("ChannelBox", out TextInputView channelValue);
 
-                                if (textinput != null)
-                                    textinput.Text = SyncManagerChannel;
-                            }
+                            if (channelValue != null)
+                                channelValue.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
                         }
                     }
                     catch (Exception e)

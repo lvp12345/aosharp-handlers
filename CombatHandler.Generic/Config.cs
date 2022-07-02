@@ -94,7 +94,6 @@ namespace CombatHandler.Generic
             {
                 if (_ipcChannel != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _ipcChannel = value;
                     IPCChannelChangedEvent?.Invoke(this, value);
                 }
@@ -112,7 +111,6 @@ namespace CombatHandler.Generic
             {
                 if (_traderHealPercentage != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _traderHealPercentage = value;
                     TraderHealPercentageChangedEvent?.Invoke(this, value);
                 }
@@ -130,7 +128,6 @@ namespace CombatHandler.Generic
             {
                 if (_maHealPercentage != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _maHealPercentage = value;
                     MAHealPercentageChangedEvent?.Invoke(this, value);
                 }
@@ -148,7 +145,6 @@ namespace CombatHandler.Generic
             {
                 if (_docHealPercentage != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _docHealPercentage = value;
                     DocHealPercentageChangedEvent?.Invoke(this, value);
                 }
@@ -166,7 +162,6 @@ namespace CombatHandler.Generic
             {
                 if (_docCompleteHealPercentage != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _docCompleteHealPercentage = value;
                     DocCompleteHealPercentageChangedEvent?.Invoke(this, value);
                 }
@@ -184,7 +179,6 @@ namespace CombatHandler.Generic
             {
                 if (_agentHealPercentage != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _agentHealPercentage = value;
                     AgentHealPercentageChangedEvent?.Invoke(this, value);
                 }
@@ -202,7 +196,6 @@ namespace CombatHandler.Generic
             {
                 if (_agentCompleteHealPercentage != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _agentCompleteHealPercentage = value;
                     AgentCompleteHealPercentageChangedEvent?.Invoke(this, value);
                 }
@@ -220,7 +213,6 @@ namespace CombatHandler.Generic
             {
                 if (_advHealPercentage != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _advHealPercentage = value;
                     AdvHealPercentageChangedEvent?.Invoke(this, value);
                 }
@@ -238,7 +230,6 @@ namespace CombatHandler.Generic
             {
                 if (_advCompleteHealPercentage != value)
                 {
-                    Chat.WriteLine($"Assigning CharacterSettings to {value}");
                     _advCompleteHealPercentage = value;
                     AdvCompleteHealPercentageChangedEvent?.Invoke(this, value);
                 }

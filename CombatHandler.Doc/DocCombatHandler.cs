@@ -94,6 +94,9 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget);
 
             PluginDirectory = pluginDir;
+
+            DocHealPercentage = Config.CharSettings[Game.ClientInst].DocHealPercentage;
+            DocCompleteHealPercentage = Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow };

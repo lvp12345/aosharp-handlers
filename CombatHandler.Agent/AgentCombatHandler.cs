@@ -118,6 +118,9 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff);
 
             PluginDirectory = pluginDir;
+
+            AgentHealPercentage = Config.CharSettings[Game.ClientInst].AgentHealPercentage;
+            AgentCompleteHealPercentage = Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow };

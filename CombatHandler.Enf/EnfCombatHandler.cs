@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 
-namespace CombatHandler.Enforcer
+namespace CombatHandler.Enf
 {
     class EnfCombatHandler : GenericCombatHandler
     { 

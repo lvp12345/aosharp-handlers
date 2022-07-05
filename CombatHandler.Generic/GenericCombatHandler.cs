@@ -197,13 +197,10 @@ namespace CombatHandler.Generic
 
             if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
             {
-                if (_settings["Composites"].AsBool())
-                {
-                    //We are melee
-                    RegisterSpellProcessor(RelevantNanos.CompositeMartial, GenericBuffExcludeInnerSanctum);
-                    RegisterSpellProcessor(RelevantNanos.CompositeMelee, CompositesBuff);
-                    RegisterSpellProcessor(RelevantNanos.CompositePhysicalSpecial, CompositesBuff);
-                }
+                //We are melee
+                RegisterSpellProcessor(RelevantNanos.CompositeMartial, CompositeBuffExcludeInnerSanctum);
+                RegisterSpellProcessor(RelevantNanos.CompositeMelee, CompositesBuff);
+                RegisterSpellProcessor(RelevantNanos.CompositePhysicalSpecial, CompositesBuff);
             }
 
 

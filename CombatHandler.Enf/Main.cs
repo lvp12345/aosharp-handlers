@@ -2,7 +2,7 @@
 using System;
 using AOSharp.Core.UI;
 
-namespace CombatHandler.Enforcer
+namespace CombatHandler.Enf
 {
     public class Main : AOPluginEntry
     {

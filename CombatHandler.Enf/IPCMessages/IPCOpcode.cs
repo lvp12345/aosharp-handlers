@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CombatHandler.Enforcer
+namespace CombatHandler.Enf
 {
     public enum IPCOpcode
     {

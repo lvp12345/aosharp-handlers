@@ -55,6 +55,9 @@ namespace CombatHandler.Engineer
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("SyncPets", true);
@@ -376,6 +379,8 @@ namespace CombatHandler.Engineer
         }
         private bool SnareAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("SpamSnareAura") && ShouldSpamAoeSnare())
             {
                 Pet petToCastOn = FindPetThat(pet => true);
@@ -401,6 +406,8 @@ namespace CombatHandler.Engineer
 
         private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("SpamBlindAura"))
             {
                 if (Time.NormalTime - _recastBlinds > 9)

@@ -24,9 +24,11 @@ namespace CombatHandler.Adventurer
 
         private static Window _morphWindow;
         private static Window _healingWindow;
+        private static Window _buffWindow;
 
         private static View _morphView;
         private static View _healingView;
+        private static View _buffView;
 
         private static double _ncuUpdateTime;
 
@@ -38,7 +40,11 @@ namespace CombatHandler.Adventurer
             Config.CharSettings[Game.ClientInst].AdvHealPercentageChangedEvent += AdvHealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentageChangedEvent += AdvCompleteHealPercentage_Changed;
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
+            _settings.AddVariable("MorphSelection", (int)MorphSelection.None);
 
             _settings.AddVariable("DragonMorph", false);
             _settings.AddVariable("LeetMorph", false);
@@ -122,7 +128,22 @@ namespace CombatHandler.Adventurer
                 Chat.WriteLine(e);
             }
         }
-
+        private void HandleBuffViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvBuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "AdvBuffsView" }, _buffView);
+            }
+            else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "AdvBuffsView" }, _buffView, out var container);
+                _buffWindow = container;
+            }
+        }
         private void HandleHealingViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -231,68 +252,31 @@ namespace CombatHandler.Adventurer
                 }
             }
 
-            if (_settings["DragonMorph"].AsBool() && _settings["LeetMorph"].AsBool())
-            {
-                _settings["DragonMorph"] = false;
-                _settings["LeetMorph"] = false;
-
-                Chat.WriteLine("Only activate one Morph option.");
-            }
-            if (_settings["DragonMorph"].AsBool() && _settings["SaberMorph"].AsBool())
-            {
-                _settings["DragonMorph"] = false;
-                _settings["SaberMorph"] = false;
-
-                Chat.WriteLine("Only activate one Morph option.");
-            }
-            if (_settings["DragonMorph"].AsBool() && _settings["WolfMorph"].AsBool())
-            {
-                _settings["DragonMorph"] = false;
-                _settings["WolfMorph"] = false;
-
-                Chat.WriteLine("Only activate one Morph option.");
-            }
-            if (_settings["SaberMorph"].AsBool() && _settings["LeetMorph"].AsBool())
-            {
-                _settings["SaberMorph"] = false;
-                _settings["LeetMorph"] = false;
-
-                Chat.WriteLine("Only activate one Morph option.");
-            }
-            if (_settings["SaberMorph"].AsBool() && _settings["WolfMorph"].AsBool())
-            {
-                _settings["SaberMorph"] = false;
-                _settings["WolfMorph"] = false;
-
-                Chat.WriteLine("Only activate one Morph option.");
-            }
-            if (_settings["LeetMorph"].AsBool() && _settings["WolfMorph"].AsBool())
-            {
-                _settings["LeetMorph"] = false;
-                _settings["WolfMorph"] = false;
-
-                Chat.WriteLine("Only activate one Morph option.");
-            }
-
-            if (!_settings["DragonMorph"].AsBool())
+            if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.DragonMorph);
             }
-            if (!_settings["LeetMorph"].AsBool())
+            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.LeetMorph);
             }
-            if (!_settings["SaberMorph"].AsBool())
+            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.SaberMorph);
             }
-            if (!_settings["WolfMorph"].AsBool())
+            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.WolfMorph);
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = HandleBuffViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
                     healingView.Tag = SettingsController.settingsWindow;
@@ -318,32 +302,32 @@ namespace CombatHandler.Adventurer
 
         private bool DragonMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DragonMorph")) { return false; }
+            if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool LeetMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("LeetMorph")) { return false; }
+            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool WolfMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("WolfMorph")) { return false; }
+            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool SaberMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SaberMorph")) { return false; }
+            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool WolfAgility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("WolfMorph")) { return false; }
+            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
 
@@ -351,7 +335,7 @@ namespace CombatHandler.Adventurer
         }
         private bool SaberDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SaberMorph")) { return false; }
+            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
 
@@ -359,7 +343,7 @@ namespace CombatHandler.Adventurer
         }
         private bool LeetCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("LeetMorph")) { return false; }
+            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
 
@@ -367,7 +351,7 @@ namespace CombatHandler.Adventurer
         }
         private bool DragonScales(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DragonMorph")) { return false; }
+            if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
@@ -380,6 +364,8 @@ namespace CombatHandler.Adventurer
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell) 
                 || AdvHealPercentage == 0
                 || HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
@@ -389,6 +375,8 @@ namespace CombatHandler.Adventurer
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell) || AdvHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
@@ -405,6 +393,8 @@ namespace CombatHandler.Adventurer
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("CH") || !CanCast(spell)
                 || AdvCompleteHealPercentage == 0) { return false; }
 
@@ -419,6 +409,11 @@ namespace CombatHandler.Adventurer
         {
             None, SingleTeam, SingleOS
         }
+        public enum MorphSelection
+        {
+            None, Dragon, Saber, Wolf, Leet
+        }
+
         private static class RelevantNanos
         {
             public static int[] HEALS = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,

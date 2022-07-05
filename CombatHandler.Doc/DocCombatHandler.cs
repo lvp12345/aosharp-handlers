@@ -40,6 +40,9 @@ namespace CombatHandler.Doctor
             Config.CharSettings[Game.ClientInst].DocHealPercentageChangedEvent += DocHealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].DocCompleteHealPercentageChangedEvent += DocCompleteHealPercentage_Changed;
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
@@ -282,6 +285,8 @@ namespace CombatHandler.Doctor
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("CH") || !CanCast(spell)
                 || DocCompleteHealPercentage == 0) { return false; }
 
@@ -290,6 +295,8 @@ namespace CombatHandler.Doctor
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell) || DocHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32()
@@ -316,6 +323,8 @@ namespace CombatHandler.Doctor
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell) || DocHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
@@ -348,6 +357,8 @@ namespace CombatHandler.Doctor
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -371,6 +382,8 @@ namespace CombatHandler.Doctor
 
         private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell) || DocHealPercentage == 0) { return false; }
 
             if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
@@ -446,6 +459,8 @@ namespace CombatHandler.Doctor
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())

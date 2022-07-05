@@ -30,6 +30,9 @@ namespace CombatHandler.NanoTechnician
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("AIDot", true);
 
             _settings.AddVariable("Pierce", false);
@@ -188,12 +191,16 @@ namespace CombatHandler.NanoTechnician
 
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             actionTarget.ShouldSetTarget = false;
             return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             actionTarget.ShouldSetTarget = false;
             return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
         }
@@ -221,6 +228,8 @@ namespace CombatHandler.NanoTechnician
 
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget == null) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent > 25) { return false; }
@@ -231,6 +240,8 @@ namespace CombatHandler.NanoTechnician
 
         private bool AiDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("AIDot") || fightingTarget == null) { return false; }
 
             if (fightingTarget.Health < 80000) { return false; }

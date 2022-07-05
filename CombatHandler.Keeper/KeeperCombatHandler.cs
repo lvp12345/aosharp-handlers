@@ -30,6 +30,9 @@ namespace CombatHandler.Keeper
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("NanoAura", false);
             _settings.AddVariable("HealAura", false);
             _settings.AddVariable("ReflectAura", false);

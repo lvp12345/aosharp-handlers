@@ -38,6 +38,9 @@ namespace CombatHandler.Enforcer
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("SingleTaunt", false);
             _settings.AddVariable("OSTaunt", false);
             _settings.AddVariable("RaidTaunt", false);
@@ -179,6 +182,8 @@ namespace CombatHandler.Enforcer
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
             {
                 List<SimpleChar> mobs = DynelManager.NPCs
@@ -294,6 +299,8 @@ namespace CombatHandler.Enforcer
 
         private bool Fortify(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.FightingTarget != null 
@@ -329,6 +336,8 @@ namespace CombatHandler.Enforcer
 
         private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (DynelManager.LocalPlayer.FightingTarget != null 
                 && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
 

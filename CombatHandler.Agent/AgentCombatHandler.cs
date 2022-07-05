@@ -46,15 +46,16 @@ namespace CombatHandler.Agent
             Config.CharSettings[Game.ClientInst].AgentHealPercentageChangedEvent += AgentHealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentageChangedEvent += AgentCompleteHealPercentage_Changed;
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("DotStrainA", false);
 
             _settings.AddVariable("CritTeam", false);
 
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
-
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
-
 
             _settings.AddVariable("EvasionDebuff", false);
 
@@ -422,6 +423,8 @@ namespace CombatHandler.Agent
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell) || AgentHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
@@ -438,6 +441,8 @@ namespace CombatHandler.Agent
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("CH") || AgentCompleteHealPercentage == 0) { return false; }
 
             return FindMemberWithHealthBelow(AgentCompleteHealPercentage, ref actionTarget);
@@ -592,6 +597,8 @@ namespace CombatHandler.Agent
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
@@ -631,12 +638,7 @@ namespace CombatHandler.Agent
         {
             if (!IsSettingEnabled("Concentration") || !CanCast(spell) || fightingTarget == null) { return false; }
 
-            if (SpellChecksPlayer(spell))
-            {
-                return true;
-            }
-
-            return false;
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DotStrainA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

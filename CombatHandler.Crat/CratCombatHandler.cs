@@ -49,6 +49,9 @@ namespace CombatHandler.Bureaucrat
 
             Game.TeleportEnded += OnZoned;
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.AAOAAD);
             _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
 
@@ -452,6 +455,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool CalmSector7(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (!IsSettingEnabled("CalmSector7")) { return false; }
@@ -477,6 +482,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool RKCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (CalmingSelection.RK != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
                 || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
 
@@ -523,6 +530,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool SLCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (CalmingSelection.SL != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
                 || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
 
@@ -569,6 +578,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool AoECalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (CalmingSelection.AOE != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
                 || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
 
@@ -615,6 +626,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool Calm12Man(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("Calm12Man") || !CanCast(spell)) { return false; }
 
             List<SimpleChar> targets = DynelManager.NPCs
@@ -669,6 +682,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
@@ -709,86 +724,10 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-
-        //private bool MalaiseTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-        //    if (!IsSettingEnabled("MalaiseTarget")) { return false; }
-
-        //    return SpellChecksOther(spell, spell.Nanoline, fightingTarget);
-        //}
-
-        //private bool LEInitTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-        //    if (!IsSettingEnabled("LEInitDebuffs")) { return false; }
-
-        //    //if (IsSettingEnabled("Calm12Man"))
-        //    //{
-        //    //    List<SimpleChar> target = DynelManager.NPCs
-        //    //        .Where(x => x.IsAlive)
-        //    //        .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-        //    //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-        //    //        .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-        //    //        .ToList();
-
-        //    //    if (target != null)
-        //    //        return false;
-        //    //}
-
-        //    //if (IsSettingEnabled("AoeRoot"))
-        //    //{
-        //    //    SimpleChar target = DynelManager.NPCs
-        //    //        .Where(c => c.Name == "Flaming Vengeance" ||
-        //    //        c.Name == "Hand of the Colonel")
-        //    //        .Where(c => DoesNotHaveAoeRootRunning(c))
-        //    //        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-        //    //        .FirstOrDefault();
-
-        //    //    if (target != null)
-        //    //        return false;
-        //    //}
-
-        //    //if (!SpellChecksOther(spell, fightingTarget)) { return false; }
-
-        //    return SpellChecksOther(spell, spell.Nanoline, fightingTarget);
-        //}
-
-        //private bool CratDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    //if (IsSettingEnabled("Calm12Man"))
-        //    //{
-        //    //    List<SimpleChar> target = DynelManager.NPCs
-        //    //        .Where(x => x.IsAlive)
-        //    //        .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-        //    //        .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-        //    //        .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
-        //    //        .ToList();
-
-        //    //    if (target != null)
-        //    //        return false;
-        //    //}
-
-        //    //if (IsSettingEnabled("AoeRoot"))
-        //    //{
-        //    //    SimpleChar target = DynelManager.NPCs
-        //    //        .Where(c => c.Name == "Flaming Vengeance" ||
-        //    //        c.Name == "Hand of the Colonel")
-        //    //        .Where(c => DoesNotHaveAoeRootRunning(c))
-        //    //        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-        //    //        .FirstOrDefault();
-
-        //    //    if (target != null)
-        //    //        return false;
-        //    //}
-
-        //    return ToggledDebuffOthersInCombat("OSMalaise", spell, fightingTarget, ref actionTarget);
-        //}
-
         private bool RootLogic(SimpleChar target, Spell spell)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (target.Buffs.Contains(NanoLine.Root))
             {
                 if (target.Buffs.FirstOrDefault(c => c.Nanoline == NanoLine.Root).RemainingTime < 30f)
@@ -803,6 +742,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool AoeRoot(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("AoeRoot") || !CanCast(spell)) { return false; }
 
             SimpleChar target = DynelManager.Characters
@@ -956,11 +897,6 @@ namespace CombatHandler.Bureaucrat
             return PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget);
         }
 
-        private bool DoesNotHaveAoeRootRunning(SimpleChar target)
-        {
-            return !target.Buffs.Any(IsAoeRoot);
-        }
-
         private bool IsAoeRoot(Buff buff)
         {
             return RelevantNanos.AoeRootDebuffs.Any(id => id == buff.Id);
@@ -1045,7 +981,6 @@ namespace CombatHandler.Bureaucrat
 
         protected bool DroidMatrixBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             Pet petToBuff = FindPetThat(pet => RobotNeedsBuff(spell, pet));

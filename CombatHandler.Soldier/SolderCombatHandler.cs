@@ -34,6 +34,9 @@ namespace CombatHandler.Soldier
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("SingleTaunt", false);
             _settings.AddVariable("OSTaunt", false);
 
@@ -177,6 +180,8 @@ namespace CombatHandler.Soldier
 
         private bool AAOBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("AAOTeam"))
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
@@ -201,6 +206,8 @@ namespace CombatHandler.Soldier
 
         private bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("BurstTeam"))
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
@@ -229,6 +236,8 @@ namespace CombatHandler.Soldier
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
@@ -289,6 +298,8 @@ namespace CombatHandler.Soldier
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
             {
                 List<SimpleChar> mobs = DynelManager.NPCs
@@ -340,6 +351,8 @@ namespace CombatHandler.Soldier
 
         private bool SolDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= 40) { return true; }
@@ -349,6 +362,8 @@ namespace CombatHandler.Soldier
 
         private bool AugmentedMirrorShieldMKV(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
@@ -358,6 +373,8 @@ namespace CombatHandler.Soldier
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("InitTeam"))
             {
                 if (DynelManager.LocalPlayer.IsInTeam())

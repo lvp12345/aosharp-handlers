@@ -34,6 +34,9 @@ namespace CombatHandler.Fixer
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("RKRunspeed", false);
             _settings.AddVariable("RKRunspeedTeam", false);
 
@@ -181,6 +184,8 @@ namespace CombatHandler.Fixer
 
         private bool LongHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("LongHoTTeam"))
             {
                 if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
@@ -228,6 +233,8 @@ namespace CombatHandler.Fixer
 
         protected bool GSFTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -251,6 +258,8 @@ namespace CombatHandler.Fixer
 
         private bool GsfBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("RKRunspeedTeam"))
@@ -278,6 +287,8 @@ namespace CombatHandler.Fixer
 
         private bool ShadowlandsSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("SLRunspeed"))
@@ -295,6 +306,8 @@ namespace CombatHandler.Fixer
 
         private bool GridArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("GridArmor") || !CanCast(spell)) { return false; }
 
             if (Inventory.Items.FirstOrDefault(x => RelevantItems.GRID_ARMORS.Contains(x.HighId)) != null)
@@ -307,6 +320,8 @@ namespace CombatHandler.Fixer
 
         private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("ShadowwebSpinner") || !CanCast(spell)) { return false; }
 
             if (Inventory.Items.FirstOrDefault(x => RelevantItems.SHADOWWEB_SPINNERS.Contains(x.HighId)) != null)

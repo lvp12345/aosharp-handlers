@@ -36,6 +36,9 @@ namespace CombatHandler.Shade
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             //IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
 
@@ -440,6 +443,8 @@ namespace CombatHandler.Shade
 
         private bool ShadesCaressNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null
                  || !CanCast(spell)) { return false; }
 
@@ -467,6 +472,8 @@ namespace CombatHandler.Shade
 
         protected bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -538,6 +545,8 @@ namespace CombatHandler.Shade
 
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             actionTarget.ShouldSetTarget = false;
 
             if (DynelManager.LocalPlayer.HealthPercent <= MissingHealthAbortCombatPercentage) { return true; }

@@ -188,27 +188,30 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.AmmoBoxEnergy, RelevantItems.AmmoBoxEnergy, AmmoBoxEnergy);
             RegisterItemProcessor(RelevantItems.AmmoBoxShotgun, RelevantItems.AmmoBoxShotgun, AmmoBoxShotgun);
 
-            RegisterSpellProcessor(RelevantNanos.CompositeNano, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeUtility, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeNano, CompositesBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, CompositesBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeUtility, CompositesBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, CompositesBuff);
 
-            RegisterSpellProcessor(RelevantNanos.InsightIntoSL, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.InsightIntoSL, CompositesBuff);
 
             if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
             {
-                //We are melee
-                RegisterSpellProcessor(RelevantNanos.CompositeMartial, GenericBuffExcludeInnerSanctum);
-                RegisterSpellProcessor(RelevantNanos.CompositeMelee, GenericBuff);
-                RegisterSpellProcessor(RelevantNanos.CompositePhysicalSpecial, GenericBuff);
+                if (_settings["Composites"].AsBool())
+                {
+                    //We are melee
+                    RegisterSpellProcessor(RelevantNanos.CompositeMartial, GenericBuffExcludeInnerSanctum);
+                    RegisterSpellProcessor(RelevantNanos.CompositeMelee, CompositesBuff);
+                    RegisterSpellProcessor(RelevantNanos.CompositePhysicalSpecial, CompositesBuff);
+                }
             }
 
 
             if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged))
             {
                 //We are ranged
-                RegisterSpellProcessor(RelevantNanos.CompositeRanged, GenericBuff);
-                RegisterSpellProcessor(RelevantNanos.CompositeRangedSpecial, GenericBuff);
+                RegisterSpellProcessor(RelevantNanos.CompositeRanged, CompositesBuff);
+                RegisterSpellProcessor(RelevantNanos.CompositeRangedSpecial, CompositesBuff);
             }
 
             Game.TeleportEnded += OnZoned;
@@ -527,6 +530,8 @@ namespace CombatHandler.Generic
 
         protected bool BuffInitEngi(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -560,6 +565,8 @@ namespace CombatHandler.Generic
 
         private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             // Prioritize keeping ourself alive
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
             {
@@ -592,6 +599,21 @@ namespace CombatHandler.Generic
 
         protected bool GenericBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (IsInsideInnerSanctum()) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool CompositeBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (!IsSettingEnabled("Composites")) { return false; }
+
             if (IsInsideInnerSanctum()) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
@@ -601,6 +623,8 @@ namespace CombatHandler.Generic
 
         protected bool AllTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -623,6 +647,8 @@ namespace CombatHandler.Generic
 
         protected bool AllBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (SpellChecksPlayer(spell))
@@ -637,6 +663,8 @@ namespace CombatHandler.Generic
 
         protected bool CombatBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget == null || !CanCast(spell)) { return false; }
 
             if (SpellChecksPlayer(spell))
@@ -651,6 +679,8 @@ namespace CombatHandler.Generic
 
         protected bool DebuffTarget(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             // Check if we are fighting and if debuffing is enabled
             if (fightingTarget == null) { return false; }
 
@@ -666,6 +696,8 @@ namespace CombatHandler.Generic
 
         protected bool ToggledDebuffTarget(string settingName, Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             // Check if we are fighting and if debuffing is enabled
             if (fightingTarget == null || !IsSettingEnabled(settingName)) { return false; }
 
@@ -681,6 +713,8 @@ namespace CombatHandler.Generic
 
         protected bool ToggledDebuffOthersInCombat(string toggleName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled(toggleName) || !CanCast(spell)) { return false; }
 
             SimpleChar debuffTarget = DynelManager.NPCs
@@ -721,6 +755,8 @@ namespace CombatHandler.Generic
 
         protected bool ToggledBuff(string settingName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled(settingName)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
@@ -728,6 +764,8 @@ namespace CombatHandler.Generic
 
         protected bool TeamBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsInsideInnerSanctum()) { return false; }
 
             return TeamBuff(spell, fightingTarget, ref actionTarget);
@@ -735,6 +773,8 @@ namespace CombatHandler.Generic
 
         protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -755,8 +795,28 @@ namespace CombatHandler.Generic
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
+        protected bool CompositesBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (!IsSettingEnabled("Composites")) { return false; }
+
+            if (fightingTarget != null || !CanCast(spell) || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+
+            if (SpellChecksPlayer(spell))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
+
         protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell) || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             if (SpellChecksPlayer(spell))
@@ -771,6 +831,8 @@ namespace CombatHandler.Generic
 
         protected bool TeamBuffNoNTWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -802,6 +864,8 @@ namespace CombatHandler.Generic
 
         protected bool TeamBuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -829,6 +893,8 @@ namespace CombatHandler.Generic
 
         protected bool BuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (SpellChecksPlayer(spell) && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(supportedWeaponType))
@@ -1335,6 +1401,8 @@ namespace CombatHandler.Generic
 
         protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -1444,6 +1512,8 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksOther(Spell spell, NanoLine nanoline, SimpleChar fightingTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
             if (Playfield.ModelIdentity.Instance == 152) { return false; }
@@ -1480,6 +1550,8 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksPlayer(Spell spell)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
             if (Playfield.ModelIdentity.Instance == 152) { return false; }

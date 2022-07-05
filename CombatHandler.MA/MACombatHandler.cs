@@ -43,6 +43,9 @@ namespace CombatHandler.MartialArtist
 
             Config.CharSettings[Game.ClientInst].MAHealPercentageChangedEvent += MAHealPercentage_Changed;
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("SingleTaunt", false);
             _settings.AddVariable("OSTaunt", false);
 
@@ -327,6 +330,8 @@ namespace CombatHandler.MartialArtist
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
             {
                 List<SimpleChar> mobs = DynelManager.NPCs
@@ -378,6 +383,8 @@ namespace CombatHandler.MartialArtist
 
         protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("EvadesTeam"))
@@ -408,6 +415,8 @@ namespace CombatHandler.MartialArtist
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
@@ -424,6 +433,8 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ControlledDestructionBuff)) { return false; }
@@ -435,6 +446,8 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!IsSettingEnabled("ShortDamage")) { return false; }
 
             if (fightingTarget == null || !CanCast(spell)) { return false; }
@@ -452,6 +465,8 @@ namespace CombatHandler.MartialArtist
 
         protected bool TeamCritBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.CriticalIncreaseBuff)) { return false; }
@@ -514,6 +529,8 @@ namespace CombatHandler.MartialArtist
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
@@ -530,6 +547,8 @@ namespace CombatHandler.MartialArtist
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell) || HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
             return FindMemberWithHealthBelow(MAHealPercentage, ref actionTarget);

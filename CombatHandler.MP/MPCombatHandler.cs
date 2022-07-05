@@ -37,6 +37,9 @@ namespace CombatHandler.Metaphysicist
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
             _settings.AddVariable("BuffPets", true);
@@ -55,8 +58,8 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("NanoResistanceDebuff", false);
             _settings.AddVariable("NanoShutdownDebuff", false);
 
-            _settings.AddVariable("Composites", false);
-            _settings.AddVariable("CompositesTeam", false);
+            _settings.AddVariable("CompositesNanoSkills", false);
+            _settings.AddVariable("CompositesNanoSkillsTeam", false);
 
             _settings.AddVariable("MatterCrea", false);
             _settings.AddVariable("PyschoModi", false);
@@ -352,12 +355,12 @@ namespace CombatHandler.Metaphysicist
 
         private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Composites")) 
+            if (IsSettingEnabled("CompositesNanoSkills")) 
             {
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
-            if (IsSettingEnabled("CompositesTeam"))
+            if (IsSettingEnabled("CompositesNanoSkillsTeam"))
             {
                 return TeamBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -367,7 +370,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool MatterCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("MatterCrea"))
             {
@@ -382,7 +385,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool PyschoModiBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("PyschoModi"))
             {
@@ -397,7 +400,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool TimeSpaceBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("TimeSpace"))
             {
@@ -412,7 +415,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool SenseImprovBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("SenseImprov"))
             {
@@ -427,7 +430,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool BioMetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("BioMet"))
             {
@@ -442,7 +445,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool MattMetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Composites") || IsSettingEnabled("CompositesTeam")) { return false; }
+            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("MattMet"))
             {
@@ -467,6 +470,8 @@ namespace CombatHandler.Metaphysicist
 
         private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
             Spell singleNuke = Spell.List.FirstOrDefault(x => RelevantNanos.SingleTargetNukes.Contains(x.Id));
@@ -481,6 +486,8 @@ namespace CombatHandler.Metaphysicist
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
             Spell warmupNuke = Spell.List.FirstOrDefault(x => RelevantNanos.WarmUpfNukes.Contains(x.Id));

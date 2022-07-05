@@ -41,6 +41,9 @@ namespace CombatHandler.Trader
 
             Config.CharSettings[Game.ClientInst].TraderHealPercentageChangedEvent += TraderHealPercentage_Changed;
 
+            _settings.AddVariable("Buffing", true);
+            _settings.AddVariable("Composites", true);
+
             _settings.AddVariable("DamageDrain", true);
             _settings.AddVariable("HealthDrain", false);
 
@@ -283,6 +286,8 @@ namespace CombatHandler.Trader
 
         private bool LEHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell)) { return false; }
 
             return FindMemberWithHealthBelow(60, ref actionTarget);
@@ -290,6 +295,8 @@ namespace CombatHandler.Trader
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (!CanCast(spell) || TraderHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32())
@@ -324,6 +331,8 @@ namespace CombatHandler.Trader
 
         protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("EvadesTeam"))
@@ -402,6 +411,8 @@ namespace CombatHandler.Trader
 
         private bool OSRansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (RansackSelection.OS != (RansackSelection)_settings["RansackSelection"].AsInt32()) { return false; }
 
             if (_drainTarget == null || !CanCast(spell)) { return false; }
@@ -442,6 +453,8 @@ namespace CombatHandler.Trader
 
         private bool OSDepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (DepriveSelection.OS != (DepriveSelection)_settings["DepriveSelection"].AsInt32()) { return false; }
 
             if (_drainTarget == null || !CanCast(spell)) { return false; }
@@ -506,6 +519,8 @@ namespace CombatHandler.Trader
 
         private bool TeamNanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NanoPointHeals)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())

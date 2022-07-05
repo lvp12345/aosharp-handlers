@@ -16,7 +16,7 @@
       <RadioButton label="Tax Audit (Target Hit Health Energy -1600 .. -3750)" value="2"/>
       <RadioButton label="Lost Paperwork (Target Hit Health Melee -264 .. -532)" value="3"/>
       <RadioButton label="Deflation (Self Modify Nano attack damage 25% 45s)" value="4"/>
-      <RadioButton label="Inflation Adjustment (Self Modify Nano attack damage modifier 10% 60s)" value="5"/>
+      <RadioButton label="Inflation Adjustment (Self Modify Nano attack damage modifier 10% 60s) " value="5"/>
       <RadioButton label="Papercut (Target Hit Health Cold -10 .. -23)" value="6"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

@@ -448,36 +448,7 @@ namespace CombatHandler.Bureaucrat
 
         #endregion
 
-        #region Debuffs
-
-        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (!IsSettingEnabled("Nukes")) { return false; }
-
-            if (Spell.Find(273631, out Spell workplace))
-            {
-                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842) &&
-                    ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000)
-                    || fightingTarget.MaxHealth > 1000000)) { return false; }
-            }
-
-            return true;
-        }
-
-        private bool WorkplaceDepressionTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (!IsSettingEnabled("Nukes")) { return false; }
-
-            if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)) { return false; }
-
-            if (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000) { return false; }
-
-            return true;
-        }
+        #region Calms
 
         private bool CalmSector7(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -663,21 +634,58 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
+        #endregion
+
+        #region Debuffs
+
+        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (!IsSettingEnabled("Nukes")) { return false; }
+
+            if (Spell.Find(273631, out Spell workplace))
+            {
+                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842) &&
+                    ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000)
+                    || fightingTarget.MaxHealth > 1000000)) { return false; }
+            }
+
+            return true;
+        }
+
+        private bool WorkplaceDepressionTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (!IsSettingEnabled("Nukes")) { return false; }
+
+            if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)) { return false; }
+
+            if (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000) { return false; }
+
+            return true;
+        }
+
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanCast(spell)) { return false; }
 
-            if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && spell.Nanoline != NanoLine.GeneralRadiationACDebuff && spell.Nanoline != NanoLine.GeneralProjectileACDebuff)
+            if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
             {
+                if (spell.Nanoline == NanoLine.GeneralRadiationACDebuff || spell.Nanoline == NanoLine.GeneralProjectileACDebuff)
+                {
+                    if (fightingTarget != null)
+                    {
+                        return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    }
+                }
+
                 SimpleChar debuffTarget = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.FightingTarget != null) //Is in combat
-                    .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz))
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c)) //Needs debuff refreshed
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && SpellChecksOther(spell, spell.Nanoline, c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
 

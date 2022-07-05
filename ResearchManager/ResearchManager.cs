@@ -199,9 +199,8 @@ namespace ResearchManager
                                     .FirstOrDefault();
                                     await Task.Delay(200);
 
+                                    Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}");
                                     _researchGoalsActive.Remove(goal);
-                                    //Chat.WriteLine($"Finished Active - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
-
                                     await Task.Delay(200);
 
                                 }
@@ -210,9 +209,8 @@ namespace ResearchManager
                                     await Task.Delay(200);
                                     _settings[$"{N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}"] = false;
                                     await Task.Delay(400);
+                                    Chat.WriteLine($"Finished - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
                                     _researchGoalsActive.Remove(_currentGoalFinished.FirstOrDefault());
-                                    //Chat.WriteLine($"Finished Active - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
-
                                     await Task.Delay(200);
 
                                 }
@@ -224,7 +222,7 @@ namespace ResearchManager
                                 {
                                     await Task.Delay(200);
                                     Research.Train(_currentGoal.ResearchId);
-                                    Chat.WriteLine($"Starting - {N3EngineClientAnarchy.GetPerkName(_currentGoal.ResearchId)} + turning off setting");
+                                    Chat.WriteLine($"Starting - {N3EngineClientAnarchy.GetPerkName(_currentGoal.ResearchId)}");
                                     await Task.Delay(200);
                                 }
 

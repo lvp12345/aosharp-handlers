@@ -108,7 +108,7 @@ namespace ResearchManager
                 //    _settings["Toggle"] = false;
                 //}
 
-                foreach (ResearchGoal goal in Research.Goals.Where(c => Utilz.Last(c.ResearchId) <= 8))
+                foreach (ResearchGoal goal in Research.Goals/*.Where(c => Utilz.Last(c.ResearchId) <= 8)*/)
                 {
                     if (!_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool() && _researchGoalsActive.Contains(goal))
                     {
@@ -141,7 +141,7 @@ namespace ResearchManager
             {
                 _currentGoalFinished = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                     == N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
-                    && (!c.Available || c.ResearchId == 0 || Utilz.Last(c.ResearchId) == 8))
+                    && (!c.Available || c.ResearchId == 0/* || Utilz.Last(c.ResearchId) == 8*/))
                     .ToList();
 
                 //if ((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0)
@@ -159,9 +159,9 @@ namespace ResearchManager
                 //              await Task.Delay(400);
 
                 //              _researchGoalsActive.Remove(_activeLine);
-                //                //Chat.WriteLine($"Finished Active - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
+                //              //Chat.WriteLine($"Finished Active - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
 
-                //                await Task.Delay(200);
+                //              await Task.Delay(200);
 
                 //              foreach (ResearchGoal _currentGoal in Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                 //                      != N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
@@ -177,8 +177,8 @@ namespace ResearchManager
                 //              _asyncToggle = false;
                 //          });
                 //}
-                //else 
-                if (_currentGoalFinished.Count >= 1)
+                //else
+                if (_currentGoalFinished.Count >= 1 || (int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0)
                 {
                     if (_asyncToggle == false)
                     {
@@ -187,13 +187,35 @@ namespace ResearchManager
                             {
                                 _asyncToggle = true;
 
-                                await Task.Delay(200);
-                                _settings[$"{N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}"] = false;
-                                await Task.Delay(400);
-                                _researchGoalsActive.Remove(_currentGoalFinished.FirstOrDefault());
-                                //Chat.WriteLine($"Finished Active - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
+                                if ((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0)
+                                {
+                                    await Task.Delay(200);
+                                    _settings[$"{N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))}"] = false;
+                                    await Task.Delay(400);
 
-                                await Task.Delay(200);
+                                    ResearchGoal goal = _researchGoalsActive
+                                    .Where(c => N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
+                                        == N3EngineClientAnarchy.GetPerkName(c.ResearchId))
+                                    .FirstOrDefault();
+                                    await Task.Delay(200);
+
+                                    _researchGoalsActive.Remove(goal);
+                                    //Chat.WriteLine($"Finished Active - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
+
+                                    await Task.Delay(200);
+
+                                }
+                                else
+                                {
+                                    await Task.Delay(200);
+                                    _settings[$"{N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}"] = false;
+                                    await Task.Delay(400);
+                                    _researchGoalsActive.Remove(_currentGoalFinished.FirstOrDefault());
+                                    //Chat.WriteLine($"Finished Active - {N3EngineClientAnarchy.GetPerkName(_currentGoalFinished.FirstOrDefault().ResearchId)}");
+
+                                    await Task.Delay(200);
+
+                                }
 
                                 foreach (ResearchGoal _currentGoal in Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                                         != N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))

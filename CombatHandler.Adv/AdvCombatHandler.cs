@@ -85,6 +85,8 @@ namespace CombatHandler.Adventurer
 
             PluginDirectory = pluginDir;
 
+            AdvHealPercentage = Config.CharSettings[Game.ClientInst].AdvHealPercentage;
+            AdvCompleteHealPercentage = Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage;
             //Items
             //RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
 

@@ -220,13 +220,13 @@ namespace CombatHandler.Metaphysicist
                 _ncuUpdateTime = Time.NormalTime;
             }
 
-            if (_settings["Composites"].AsBool() || _settings["CompositesTeam"].AsBool() &&
+            if (_settings["CompositesNanoSkills"].AsBool() || _settings["CompositesNanoSkillsTeam"].AsBool() &&
                 (_settings["MatterCrea"].AsBool() || _settings["PyschoModi"].AsBool()
                 || _settings["TimeSpace"].AsBool() || _settings["SenseImprov"].AsBool()
                 || _settings["BioMet"].AsBool() || _settings["MattMet"].AsBool()))
             {
-                _settings["Composites"] = false;
-                _settings["CompositesTeam"] = false;
+                _settings["CompositesNanoSkills"] = false;
+                _settings["CompositesNanoSkillsTeam"] = false;
                 _settings["MatterCrea"] = false;
                 _settings["PyschoModi"] = false;
                 _settings["TimeSpace"] = false;

@@ -34,7 +34,6 @@ namespace CombatHandler.Doctor
 
         public DocCombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
             Config.CharSettings[Game.ClientInst].DocHealPercentageChangedEvent += DocHealPercentage_Changed;
@@ -139,7 +138,9 @@ namespace CombatHandler.Doctor
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_buffView)) { return; }
+
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\DocBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "DocBuffsView" }, _buffView);
             }
@@ -156,7 +157,9 @@ namespace CombatHandler.Doctor
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_healingView)) { return; }
+
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\DocHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "DocHealingView" }, _healingView);
 
@@ -199,7 +202,9 @@ namespace CombatHandler.Doctor
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_debuffView)) { return; }
+
                 _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\DocDebuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Debuffs", XmlViewName = "DocDebuffsView" }, _debuffView);
             }

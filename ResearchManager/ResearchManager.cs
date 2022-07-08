@@ -33,14 +33,11 @@ namespace ResearchManager
 
         public override void Run(string pluginDir)
         {
-            PluginDirectory = pluginDir;
-
             SettingsController.RegisterSettingsWindow("Research Manager", pluginDir + $"\\UI\\Research{DynelManager.LocalPlayer.Profession}View.xml", _settings);
 
-            _settings.AddVariable("Toggle", false);
+            Game.OnUpdate += OnUpdate;
 
-            Chat.WriteLine("Research Manager Loaded!");
-            Chat.WriteLine("/research for settings.");
+            _settings.AddVariable("Toggle", false);
 
             //Init to add settings
             foreach (int goal in Research.Completed)
@@ -72,7 +69,7 @@ namespace ResearchManager
                 }
             }
 
-            foreach (ResearchGoal goal in Research.Goals.Where(c => Utilz.Last(c.ResearchId) <= 8))
+            foreach (ResearchGoal goal in Research.Goals/*.Where(c => Utilz.Last(c.ResearchId) <= 8)*/)
             {
                 if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool() && !_researchGoalsActive.Contains(goal))
                 {
@@ -88,7 +85,10 @@ namespace ResearchManager
                 }
             }
 
-            Game.OnUpdate += OnUpdate;
+            Chat.WriteLine("Research Manager Loaded!");
+            Chat.WriteLine("/research for settings.");
+
+            PluginDirectory = pluginDir;
         }
 
         public override void Teardown()

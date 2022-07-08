@@ -52,7 +52,6 @@ namespace CombatHandler.Engineer
 
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
             _settings.AddVariable("Buffing", true);

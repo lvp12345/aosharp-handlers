@@ -39,7 +39,7 @@ namespace SyncManager
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        private static Settings _settings = new Settings("SyncManager");
+        protected Settings _settings;
 
         private static Settings _info = new Settings("Info");
 
@@ -49,13 +49,15 @@ namespace SyncManager
 
         public override void Run(string pluginDir)
         {
-            PluginDirectory = pluginDir;
+            _settings = new Settings("Sync Manager");
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
-
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
+            Game.OnUpdate += OnUpdate;
+            Network.N3MessageSent += Network_N3MessageSent;
+            Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
@@ -88,14 +90,11 @@ namespace SyncManager
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
 
-            Game.OnUpdate += OnUpdate;
-            Network.N3MessageSent += Network_N3MessageSent;
-            Game.TeleportEnded += OnZoned;
-            //Team.TeamRequest = Team_TeamRequest;
-
 
             Chat.WriteLine("SyncManager Loaded!");
             Chat.WriteLine("/sync for settings.");
+
+            PluginDirectory = pluginDir;
         }
 
         public override void Teardown()

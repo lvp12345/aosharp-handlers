@@ -34,6 +34,8 @@ namespace CombatHandler.Metaphysicist
 
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
+            IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 

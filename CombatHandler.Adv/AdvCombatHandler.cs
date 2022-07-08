@@ -34,7 +34,6 @@ namespace CombatHandler.Adventurer
 
         public AdvCombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
             Config.CharSettings[Game.ClientInst].AdvHealPercentageChangedEvent += AdvHealPercentage_Changed;
@@ -56,9 +55,6 @@ namespace CombatHandler.Adventurer
             _settings.AddVariable("CH", false);
 
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
-
-            RegisterSettingsWindow("Healing", "AdvHealingView.xml");
-            RegisterSettingsWindow("Morphs", "AdvMorphView.xml");
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, LEProc);
@@ -134,7 +130,9 @@ namespace CombatHandler.Adventurer
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_buffView)) { return; }
+
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "AdvBuffsView" }, _buffView);
             }
@@ -150,7 +148,9 @@ namespace CombatHandler.Adventurer
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_healingView)) { return; }
+
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "AdvHealingView" }, _healingView);
 
@@ -193,7 +193,9 @@ namespace CombatHandler.Adventurer
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_morphView)) { return; }
+
                 _morphView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvMorphView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Debuffs", XmlViewName = "AdvMorphView" }, _morphView);
             }

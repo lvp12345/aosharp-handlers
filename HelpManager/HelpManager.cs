@@ -29,6 +29,11 @@ namespace HelpManager
 
         public static string PluginDirectory;
 
+        private static string AssistPlayer;
+        private static string FollowPlayer;
+        private static string NavFollowIdentity;
+        private static int NavFollowDistance;
+
         private static double _updateTick;
         private static double _sitUpdateTimer;
         private static double _sitPetUpdateTimer;
@@ -43,18 +48,20 @@ namespace HelpManager
         public static bool Sitting = false;
         public static bool HealingPet = false;
 
-        public static Window followWindow;
-        public static Window assistWindow;
-        public static Window infoWindow;
+        public static Window _followWindow;
+        public static Window _assistWindow;
+        public static Window _infoWindow;
+
+        public static View _followView;
+        public static View _assistView;
+        public static View _infoView;
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        private static Settings _settings = new Settings("HelpManager");
+        protected Settings _settings;
 
-        private static Settings _assist = new Settings("Assist");
-        private static Settings _follow = new Settings("Follow");
-        private static Settings _info = new Settings("Info");
+        public static string PluginDir;
 
         List<Vector3> MorphBird = new List<Vector3>
         {
@@ -95,20 +102,13 @@ namespace HelpManager
 
         public override void Run(string pluginDir)
         {
-            PluginDirectory = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager\\{Game.ClientInst}\\Config.json");
-
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
-            _follow.AddVariable("FollowSelection", (int)FollowSelection.None);
-            _assist.AddVariable("AttackSelection", (int)AttackSelection.None);
+            PluginDir = pluginDir;
 
-            _settings.AddVariable("AutoSit", true);
-
-            _settings.AddVariable("MorphPathing", false);
-            _settings.AddVariable("BellyPathing", false);
-            _settings.AddVariable("Db3Shapes", false);
+            _settings = new Settings("Help Manager");
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
 
@@ -121,11 +121,25 @@ namespace HelpManager
 
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
 
-            SettingsController.RegisterSettingsWindow("Help Manager", pluginDir + "\\UI\\HelpManagerSettingWindow.xml", _settings);
+            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
+            Config.CharSettings[Game.ClientInst].AssistPlayerChangedEvent += AssistPlayer_Changed;
+            Config.CharSettings[Game.ClientInst].FollowPlayerChangedEvent += FollowPlayer_Changed;
+            Config.CharSettings[Game.ClientInst].NavFollowIdentityChangedEvent += NavFollowIdentity_Changed;
+            Config.CharSettings[Game.ClientInst].NavFollowDistanceChangedEvent += NavFollowDistance_Changed;
 
-            SettingsController.RegisterSettingsWindow("Assist", pluginDir + "\\UI\\HelpManagerAssistView.xml", _assist);
-            SettingsController.RegisterSettingsWindow("Follow", pluginDir + "\\UI\\HelpManagerFollowView.xml", _follow);
-            SettingsController.RegisterSettingsWindow("Info", pluginDir + "\\UI\\HelpManagerInfoView.xml", _info);
+            RegisterSettingsWindow("Help Manager", "HelpManagerSettingWindow.xml");
+
+            Game.OnUpdate += OnUpdate;
+
+            _settings.AddVariable("FollowSelection", (int)FollowSelection.None);
+            _settings.AddVariable("AttackSelection", (int)AttackSelection.None);
+
+            _settings.AddVariable("AutoSit", true);
+
+            _settings.AddVariable("MorphPathing", false);
+            _settings.AddVariable("BellyPathing", false);
+            _settings.AddVariable("Db3Shapes", false);
+
 
             Chat.RegisterCommand("leadfollow", LeadFollowSwitch);
             Chat.RegisterCommand("autosit", AutoSitSwitch);
@@ -150,13 +164,18 @@ namespace HelpManager
 
             Chat.RegisterCommand("doc", DocTarget);
 
-
-            Game.OnUpdate += OnUpdate;
             //Game.TeleportEnded += OnZoned;
 
 
             Chat.WriteLine("HelpManager Loaded!");
             Chat.WriteLine("/helper for settings.");
+
+            PluginDirectory = pluginDir;
+
+            AssistPlayer = Config.CharSettings[Game.ClientInst].AssistPlayer;
+            FollowPlayer = Config.CharSettings[Game.ClientInst].FollowPlayer;
+            NavFollowIdentity = Config.CharSettings[Game.ClientInst].NavFollowIdentity;
+            NavFollowDistance = Config.CharSettings[Game.ClientInst].NavFollowDistance;
         }
 
         public override void Teardown()
@@ -168,173 +187,150 @@ namespace HelpManager
         {
 
         }
+        public Window[] _windows => new Window[] { _assistWindow, _followWindow };
+
+        public static void IPCChannel_Changed(object s, int e)
+        {
+            IPCChannel.SetChannelId(Convert.ToByte(e));
+
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void AssistPlayer_Changed(object s, string e)
+        {
+            Config.CharSettings[Game.ClientInst].AssistPlayer = e;
+
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void FollowPlayer_Changed(object s, string e)
+        {
+            Config.CharSettings[Game.ClientInst].FollowPlayer = e;
+
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void NavFollowIdentity_Changed(object s, string e)
+        {
+            Config.CharSettings[Game.ClientInst].NavFollowIdentity = e;
+
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void NavFollowDistance_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NavFollowDistance = e;
+
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+
+        private void HandleAssistViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_assistView)) { return; }
+
+                _assistView = View.CreateFromXml(PluginDirectory + "\\UI\\HelpManagerAssistView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Assist", XmlViewName = "HelpManagerAssistView" }, _assistView);
+
+                window.FindView("AssistNamedCharacter", out TextInputView assistInput);
+
+                if (assistInput != null && string.IsNullOrEmpty(assistInput.Text))
+                {
+                    assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
+                }
+
+            }
+            else if (_assistWindow == null || (_assistWindow != null && !_assistWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_assistWindow, PluginDir, new WindowOptions() { Name = "Assist", XmlViewName = "HelpManagerAssistView" }, _assistView, out var container);
+                _assistWindow = container;
+
+                container.FindView("AssistNamedCharacter", out TextInputView assistInput);
+
+                if (assistInput != null && string.IsNullOrEmpty(assistInput.Text))
+                {
+                    assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
+                }
+            }
+        }
+
+        private void HandleFollowViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_followView)) { return; }
+
+                _followView = View.CreateFromXml(PluginDirectory + "\\UI\\HelpManagerFollowView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Follow", XmlViewName = "HelpManagerFollowView" }, _followView);
+
+                window.FindView("FollowNamedCharacter", out TextInputView followInput);
+                window.FindView("FollowNamedIdentity", out TextInputView navFollowInput);
+                window.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceInput);
+
+                if (followInput != null && string.IsNullOrEmpty(followInput.Text))
+                {
+                    followInput.Text = Config.CharSettings[Game.ClientInst].FollowPlayer;
+                }
+                if (navFollowInput != null && string.IsNullOrEmpty(navFollowInput.Text))
+                {
+                    navFollowInput.Text = Config.CharSettings[Game.ClientInst].NavFollowIdentity;
+                }
+                if (navFollowDistanceInput != null && string.IsNullOrEmpty(navFollowDistanceInput.Text))
+                {
+                    navFollowDistanceInput.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowDistance}";
+                }
+            }
+            else if (_followWindow == null || (_followWindow != null && !_followWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_followWindow, PluginDir, new WindowOptions() { Name = "Follow", XmlViewName = "HelpManagerFollowView" }, _followView, out var container);
+                _followWindow = container;
+
+                container.FindView("FollowNamedCharacter", out TextInputView followInput);
+                container.FindView("FollowNamedIdentity", out TextInputView navFollowInput);
+                container.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceInput);
+
+                if (followInput != null && string.IsNullOrEmpty(followInput.Text))
+                {
+                    followInput.Text = Config.CharSettings[Game.ClientInst].FollowPlayer;
+                }
+                if (navFollowInput != null && string.IsNullOrEmpty(navFollowInput.Text))
+                {
+                    navFollowInput.Text = Config.CharSettings[Game.ClientInst].NavFollowIdentity;
+                }
+                if (navFollowDistanceInput != null && string.IsNullOrEmpty(navFollowDistanceInput.Text))
+                {
+                    navFollowDistanceInput.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowDistance}";
+                }
+            }
+        }
+
+        private void InfoView(object s, ButtonBase button)
+        {
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\HelpManagerInfoView.xml",
+                windowSize: new Rect(0, 0, 440, 510),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            _infoWindow.Show(true);
+        }
+
+        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        {
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+        }
 
 
         private void OnUpdate(object s, float deltaTime)
         {
-            if (assistWindow != null && assistWindow.IsValid)
-            {
-                assistWindow.FindView("FollowNamedCharacter", out TextInputView textinput1);
-                assistWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                assistWindow.FindView("NavFollowDistanceBox", out TextInputView textinput3);
-                assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput4);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
-                        SettingsController.HelpManagerFollowPlayer = textinput1.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput2.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput2.Text;
-                        SettingsController.HelpManagerNavFollowPlayer = textinput2.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput3 != null && textinput3.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput3.Text, out int rangeValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
-                            SettingsController.HelpManagerNavFollowDistance = rangeValue;
-                            Config.Save();
-                        }
-                    }
-                }
-                if (textinput4 != null && textinput4.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput4.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput4.Text;
-                        SettingsController.HelpManagerAssistPlayer = textinput4.Text;
-                        Config.Save();
-                    }
-                }
-            }
-
-            if (followWindow != null && followWindow.IsValid)
-            {
-                followWindow.FindView("FollowNamedCharacter", out TextInputView textinput1);
-                followWindow.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                followWindow.FindView("NavFollowDistanceBox", out TextInputView textinput3);
-                followWindow.FindView("AssistNamedCharacter", out TextInputView textinput4);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
-                        SettingsController.HelpManagerFollowPlayer = textinput1.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].NavFollowPlayer != textinput2.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].NavFollowPlayer = textinput2.Text;
-                        SettingsController.HelpManagerNavFollowPlayer = textinput2.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput3 != null && textinput3.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput3.Text, out int rangeValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
-                            SettingsController.HelpManagerNavFollowDistance = rangeValue;
-                            Config.Save();
-                        }
-                    }
-                }
-
-                if (textinput4 != null && textinput4.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput4.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput4.Text;
-                        SettingsController.HelpManagerAssistPlayer = textinput4.Text;
-                        Config.Save();
-                    }
-                }
-            }
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
-            {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView textinput1);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput1.Text, out int channelValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
-                        {
-                            IPCChannel.SetChannelId(Convert.ToByte(channelValue));
-                            Config.CharSettings[Game.ClientInst].IPCChannel = Convert.ToByte(channelValue);
-                            SettingsController.HelpManagerChannel = channelValue.ToString();
-                            Config.Save();
-                        }
-                    }
-                }
-
-                if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
-                {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("HelpManagerFollowView", out Button followView))
-                {
-                    followView.Tag = SettingsController.settingsWindow;
-                    followView.Clicked = FollowView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("HelpManagerAssistView", out Button assistView))
-                {
-                    assistView.Tag = SettingsController.settingsWindow;
-                    assistView.Clicked = AssistView;
-                }
-            }
-
-            if (SettingsController.HelpManagerChannel == String.Empty)
-            {
-                SettingsController.HelpManagerChannel = Config.IPCChannel.ToString();
-            }
-
-            if (SettingsController.HelpManagerAssistPlayer == String.Empty)
-            {
-                SettingsController.HelpManagerAssistPlayer = Config.AssistPlayer;
-            }
-
-            if (SettingsController.HelpManagerFollowPlayer == String.Empty)
-            {
-                SettingsController.HelpManagerFollowPlayer = Config.FollowPlayer;
-            }
-
-            if (SettingsController.HelpManagerNavFollowPlayer == String.Empty)
-            {
-                SettingsController.HelpManagerNavFollowPlayer = Config.NavFollowPlayer;
-            }
-
-            if (SettingsController.HelpManagerNavFollowDistance != Config.NavFollowDistance)
-            {
-                SettingsController.HelpManagerNavFollowDistance = Config.NavFollowDistance;
-            }
-
             if (Time.NormalTime > _updateTick + 8f)
             {
                 List<SimpleChar> PlayersInRange = DynelManager.Characters
@@ -353,6 +349,85 @@ namespace HelpManager
                 }
 
                 _updateTick = Time.NormalTime;
+            }
+
+            var window = SettingsController.FindValidWindow(_windows);
+
+            if (window != null && window.IsValid)
+            {
+                window.FindView("FollowNamedCharacter", out TextInputView textinput1);
+                window.FindView("FollowNamedIdentity", out TextInputView textinput2);
+                window.FindView("NavFollowDistanceBox", out TextInputView textinput3);
+                window.FindView("AssistNamedCharacter", out TextInputView textinput4);
+
+                if (textinput1 != null && textinput1.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput2 != null && textinput2.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].NavFollowIdentity != textinput2.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].NavFollowIdentity = textinput2.Text;
+                        Config.Save();
+                    }
+                }
+
+                if (textinput3 != null && textinput3.Text != String.Empty)
+                {
+                    if (int.TryParse(textinput3.Text, out int rangeValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
+                            Config.Save();
+                        }
+                    }
+                }
+                if (textinput4 != null && textinput4.Text != String.Empty)
+                {
+                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput4.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput4.Text;
+                        Config.Save();
+                    }
+                }
+            }
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
+
+                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
+                {
+                    if (int.TryParse(channelBox.Text, out int channelValue))
+                    {
+                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                    }
+                }
+
+                if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
+                {
+                    infoView.Tag = SettingsController.settingsWindow;
+                    infoView.Clicked = InfoView;
+                }
+
+                if (SettingsController.settingsWindow.FindView("HelpManagerFollowView", out Button followView))
+                {
+                    followView.Tag = SettingsController.settingsWindow;
+                    followView.Clicked = HandleFollowViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("HelpManagerAssistView", out Button assistView))
+                {
+                    assistView.Tag = SettingsController.settingsWindow;
+                    assistView.Clicked = HandleAssistViewClick;
+                }
             }
 
             if (_settings["BellyPathing"].AsBool() && Time.NormalTime > _bellyPathingTimer + 1)
@@ -445,21 +520,14 @@ namespace HelpManager
                 _sitPetUpdateTimer = Time.NormalTime;
             }
 
-            if (AttackSelection.Assist == (AttackSelection)_assist["AttackSelection"].AsInt32()
+            if (AttackSelection.Assist == (AttackSelection)_settings["AttackSelection"].AsInt32()
                 && Time.NormalTime > _assistTimer + 1)
             {
-                //if (settings["SyncAttack"].AsBool())
-                //{
-                //    settings["SyncAttack"] = false;
-                //    settings["AssistPlayer"] = false;
-                //    Chat.WriteLine($"Can only have one form of sync attack active at once.");
-                //}
-
                 SimpleChar identity = DynelManager.Characters
-                    .Where(c => SettingsController.HelpManagerAssistPlayer != String.Empty)
+                    .Where(c => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].AssistPlayer))
                     .Where(c => c.IsAlive)
                     .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(c => c.Name == SettingsController.HelpManagerAssistPlayer)
+                    .Where(c => c.Name == Config.CharSettings[Game.ClientInst].AssistPlayer)
                     .FirstOrDefault();
 
                 if (identity == null) { return; }
@@ -486,7 +554,7 @@ namespace HelpManager
                 }
             }
 
-            if (FollowSelection.LeadFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()
+            if (FollowSelection.LeadFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 IPCChannel.Broadcast(new FollowMessage()
@@ -496,13 +564,13 @@ namespace HelpManager
                 _followTimer = Time.NormalTime;
             }
 
-            if (FollowSelection.NavFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()
+            if (FollowSelection.NavFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
                     .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(x => SettingsController.HelpManagerNavFollowPlayer != String.Empty)
-                    .Where(x => x.Name == SettingsController.HelpManagerNavFollowPlayer)
+                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].NavFollowIdentity))
+                    .Where(x => x.Name == Config.CharSettings[Game.ClientInst].NavFollowIdentity)
                     .FirstOrDefault();
 
                 if (identity != null)
@@ -521,29 +589,26 @@ namespace HelpManager
                 }
             }
 
-            if (FollowSelection.OSFollow == (FollowSelection)_follow["FollowSelection"].AsInt32()
+            if (FollowSelection.OSFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
-                if (SettingsController.HelpManagerFollowPlayer != String.Empty)
+                Dynel identity = DynelManager.AllDynels
+                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
+                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].FollowPlayer))
+                    .Where(x => x.Name == Config.CharSettings[Game.ClientInst].FollowPlayer)
+                    .FirstOrDefault();
+
+                if (identity != null)
                 {
-                    Dynel identity = DynelManager.AllDynels
-                        .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                        .Where(x => SettingsController.HelpManagerFollowPlayer != String.Empty)
-                        .Where(x => x.Name == SettingsController.HelpManagerFollowPlayer)
-                        .FirstOrDefault();
+                    if (identity.Identity != DynelManager.LocalPlayer.Identity)
+                        OSFollow(identity);
 
-                    if (identity != null)
+                    IPCChannel.Broadcast(new FollowMessage()
                     {
-                        if (identity.Identity != DynelManager.LocalPlayer.Identity)
-                            OSFollow(identity);
+                        Target = identity.Identity // change this to the new target with selection param
+                    });
 
-                        IPCChannel.Broadcast(new FollowMessage()
-                        {
-                            Target = identity.Identity // change this to the new target with selection param
-                        });
-
-                        _followTimer = Time.NormalTime;
-                    }
+                    _followTimer = Time.NormalTime;
                 }
             }
         }
@@ -915,124 +980,6 @@ namespace HelpManager
                 if (buffsToCancel.Contains(buff.Id))
                     buff.Remove();
             }
-        }
-
-        private void AssistView(object s, ButtonBase button)
-        {
-            if (followWindow != null && followWindow.IsValid)
-            {
-                if (!followWindow.Views.Contains(SettingsController.assistView))
-                {
-                    SettingsController.assistView = View.CreateFromXml(PluginDirectory + "\\UI\\HelpManagerAssistView.xml");
-
-                    if (SettingsController.HelpManagerAssistPlayer != String.Empty)
-                    {
-                        SettingsController.assistView.FindChild("AssistNamedCharacter", out TextInputView textinput);
-
-                        if (textinput != null)
-                            textinput.Text = SettingsController.HelpManagerAssistPlayer;
-                    }
-
-                    followWindow.AppendTab("Assist", SettingsController.assistView);
-                }
-            }
-            else
-            {
-                assistWindow = Window.CreateFromXml("Assist", PluginDirectory + "\\UI\\HelpManagerAssistView.xml",
-                        windowSize: new Rect(0, 0, 220, 345),
-                        windowStyle: WindowStyle.Default,
-                        windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                if (SettingsController.HelpManagerAssistPlayer != String.Empty)
-                {
-                    assistWindow.FindView("AssistNamedCharacter", out TextInputView textinput);
-
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelpManagerAssistPlayer;
-                }
-
-                assistWindow.Show(true);
-            }
-        }
-
-        private void FollowView(object s, ButtonBase button)
-        {
-            if (assistWindow != null && assistWindow.IsValid)
-            {
-                if (!assistWindow.Views.Contains(SettingsController.followView))
-                {
-                    SettingsController.followView = View.CreateFromXml(PluginDirectory + "\\UI\\HelpManagerFollowView.xml");
-
-                    if (SettingsController.HelpManagerFollowPlayer != String.Empty)
-                    {
-                        SettingsController.followView.FindChild("FollowNamedCharacter", out TextInputView textinput);
-
-                        if (textinput != null)
-                            textinput.Text = SettingsController.HelpManagerFollowPlayer;
-                    }
-
-                    if (SettingsController.HelpManagerNavFollowPlayer != String.Empty)
-                    {
-                        SettingsController.followView.FindChild("FollowNamedIdentity", out TextInputView textinput);
-
-                        if (textinput != null)
-                            textinput.Text = SettingsController.HelpManagerNavFollowPlayer;
-                    }
-
-                    if (SettingsController.HelpManagerNavFollowDistance.ToString() != String.Empty)
-                    {
-                        SettingsController.followView.FindChild("NavFollowDistanceBox", out TextInputView textinput);
-
-                        if (textinput != null)
-                            textinput.Text = SettingsController.HelpManagerNavFollowDistance.ToString();
-                    }
-
-                    assistWindow.AppendTab("Follow", SettingsController.followView);
-                }
-            }
-            else
-            {
-                followWindow = Window.CreateFromXml("Follow", PluginDirectory + "\\UI\\HelpManagerFollowView.xml",
-                        windowSize: new Rect(0, 0, 220, 345),
-                        windowStyle: WindowStyle.Default,
-                        windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                if (SettingsController.HelpManagerFollowPlayer != String.Empty)
-                {
-                    followWindow.FindView("FollowNamedCharacter", out TextInputView textinput);
-
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelpManagerFollowPlayer;
-                }
-
-                if (SettingsController.HelpManagerNavFollowPlayer != String.Empty)
-                {
-                    followWindow.FindView("FollowNamedIdentity", out TextInputView textinput);
-
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelpManagerNavFollowPlayer;
-                }
-
-                if (SettingsController.HelpManagerNavFollowDistance.ToString() != String.Empty)
-                {
-                    followWindow.FindView("NavFollowDistanceBox", out TextInputView textinput);
-
-                    if (textinput != null)
-                        textinput.Text = SettingsController.HelpManagerNavFollowDistance.ToString();
-                }
-
-                followWindow.Show(true);
-            }
-        }
-
-        private void InfoView(object s, ButtonBase button)
-        {
-            infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\HelpManagerInfoView.xml",
-                windowSize: new Rect(0, 0, 440, 510),
-                windowStyle: WindowStyle.Default,
-                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-            infoWindow.Show(true);
         }
 
         private bool BeingAttacked()

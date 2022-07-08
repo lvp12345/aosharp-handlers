@@ -40,7 +40,6 @@ namespace CombatHandler.Agent
 
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
             Config.CharSettings[Game.ClientInst].AgentHealPercentageChangedEvent += AgentHealPercentage_Changed;
@@ -162,7 +161,9 @@ namespace CombatHandler.Agent
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_procView)) { return; }
+
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentProcView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "AgentProcView" }, _procView);
             }
@@ -179,7 +180,9 @@ namespace CombatHandler.Agent
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_falseProfView)) { return; }
+
                 _falseProfView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentFalseProfsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "False Professions", XmlViewName = "AgentFalseProfsView" }, _falseProfView);
             }
@@ -196,7 +199,9 @@ namespace CombatHandler.Agent
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_buffView)) { return; }
+
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "AgentBuffsView" }, _buffView);
             }
@@ -231,7 +236,9 @@ namespace CombatHandler.Agent
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_healingView)) { return; }
+
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "AgentHealingView" }, _healingView);
 

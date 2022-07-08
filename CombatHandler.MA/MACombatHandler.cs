@@ -38,7 +38,6 @@ namespace CombatHandler.MartialArtist
 
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
             Config.CharSettings[Game.ClientInst].MAHealPercentageChangedEvent += MAHealPercentage_Changed;
@@ -157,7 +156,9 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_procView)) { return; }
+
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "MAProcsView" }, _procView);
             }
@@ -174,7 +175,9 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_buffView)) { return; }
+
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "MABuffsView" }, _buffView);
             }
@@ -191,7 +194,9 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_healingView)) { return; }
+
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "MAHealingView" }, _healingView);
 
@@ -222,7 +227,9 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_tauntView)) { return; }
+
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "MATauntsView" }, _tauntView);
             }

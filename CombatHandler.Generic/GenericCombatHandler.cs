@@ -126,6 +126,7 @@ namespace CombatHandler.Generic
         public GenericCombatHandler(string pluginDir)
         {
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{Game.ClientInst}\\Config.json");
+            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             PluginDir = pluginDir;
 

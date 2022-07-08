@@ -14,7 +14,7 @@ namespace ResearchManager
         private static bool IsCommandRegistered;
 
         public static Window settingsWindow;
-
+        public static View settingsView;
         public static void RegisterCharacters(Settings settings)
         {
             RegisterChatCommandIfNotRegistered();
@@ -52,7 +52,6 @@ namespace ResearchManager
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
                             AppendSettingsTab("Research Manager", settingsWindow);
-
                         }
                     }
                     catch (Exception e)

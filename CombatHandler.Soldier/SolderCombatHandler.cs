@@ -31,7 +31,6 @@ namespace CombatHandler.Soldier
 
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
             _settings.AddVariable("Buffing", true);
@@ -117,7 +116,9 @@ namespace CombatHandler.Soldier
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_buffView)) { return; }
+
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "SoldierBuffsView" }, _buffView);
             }
@@ -134,7 +135,9 @@ namespace CombatHandler.Soldier
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+
+                if (window.Views.Contains(_tauntView)) { return; }
+
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierTauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView);
             }

@@ -117,7 +117,12 @@ namespace CombatHandler.Generic
                     "Assault Drone",
                     "Scalding Flame",
                     "Automated Defense System",
-                    "Medical Drone"
+                    "Medical Drone",
+                    "Ju-Ju Doll",
+                    "Temporal Vortex",
+                    "Gateway to the Past",
+                    "Gateway to the Present",
+                    "Gateway to the Future"
         };
 
         public static IPCChannel IPCChannel;

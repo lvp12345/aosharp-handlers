@@ -3,7 +3,8 @@
   <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="/sync toggles sync move." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="/syncmove toggles sync move." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="/syncbags toggles opening bags on zone." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/syncuse - toggles sync using items." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/syncchat - toggles sync chatting." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/synctrade - toggles sync trading." layout_borders="Rect(0,0,0,2)"/>

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HelpManager.IPCMessages
+namespace FollowManager.IPCMessages
 {
     [AoContract((int)IPCOpcode.NavFollow)]
     public class NavFollowMessage : IPCMessage

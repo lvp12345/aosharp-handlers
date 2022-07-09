@@ -4,13 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HelpManager.IPCMessages
+namespace AssistManager.IPCMessages
 {
     public enum IPCOpcode
     {
-        YalmOn = 2100,
-        YalmUse = 2101,
-        YalmOff = 2102,
-        ClearBuffs = 2103
+        Assist = 2200,
     }
 }

@@ -7,12 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HelpManager.IPCMessages
+namespace AssistManager.IPCMessages
 {
-    [AoContract((int)IPCOpcode.Follow)]
-    public class FollowMessage : IPCMessage
+    [AoContract((int)IPCOpcode.Assist)]
+    public class AssistMessage : IPCMessage
     {
-        public override short Opcode => (short)IPCOpcode.Follow;
+        public override short Opcode => (short)IPCOpcode.Assist;
 
         [AoMember(0)]
         public Identity Target { get; set; }

@@ -3,16 +3,16 @@
 	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Helper" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <Button name="HelpManagerInfoView" label="Info" layout_borders="Rect(5,5,3,5)"/>
+    <Button name="AssistManagerInfoView" label="Info" layout_borders="Rect(5,5,3,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="Channel" layout_borders="Rect(5,5,5,5)"/>
     <TextInputView name="ChannelBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Auto sit" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__AutoSit" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionCheckBox label="(12man) Morph Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__MorphPathing" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="(DB3) Shapes" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__Db3Shapes" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="(Sub) Belly Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__BellyPathing" layout_borders="Rect(10,1,5,1)"/>
+    <OptionRadioButtonGroup label="" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="AssistManager__AttackSelection">
+      <RadioButton label="None" value="0"/>
+      <RadioButton label="Assist" value="1"/>
+      <TextInputView name="AssistNamedCharacter" min_size="Point(145,14)" max_size="Point(145,14)" layout_borders="Rect(4,4,4,4)"/>
+    </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

@@ -110,11 +110,6 @@ namespace HelpManager
 
             _settings = new Settings("Help Manager");
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);
-
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmCast);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
@@ -122,17 +117,10 @@ namespace HelpManager
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
 
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
-            Config.CharSettings[Game.ClientInst].AssistPlayerChangedEvent += AssistPlayer_Changed;
-            Config.CharSettings[Game.ClientInst].FollowPlayerChangedEvent += FollowPlayer_Changed;
-            Config.CharSettings[Game.ClientInst].NavFollowIdentityChangedEvent += NavFollowIdentity_Changed;
-            Config.CharSettings[Game.ClientInst].NavFollowDistanceChangedEvent += NavFollowDistance_Changed;
 
             RegisterSettingsWindow("Help Manager", "HelpManagerSettingWindow.xml");
 
             Game.OnUpdate += OnUpdate;
-
-            _settings.AddVariable("FollowSelection", (int)FollowSelection.None);
-            _settings.AddVariable("AttackSelection", (int)AttackSelection.None);
 
             _settings.AddVariable("AutoSit", true);
 
@@ -140,8 +128,6 @@ namespace HelpManager
             _settings.AddVariable("BellyPathing", false);
             _settings.AddVariable("Db3Shapes", false);
 
-
-            Chat.RegisterCommand("leadfollow", LeadFollowSwitch);
             Chat.RegisterCommand("autosit", AutoSitSwitch);
 
             Chat.RegisterCommand("yalm", YalmCommand);
@@ -171,11 +157,6 @@ namespace HelpManager
             Chat.WriteLine("/helper for settings.");
 
             PluginDirectory = pluginDir;
-
-            AssistPlayer = Config.CharSettings[Game.ClientInst].AssistPlayer;
-            FollowPlayer = Config.CharSettings[Game.ClientInst].FollowPlayer;
-            NavFollowIdentity = Config.CharSettings[Game.ClientInst].NavFollowIdentity;
-            NavFollowDistance = Config.CharSettings[Game.ClientInst].NavFollowDistance;
         }
 
         public override void Teardown()
@@ -195,122 +176,6 @@ namespace HelpManager
 
             ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
-        }
-        public static void AssistPlayer_Changed(object s, string e)
-        {
-            Config.CharSettings[Game.ClientInst].AssistPlayer = e;
-
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-        public static void FollowPlayer_Changed(object s, string e)
-        {
-            Config.CharSettings[Game.ClientInst].FollowPlayer = e;
-
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-        public static void NavFollowIdentity_Changed(object s, string e)
-        {
-            Config.CharSettings[Game.ClientInst].NavFollowIdentity = e;
-
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-        public static void NavFollowDistance_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NavFollowDistance = e;
-
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-
-
-        private void HandleAssistViewClick(object s, ButtonBase button)
-        {
-            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
-            {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
-                if (window.Views.Contains(_assistView)) { return; }
-
-                _assistView = View.CreateFromXml(PluginDirectory + "\\UI\\HelpManagerAssistView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Assist", XmlViewName = "HelpManagerAssistView" }, _assistView);
-
-                window.FindView("AssistNamedCharacter", out TextInputView assistInput);
-
-                if (assistInput != null && string.IsNullOrEmpty(assistInput.Text))
-                {
-                    assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
-                }
-
-            }
-            else if (_assistWindow == null || (_assistWindow != null && !_assistWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_assistWindow, PluginDir, new WindowOptions() { Name = "Assist", XmlViewName = "HelpManagerAssistView" }, _assistView, out var container);
-                _assistWindow = container;
-
-                container.FindView("AssistNamedCharacter", out TextInputView assistInput);
-
-                if (assistInput != null && string.IsNullOrEmpty(assistInput.Text))
-                {
-                    assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
-                }
-            }
-        }
-
-        private void HandleFollowViewClick(object s, ButtonBase button)
-        {
-            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
-            {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
-                if (window.Views.Contains(_followView)) { return; }
-
-                _followView = View.CreateFromXml(PluginDirectory + "\\UI\\HelpManagerFollowView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Follow", XmlViewName = "HelpManagerFollowView" }, _followView);
-
-                window.FindView("FollowNamedCharacter", out TextInputView followInput);
-                window.FindView("FollowNamedIdentity", out TextInputView navFollowInput);
-                window.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceInput);
-
-                if (followInput != null && string.IsNullOrEmpty(followInput.Text))
-                {
-                    followInput.Text = Config.CharSettings[Game.ClientInst].FollowPlayer;
-                }
-                if (navFollowInput != null && string.IsNullOrEmpty(navFollowInput.Text))
-                {
-                    navFollowInput.Text = Config.CharSettings[Game.ClientInst].NavFollowIdentity;
-                }
-                if (navFollowDistanceInput != null && string.IsNullOrEmpty(navFollowDistanceInput.Text))
-                {
-                    navFollowDistanceInput.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowDistance}";
-                }
-            }
-            else if (_followWindow == null || (_followWindow != null && !_followWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_followWindow, PluginDir, new WindowOptions() { Name = "Follow", XmlViewName = "HelpManagerFollowView" }, _followView, out var container);
-                _followWindow = container;
-
-                container.FindView("FollowNamedCharacter", out TextInputView followInput);
-                container.FindView("FollowNamedIdentity", out TextInputView navFollowInput);
-                container.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceInput);
-
-                if (followInput != null && string.IsNullOrEmpty(followInput.Text))
-                {
-                    followInput.Text = Config.CharSettings[Game.ClientInst].FollowPlayer;
-                }
-                if (navFollowInput != null && string.IsNullOrEmpty(navFollowInput.Text))
-                {
-                    navFollowInput.Text = Config.CharSettings[Game.ClientInst].NavFollowIdentity;
-                }
-                if (navFollowDistanceInput != null && string.IsNullOrEmpty(navFollowDistanceInput.Text))
-                {
-                    navFollowDistanceInput.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowDistance}";
-                }
-            }
         }
 
         private void InfoView(object s, ButtonBase button)
@@ -351,54 +216,6 @@ namespace HelpManager
                 _updateTick = Time.NormalTime;
             }
 
-            var window = SettingsController.FindValidWindow(_windows);
-
-            if (window != null && window.IsValid)
-            {
-                window.FindView("FollowNamedCharacter", out TextInputView textinput1);
-                window.FindView("FollowNamedIdentity", out TextInputView textinput2);
-                window.FindView("NavFollowDistanceBox", out TextInputView textinput3);
-                window.FindView("AssistNamedCharacter", out TextInputView textinput4);
-
-                if (textinput1 != null && textinput1.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].FollowPlayer != textinput1.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].FollowPlayer = textinput1.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput2 != null && textinput2.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].NavFollowIdentity != textinput2.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].NavFollowIdentity = textinput2.Text;
-                        Config.Save();
-                    }
-                }
-
-                if (textinput3 != null && textinput3.Text != String.Empty)
-                {
-                    if (int.TryParse(textinput3.Text, out int rangeValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NavFollowDistance != rangeValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NavFollowDistance = rangeValue;
-                            Config.Save();
-                        }
-                    }
-                }
-                if (textinput4 != null && textinput4.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != textinput4.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].AssistPlayer = textinput4.Text;
-                        Config.Save();
-                    }
-                }
-            }
-
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
@@ -415,18 +232,6 @@ namespace HelpManager
                 {
                     infoView.Tag = SettingsController.settingsWindow;
                     infoView.Clicked = InfoView;
-                }
-
-                if (SettingsController.settingsWindow.FindView("HelpManagerFollowView", out Button followView))
-                {
-                    followView.Tag = SettingsController.settingsWindow;
-                    followView.Clicked = HandleFollowViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("HelpManagerAssistView", out Button assistView))
-                {
-                    assistView.Tag = SettingsController.settingsWindow;
-                    assistView.Clicked = HandleAssistViewClick;
                 }
             }
 
@@ -519,176 +324,12 @@ namespace HelpManager
 
                 _sitPetUpdateTimer = Time.NormalTime;
             }
-
-            if (AttackSelection.Assist == (AttackSelection)_settings["AttackSelection"].AsInt32()
-                && Time.NormalTime > _assistTimer + 1)
-            {
-                SimpleChar identity = DynelManager.Characters
-                    .Where(c => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].AssistPlayer))
-                    .Where(c => c.IsAlive)
-                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(c => c.Name == Config.CharSettings[Game.ClientInst].AssistPlayer)
-                    .FirstOrDefault();
-
-                if (identity == null) { return; }
-
-                if (identity != null && identity.FightingTarget == null &&
-                    DynelManager.LocalPlayer.FightingTarget != null)
-                {
-                    DynelManager.LocalPlayer.StopAttack();
-
-                    _assistTimer = Time.NormalTime;
-                }
-
-                if (identity != null && identity.FightingTarget != null &&
-                    (DynelManager.LocalPlayer.FightingTarget == null ||
-                    (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Identity != identity.FightingTarget.Identity)))
-                {
-                    DynelManager.LocalPlayer.Attack(identity.FightingTarget);
-
-                    IPCChannel.Broadcast(new AssistMessage()
-                    {
-                        Target = identity.Identity
-                    });
-                    _assistTimer = Time.NormalTime;
-                }
-            }
-
-            if (FollowSelection.LeadFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
-                && Time.NormalTime > _followTimer + 1)
-            {
-                IPCChannel.Broadcast(new FollowMessage()
-                {
-                    Target = DynelManager.LocalPlayer.Identity
-                });
-                _followTimer = Time.NormalTime;
-            }
-
-            if (FollowSelection.NavFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
-                && Time.NormalTime > _followTimer + 1)
-            {
-                Dynel identity = DynelManager.AllDynels
-                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].NavFollowIdentity))
-                    .Where(x => x.Name == Config.CharSettings[Game.ClientInst].NavFollowIdentity)
-                    .FirstOrDefault();
-
-                if (identity != null)
-                {
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= Config.CharSettings[Game.ClientInst].NavFollowDistance)
-                        MovementController.Instance.Halt();
-
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > Config.CharSettings[Game.ClientInst].NavFollowDistance)
-                        MovementController.Instance.SetDestination(identity.Position);
-
-                    IPCChannel.Broadcast(new NavFollowMessage()
-                    {
-                        Target = identity.Identity
-                    });
-                    _followTimer = Time.NormalTime;
-                }
-            }
-
-            if (FollowSelection.OSFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
-                && Time.NormalTime > _followTimer + 1)
-            {
-                Dynel identity = DynelManager.AllDynels
-                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].FollowPlayer))
-                    .Where(x => x.Name == Config.CharSettings[Game.ClientInst].FollowPlayer)
-                    .FirstOrDefault();
-
-                if (identity != null)
-                {
-                    if (identity.Identity != DynelManager.LocalPlayer.Identity)
-                        OSFollow(identity);
-
-                    IPCChannel.Broadcast(new FollowMessage()
-                    {
-                        Target = identity.Identity // change this to the new target with selection param
-                    });
-
-                    _followTimer = Time.NormalTime;
-                }
-            }
         }
-        private void OSFollow(Dynel dynel)
-        {
-            FollowTargetMessage n3Msg = new FollowTargetMessage()
-            {
-                Target = dynel.Identity,
-                Unknown1 = 0,
-                Unknown2 = 0,
-                Unknown3 = 0,
-                Unknown4 = 0,
-                Unknown5 = 0,
-                Unknown6 = 0,
-                Unknown7 = 0
-            };
-            Network.Send(n3Msg);
-            MovementController.Instance.SetMovement(MovementAction.Update);
-        }
-
-
 
         private void OnClearBuffs(int sender, IPCMessage msg)
         {
             CancelAllBuffs();
         }
-        private void OnAssistMessage(int sender, IPCMessage msg)
-        {
-            AssistMessage assistMessage = (AssistMessage)msg;
-
-            Dynel targetDynel = DynelManager.GetDynel(assistMessage.Target);
-
-            if (targetDynel != null && DynelManager.LocalPlayer.FightingTarget == null)
-            {
-                DynelManager.LocalPlayer.Attack(targetDynel);
-            }
-        }
-
-        private void OnFollowMessage(int sender, IPCMessage msg)
-        {
-            FollowMessage followMessage = (FollowMessage)msg;
-            FollowTargetMessage n3Msg = new FollowTargetMessage()
-            {
-                Target = followMessage.Target,
-                Unknown1 = 0,
-                Unknown2 = 0,
-                Unknown3 = 0,
-                Unknown4 = 0,
-                Unknown5 = 0,
-                Unknown6 = 0,
-                Unknown7 = 0
-            };
-            Network.Send(n3Msg);
-            MovementController.Instance.SetMovement(MovementAction.Update);
-        }
-
-        private void OnNavFollowMessage(int sender, IPCMessage msg)
-        {
-
-            NavFollowMessage followMessage = (NavFollowMessage)msg;
-
-            Dynel targetDynel = DynelManager.GetDynel(followMessage.Target);
-
-            if (targetDynel != null)
-            {
-                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) <= 15f)
-                    MovementController.Instance.Halt();
-
-                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) > 15f)
-                    MovementController.Instance.SetDestination(targetDynel.Position);
-                _followTimer = Time.NormalTime;
-            }
-            else
-            {
-                Chat.WriteLine($"Cannot find {targetDynel.Name}. Make sure to type captial first letter.");
-                _settings["NavFollow"] = false;
-                return;
-            }
-        }
-
 
         private void OnYalmCast(int sender, IPCMessage msg)
         {
@@ -752,16 +393,6 @@ namespace HelpManager
             else
                 CancelBuffs(RelevantNanos.Yalms);
         }
-
-        private void LeadFollowSwitch(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                _settings["Follow"] = !_settings["Follow"].AsBool();
-                Chat.WriteLine($"Lead follow : {_settings["Follow"].AsBool()}");
-            }
-        }
-
 
         private void AutoSitSwitch(string command, string[] param, ChatWindow chatWindow)
         {
@@ -1049,16 +680,6 @@ namespace HelpManager
                 return 414;
 
             return 0;
-        }
-
-        public enum FollowSelection
-        {
-            None, LeadFollow, OSFollow, NavFollow
-        }
-
-        public enum AttackSelection
-        {
-            None, Assist
         }
 
         private static class RelevantNanos

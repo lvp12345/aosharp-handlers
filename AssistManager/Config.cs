@@ -6,7 +6,7 @@ using AOSharp.Core.UI;
 using System.Xml;
 using Newtonsoft.Json;
 
-namespace HelpManager
+namespace AssistManager
 {
     public class Config
     {
@@ -16,7 +16,8 @@ namespace HelpManager
 
         [JsonIgnore]
         public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
-
+        [JsonIgnore]
+        public string AssistPlayer => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AssistPlayer : string.Empty;
         public static Config Load(string path)
         {
             Config config;
@@ -53,11 +54,11 @@ namespace HelpManager
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AssistManager"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AssistManager");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager\\{Game.ClientInst}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager\\{Game.ClientInst}");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AssistManager\\{Game.ClientInst}"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AssistManager\\{Game.ClientInst}");
 
             File.WriteAllText(_path, JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
         }
@@ -81,6 +82,25 @@ namespace HelpManager
                 {
                     _ipcChannel = value;
                     IPCChannelChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<string> AssistPlayerChangedEvent;
+        private string _assistPlayer = string.Empty;
+
+        //Breaking out auto-property
+        public string AssistPlayer
+        {
+            get
+            {
+                return _assistPlayer;
+            }
+            set
+            {
+                if (_assistPlayer != value)
+                {
+                    _assistPlayer = value;
+                    AssistPlayerChangedEvent?.Invoke(this, value);
                 }
             }
         }

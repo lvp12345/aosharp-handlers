@@ -25,10 +25,13 @@ namespace SyncManager
 
         public static Config Config { get; private set; }
 
+        protected Settings _settings;
+
         private static Identity useDynel;
         private static Identity useOnDynel;
         private static Identity useItem;
-        public static string PluginDirectory;
+
+        private static Item _bagItem;
 
         public static bool _openBags = false;
 
@@ -36,15 +39,10 @@ namespace SyncManager
 
         public static Window _infoWindow;
 
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
-        protected Settings _settings;
-
         public static string PluginDir;
 
-        private static Item _bagItem;
-
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public override void Run(string pluginDir)
@@ -53,8 +51,6 @@ namespace SyncManager
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
-
-            PluginDir = pluginDir;
 
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
             Game.OnUpdate += OnUpdate;
@@ -94,88 +90,8 @@ namespace SyncManager
             Chat.WriteLine("SyncManager Loaded!");
             Chat.WriteLine("/sync for settings.");
 
-            PluginDirectory = pluginDir;
+            PluginDir = pluginDir;
         }
-
-        public override void Teardown()
-        {
-            SettingsController.CleanUp();
-        }
-
-        public static void IPCChannel_Changed(object s, int e)
-        {
-            IPCChannel.SetChannelId(Convert.ToByte(e));
-
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-
-        private void OnZoned(object s, EventArgs e)
-        {
-            if (_settings["SyncBags"].AsBool())
-            {
-                Task.Factory.StartNew(
-                    async () =>
-                    {
-                        await Task.Delay(100);
-
-                        List<Item> bags = Inventory.Items
-                            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                            .ToList();
-
-                        foreach (Item bag in bags)
-                        {
-                            bag.Use();
-                            bag.Use();
-                        }
-                    });
-            }
-        }
-
-
-        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
-        //{
-        //    if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
-
-        //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
-
-        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
-        //    {
-        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
-        //        IPCChannel.Broadcast(new TargetMessage()
-        //        {
-        //            Target = lookAtMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.Attack)
-        //    {
-        //        AttackMessage attackMsg = (AttackMessage)n3Msg;
-        //        IPCChannel.Broadcast(new AttackIPCMessage()
-        //        {
-        //            Target = attackMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.StopFight)
-        //    {
-        //        StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
-        //        IPCChannel.Broadcast(new StopAttackIPCMessage());
-        //    }
-        //}
-
-        protected void RegisterSettingsWindow(string settingsName, string xmlName)
-        {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
-        }
-        private void HandleInfoViewClick(object s, ButtonBase button)
-        {
-            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\SyncManagerInfoView.xml",
-                windowSize: new Rect(0, 0, 440, 510),
-                windowStyle: WindowStyle.Default,
-                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-            _infoWindow.Show(true);
-        }
-
 
         private void OnUpdate(object s, float deltaTime)
         {
@@ -222,6 +138,8 @@ namespace SyncManager
                 _useTimer = Time.NormalTime;
             }
         }
+
+        #region Callbacks
         private void OnJumpMessage(int sender, IPCMessage msg)
         {
             if (IsActiveWindow)
@@ -290,8 +208,27 @@ namespace SyncManager
             //};
             //Network.Send(charTradeMsg);
         }
+        private void OnZoned(object s, EventArgs e)
+        {
+            if (_settings["SyncBags"].AsBool())
+            {
+                Task.Factory.StartNew(
+                    async () =>
+                    {
+                        await Task.Delay(100);
 
+                        List<Item> bags = Inventory.Items
+                            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                            .ToList();
 
+                        foreach (Item bag in bags)
+                        {
+                            bag.Use();
+                            bag.Use();
+                        }
+                    });
+            }
+        }
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
             if (!IsActiveCharacter() || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
@@ -779,6 +716,40 @@ namespace SyncManager
             NpcDialog.SelectAnswer(message.Target, message.Answer);
         }
 
+        #endregion
+
+        #region Settings
+        public static void IPCChannel_Changed(object s, int e)
+        {
+            IPCChannel.SetChannelId(Convert.ToByte(e));
+
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        {
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+        }
+
+        private void HandleInfoViewClick(object s, ButtonBase button)
+        {
+            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\SyncManagerInfoView.xml",
+                windowSize: new Rect(0, 0, 310, 510),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            _infoWindow.Show(true);
+        }
+
+        #endregion
+
+        #region Misc
+
+        public override void Teardown()
+        {
+            SettingsController.CleanUp();
+        }
+
         private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
@@ -873,5 +844,7 @@ namespace SyncManager
             return item.LowId == 305476 || item.LowId == 204698 || item.LowId == 156576 || item.LowId == 267168 || item.LowId == 267167
                 || item.Name.Contains("Health");
         }
+
+        #endregion
     }
 }

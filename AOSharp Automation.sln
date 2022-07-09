@@ -41,6 +41,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResearchManager", "Research
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LootManager", "LootManager\LootManager.csproj", "{27A33CD9-DB27-4DD3-AB91-B9B5A187A56E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssistManager", "AssistManager\AssistManager.csproj", "{7BA48E7E-64B3-4FD4-ACF2-AF5C956B6694}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FollowManager", "FollowManager\FollowManager.csproj", "{E3E038BB-3A3C-4E12-B7D2-C5B0E0C3442C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +127,14 @@ Global
 		{27A33CD9-DB27-4DD3-AB91-B9B5A187A56E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27A33CD9-DB27-4DD3-AB91-B9B5A187A56E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27A33CD9-DB27-4DD3-AB91-B9B5A187A56E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BA48E7E-64B3-4FD4-ACF2-AF5C956B6694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BA48E7E-64B3-4FD4-ACF2-AF5C956B6694}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BA48E7E-64B3-4FD4-ACF2-AF5C956B6694}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BA48E7E-64B3-4FD4-ACF2-AF5C956B6694}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3E038BB-3A3C-4E12-B7D2-C5B0E0C3442C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3E038BB-3A3C-4E12-B7D2-C5B0E0C3442C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3E038BB-3A3C-4E12-B7D2-C5B0E0C3442C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3E038BB-3A3C-4E12-B7D2-C5B0E0C3442C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

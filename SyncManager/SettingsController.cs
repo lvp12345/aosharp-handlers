@@ -10,6 +10,14 @@ using AOSharp.Common.GameData.UI;
 
 namespace SyncManager
 {
+    public class WindowOptions
+    {
+        public string Name { get; set; }
+        public string XmlViewName { get; set; }
+        public Rect WindowSize { get; set; } = new Rect(0, 0, 240, 345);
+        public WindowStyle Style { get; set; } = WindowStyle.Default;
+        public WindowFlags Flags { get; set; } = WindowFlags.AutoScale | WindowFlags.NoFade;
+    }
     public static class SettingsController
     {
         private static List<Settings> settingsToSave = new List<Settings>();
@@ -18,6 +26,8 @@ namespace SyncManager
 
         public static Window settingsWindow;
         public static View settingsView;
+
+        public static string _staticName = string.Empty;
         public static Config Config { get; private set; }
 
         public static void RegisterCharacters(Settings settings)
@@ -74,6 +84,40 @@ namespace SyncManager
 
                 IsCommandRegistered = true;
             }
+        }
+        public static Window FindValidWindow(Window[] allWindows)
+        {
+            foreach (var window in allWindows)
+            {
+                if (window?.IsValid == true)
+                    return window;
+            }
+
+            return null;
+        }
+
+        public static void AppendSettingsTab(Window windowToCreate, WindowOptions options, View view)
+        {
+            if (windowToCreate != null && windowToCreate.IsValid)
+            {
+                if (!string.IsNullOrEmpty(_staticName) && options.Name != _staticName && !windowToCreate.Views.Contains(view))
+                {
+                    windowToCreate.AppendTab(options.Name, view);
+                }
+            }
+        }
+
+        public static void CreateSettingsTab(Window windowToCreate, string PluginDir, WindowOptions options, View view, out Window container)
+        {
+            windowToCreate = Window.CreateFromXml(options.Name, $@"{PluginDir}\UI\{options.XmlViewName}.xml",
+                windowSize: options.WindowSize,
+                windowStyle: options.Style,
+                windowFlags: options.Flags);
+
+            _staticName = options.Name;
+
+            windowToCreate.Show(true);
+            container = windowToCreate;
         }
 
         public static void AppendSettingsTab(String settingsName, Window testWindow)

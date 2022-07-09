@@ -34,14 +34,14 @@ namespace SyncManager
 
         private static double _useTimer;
 
-        public static Window infoWindow;
+        public static Window _infoWindow;
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
         protected Settings _settings;
 
-        private static Settings _info = new Settings("Info");
+        public static string PluginDir;
 
         private static Item _bagItem;
 
@@ -49,10 +49,12 @@ namespace SyncManager
 
         public override void Run(string pluginDir)
         {
-            _settings = new Settings("Sync Manager");
+            _settings = new Settings("SyncManager");
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+
+            PluginDir = pluginDir;
 
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
             Game.OnUpdate += OnUpdate;
@@ -80,9 +82,7 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
 
-            SettingsController.RegisterSettingsWindow("Sync Manager", pluginDir + "\\UI\\SyncManagerSettingWindow.xml", _settings);
-
-            SettingsController.RegisterSettingsWindow("Info", pluginDir + "\\UI\\SyncManagerInfoView.xml", _info);
+            RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
             Chat.RegisterCommand("syncmove", SyncSwitch);
             Chat.RegisterCommand("syncbags", SyncBagsSwitch);
@@ -161,6 +161,136 @@ namespace SyncManager
         //        IPCChannel.Broadcast(new StopAttackIPCMessage());
         //    }
         //}
+
+        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        {
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+        }
+        private void HandleInfoViewClick(object s, ButtonBase button)
+        {
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\SyncManagerInfoView.xml",
+                windowSize: new Rect(0, 0, 440, 510),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            _infoWindow.Show(true);
+        }
+
+
+        private void OnUpdate(object s, float deltaTime)
+        {
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
+
+                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
+                {
+                    if (int.TryParse(channelBox.Text, out int channelValue))
+                    {
+                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                    }
+                }
+
+                if (SettingsController.settingsWindow.FindView("SyncManagerInfoView", out Button infoView))
+                {
+                    infoView.Tag = SettingsController.settingsWindow;
+                    infoView.Clicked = HandleInfoViewClick;
+                }
+            }
+
+            if (!_openBags && _settings["SyncBags"].AsBool())
+            {
+                List<Item> bags = Inventory.Items
+                    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                    .ToList();
+
+                foreach (Item bag in bags)
+                {
+                    bag.Use();
+                    bag.Use();
+                }
+
+                _openBags = true;
+            }
+
+            if (Time.NormalTime > _useTimer + 0.1)
+            {
+                if (!IsActiveWindow)
+                {
+                    ListenerUseSync();
+                }
+                _useTimer = Time.NormalTime;
+            }
+        }
+        private void OnJumpMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            JumpMessage jumpMsg = (JumpMessage)msg;
+
+            if (Playfield.Identity.Instance != jumpMsg.PlayfieldId)
+                return;
+
+            MovementController.Instance.SetMovement(jumpMsg.MoveType);
+        }
+
+        private void OnMoveMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            MoveMessage moveMsg = (MoveMessage)msg;
+
+            if (Playfield.Identity.Instance != moveMsg.PlayfieldId)
+                return;
+
+            DynelManager.LocalPlayer.Position = moveMsg.Position;
+            DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
+            MovementController.Instance.SetMovement(moveMsg.MoveType);
+        }
+
+        private void OnTradeMessage(int sender, IPCMessage msg)
+        {
+            if (Game.IsZoning)
+                return;
+
+            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
+
+            if (charTradeIpcMsg.Action == TradeAction.Confirm)
+            {
+                Network.Send(new TradeMessage()
+                {
+                    Unknown1 = 2,
+                    Action = (TradeAction)3,
+                });
+            }
+            else if (charTradeIpcMsg.Action == TradeAction.Accept)
+            {
+                Network.Send(new TradeMessage()
+                {
+                    Unknown1 = 2,
+                    Action = (TradeAction)1,
+                });
+            }
+
+            //TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
+            //TradeMessage charTradeMsg = new TradeMessage()
+            //{
+            //    Unknown1 = charTradeIpcMsg.Unknown1,
+            //    Action = charTradeIpcMsg.Action,
+            //    Target = charTradeIpcMsg.Target,
+            //    Container = charTradeIpcMsg.Container,
+            //};
+            //Network.Send(charTradeMsg);
+        }
+
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
@@ -310,7 +440,7 @@ namespace SyncManager
                             Target = genericCmdMsg.Target
                         });
                     }
-                    else 
+                    else
                     {
                         foreach (Backpack bag in Inventory.Backpacks)
                         {
@@ -362,121 +492,6 @@ namespace SyncManager
                     Answer = n3AnswerMsg.Answer
                 });
             }
-        }
-
-
-        private void OnUpdate(object s, float deltaTime)
-        {
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
-            {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
-
-                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
-                {
-                    if (int.TryParse(channelBox.Text, out int channelValue))
-                    {
-                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
-                    }
-                }
-
-                if (SettingsController.settingsWindow.FindView("SyncManagerInfoView", out Button infoView))
-                {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
-                }
-            }
-
-            if (!_openBags && _settings["SyncBags"].AsBool())
-            {
-                List<Item> bags = Inventory.Items
-                    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                    .ToList();
-
-                foreach (Item bag in bags)
-                {
-                    bag.Use();
-                    bag.Use();
-                }
-
-                _openBags = true;
-            }
-
-            if (Time.NormalTime > _useTimer + 0.1)
-            {
-                if (!IsActiveWindow)
-                {
-                    ListenerUseSync();
-                }
-                _useTimer = Time.NormalTime;
-            }
-        }
-        private void OnJumpMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            JumpMessage jumpMsg = (JumpMessage)msg;
-
-            if (Playfield.Identity.Instance != jumpMsg.PlayfieldId)
-                return;
-
-            MovementController.Instance.SetMovement(jumpMsg.MoveType);
-        }
-
-        private void OnMoveMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            MoveMessage moveMsg = (MoveMessage)msg;
-
-            if (Playfield.Identity.Instance != moveMsg.PlayfieldId)
-                return;
-
-            DynelManager.LocalPlayer.Position = moveMsg.Position;
-            DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
-            MovementController.Instance.SetMovement(moveMsg.MoveType);
-        }
-
-        private void OnTradeMessage(int sender, IPCMessage msg)
-        {
-            if (Game.IsZoning)
-                return;
-
-            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
-
-            if (charTradeIpcMsg.Action == TradeAction.Confirm)
-            {
-                Network.Send(new TradeMessage()
-                {
-                    Unknown1 = 2,
-                    Action = (TradeAction)3,
-                });
-            }
-            else if (charTradeIpcMsg.Action == TradeAction.Accept)
-            {
-                Network.Send(new TradeMessage()
-                {
-                    Unknown1 = 2,
-                    Action = (TradeAction)1,
-                });
-            }
-
-            //TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
-            //TradeMessage charTradeMsg = new TradeMessage()
-            //{
-            //    Unknown1 = charTradeIpcMsg.Unknown1,
-            //    Action = charTradeIpcMsg.Action,
-            //    Target = charTradeIpcMsg.Target,
-            //    Container = charTradeIpcMsg.Container,
-            //};
-            //Network.Send(charTradeMsg);
         }
 
         private void OnAttackMessage(int sender, IPCMessage msg)
@@ -846,15 +861,6 @@ namespace SyncManager
                     useItem = Identity.None;
                 }
             }
-        }
-        private void InfoView(object s, ButtonBase button)
-        {
-            infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\SyncManagerInfoView.xml",
-                windowSize: new Rect(0, 0, 440, 510),
-                windowStyle: WindowStyle.Default,
-                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-            infoWindow.Show(true);
         }
 
         private bool IsActiveCharacter()

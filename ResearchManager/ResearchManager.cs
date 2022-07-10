@@ -16,9 +16,7 @@ namespace ResearchManager
 {
     public class ResearchManager : AOPluginEntry
     {
-        public static string PluginDirectory;
-
-        private static Settings _settings = new Settings("Research");
+        protected Settings _settings;
 
         public static List<ResearchGoal> _researchGoalsActive = new List<ResearchGoal>();
         public static List<ResearchGoal> _currentGoalFinished;
@@ -31,13 +29,18 @@ namespace ResearchManager
         private static double _tick;
         private static double _tickActive;
 
+
+        public static string PluginDir;
+
         public override void Run(string pluginDir)
         {
-            SettingsController.RegisterSettingsWindow("Research Manager", pluginDir + $"\\UI\\Research{DynelManager.LocalPlayer.Profession}View.xml", _settings);
+            _settings = new Settings("ResearchManager");
 
             Game.OnUpdate += OnUpdate;
 
             _settings.AddVariable("Toggle", false);
+
+            RegisterSettingsWindow("Research Manager", $"Research{DynelManager.LocalPlayer.Profession}View.xml");
 
             //Init to add settings
             foreach (int goal in Research.Completed)
@@ -88,12 +91,16 @@ namespace ResearchManager
             Chat.WriteLine("Research Manager Loaded!");
             Chat.WriteLine("/researchmanager for settings.");
 
-            PluginDirectory = pluginDir;
+            PluginDir = pluginDir;
         }
 
         public override void Teardown()
         {
             SettingsController.CleanUp();
+        }
+        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        {
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
 
         private void OnUpdate(object s, float deltaTime)

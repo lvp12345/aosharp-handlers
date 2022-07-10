@@ -88,7 +88,7 @@ namespace SyncManager
 
 
             Chat.WriteLine("SyncManager Loaded!");
-            Chat.WriteLine("/sync for settings.");
+            Chat.WriteLine("/syncmanager for settings.");
 
             PluginDir = pluginDir;
         }

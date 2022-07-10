@@ -58,7 +58,7 @@ namespace SyncManager
         {
             if (!IsCommandRegistered)
             {
-                Chat.RegisterCommand("sync", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("syncmanager", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {

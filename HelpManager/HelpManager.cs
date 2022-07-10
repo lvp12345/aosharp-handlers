@@ -108,7 +108,7 @@ namespace HelpManager
 
             PluginDir = pluginDir;
 
-            _settings = new Settings("Help Manager");
+            _settings = new Settings("HelpManager");
 
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmCast);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
@@ -154,7 +154,7 @@ namespace HelpManager
 
 
             Chat.WriteLine("HelpManager Loaded!");
-            Chat.WriteLine("/helper for settings.");
+            Chat.WriteLine("/helpmanager for settings.");
 
             PluginDirectory = pluginDir;
         }

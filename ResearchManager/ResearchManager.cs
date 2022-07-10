@@ -34,7 +34,7 @@ namespace ResearchManager
 
         public override void Run(string pluginDir)
         {
-            _settings = new Settings("ResearchManager");
+            _settings = new Settings("Research");
 
             Game.OnUpdate += OnUpdate;
 

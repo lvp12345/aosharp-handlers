@@ -35,6 +35,7 @@ namespace ResearchManager
         public override void Run(string pluginDir)
         {
             _settings = new Settings("Research");
+            PluginDir = pluginDir;
 
             Game.OnUpdate += OnUpdate;
 
@@ -90,8 +91,6 @@ namespace ResearchManager
 
             Chat.WriteLine("Research Manager Loaded!");
             Chat.WriteLine("/researchmanager for settings.");
-
-            PluginDir = pluginDir;
         }
 
         public override void Teardown()

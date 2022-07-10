@@ -48,6 +48,7 @@ namespace SyncManager
         public override void Run(string pluginDir)
         {
             _settings = new Settings("SyncManager");
+            PluginDir = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
@@ -89,8 +90,6 @@ namespace SyncManager
 
             Chat.WriteLine("SyncManager Loaded!");
             Chat.WriteLine("/syncmanager for settings.");
-
-            PluginDir = pluginDir;
         }
 
         private void OnUpdate(object s, float deltaTime)

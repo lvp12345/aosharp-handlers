@@ -86,7 +86,7 @@ namespace ResearchManager
             }
 
             Chat.WriteLine("Research Manager Loaded!");
-            Chat.WriteLine("/research for settings.");
+            Chat.WriteLine("/researchmanager for settings.");
 
             PluginDirectory = pluginDir;
         }

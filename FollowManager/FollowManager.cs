@@ -44,11 +44,11 @@ namespace FollowManager
 
         public override void Run(string pluginDir)
         {
+            _settings = new Settings("FollowManager");
+            PluginDir = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\FollowManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
-
-            _settings = new Settings("FollowManager");
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);
@@ -68,8 +68,6 @@ namespace FollowManager
 
             Chat.WriteLine("FollowManager Loaded!");
             Chat.WriteLine("/followmanager for settings.");
-
-            PluginDir = pluginDir;
 
             FollowPlayer = Config.CharSettings[Game.ClientInst].FollowPlayer;
             NavFollowIdentity = Config.CharSettings[Game.ClientInst].NavFollowIdentity;

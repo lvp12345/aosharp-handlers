@@ -33,6 +33,7 @@ namespace AssistManager
         public override void Run(string pluginDir)
         {
             _settings = new Settings("AssistManager");
+            PluginDir = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AssistManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
@@ -49,8 +50,6 @@ namespace AssistManager
 
             Chat.WriteLine("AssistManager Loaded!");
             Chat.WriteLine("/assistmanager for settings.");
-
-            PluginDir = pluginDir;
 
             AssistPlayer = Config.CharSettings[Game.ClientInst].AssistPlayer;
         }

@@ -60,7 +60,7 @@ namespace HelpManager
         {
             if (!IsCommandRegistered)
             {
-                Chat.RegisterCommand("helper", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("helpmanager", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {

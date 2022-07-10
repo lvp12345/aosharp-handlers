@@ -501,7 +501,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag1);
                                 }
                                 item.MoveToInventory();
@@ -511,7 +511,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag2);
                                 }
                                 item.MoveToInventory();
@@ -521,7 +521,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag3);
                                 }
                                 item.MoveToInventory();
@@ -531,7 +531,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag4);
                                 }
                                 item.MoveToInventory();
@@ -541,7 +541,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag5);
                                 }
                                 item.MoveToInventory();
@@ -551,7 +551,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag6);
                                 }
                                 item.MoveToInventory();
@@ -561,7 +561,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag7);
                                 }
                                 item.MoveToInventory();
@@ -571,7 +571,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag8);
                                 }
                                 item.MoveToInventory();
@@ -581,7 +581,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag9);
                                 }
                                 item.MoveToInventory();
@@ -591,7 +591,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag10);
                                 }
                                 item.MoveToInventory();
@@ -601,7 +601,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag11);
                                 }
                                 item.MoveToInventory();
@@ -611,7 +611,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag12);
                                 }
                                 item.MoveToInventory();
@@ -621,7 +621,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag13);
                                 }
                                 item.MoveToInventory();
@@ -631,7 +631,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag14);
                                 }
                                 item.MoveToInventory();
@@ -641,7 +641,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag15);
                                 }
                                 item.MoveToInventory();
@@ -651,7 +651,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag16);
                                 }
                                 item.MoveToInventory();
@@ -661,7 +661,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag17);
                                 }
                                 item.MoveToInventory();
@@ -671,7 +671,7 @@ namespace LootManager
                                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory).Where(c => !IgnoreItems.Contains(c.Name)))
                                 {
                                     if (itemtomove.Name != "Health and Nano Recharger" && itemtomove.Name != "Health and Nano Stim"
-                                        && itemtomove.Name != "Aggression Enhancer")
+                                        && itemtomove.Name != "Aggression Enhancer" && !itemtomove.Name.Contains("Ammo"))
                                         itemtomove.MoveToContainer(extrabag18);
                                 }
                                 item.MoveToInventory();

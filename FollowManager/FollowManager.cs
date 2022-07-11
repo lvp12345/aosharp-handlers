@@ -19,7 +19,7 @@ using AOSharp.Common.GameData.UI;
 
 namespace FollowManager
 {
-    public class HelpManager : AOPluginEntry
+    public class FollowManager : AOPluginEntry
     {
         private static IPCChannel IPCChannel;
 

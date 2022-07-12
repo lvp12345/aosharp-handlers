@@ -83,28 +83,28 @@ namespace FollowManager
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
 
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void FollowPlayer_Changed(object s, string e)
         {
             Config.CharSettings[Game.ClientInst].FollowPlayer = e;
 
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void NavFollowIdentity_Changed(object s, string e)
         {
             Config.CharSettings[Game.ClientInst].NavFollowIdentity = e;
 
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void NavFollowDistance_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].NavFollowDistance = e;
 
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 

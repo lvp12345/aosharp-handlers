@@ -8,6 +8,6 @@ namespace AssistManager.IPCMessages
 {
     public enum IPCOpcode
     {
-        Assist = 2200,
+        Assist = 1300,
     }
 }

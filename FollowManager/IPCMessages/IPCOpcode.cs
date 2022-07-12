@@ -8,7 +8,7 @@ namespace FollowManager.IPCMessages
 {
     public enum IPCOpcode
     {
-        Follow = 2300,
-        NavFollow = 2301,
+        Follow = 1400,
+        NavFollow = 1401,
     }
 }

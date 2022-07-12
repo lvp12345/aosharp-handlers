@@ -77,13 +77,13 @@ namespace FollowManager
                             settingsWindow.FindView("FollowNamedIdentity", out TextInputView navFollowBox);
                             settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceBox);
 
-                            if (channelValue != null && !string.IsNullOrEmpty(channelValue.Text))
+                            if (channelValue != null)
                                 channelValue.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
-                            if (followBox != null && !string.IsNullOrEmpty(followBox.Text))
+                            if (followBox != null)
                                 followBox.Text = $"{Config.CharSettings[Game.ClientInst].FollowPlayer}";
-                            if (navFollowBox != null && !string.IsNullOrEmpty(navFollowBox.Text))
+                            if (navFollowBox != null)
                                 navFollowBox.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowIdentity}";
-                            if (navFollowDistanceBox != null && !string.IsNullOrEmpty(navFollowDistanceBox.Text))
+                            if (navFollowDistanceBox != null)
                                 navFollowDistanceBox.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowDistance}";
                         }
                     }

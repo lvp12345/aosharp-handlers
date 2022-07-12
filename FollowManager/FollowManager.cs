@@ -69,6 +69,7 @@ namespace FollowManager
             Chat.WriteLine("FollowManager Loaded!");
             Chat.WriteLine("/followmanager for settings.");
 
+
             FollowPlayer = Config.CharSettings[Game.ClientInst].FollowPlayer;
             NavFollowIdentity = Config.CharSettings[Game.ClientInst].NavFollowIdentity;
             NavFollowDistance = Config.CharSettings[Game.ClientInst].NavFollowDistance;

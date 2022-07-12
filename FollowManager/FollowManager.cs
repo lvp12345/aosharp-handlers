@@ -58,7 +58,7 @@ namespace FollowManager
             Config.CharSettings[Game.ClientInst].NavFollowIdentityChangedEvent += NavFollowIdentity_Changed;
             Config.CharSettings[Game.ClientInst].NavFollowDistanceChangedEvent += NavFollowDistance_Changed;
 
-            RegisterSettingsWindow("Follow Manager", "HelpManagerSettingWindow.xml");
+            RegisterSettingsWindow("Follow Manager", "FollowManagerSettingWindow.xml");
 
             Game.OnUpdate += OnUpdate;
 

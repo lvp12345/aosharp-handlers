@@ -50,22 +50,21 @@ namespace LootManager
         {
             if (!IsCommandRegistered)
             {
-                Chat.RegisterCommand("lootlist", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("lootmanager", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {
-
                         settingsWindow = Window.Create(new Rect(50, 50, 376, 600), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.None);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
                             searchList = ItemListViewBase.Create(new Rect(999999, 999999, -999999, -999999), 0x40, 0x0f, 0);
                             SetupMultiListView(searchList);
-                            for (int i = 1; i <= LootManager.SettingsItems["ItemCount_ItemList"].AsInt32(); i++)
+                            for (int i = 1; i <= LootManager._settingsItems["ItemCount_ItemList"].AsInt32(); i++)
                             {
-                                int lowId = LootManager.SettingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
-                                int highId = LootManager.SettingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
-                                int ql = LootManager.SettingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
+                                int lowId = LootManager._settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
+                                int highId = LootManager._settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
+                                int ql = LootManager._settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
 
                                 if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
                                 {

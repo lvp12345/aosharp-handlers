@@ -722,7 +722,7 @@ namespace SyncManager
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
 
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         protected void RegisterSettingsWindow(string settingsName, string xmlName)

@@ -147,7 +147,7 @@ namespace ResearchManager
             {
                 _currentGoalFinished = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                     == N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
-                    && (!c.Available || c.ResearchId == 0/* || Utilz.Last(c.ResearchId) == 8*/))
+                    && !c.Available/* || c.ResearchId == 0*//* || Utilz.Last(c.ResearchId) == 8)*/)
                     .ToList();
 
                 //if ((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0)
@@ -184,7 +184,7 @@ namespace ResearchManager
                 //          });
                 //}
                 //else
-                if (_currentGoalFinished.Count >= 1 || (int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0)
+                if (_currentGoalFinished.Count >= 1/* || (int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0*/)
                 {
                     if (_asyncToggle == false)
                     {

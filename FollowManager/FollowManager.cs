@@ -147,7 +147,7 @@ namespace FollowManager
                 }
                 if (navFollowBox != null && !string.IsNullOrEmpty(navFollowBox.Text))
                 {
-                    Config.CharSettings[Game.ClientInst].FollowPlayer = navFollowBox.Text;
+                    Config.CharSettings[Game.ClientInst].NavFollowIdentity = navFollowBox.Text;
                 }
                 if (navFollowDistanceBox != null && !string.IsNullOrEmpty(navFollowDistanceBox.Text))
                 {

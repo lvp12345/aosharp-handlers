@@ -302,17 +302,17 @@ namespace CombatHandler.Trader
 
             if (!CanCast(spell) || TraderHealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
                 return FindMemberWithHealthBelow(TraderHealPercentage, ref actionTarget);
             }
 
-            if (HealSelection.SingleOS != (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
             {
                 return FindPlayerWithHealthBelow(TraderHealPercentage, ref actionTarget);
             }
 
-            if (HealSelection.Team != (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {

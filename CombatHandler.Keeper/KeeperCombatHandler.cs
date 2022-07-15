@@ -32,14 +32,6 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("NanoAura", false);
-            _settings.AddVariable("HealAura", false);
-            _settings.AddVariable("ReflectAura", false);
-            _settings.AddVariable("AAOAura", false);
-            _settings.AddVariable("DamageAura", false);
-            _settings.AddVariable("DerootAura", false);
-            _settings.AddVariable("ReaperAura", false);
-            _settings.AddVariable("SancAura", false);
             _settings.AddVariable("SpamAntifear", false);
 
             //Auras

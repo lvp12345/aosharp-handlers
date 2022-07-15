@@ -222,7 +222,8 @@ namespace HelpManager
 
                 if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
                 {
-                    if (int.TryParse(channelBox.Text, out int channelValue))
+                    if (int.TryParse(channelBox.Text, out int channelValue)
+                        && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
                     {
                         Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
                     }

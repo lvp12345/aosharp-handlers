@@ -8,16 +8,16 @@ namespace SyncManager.IPCMessages
 {
     public enum IPCOpcode
     {
-        Move = 2400,
-        Jump = 2401,
-        Target = 2402,
-        Attack = 2403,
-        StopAttack = 2404,
-        Use = 2405,
-        NpcChatOpen = 2406,
-        NpcChatClose = 2407,
-        NpcChatAnswer = 2408,
-        UseItem = 2409,
-        Trade = 2410,
+        Move = 200,
+        Jump = 201,
+        Target = 202,
+        Attack = 203,
+        StopAttack = 204,
+        Use = 205,
+        NpcChatOpen = 206,
+        NpcChatClose = 207,
+        NpcChatAnswer = 208,
+        UseItem = 209,
+        Trade = 210,
     }
 }

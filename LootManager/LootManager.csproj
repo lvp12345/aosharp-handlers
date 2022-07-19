@@ -50,8 +50,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPCMessages\DisbandMessage.cs" />
-    <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="LootManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />

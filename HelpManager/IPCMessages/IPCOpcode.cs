@@ -8,9 +8,9 @@ namespace HelpManager.IPCMessages
 {
     public enum IPCOpcode
     {
-        YalmOn = 2100,
-        YalmUse = 2101,
-        YalmOff = 2102,
-        ClearBuffs = 2103
+        YalmOn = 300,
+        YalmUse = 301,
+        YalmOff = 302,
+        ClearBuffs = 303
     }
 }

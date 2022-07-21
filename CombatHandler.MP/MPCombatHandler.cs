@@ -382,6 +382,11 @@ namespace CombatHandler.Metaphysicist
                 if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
                     CancelBuffs(RelevantNanos.MPCompositeNano);
 
+                if (Team.IsInTeam)
+                {
+                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                }
+
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -396,6 +401,11 @@ namespace CombatHandler.Metaphysicist
             {
                 if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
                     CancelBuffs(RelevantNanos.MPCompositeNano);
+
+                if (Team.IsInTeam)
+                {
+                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                }
 
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -412,6 +422,11 @@ namespace CombatHandler.Metaphysicist
                 if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
                     CancelBuffs(RelevantNanos.MPCompositeNano);
 
+                if (Team.IsInTeam)
+                {
+                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                }
+
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -426,6 +441,11 @@ namespace CombatHandler.Metaphysicist
             {
                 if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
                     CancelBuffs(RelevantNanos.MPCompositeNano);
+
+                if (Team.IsInTeam)
+                {
+                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                }
 
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -442,6 +462,11 @@ namespace CombatHandler.Metaphysicist
                 if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
                     CancelBuffs(RelevantNanos.MPCompositeNano);
 
+                if (Team.IsInTeam)
+                {
+                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                }
+
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -456,6 +481,11 @@ namespace CombatHandler.Metaphysicist
             {
                 if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
                     CancelBuffs(RelevantNanos.MPCompositeNano);
+
+                if (Team.IsInTeam)
+                {
+                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                }
 
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
             }

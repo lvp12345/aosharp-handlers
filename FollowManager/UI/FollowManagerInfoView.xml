@@ -4,7 +4,7 @@
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="/leadfollow - toggles follow the leader of the team while window is acitve." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="/leadfollow - Toggles follow the leader of the team while window is acitve." layout_borders="Rect(0,0,0,2)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
   </BorderView>
 </root>

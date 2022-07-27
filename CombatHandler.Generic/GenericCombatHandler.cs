@@ -122,7 +122,9 @@ namespace CombatHandler.Generic
                     "Temporal Vortex",
                     "Gateway to the Past",
                     "Gateway to the Present",
-                    "Gateway to the Future"
+                    "Gateway to the Future",
+                    "Masked Eleet",
+                    "Dust Brigade Security Drone"
         };
 
         public static IPCChannel IPCChannel;

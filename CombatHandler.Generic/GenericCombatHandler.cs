@@ -124,7 +124,8 @@ namespace CombatHandler.Generic
                     "Gateway to the Present",
                     "Gateway to the Future",
                     "Masked Eleet",
-                    "Dust Brigade Security Drone"
+                    "Dust Brigade Security Drone",
+                    "Nanovoider"
         };
 
         public static IPCChannel IPCChannel;

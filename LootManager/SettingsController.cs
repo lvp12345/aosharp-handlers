@@ -54,7 +54,7 @@ namespace LootManager
                 {
                     try
                     {
-                        settingsWindow = Window.Create(new Rect(50, 50, 376, 600), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.None);
+                        settingsWindow = Window.Create(new Rect(50, 50, 390, 630), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.None);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
@@ -99,7 +99,6 @@ namespace LootManager
                 testWindow.AppendTab(settingsName, settingsView);
                 if (settingsView.FindChild("searchRoot", out View searchRoot))
                 {
-                    Chat.WriteLine("adding");
                     searchRoot.AddChild(searchList, true);
                 }
                 testWindow.Show(true);

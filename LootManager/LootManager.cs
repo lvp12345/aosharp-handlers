@@ -133,18 +133,6 @@ namespace LootManager
             _settingsItems.Save();
         }
 
-        private void ClearView(object s, ButtonBase button)
-        {
-            SettingsViewModel settingsViewModel = (SettingsViewModel)button.Tag;
-            string type = settingsViewModel.Type;
-            MultiListView searchView = settingsViewModel.MultiListView;
-            Dictionary<ItemModel, MultiListViewItem> dictionary = settingsViewModel.Dictionary;
-
-            ClearConfigItems(searchView, dictionary, type);
-            //foreach (var item in dictionary)
-            //    settingscontroller.searchlist.removeitem(item.value);
-            //preitemlist.clear();
-        }
         private void AddItemToConfig(ItemModel ItemModel, MultiListViewItem viewItem, string listType)
         {
             if (listType == "ItemList")
@@ -169,14 +157,23 @@ namespace LootManager
             _settingsItems[$"Item_MaxQl_{listType}_{count}"] = MaxQlValue;
             _settingsItems[$"ItemCount_{listType}"] = count;
 
-            Chat.WriteLine($"{ItemModel.ItemName}");
-            Chat.WriteLine($"{_settingsItems[$"Item_MinQl_{listType}_{count}"]}");
-            Chat.WriteLine($"{_settingsItems[$"Item_MaxQl_{listType}_{count}"]}");
+            //Chat.WriteLine($"{ItemModel.ItemName}");
+            //Chat.WriteLine($"{_settingsItems[$"Item_MinQl_{listType}_{count}"]}");
+            //Chat.WriteLine($"{_settingsItems[$"Item_MaxQl_{listType}_{count}"]}");
 
             _settingsItems.Save();
         }
 
-        private void AddItemView(object s, ButtonBase button)
+        private void HandleClearViewClick(object s, ButtonBase button)
+        {
+            SettingsViewModel settingsViewModel = (SettingsViewModel)button.Tag;
+            string type = settingsViewModel.Type;
+            MultiListView searchView = settingsViewModel.MultiListView;
+            Dictionary<ItemModel, MultiListViewItem> dictionary = settingsViewModel.Dictionary;
+
+            ClearConfigItems(searchView, dictionary, type);
+        }
+        private void HandleAddItemViewClick(object s, ButtonBase button)
         {
             int lowId = ItemIdValue;
             int highId = ItemIdValue;
@@ -201,7 +198,7 @@ namespace LootManager
             }
         }
 
-        private void RemoveItemView(object s, ButtonBase button)
+        private void HandleRemoveItemViewClick(object s, ButtonBase button)
         {
             SettingsViewModel settingsViewModel = (SettingsViewModel)button.Tag;
             string type = settingsViewModel.Type;
@@ -233,9 +230,6 @@ namespace LootManager
                                     _settingsItems[$"Item_MinQl_{type}_{i}"] = _settingsItems[$"Item_MinQl_{type}_{count}"].AsInt32();
                                     _settingsItems[$"Item_MaxQl_{type}_{i}"] = _settingsItems[$"Item_MaxQl_{type}_{count}"].AsInt32();
 
-                                    Chat.WriteLine($"{_settingsItems[$"Item_MinQl_{type}_{count}"]}");
-                                    Chat.WriteLine($"{_settingsItems[$"Item_MaxQl_{type}_{count}"]}");
-
                                     _settingsItems.DeleteVariable($"Item_LowId_{type}_{count}");
                                     _settingsItems.DeleteVariable($"Item_HighId_{type}_{count}");
                                     _settingsItems.DeleteVariable($"Item_Ql_{type}_{count}");
@@ -244,9 +238,6 @@ namespace LootManager
                                 }
                                 else
                                 {
-                                    Chat.WriteLine($"{_settingsItems[$"Item_MinQl_{type}_{count}"]}");
-                                    Chat.WriteLine($"{_settingsItems[$"Item_MaxQl_{type}_{count}"]}");
-
                                     _settingsItems.DeleteVariable($"Item_LowId_{type}_{count}");
                                     _settingsItems.DeleteVariable($"Item_HighId_{type}_{count}");
                                     _settingsItems.DeleteVariable($"Item_Ql_{type}_{count}");
@@ -263,7 +254,7 @@ namespace LootManager
             _settingsItems.Save();
         }
 
-        private void InfoView(object s, ButtonBase button)
+        private void HandleInfoViewClick(object s, ButtonBase button)
         {
             _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\LootManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
@@ -284,7 +275,7 @@ namespace LootManager
 
             for (int i = 1; i <= count; i++)
             {
-                if (_settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.Id &&
+                if (_settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.Id ||
                     _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == item.HighId)
                 {
                     return true;
@@ -296,7 +287,9 @@ namespace LootManager
 
         private bool ItemExists(Item item)
         {
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("extra")))
+            if (Inventory.Items.Contains(item)) { return true; }
+
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Contains(item))
                     return true;
@@ -307,7 +300,7 @@ namespace LootManager
 
         private static Backpack FindBagWithSpace()
         {
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("extra")))
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Count < 21)
                     return backpack;
@@ -471,10 +464,10 @@ namespace LootManager
                     }
                 }
 
-                if (SettingsController.settingsWindow.FindView("InfoView", out Button infoView))
+                if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
                 {
                     infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
+                    infoView.Clicked = HandleInfoViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("ClearView", out Button clearView))
@@ -485,13 +478,13 @@ namespace LootManager
                         Dictionary = PreItemList,
                         Type = "ItemList"
                     };
-                    clearView.Clicked = ClearView;
+                    clearView.Clicked = HandleClearViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("AddItemView", out Button addItemView))
                 {
                     addItemView.Tag = SettingsController.settingsWindow;
-                    addItemView.Clicked = AddItemView;
+                    addItemView.Clicked = HandleAddItemViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("RemoveItemView", out Button removeItemView))
@@ -502,7 +495,7 @@ namespace LootManager
                         Dictionary = PreItemList,
                         Type = "ItemList"
                     };
-                    removeItemView.Clicked = RemoveItemView;
+                    removeItemView.Clicked = HandleRemoveItemViewClick;
                 }
             }
         }

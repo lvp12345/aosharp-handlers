@@ -60,12 +60,14 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("CompositesNanoSkills", false);
             _settings.AddVariable("CompositesNanoSkillsTeam", false);
 
-            _settings.AddVariable("MatterCrea", false);
-            _settings.AddVariable("PyschoModi", false);
-            _settings.AddVariable("TimeSpace", false);
-            _settings.AddVariable("SenseImprov", false);
-            _settings.AddVariable("BioMet", false);
-            _settings.AddVariable("MattMet", false);
+            _settings.AddVariable("Replenish", false);
+
+            //_settings.AddVariable("MatterCrea", false);
+            //_settings.AddVariable("PyschoModi", false);
+            //_settings.AddVariable("TimeSpace", false);
+            //_settings.AddVariable("SenseImprov", false);
+            //_settings.AddVariable("BioMet", false);
+            //_settings.AddVariable("MattMet", false);
 
             //settings.AddVariable("CostTeam", false);
 
@@ -225,19 +227,11 @@ namespace CombatHandler.Metaphysicist
                 _ncuUpdateTime = Time.NormalTime;
             }
 
-            if (_settings["CompositesNanoSkills"].AsBool() || _settings["CompositesNanoSkillsTeam"].AsBool() &&
-                (_settings["MatterCrea"].AsBool() || _settings["PyschoModi"].AsBool()
-                || _settings["TimeSpace"].AsBool() || _settings["SenseImprov"].AsBool()
-                || _settings["BioMet"].AsBool() || _settings["MattMet"].AsBool()))
+            if (_settings["Replenish"].AsBool() && (_settings["CompositesNanoSkills"].AsBool() || _settings["CompositesNanoSkillsTeam"].AsBool()))
             {
                 _settings["CompositesNanoSkills"] = false;
                 _settings["CompositesNanoSkillsTeam"] = false;
-                _settings["MatterCrea"] = false;
-                _settings["PyschoModi"] = false;
-                _settings["TimeSpace"] = false;
-                _settings["SenseImprov"] = false;
-                _settings["BioMet"] = false;
-                _settings["MattMet"] = false;
+                _settings["Replenish"] = false;
 
                 Chat.WriteLine("Only activate one option.");
             }
@@ -377,17 +371,14 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
-            if (IsSettingEnabled("MatterCrea"))
+            if (IsSettingEnabled("Replenish"))
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                    CancelBuffs(RelevantNanos.MPCompositeNano);
-
                 if (Team.IsInTeam)
                 {
-                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
                 }
 
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -397,18 +388,28 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
-            if (IsSettingEnabled("PyschoModi"))
+            if (IsSettingEnabled("Replenish"))
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                    CancelBuffs(RelevantNanos.MPCompositeNano);
-
                 if (Team.IsInTeam)
                 {
-                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
                 }
 
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
+
+            //if (IsSettingEnabled("PyschoModi"))
+            //{
+            //    if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
+            //        CancelBuffs(RelevantNanos.MPCompositeNano);
+
+            //    if (Team.IsInTeam)
+            //    {
+            //        return TeamBuff(spell, fightingTarget, ref actionTarget);
+            //    }
+
+            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
+            //}
 
             return false;
         }
@@ -417,17 +418,14 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
-            if (IsSettingEnabled("TimeSpace"))
+            if (IsSettingEnabled("Replenish"))
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                    CancelBuffs(RelevantNanos.MPCompositeNano);
-
                 if (Team.IsInTeam)
                 {
-                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
                 }
 
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -437,17 +435,14 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
-            if (IsSettingEnabled("SenseImprov"))
+            if (IsSettingEnabled("Replenish"))
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                    CancelBuffs(RelevantNanos.MPCompositeNano);
-
                 if (Team.IsInTeam)
                 {
-                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
                 }
 
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -457,17 +452,14 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
-            if (IsSettingEnabled("BioMet"))
+            if (IsSettingEnabled("Replenish"))
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                    CancelBuffs(RelevantNanos.MPCompositeNano);
-
                 if (Team.IsInTeam)
                 {
-                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
                 }
 
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -477,17 +469,14 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
-            if (IsSettingEnabled("MattMet"))
+            if (IsSettingEnabled("Replenish"))
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-                    CancelBuffs(RelevantNanos.MPCompositeNano);
-
                 if (Team.IsInTeam)
                 {
-                    return TeamBuff(spell, fightingTarget, ref actionTarget);
+                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
                 }
 
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return false;

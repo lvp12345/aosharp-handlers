@@ -8,12 +8,13 @@
     <OptionCheckBox label="Composites Nano Skills" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CompositesNanoSkills" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Composites Nano Skills (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CompositesNanoSkillsTeam" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Space Time" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TimeSpace" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Replenish Nano Skills" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Replenish" layout_borders="Rect(10,1,5,1)"/>
+    <!--<OptionCheckBox label="Space Time" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TimeSpace" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Matter Crea" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MatterCrea" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Bio Metamor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BioMet" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Matt Metam" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MattMet" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Psycho Modi" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PyschoModi" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Sensory Impr" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SenseImprov" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Sensory Impr" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SenseImprov" layout_borders="Rect(10,1,5,1)"/>-->
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Cost" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Cost" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Cost (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CostTeam" layout_borders="Rect(10,1,5,1)"/>

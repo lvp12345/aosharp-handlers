@@ -778,6 +778,47 @@ namespace CombatHandler.Generic
             return TeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
+        protected bool NanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
+
+            if (SpellChecksNanoSkillsPlayer(spell, fightingTarget))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
+
+        protected bool NanoSkillsTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.Identity != DynelManager.LocalPlayer.Identity)
+                    .Where(c => SpellChecksNanoSkillsOther(spell, c))
+                    .FirstOrDefault();
+
+                if (teamMemberWithoutBuff != null)
+                {
+                    actionTarget.Target = teamMemberWithoutBuff;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
@@ -1556,6 +1597,54 @@ namespace CombatHandler.Generic
             //}
 
             //return true;
+        }
+
+        protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
+
+            if (Playfield.ModelIdentity.Instance == 152) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+            {
+                if (spell.StackingOrder < buff.StackingOrder) { return false; }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
+                if (buff.RemainingTime < 10)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool SpellChecksNanoSkillsOther(Spell spell, SimpleChar fightingTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
+
+            if (Playfield.ModelIdentity.Instance == 152) { return false; }
+
+            if (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
+
+            if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
+            {
+                if (spell.StackingOrder < buff.StackingOrder) { return false; }
+
+                if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
+
+                if (buff.RemainingTime < 10)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         protected bool SpellChecksPlayer(Spell spell)

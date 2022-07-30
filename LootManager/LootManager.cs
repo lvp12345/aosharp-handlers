@@ -52,7 +52,7 @@ namespace LootManager
                 PluginDir = pluginDir;
 
                 Game.OnUpdate += OnUpdate;
-                Inventory.ContainerOpened = OnContainerOpened;
+                Inventory.ContainerOpened += OnContainerOpened;
 
                 _settings.AddVariable("Toggle", false);
                 _settings.AddVariable("ApplyRules", false);

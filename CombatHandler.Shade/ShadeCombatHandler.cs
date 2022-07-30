@@ -76,7 +76,7 @@ namespace CombatHandler.Shade
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaressNano, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealthDrain).OrderByStackingOrder(), HealthDrainNano);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpiritDrain).OrderByStackingOrder(), SpiritSiphonNano);
+            RegisterSpellProcessor(RelevantNanos.SpiritDrain, SpiritSiphonNano);
 
             //Items
             RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
@@ -554,7 +554,7 @@ namespace CombatHandler.Shade
         }
 
         private bool SpiritSiphonNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
+        {   
             if (!IsSettingEnabled("SpiritSiphon")) { return false; }
 
             if (fightingTarget == null && _shadeSiphon)
@@ -566,7 +566,7 @@ namespace CombatHandler.Shade
 
             if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
-            if (fightingTarget != null && fightingTarget.HealthPercent <= 20)
+            if (fightingTarget != null && fightingTarget.HealthPercent <= 100)
             {
                 if (!_shadeSiphon)
                 {
@@ -650,6 +650,7 @@ namespace CombatHandler.Shade
             public const int CompositeNano = 223380;
             public const int CompositeMelee = 223360;
             public const int CompositeMeleeSpec = 215264;
+            public const int SpiritDrain = 297342;
             public static readonly int[] FasterThanYourShadow = { 272371 };
             public static readonly int[] EVASION_BUFFS = { 275844, 29247, 28903, 28878, 28872, 218070, 218068, 218066,
             218064, 218062, 218060, 272371, 270808, 30745, 302188, 29272, 270802, 28603, 223125, 223131, 223129, 215718,

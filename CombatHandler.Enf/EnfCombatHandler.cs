@@ -366,7 +366,7 @@ namespace CombatHandler.Enf
                 }
             }
 
-            if (!IsSettingEnabled("AOETaunt") && SingleTauntsSelection.Single == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32())
+            if (!IsSettingEnabled("AOETaunt") && SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32())
             {
                 if (fightingTarget != null)
                 {
@@ -507,7 +507,7 @@ namespace CombatHandler.Enf
         }
         public enum SingleTauntsSelection
         {
-            None, Single, OS
+            None, Target, OS
         }
 
         private static class RelevantNanos

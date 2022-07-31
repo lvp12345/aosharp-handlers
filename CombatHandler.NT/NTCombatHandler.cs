@@ -186,7 +186,6 @@ namespace CombatHandler.NanoTechnician
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
-
             }
         }
 

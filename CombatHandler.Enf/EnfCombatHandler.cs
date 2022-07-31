@@ -21,9 +21,11 @@ namespace CombatHandler.Enf
 
         private static Window _buffWindow;
         private static Window _tauntWindow;
+        private static Window _procWindow;
 
         private static View _buffView;
         private static View _tauntView;
+        private static View _procView;
 
         private static double _absorbs;
         private static double _aoeTaunt;
@@ -40,8 +42,11 @@ namespace CombatHandler.Enf
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("SingleTaunt", false);
-            _settings.AddVariable("OSTaunt", false);
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RagingBlow);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.ViolationBuffer);
+
+            _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
+
             _settings.AddVariable("RaidTaunt", false);
             _settings.AddVariable("AOETaunt", false);
             _settings.AddVariable("Absorbs", false);
@@ -54,10 +59,20 @@ namespace CombatHandler.Enf
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, LEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerAirOfHatred, AirOfHatred, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerBustKneecaps, BustKneecaps, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerIgnorePain, IgnorePain, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, InspireIre, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireRage, InspireRage, CombatActionPriority.Low);
 
-            //Leg Shot
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerRagingBlow, RagingBlow, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerShieldOfTheOgre, ShieldOfTheOgre, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerShrugOffHits, ShrugOffHits, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerTearLigaments, TearLigaments, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerVileRage, VileRage, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerViolationBuffer, ViolationBuffer, CombatActionPriority.Low);
+
+            //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
             //Spells (Im not sure the spell lines are up to date to support the full line of SL mongos)
@@ -91,7 +106,7 @@ namespace CombatHandler.Enf
             PluginDirectory = pluginDir;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -141,6 +156,24 @@ namespace CombatHandler.Enf
                 _tauntWindow = container;
             }
         }
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "EnforcerProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "EnforcerProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -170,8 +203,102 @@ namespace CombatHandler.Enf
                     tauntView.Tag = SettingsController.settingsWindow;
                     tauntView.Clicked = TauntView;
                 }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
             }
         }
+
+
+        #region Perks
+
+        private bool InspireRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.InspireRage != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool RagingBlow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.RagingBlow != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool ShieldOfTheOgre(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.Shieldoftheogre != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool TearLigaments(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.TearLigaments != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool VileRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.VileRage != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool VortexOfHate(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.VortexofHate != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool AirOfHatred(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Airofhatred != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool BustKneecaps(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.BustKneecaps != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool IgnorePain(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.IgnorePain != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool InspireIre(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.InspireIre != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool ShrugOffHits(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.ShrugOffHits != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool ViolationBuffer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.ViolationBuffer != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+
         private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if(HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer)) { return false; }
@@ -183,7 +310,7 @@ namespace CombatHandler.Enf
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
+            if (SingleTauntsSelection.OS == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() && Time.NormalTime > _singleTauntTick + 1)
             {
                 List<SimpleChar> mobs = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
@@ -214,7 +341,9 @@ namespace CombatHandler.Enf
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.Name == "Azdaja the Joyous" 
                     || c.Name == "The Awoken Nightmare, Phobettor"
-                    || c.Name == "Abmouth Supremus")
+                    || c.Name == "Abmouth Supremus"
+                    || c.Name == "Technomaster Sinuh"
+                    || c.Name == "Collector")
                     .FirstOrDefault();
 
                 if (mob != null)
@@ -225,16 +354,8 @@ namespace CombatHandler.Enf
                 }
             }
 
-            if (!IsSettingEnabled("SingleTaunt")) { return false; }
 
-            if (fightingTarget != null
-                && (DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh"
-                || DynelManager.LocalPlayer.FightingTarget.Name == "Collector"))
-            {
-                return true;
-            }
-
-            if (IsSettingEnabled("AOETaunt") && Time.NormalTime > _singleTaunt + 9)
+            if (IsSettingEnabled("AOETaunt") && Time.NormalTime > _singleTaunt + 6)
             {
                 if (fightingTarget != null)
                 {
@@ -245,7 +366,7 @@ namespace CombatHandler.Enf
                 }
             }
 
-            if (!IsSettingEnabled("AOETaunt"))
+            if (!IsSettingEnabled("AOETaunt") && SingleTauntsSelection.Single == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32())
             {
                 if (fightingTarget != null)
                 {
@@ -373,6 +494,20 @@ namespace CombatHandler.Enf
         private bool ShouldBeTaunted(SimpleChar target)
         {
             return !target.IsPlayer && !target.IsPet && target.IsValid && target.IsInLineOfSight;
+        }
+
+        public enum ProcType1Selection
+        {
+            VortexofHate, RagingBlow, Shieldoftheogre, InspireRage, TearLigaments, VileRage
+        }
+
+        public enum ProcType2Selection
+        {
+            ViolationBuffer, InspireIre, Airofhatred, ShrugOffHits, BustKneecaps, IgnorePain
+        }
+        public enum SingleTauntsSelection
+        {
+            None, Single, OS
         }
 
         private static class RelevantNanos

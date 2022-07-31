@@ -1030,15 +1030,13 @@ namespace CombatHandler.Generic
 
         protected bool TauntTool(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !IsSettingEnabled("UseTauntTool")) { return false; }
+            if (fightingTarget == null || !IsSettingEnabled("ScorpioTauntTool")) { return false; }
 
-            if (TauntTools.CanUseTauntTool())
-            {
-                actionTarget.Target = fightingTarget;
-                actionTarget.ShouldSetTarget = true;
-            }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Psychology)) { return false; }
 
-            return false;
+            actionTarget.Target = fightingTarget;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         private bool InsuranceCan(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

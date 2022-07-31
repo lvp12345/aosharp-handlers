@@ -277,19 +277,19 @@ namespace CombatHandler.MartialArtist
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("HealingViewButton", out Button healingView))
+                if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
                     healingView.Tag = SettingsController.settingsWindow;
                     healingView.Clicked = HandleHealingViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("BuffsViewButton", out Button buffView))
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
                     buffView.Clicked = HandleBuffViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("TauntsViewButton", out Button tauntView))
+                if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
                 {
                     tauntView.Tag = SettingsController.settingsWindow;
                     tauntView.Clicked = HandleTauntViewClick;

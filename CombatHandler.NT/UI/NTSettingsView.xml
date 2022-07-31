@@ -9,15 +9,26 @@
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
         <OptionCheckBox label="Pierce Reflects" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Pierce" layout_borders="Rect(10,1,5,1)"/>
         <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-        <OptionCheckBox label="AoE" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AOE" layout_borders="Rect(10,1,5,1)"/>
-        <OptionCheckBox label="AoE Blind" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AoeBlind" layout_borders="Rect(10,1,5,1)"/>
-        <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-        <OptionCheckBox label="VE" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__VE" layout_borders="Rect(10,1,5,1)"/>
-        <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
         <OptionCheckBox label="AI DoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AIDot" layout_borders="Rect(10,1,5,1)"/>
+        <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+        <View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+        <OptionRadioButtonGroup label="Area Nukes" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AOESelection">
+          <RadioButton label="None" value="0"/>
+          <RadioButton label="Normal" value="1"/>
+          <RadioButton label="VE" value="2"/>
+        </OptionRadioButtonGroup>
+        <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+        <OptionRadioButtonGroup label="Blinds" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__BlindSelection">
+          <RadioButton label="None" value="0"/>
+          <RadioButton label="Target" value="1"/>
+          <RadioButton label="AOE" value="2"/>
+        </OptionRadioButtonGroup>
+        </View>
         <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <Button name="BuffsView" label="Buffs" layout_borders="Rect(5,5,3,5)"/>
+        <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+        <Button name="ProcsView" label="Procs" layout_borders="Rect(5,5,3,5)"/>
         <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
         <TextView value="" layout_borders="Rect(5,5,5,5)"/>
       </View>

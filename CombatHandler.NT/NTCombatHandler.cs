@@ -20,7 +20,9 @@ namespace CombatHandler.NanoTechnician
         private static string PluginDirectory;
 
         private static Window _buffWindow;
+        private static Window _procWindow;
 
+        private static View _procView;
         private static View _buffView;
 
         private static double _ncuUpdateTime;
@@ -36,15 +38,32 @@ namespace CombatHandler.NanoTechnician
 
             _settings.AddVariable("Pierce", false);
 
-            _settings.AddVariable("AoeBlind", false);
-
-            _settings.AddVariable("AOE", false);
-            _settings.AddVariable("VE", false);
-
             _settings.AddVariable("NanoHoTTeam", false);
             _settings.AddVariable("CostTeam", false);
 
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ThermalReprieve);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.OptimizedLibrary);
+
+            _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
+
+            _settings.AddVariable("AOESelection", (int)AOESelection.None);
+
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
+
+            //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianThermalReprieve, ThermalReprieve, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianHarvestEnergy, HarvestEnergy, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLayeredAmnesty, LayeredAmnesty, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianSourceTap, SourceTap, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianCircularLogic, CircularLogic, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianOptimizedLibrary, OptimizedLibrary, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianAcceleratedReality, AcceleratedReality, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLoopingService, LoopingService, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianPoweredNanoFortress, PoweredNanoFortress, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianIncreaseMomentum, IncreaseMomentum, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianUnstableLibrary, UnstableLibrary, CombatActionPriority.Low);
+
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.High);
@@ -80,11 +99,11 @@ namespace CombatHandler.NanoTechnician
 
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
-            RegisterSpellProcessor(RelevantNanos.AoeBlinds, AoeBlind);
+            RegisterSpellProcessor(RelevantNanos.AoeBlinds, AOEBlind);
 
             PluginDirectory = pluginDir;
         }
-        public Window[] _windows => new Window[] { _buffWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _procWindow };
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -103,10 +122,39 @@ namespace CombatHandler.NanoTechnician
         }
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
-            if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_buffView)) { return; }
+
+                _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\NTBuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "NTBuffsView" }, _buffView);
+            }
+            else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "NTBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+            }
+        }
+
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\NtProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "NtProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "NtProcsView" }, _procView, out var container);
+                _procWindow = container;
             }
         }
 
@@ -132,26 +180,113 @@ namespace CombatHandler.NanoTechnician
                     buffView.Tag = SettingsController.settingsWindow;
                     buffView.Clicked = HandleBuffViewClick;
                 }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
+
             }
         }
 
-        private bool AoeBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        #region Perks
+
+        private bool CircularLogic(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AoeBlind") || fightingTarget == null) { return false; }
+            if (ProcType1Selection.CircularLogic != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool HarvestEnergy(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.HarvestEnergy != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool LayeredAmnesty(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.LayeredAmnesty != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SourceTap(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SourceTap != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool ThermalReprieve(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.ThermalReprieve != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool AcceleratedReality(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.AcceleratedReality != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool IncreaseMomentum(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.IncreaseMomentum != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool UnstableLibrary(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.UnstableLibrary != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool LoopingService(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.LoopingService != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool PoweredNanoFortress(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.PoweredNanoFortress != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool OptimizedLibrary(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.OptimizedLibrary != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+
+        private bool AOEBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BlindSelection.AOE != (BlindSelection)_settings["BlindSelection"].AsInt32() || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
 
         private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("AoeBlind") || fightingTarget == null) { return false; }
+            if (BlindSelection.Target != (BlindSelection)_settings["BlindSelection"].AsInt32() || fightingTarget == null) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
 
         private bool VolcanicEruption(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("VE"))
+            if (AOESelection.VE == (AOESelection)_settings["AOESelection"].AsInt32())
             {
                 if (fightingTarget == null || !CanCast(spell)) { return false; }
 
@@ -206,7 +341,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("AOE") || fightingTarget == null) { return false; }
+            if (AOESelection.VE == (AOESelection)_settings["AOESelection"].AsInt32() || fightingTarget == null) { return false; }
 
             return true;
         }
@@ -220,7 +355,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AOE") || fightingTarget == null) { return false; }
+            if (AOESelection.VE != (AOESelection)_settings["AOESelection"].AsInt32() || fightingTarget == null) { return false; }
 
             return true;
         }
@@ -250,6 +385,26 @@ namespace CombatHandler.NanoTechnician
             return true;
         }
 
+        #region Misc
+
+        public enum ProcType1Selection
+        {
+            ThermalReprieve, HarvestEnergy, LayeredAmnesty, SourceTap, CircularLogic
+        }
+
+        public enum ProcType2Selection
+        {
+            OptimizedLibrary, AcceleratedReality, LoopingService, PoweredNanoFortress, IncreaseMomentum, UnstableLibrary
+        }
+        public enum BlindSelection
+        {
+            None, Target, AOE
+        }
+
+        public enum AOESelection
+        {
+            None, AOE, VE
+        }
         private static class RelevantNanos
         {
             public const int NanobotAegis = 302074;
@@ -281,5 +436,7 @@ namespace CombatHandler.NanoTechnician
             public static readonly int CompositeAttribute = 223372;
             public static readonly int CompositeNano = 223380;
         }
+
+        #endregion
     }
 }

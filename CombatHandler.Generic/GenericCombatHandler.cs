@@ -1170,38 +1170,30 @@ namespace CombatHandler.Generic
                 if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             }
 
-            // don't use if skill is locked (we will add this dynamically later)
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
 
-            // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent >= 65) { return false; }
-
-            // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            // don't use if we have another major absorb running
-            // we could check remaining absorb stat to be slightly more effective
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
-            return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= 65 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1) 
+            { 
+                return true;
+            }
+
+            return false;
         }
 
         private bool AssaultClass(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            // don't use if skill is locked (we will add this dynamically later)
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
 
-            // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent >= 65) { return false; }
-
-            // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            // don't use if we have another major absorb running
-            // we could check remaining absorb stat to be slightly more effective
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
-            return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= 65 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private bool DescFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -1219,20 +1211,16 @@ namespace CombatHandler.Generic
                 if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             }
 
-            // don't use if skill is locked (we will add this dynamically later)
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
 
-            // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent >= 65) { return false; }
-
-            // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            // don't use if we have another major absorb running
-            // we could check remaining absorb stat to be slightly more effective
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
-            return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= 65 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private bool WithFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -1252,22 +1240,18 @@ namespace CombatHandler.Generic
                 if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             }
 
-            // don't use if skill is locked (we will add this dynamically later)
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
 
-            // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent >= 65) { return false; }
-
-            // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            // don't use if we have another major absorb running
-            // we could check remaining absorb stat to be slightly more effective
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
             if (absorbdesflesh != null) { return false; }
 
-            return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= 65 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         protected virtual bool Coffee(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

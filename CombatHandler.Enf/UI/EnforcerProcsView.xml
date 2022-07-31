@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
+      <RadioButton label="Vortex Of Hate (AOE Taunt, Self HOT 224 x10, 2s delay 20s)" value="0"/>
+      <RadioButton label="Raging Blow (AR/Dmg Buff [Challenger] +255 Damage +111 AAO 60s)" value="1"/>
+      <RadioButton label="Shield Of The Ogre (Absorbshield 745 60s)" value="2"/>
+      <RadioButton label="Inspire Rage (Taunt 1600)" value="3"/>
+      <RadioButton label="Tear Ligaments (AR/Dmg Buff [Challenger] +170 Damage +70 AAO +34% Scale 60s)" value="4"/>
+      <RadioButton label="Vile Rage (Rage +350 Runspeed +200 NR +250 Inits 60s)" value="5"/>
+    </OptionRadioButtonGroup>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
+      <RadioButton label="Violation Buffer (Damageshield +479 Max HP +75 Shield damage +240 Energy AC, Self heal 479 60s) " value="0"/>
+      <RadioButton label="Inspire Ire (Taunt 4750)" value="1"/>
+      <RadioButton label="Air Of Hatred (20m AOE taunt and self HOT, Heal 79 x10, 2s delay 20s)" value="2"/>
+      <RadioButton label="Shrug Off Hits (Absorbshield 280 60s)" value="3"/>
+      <RadioButton label="Bust Kneecaps (AR/Dmg Buff [Challenger] +27 Damage +12 AAO +16% Scale 42s)" value="4"/>
+      <RadioButton label="Ignore Pain (Damageshield +25 Max HP +10 Shield damage, self heal 25 60s)" value="5"/>
+    </OptionRadioButtonGroup> 
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+  </BorderView>
+</root>

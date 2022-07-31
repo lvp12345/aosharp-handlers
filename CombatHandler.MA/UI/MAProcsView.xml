@@ -3,20 +3,20 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Absolute Fist (+111 Dmg 60s Offensive)" value="0"/>
-      <RadioButton label="Strengthen Ki (+40 Strength, +676 Melee/ma AC, +574 Other AC 60s Offensive) " value="1"/>
-      <RadioButton label="Disrupt Ki (Evade Buff +85 60s Offensive)" value="2"/>
-      <RadioButton label="Smashing Fist (+63 Dmg 60s Offensive)" value="3"/>
-      <RadioButton label="Strengthen Spirit (+269 Melee/ma AC, +229 Other AC 60s Offensive)" value="4"/>
-      <RadioButton label="Stinging Fist (+19 Dmg 60s Offensive)" value="5"/>
+      <RadioButton label="Absolute Fist (+111 Dmg 60s)" value="0"/>
+      <RadioButton label="Strengthen Ki (+40 Strength, +676 Melee/ma AC, +574 Other AC 60s) " value="1"/>
+      <RadioButton label="Disrupt Ki (Evade Buff +85 60s)" value="2"/>
+      <RadioButton label="Smashing Fist (+63 Dmg 60s)" value="3"/>
+      <RadioButton label="Strengthen Spirit (+269 Melee/ma AC, +229 Other AC 60s)" value="4"/>
+      <RadioButton label="Stinging Fist (+19 Dmg 60s)" value="5"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Self Reconstruction (Healing 980 .. 1803  Offensive)" value="0"/>
-      <RadioButton label="Debilitating Strike (Crit Increase +19% 60s Offensive)" value="1"/>
-      <RadioButton label="Healing Meditation (Healing 443 .. 981  Offensive)" value="2"/>
-      <RadioButton label="Attack Ligaments (Crit Increase +8% 60s Offensive)" value="3"/>
-      <RadioButton label="Medicinal Remedy (Healing 34 .. 59  Offensive)" value="4"/>
+      <RadioButton label="Self Reconstruction (Healing 980 - 1803)" value="0"/>
+      <RadioButton label="Debilitating Strike (Crit Increase +19% 60s)" value="1"/>
+      <RadioButton label="Healing Meditation (Healing 443 - 981)" value="2"/>
+      <RadioButton label="Attack Ligaments (Crit Increase +8% 60s)" value="3"/>
+      <RadioButton label="Medicinal Remedy (Healing 34 - 59  60s)" value="4"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

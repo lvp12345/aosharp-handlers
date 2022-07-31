@@ -56,6 +56,8 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("OST", false);
 
+            _settings.AddVariable("ScorpioTauntTool", false);
+
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
             //LE Procs
@@ -96,6 +98,8 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, TeamBuff);
             RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TeamBuff);
             RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GenericBuff);
+
+            RegisterItemProcessor(244655, 244655, TauntTool);
 
             //if (TauntTools.CanUseTauntTool())
             //{

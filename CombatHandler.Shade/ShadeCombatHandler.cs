@@ -566,11 +566,12 @@ namespace CombatHandler.Shade
 
             if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
 
-            if (fightingTarget != null && fightingTarget.HealthPercent <= 100)
+            if (fightingTarget != null && fightingTarget.HealthPercent <= 21)
             {
                 if (!_shadeSiphon)
                 {
                     _shadeSiphon = true;
+                    spell.Cast(fightingTarget);
                     return true;
                 }
             }

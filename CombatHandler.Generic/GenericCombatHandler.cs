@@ -10,6 +10,7 @@ using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
+using SmokeLounge.AOtomation.Messaging.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using static CombatHandler.Generic.PerkCondtionProcessors;
@@ -24,6 +25,8 @@ namespace CombatHandler.Generic
         private double _lastPetSyncTime = Time.NormalTime;
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
+
+        private static double _updateTick;
 
         protected readonly string PluginDir;
 
@@ -434,6 +437,24 @@ namespace CombatHandler.Generic
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
+
+            if (Time.NormalTime > _updateTick + 6f)
+            {
+                _updateTick = Time.NormalTime;
+
+                List<TeamMember> _member = Team.Members
+                    .Where(c => c != null)
+                    .ToList();
+
+                foreach (TeamMember member in _member)
+                {
+                    Network.Send(new CharacterActionMessage()
+                    {
+                        Action = CharacterActionType.InfoRequest,
+                        Target = member.Identity
+                    });
+                }
+            }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {

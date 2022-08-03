@@ -442,11 +442,11 @@ namespace CombatHandler.Generic
             {
                 _updateTick = Time.NormalTime;
 
-                List<TeamMember> _member = Team.Members
+                List<TeamMember> _members = Team.Members
                     .Where(c => c != null)
                     .ToList();
 
-                foreach (TeamMember member in _member)
+                foreach (TeamMember member in _members)
                 {
                     Network.Send(new CharacterActionMessage()
                     {

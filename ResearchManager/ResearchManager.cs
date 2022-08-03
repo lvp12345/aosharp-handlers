@@ -144,8 +144,8 @@ namespace ResearchManager
             {
                 _currentGoalFinished = _researchGoalsActive.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                     == N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
-                    && !c.Available || !Research.Goals.Where(d => N3EngineClientAnarchy.GetPerkName(d.ResearchId)
-                       == N3EngineClientAnarchy.GetPerkName(c.ResearchId)).Any())
+                    && (!c.Available || !Research.Goals.Where(d => N3EngineClientAnarchy.GetPerkName(d.ResearchId)
+                       == N3EngineClientAnarchy.GetPerkName(c.ResearchId)).Any()))
                     .ToList();
 
                 if (_currentGoalFinished.Count >= 1)

@@ -442,16 +442,18 @@ namespace CombatHandler.Generic
             {
                 _updateTick = Time.NormalTime;
 
-                List<TeamMember> _members = Team.Members
-                    .Where(c => c != null)
+                List<SimpleChar> PlayersInRange = DynelManager.Characters
+                    .Where(x => x.IsPlayer)
+                    .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
                     .ToList();
 
-                foreach (TeamMember member in _members)
+                foreach (SimpleChar player in PlayersInRange)
                 {
                     Network.Send(new CharacterActionMessage()
                     {
                         Action = CharacterActionType.InfoRequest,
-                        Target = member.Identity
+                        Target = player.Identity
+
                     });
                 }
             }

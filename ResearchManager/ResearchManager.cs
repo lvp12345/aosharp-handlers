@@ -106,7 +106,7 @@ namespace ResearchManager
         {
             //Tick add active and remove active
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
-                && Time.NormalTime > _tickActive + 2.0f)
+                && Time.NormalTime > _tickActive + 1f)
             {
                 foreach (ResearchGoal goal in Research.Goals)
                 {
@@ -121,12 +121,12 @@ namespace ResearchManager
                 {
                     if (_settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"].AsBool() && !_researchGoalsActive.Contains(goal))
                     {
-                        if (!goal.Available)
-                        {
-                            _settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"] = false;
-                            Chat.WriteLine($"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)} Line not available.");
-                            return;
-                        }
+                        //if (!goal.Available)
+                        //{
+                        //    _settings[$"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)}"] = false;
+                        //    Chat.WriteLine($"{N3EngineClientAnarchy.GetPerkName(goal.ResearchId)} Line not available.");
+                        //    return;
+                        //}
 
                         //_researchGoalsActive.Remove(goal);
                         _researchGoalsActive.Add(goal);
@@ -140,13 +140,15 @@ namespace ResearchManager
             //Tick the brain
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && _researchGoalsActive.Count >= 1
-                && Time.NormalTime > _tick + 3.0f)
+                && Time.NormalTime > _tick + 1f)
             {
                 _currentGoalFinished = _researchGoalsActive.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                     == N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
                     && (!c.Available || !Research.Goals.Where(d => N3EngineClientAnarchy.GetPerkName(d.ResearchId)
                        == N3EngineClientAnarchy.GetPerkName(c.ResearchId)).Any()))
                     .ToList();
+
+                //if (!Research.Completed.Contains((uint)_currentGoalFinished.FirstOrDefault().ResearchId)) { return; }
 
                 if (_currentGoalFinished.Count >= 1)
                 {

@@ -60,6 +60,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\FixerProcsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\FixerBuffsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

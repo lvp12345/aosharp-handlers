@@ -67,6 +67,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\DocProcsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\DocBuffsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

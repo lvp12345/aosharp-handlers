@@ -21,9 +21,11 @@ namespace CombatHandler.Fixer
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
+        private static Window _procWindow;
 
         private static View _buffView;
         private static View _debuffView;
+        private static View _procView;
 
         private double _lastBackArmorCheckTime = Time.NormalTime;
 
@@ -38,6 +40,9 @@ namespace CombatHandler.Fixer
 
             _settings.AddVariable("RKRunspeed", false);
             _settings.AddVariable("RKRunspeedTeam", false);
+
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.BootlegRemedies);
 
             _settings.AddVariable("SLRunspeed", false);
 
@@ -54,15 +59,25 @@ namespace CombatHandler.Fixer
             RegisterSettingsWindow("Fixer Handler", "FixerSettingsView.xml");
 
             //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcFixerBootlegRemedies, LEProc);
+            RegisterPerkProcessor(PerkHash.LEProcFixerLucksCalamity, LucksCalamity, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerDirtyTricks, DirtyTricks, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerEscapeTheSystem, EscapeTheSystem, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerIntenseMetabolism, IntenseMetabolism, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerFishInABarrel, FishInABarrel, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.NCUBooster, LEProc);
+            RegisterPerkProcessor(PerkHash.LEProcFixerBootlegRemedies, BootlegRemedies, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerSlipThemAMickey, SlipThemAMickey, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerBendingTheRules, BendingTheRules, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerBackyardBandages, BackyardBandages, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerFightingChance, FightingChance, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerContaminatedBullets, ContaminatedBullets, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerUndergroundSutures, UndergroundSutures, CombatActionPriority.Low);
 
-            //Luck's Calamity is missing from PerkHash list
-            PerkAction lucksCalamity = PerkAction.List.Where(action => action.Name.Equals("Luck's Calamity")).FirstOrDefault();
-            if (lucksCalamity != null) {
-                RegisterPerkProcessor(lucksCalamity.Hash, LEProc);
-            }
+            ////Luck's Calamity is missing from PerkHash list
+            //PerkAction lucksCalamity = PerkAction.List.Where(action => action.Name.Equals("Luck's Calamity")).FirstOrDefault();
+            //if (lucksCalamity != null) {
+            //    RegisterPerkProcessor(lucksCalamity.Hash, LEProc);
+            //}
             
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), GenericBuff);
@@ -133,6 +148,24 @@ namespace CombatHandler.Fixer
                 _debuffWindow = container;
             }
         }
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\FixerProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "FixerProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "FixerProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -171,8 +204,100 @@ namespace CombatHandler.Fixer
                     debuffView.Tag = SettingsController.settingsWindow;
                     debuffView.Clicked = HandleDebuffViewClick;
                 }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
             }
         }
+
+        #region Perks
+
+
+        private bool LucksCalamity(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.LucksCalamity != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool IntenseMetabolism(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.IntenseMetabolism != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool FishInABarrel(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.FishInABarrel != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool EscapeTheSystem(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.EscapeTheSystem != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool DirtyTricks(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.DirtyTricks != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool BootlegRemedies(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.BootlegRemedies != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool BendingTheRules(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.BendingTheRules != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool BackyardBandages(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.BackyardBandages != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool ContaminatedBullets(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.ContaminatedBullets != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool FightingChance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.FightingChance != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool SlipThemAMickey(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.SlipThemAMickey != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool UndergroundSutures(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.UndergroundSutures != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+
+        #endregion
 
         private bool NCUBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -379,6 +504,16 @@ namespace CombatHandler.Fixer
         {
             public static readonly int[] GRID_ARMORS = { 155172, 155173, 155174, 155150 };
             public static readonly int[] SHADOWWEB_SPINNERS = { 273350, 224400, 224399, 224398, 224397, 224396, 224395, 224394, 224393, 224392, 224390 };
+        }
+
+        public enum ProcType1Selection
+        {
+            LucksCalamity, DirtyTricks, EscapeTheSystem, IntenseMetabolism, FishInABarrel
+        }
+
+        public enum ProcType2Selection
+        {
+            BootlegRemedies, SlipThemAMickey, BendingTheRules, BackyardBandages, FightingChance, ContaminatedBullets, UndergroundSutures
         }
     }
 }

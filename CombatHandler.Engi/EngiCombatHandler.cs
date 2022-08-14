@@ -41,9 +41,11 @@ namespace CombatHandler.Engineer
 
         private static Window _petWindow;
         private static Window _buffWindow;
+        private static Window _procWindow;
 
         private static View _buffView;
         private static View _petView;
+        private static View _procView;
 
         private double _lastTrimTime = 0;
         private double _recastBlinds = Time.NormalTime;
@@ -75,6 +77,9 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.Off);
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
 
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ReactiveArmor);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.AssaultForceRelief);
+
             _settings.AddVariable("SpamBlindAura", false);
             _settings.AddVariable("SpamSnareAura", false);
 
@@ -83,8 +88,19 @@ namespace CombatHandler.Engineer
             RegisterSettingsWindow("Engi Handler", "EngineerSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, LEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerDroneMissiles, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerReactiveArmor, ReactiveArmor, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, DestructiveTheorem, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerEnergyTransfer, EnergyTransfer, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerEndureBarrage, EndureBarrage, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveSignal, DestructiveSignal, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerSplinterPreservation, SplinterPreservation, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerCushionBlows, CushionBlows, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcEngineerAssaultForceRelief, AssaultForceRelief, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDroneMissiles, DroneMissiles, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDroneExplosives, DroneExplosives, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerCongenialEncasement, CongenialEncasement, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerPersonalProtection, PersonalProtection, CombatActionPriority.Low);
 
             //Leg Shot
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
@@ -206,6 +222,24 @@ namespace CombatHandler.Engineer
                 _buffWindow = container;
             }
         }
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "EngineerProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "EngineerProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -238,6 +272,13 @@ namespace CombatHandler.Engineer
                     buffView.Tag = SettingsController.settingsWindow;
                     buffView.Clicked = HandleBuffViewClick;
                 }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
+
             }
 
             if (BuffingAuraSelection.Shield != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
@@ -269,6 +310,93 @@ namespace CombatHandler.Engineer
 
             CancelHostileAuras(RelevantNanos.ShieldRippers);
         }
+
+        #region Perks
+
+
+        private bool CushionBlows(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.CushionBlows != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DestructiveSignal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.DestructiveSignal != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DestructiveTheorem(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.DestructiveTheorem != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool EndureBarrage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.EndureBarrage != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool EnergyTransfer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.EnergyTransfer != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool ReactiveArmor(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.ReactiveArmor != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SplinterPreservation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SplinterPreservation != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+
+        private bool AssaultForceRelief(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.AssaultForceRelief != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool CongenialEncasement(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.CongenialEncasement != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DroneExplosives(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.DroneExplosives != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DroneMissiles(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.DroneMissiles != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool PersonalProtection(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.PersonalProtection != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
 
         private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -788,6 +916,15 @@ namespace CombatHandler.Engineer
         public enum DebuffingAuraSelection
         {
             Blind, PetSnare, ShieldRipper
+        }
+        public enum ProcType1Selection
+        {
+            ReactiveArmor, DestructiveTheorem, EnergyTransfer, EndureBarrage, DestructiveSignal, SplinterPreservation, CushionBlows
+        }
+
+        public enum ProcType2Selection
+        {
+            AssaultForceRelief, DroneMissiles, DroneExplosives, CongenialEncasement, PersonalProtection
         }
     }
 }

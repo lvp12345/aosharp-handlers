@@ -25,10 +25,12 @@ namespace CombatHandler.Doctor
         private static Window _buffWindow;
         private static Window _debuffWindow;
         private static Window _healingWindow;
+        private static Window _procWindow;
 
         private static View _buffView;
         private static View _debuffView;
         private static View _healingView;
+        private static View _procView;
 
         private static double _ncuUpdateTime;
 
@@ -49,6 +51,8 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("DotB", false);
             _settings.AddVariable("DotC", false);
 
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DangerousCulture);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.MassiveVitaePlan);
 
             _settings.AddVariable("NanoResistTeam", false);
 
@@ -62,8 +66,19 @@ namespace CombatHandler.Doctor
             RegisterSettingsWindow("Doctor Handler", "DocSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, LEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorMuscleMemory, LEProc, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorDangerousCulture, DangerousCulture, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorAntiseptic, Antiseptic, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorMuscleMemory, MuscleMemory, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorBloodTransfusion, BloodTransfusion, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorRestrictiveBandaging, RestrictiveBandaging, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcDoctorMassiveVitaePlan, MassiveVitaePlan, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorAnatomicBlight, AnatomicBlight, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorHealingCare, HealingCare, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorPathogen, Pathogen, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorAnesthetic, Anesthetic, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, Astringent, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorInflammation, Inflammation, CombatActionPriority.Low);
 
             //Healing
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
@@ -215,6 +230,25 @@ namespace CombatHandler.Doctor
             }
         }
 
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\DocProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "DocProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "DocProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -278,6 +312,12 @@ namespace CombatHandler.Doctor
                     buffView.Clicked = HandleBuffViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                 {
                     debuffView.Tag = SettingsController.settingsWindow;
@@ -285,6 +325,92 @@ namespace CombatHandler.Doctor
                 }
             }
         }
+
+        #region Perks
+
+
+        private bool Antiseptic(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.Antiseptic != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool BloodTransfusion(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.BloodTransfusion != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DangerousCulture(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.DangerousCulture != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool MuscleMemory(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.MuscleMemory != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool RestrictiveBandaging(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.RestrictiveBandaging != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool AnatomicBlight(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.AnatomicBlight != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool Anesthetic(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Anesthetic != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool Astringent(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Astringent != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool HealingCare(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.HealingCare != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool Inflammation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Inflammation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool MassiveVitaePlan(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.MassiveVitaePlan != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool Pathogen(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Pathogen != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+
+        #endregion
 
         #region Healing
 
@@ -547,6 +673,15 @@ namespace CombatHandler.Doctor
         public enum ShortHoTSelection
         {
             None, Self, Team, TeamDeathlessBlessing
+        }
+        public enum ProcType1Selection
+        {
+            DangerousCulture, Antiseptic, MuscleMemory, BloodTransfusion, RestrictiveBandaging
+        }
+
+        public enum ProcType2Selection
+        {
+            MassiveVitaePlan, AnatomicBlight, HealingCare, Pathogen, Anesthetic, Astringent, Inflammation
         }
 
         private static class RelevantNanos

@@ -61,6 +61,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\EngineerProcsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\EngineerPetsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

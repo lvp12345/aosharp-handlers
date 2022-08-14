@@ -270,6 +270,7 @@ namespace CombatHandler.Generic
             {PerkHash.LEProcFixerIntenseMetabolism , PerkType.LE_PROC},
             {PerkHash.LEProcFixerSlipThemAMickey , PerkType.LE_PROC},
             {PerkHash.LEProcFixerUndergroundSutures , PerkType.LE_PROC},
+            {PerkHash.LEProcFixerLucksCalamity , PerkType.LE_PROC},
             {PerkHash.LEProcKeeperAmbientPurification , PerkType.LE_PROC},
             {PerkHash.LEProcKeeperBenevolentBarrier , PerkType.LE_PROC},
             {PerkHash.LEProcKeeperEschewTheFaithless , PerkType.LE_PROC},

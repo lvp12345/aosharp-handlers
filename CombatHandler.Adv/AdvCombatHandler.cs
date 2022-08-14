@@ -25,10 +25,12 @@ namespace CombatHandler.Adventurer
         private static Window _morphWindow;
         private static Window _healingWindow;
         private static Window _buffWindow;
+        private static Window _procWindow;
 
         private static View _morphView;
         private static View _healingView;
         private static View _buffView;
+        private static View _procView;
 
         private static double _ncuUpdateTime;
 
@@ -45,6 +47,9 @@ namespace CombatHandler.Adventurer
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
             _settings.AddVariable("MorphSelection", (int)MorphSelection.None);
 
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AesirAbsorption);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.HealingHerbs);
+
             _settings.AddVariable("DragonMorph", false);
             _settings.AddVariable("LeetMorph", false);
             _settings.AddVariable("SaberMorph", false);
@@ -57,8 +62,19 @@ namespace CombatHandler.Adventurer
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, LEProc);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerCombustion, LEProc);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerAesirAbsorption, AesirAbsorption, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, MacheteFlurry, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSelfPreservation, SelfPreservation, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSkinProtection, SkinProtection, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSoothingHerbs, SoothingHerbs, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerFerociousHits, FerociousHits, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerHealingHerbs, HealingHerbs, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerCombustion, Combustion, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerCharringBlow, CharringBlow, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerRestoreVigor, RestoreVigor, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteSlice, MacheteSlice, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerBasicDressing, BasicDressing, CombatActionPriority.Low);
 
             //Spells
             RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
@@ -186,6 +202,24 @@ namespace CombatHandler.Adventurer
                 }
             }
         }
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "AdvProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "AdvProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
 
         private void HandleMorphViewClick(object s, ButtonBase button)
         {
@@ -290,8 +324,98 @@ namespace CombatHandler.Adventurer
                     morphView.Tag = SettingsController.settingsWindow;
                     morphView.Clicked = HandleMorphViewClick;
                 }
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
             }
         }
+
+        #region Perks
+
+
+        private bool AesirAbsorption(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.AesirAbsorption != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool FerociousHits(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.FerociousHits != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool MacheteFlurry(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.MacheteFlurry != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SelfPreservation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SelfPreservation != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool SkinProtection(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SkinProtection != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool SoothingHerbs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SoothingHerbs != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool BasicDressing(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.BasicDressing != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool CharringBlow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.CharringBlow != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool Combustion(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Combustion != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool HealingHerbs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.HealingHerbs != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool MacheteSlice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.MacheteSlice != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool RestoreVigor(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.RestoreVigor != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
 
         private bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -407,15 +531,6 @@ namespace CombatHandler.Adventurer
 
         #region Misc
 
-        public enum HealSelection
-        {
-            None, SingleTeam, SingleOS
-        }
-        public enum MorphSelection
-        {
-            None, Dragon, Saber, Wolf, Leet
-        }
-
         private static class RelevantNanos
         {
             public static int[] HEALS = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
@@ -434,9 +549,23 @@ namespace CombatHandler.Adventurer
 
         }
 
-        private static class RelevantItems
+        public enum HealSelection
         {
+            None, SingleTeam, SingleOS
+        }
+        public enum MorphSelection
+        {
+            None, Dragon, Saber, Wolf, Leet
+        }
 
+        public enum ProcType1Selection
+        {
+            AesirAbsorption, MacheteFlurry, SelfPreservation, SkinProtection, SoothingHerbs, FerociousHits
+        }
+
+        public enum ProcType2Selection
+        {
+            HealingHerbs, Combustion, CharringBlow, RestoreVigor, MacheteSlice, BasicDressing
         }
 
         #endregion

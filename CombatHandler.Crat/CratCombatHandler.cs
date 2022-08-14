@@ -1021,7 +1021,7 @@ namespace CombatHandler.Bureaucrat
             public const int SkilledGunSlinger = 263251;
             public const int GreaterGunSlinger = 263250;
             public const int MastersBidding = 268171;
-            public const int Shackles = 82463;
+            public const int Shackles = 224129;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
             public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Id != GreaterGunSlinger && spell.Id != SkilledGunSlinger).ToArray();

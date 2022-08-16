@@ -633,6 +633,8 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
+            if (spell.Name == "Elusive Target") { return false; }
+
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 

@@ -150,7 +150,7 @@ namespace ResearchManager
 
                 //if (!Research.Completed.Contains((uint)_currentGoalFinished.FirstOrDefault().ResearchId)) { return; }
 
-                if (_currentGoalFinished.Count >= 1)
+                if (_currentGoalFinished.Count >= 1 || (int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0)
                 {
                     if (_asyncToggle == false)
                     {

@@ -110,7 +110,7 @@ namespace CombatHandler.Adventurer
 
         }
 
-        public Window[] _windows => new Window[] { _morphWindow, _healingWindow };
+        public Window[] _windows => new Window[] { _morphWindow, _healingWindow, _procWindow };
 
         public static void AdvHealPercentage_Changed(object s, int e)
         {

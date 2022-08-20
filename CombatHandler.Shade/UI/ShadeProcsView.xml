@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
+      <RadioButton label="Blackened Legacy (Evade Buff EvadeClsC 100 DuckExp 50 DodgeRange 50 60s) " value="0"/>
+      <RadioButton label="Siphon Being (HP Drain 580 Energy-damage 577 Healing)" value="1"/>
+      <RadioButton label="Shadowed Gift (DOT 975 Poison-damage [5x195 hits every 1 sec] 6s)" value="2"/>
+      <RadioButton label="Drain Essence (HP Drain 382 Energy-damage 310 Healing)" value="3"/>
+      <RadioButton label="Elusive Spirit (Evade Buff EvadeClsC 56 DuckExp 32 DodgeRange 32 60s)" value="4"/>
+      <RadioButton label="Toxic Confusion (DOT 425 Poison-damage [5x85 hits every 1sec] 6s)" value="5"/>
+      <RadioButton label="Sap Life (HP Drain 17 Energy-damage 7 HP Gain)" value="6"/>
+    </OptionRadioButtonGroup>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
+      <RadioButton label="Blackheart (Target Hit 767 Melee-damage)" value="0"/>
+      <RadioButton label="Twisted Caress (Target Hit 550 Melee-damage)" value="1"/>
+      <RadioButton label="Concealed Surprise (Target Hit 234 Melee-damage)" value="2"/>
+      <RadioButton label="Misdirection (Evade Buff EvadeClsC 40 DuckExp 25 DodgeRange 25 60s)" value="3"/>
+      <RadioButton label="Devious Spirit (Target Hit 23 Melee-damage)" value="4"/>
+    </OptionRadioButtonGroup>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+  </BorderView>
+</root>

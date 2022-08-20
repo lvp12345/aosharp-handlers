@@ -472,11 +472,7 @@ namespace CombatHandler.MartialArtist
 
         protected bool TeamCritBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.CriticalIncreaseBuff)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {

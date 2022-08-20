@@ -20,8 +20,10 @@ namespace CombatHandler.Keeper
         private static string PluginDirectory;
 
         private static Window _buffWindow;
+        private static Window _procWindow;
 
         private static View _buffView;
+        private static View _procView;
 
         private static double _ncuUpdateTime;
 
@@ -34,6 +36,10 @@ namespace CombatHandler.Keeper
 
             _settings.AddVariable("SpamAntifear", false);
 
+            //LE Proc
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RighteousSmite);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.HonorRestored);
+
             //Auras
             _settings.AddVariable("AuraSet1Selection", (int)AuraSet1Selection.Heal);
             _settings.AddVariable("AuraSet2Selection", (int)AuraSet2Selection.Damage);
@@ -44,9 +50,21 @@ namespace CombatHandler.Keeper
 
             RegisterPerkProcessors();
 
-            //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcKeeperHonorRestored, LEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousSmite, LEProc, CombatActionPriority.Low);
+
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousSmite, RighteousSmite, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperSymbioticBypass, SymbioticBypass, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperVirtuousReaper, VirtuousReaper, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperIgnoreTheUnrepentant, IgnoreTheUnrepentant, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperPureStrike, PureStrike, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperEschewTheFaithless, EschewTheFaithless, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousStrike, RighteousStrike, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcKeeperHonorRestored, HonorRestored, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperAmbientPurification, AmbientPurification, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperBenevolentBarrier, BenevolentBarrier, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperSubjugation, Subjugation, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperFaithfulReconstruction, FaithfulReconstruction, CombatActionPriority.Low);
 
             //12man Antifear spam
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), AntifearSpam);
@@ -74,7 +92,7 @@ namespace CombatHandler.Keeper
 
             PluginDirectory = pluginDir;
         }
-        public Window[] _windows => new Window[] { _buffWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _procWindow };
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -92,9 +110,37 @@ namespace CombatHandler.Keeper
             }
         }
 
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "KeeperProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "KeeperProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
+
+
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
-            if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperBuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "KeeperBuffsView" }, _buffView);
+            }
+            else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "KeeperBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
@@ -122,6 +168,12 @@ namespace CombatHandler.Keeper
                 {
                     buffView.Tag = SettingsController.settingsWindow;
                     buffView.Clicked = HandleBuffViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
                 }
 
                 if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
@@ -162,6 +214,91 @@ namespace CombatHandler.Keeper
             //CancelBuffs(IsSettingEnabled("ReflectAura") ? RelevantNanos.AAOAuras : RelevantNanos.ReflectAuras);
             //CancelBuffs(IsSettingEnabled("DerootAura") ? RelevantNanos.DamageAuras : RelevantNanos.DerootAuras);
         }
+
+        #region Perks
+
+
+        private bool EschewTheFaithless(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.EschewTheFaithless != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool IgnoreTheUnrepentant(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.IgnoreTheUnrepentant != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool PureStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.PureStrike != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool RighteousSmite(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.RighteousSmite != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool RighteousStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.RighteousStrike != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool SymbioticBypass(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SymbioticBypass != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool VirtuousReaper(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.VirtuousReaper != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool AmbientPurification(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.AmbientPurification != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool BenevolentBarrier(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.BenevolentBarrier != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool FaithfulReconstruction(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.FaithfulReconstruction != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool HonorRestored(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.HonorRestored != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool Subjugation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Subjugation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
 
         private bool AntifearSpam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -273,6 +410,16 @@ namespace CombatHandler.Keeper
         public enum AuraSet4Selection
         {
             Sanc, Reaper
+        }
+
+        public enum ProcType1Selection
+        {
+            RighteousSmite, SymbioticBypass, VirtuousReaper, IgnoreTheUnrepentant, PureStrike, EschewTheFaithless, RighteousStrike
+        }
+
+        public enum ProcType2Selection
+        {
+            HonorRestored, AmbientPurification, BenevolentBarrier, Subjugation, FaithfulReconstruction
         }
     }
 }

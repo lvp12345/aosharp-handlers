@@ -116,7 +116,7 @@ namespace CombatHandler.Doctor
             DocCompleteHealPercentage = Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow };
 
         public static void DocHealPercentage_Changed(object s, int e)
         {

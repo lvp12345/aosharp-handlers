@@ -22,10 +22,12 @@ namespace CombatHandler.Metaphysicist
         private static Window _buffWindow;
         private static Window _debuffWindow;
         private static Window _petWindow;
+        private static Window _procWindow;
 
         private static View _buffView;
         private static View _debuffView;
         private static View _petView;
+        private static View _procView;
 
         private double _lastSwitchedHealTime = 0;
         private double _lastSwitchedMezzTime = 0;
@@ -60,6 +62,10 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("CompositesNanoSkills", false);
             _settings.AddVariable("CompositesNanoSkillsTeam", false);
 
+            //LE Proc
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AnticipatedEvasion);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DiffuseRage);
+
             _settings.AddVariable("Replenish", false);
 
             //_settings.AddVariable("MatterCrea", false);
@@ -78,9 +84,20 @@ namespace CombatHandler.Metaphysicist
 
             RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
 
-            //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, LEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuppressFury, LEProc, CombatActionPriority.Low);
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistNanobotContingentArrest, NanobotContingentArrest, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, AnticipatedEvasion, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistThoughtfulMeans, ThoughtfulMeans, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistRegainFocus, RegainFocus, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEconomicNanobotUse, EconomicNanobotUse, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuperEgoStrike, SuperEgoStrike, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuppressFury, SuppressFury, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEgoStrike, EgoStrike, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistMindWail, MindWail, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, SowDoubt, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, SowDespair, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, DiffuseRage, CombatActionPriority.Low);
 
             //Self buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
@@ -212,6 +229,25 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MPProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "MPProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "MPProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -262,8 +298,100 @@ namespace CombatHandler.Metaphysicist
                     debuffView.Tag = SettingsController.settingsWindow;
                     debuffView.Clicked = HandleDebuffViewClick;
                 }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
             }
         }
+
+        #region Perks
+
+
+        private bool AnticipatedEvasion(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.AnticipatedEvasion != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool EconomicNanobotUse(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.EconomicNanobotUse != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool NanobotContingentArrest(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.NanobotContingentArrest != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool RegainFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.RegainFocus != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool ThoughtfulMeans(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.ThoughtfulMeans != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool DiffuseRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.DiffuseRage != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool EgoStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.EgoStrike != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool MindWail(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.MindWail != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SowDespair(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.SowDespair != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SowDoubt(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.SowDoubt != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SuperEgoStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.SuperEgoStrike != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool SuppressFury(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.SuppressFury != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
 
         private bool ChannelRage(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -744,6 +872,16 @@ namespace CombatHandler.Metaphysicist
             //public static readonly string[] TwoHandedNames = { "Azure Cobra of Orma", "Wixel's Notum Python", "Asp of Semol", "Viper Staff" };
             //public static readonly string[] OneHandedNames = { "Asp of Titaniush", "Gold Acantophis", "Bitis Striker", "Coplan's Hand Taipan", "The Crotalus" };
             //public static readonly string[] ShieldNames = { "Shield of Zset", "Shield of Esa", "Shield of Asmodian", "Mocham's Guard", "Death Ward", "Belthior's Flame Ward", "Wave Breaker", "Living Shield of Evernan", "Solar Guard", "Notum Defender", "Vital Buckler" };
+        }
+
+        public enum ProcType1Selection
+        {
+            NanobotContingentArrest, AnticipatedEvasion, ThoughtfulMeans, RegainFocus, EconomicNanobotUse
+        }
+
+        public enum ProcType2Selection
+        {
+            SuperEgoStrike, SuppressFury, EgoStrike, MindWail, SowDoubt, SowDespair, DiffuseRage
         }
 
         //private enum SummonedWeaponSelection

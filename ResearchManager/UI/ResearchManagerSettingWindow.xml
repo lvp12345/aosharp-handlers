@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <View view_layout="vertical" name="parent">
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+      <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toggle" layout_borders="Rect(10,1,5,1)"/>
+      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+  </View>
+</root>

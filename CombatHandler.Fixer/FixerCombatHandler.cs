@@ -97,7 +97,7 @@ namespace CombatHandler.Fixer
 
             PluginDirectory = pluginDir;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _procWindow };
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {

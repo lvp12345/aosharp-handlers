@@ -171,7 +171,7 @@ namespace CombatHandler.Engineer
             PluginDirectory = pluginDir;
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _buffWindow };
+        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow };
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {

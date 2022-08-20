@@ -60,6 +60,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\ShadeProcsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\ShadeBuffsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

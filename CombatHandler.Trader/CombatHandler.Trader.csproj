@@ -58,6 +58,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\TraderProcsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\TraderDebuffsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

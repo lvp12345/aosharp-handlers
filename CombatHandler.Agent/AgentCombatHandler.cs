@@ -123,7 +123,7 @@ namespace CombatHandler.Agent
             AgentCompleteHealPercentage = Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow };
 
         public static void AgentHealPercentage_Changed(object s, int e)
         {

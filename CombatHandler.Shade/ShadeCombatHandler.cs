@@ -25,9 +25,11 @@ namespace CombatHandler.Shade
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
+        private static Window _procWindow;
 
         private static View _buffView;
         private static View _debuffView;
+        private static View _procView;
 
         private static double _ncuUpdateTime;
 
@@ -37,6 +39,10 @@ namespace CombatHandler.Shade
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
+
+            //LE Proc
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.BlackenedLegacy);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.Blackheart);
 
             //IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
@@ -64,8 +70,20 @@ namespace CombatHandler.Shade
 
             RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
-            RegisterPerkProcessor(PerkHash.LEProcShadeSiphonBeing, LEProc);
-            RegisterPerkProcessor(PerkHash.LEProcShadeBlackheart, LEProc);
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcShadeBlackenedLegacy, BlackenedLegacy, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeSiphonBeing, SiphonBeing, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeShadowedGift, ShadowedGift, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeDrainEssence, DrainEssence, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeElusiveSpirit, ElusiveSpirit, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeToxicConfusion, ToxicConfusion, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeSapLife, SapLife, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcShadeBlackheart, Blackheart, CombatActionPriority.Low);;
+            RegisterPerkProcessor(PerkHash.LEProcShadeTwistedCaress, TwistedCaress, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeConcealedSurprise, ConcealedSurprise, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeMisdirection, Misdirection, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcShadeDeviousSpirit, DeviousSpirit, CombatActionPriority.Low);
 
             //Perks
             RelevantPerks.SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
@@ -102,7 +120,7 @@ namespace CombatHandler.Shade
 
             PluginDirectory = pluginDir;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _procWindow };
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -318,6 +336,25 @@ namespace CombatHandler.Shade
             }
         }
 
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\ShadeProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "ShadeProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "ShadeProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -345,6 +382,12 @@ namespace CombatHandler.Shade
                 {
                     debuffView.Tag = SettingsController.settingsWindow;
                     debuffView.Clicked = HandleDebuffViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
                 }
             }
 
@@ -412,6 +455,91 @@ namespace CombatHandler.Shade
                 CancelBuffs(RelevantNanos.ShadeStunProc);
             }
         }
+
+        #region Perks
+
+
+        private bool BlackenedLegacy(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.BlackenedLegacy != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DrainEssence(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.DrainEssence != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool ElusiveSpirit(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.ElusiveSpirit != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool SapLife(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SapLife != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool ShadowedGift(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.ShadowedGift != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool SiphonBeing(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.SiphonBeing != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool ToxicConfusion(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.ToxicConfusion != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool Blackheart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Blackheart != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool ConcealedSurprise(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.ConcealedSurprise != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool DeviousSpirit(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.DeviousSpirit != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool Misdirection(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.Misdirection != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool TwistedCaress(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.TwistedCaress != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
 
         private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -697,6 +825,16 @@ namespace CombatHandler.Shade
                 PerkHash.UnsealedContagion,
                 PerkHash.CaptureVitality
             };
+        }
+
+        public enum ProcType1Selection
+        {
+            BlackenedLegacy, SiphonBeing, ShadowedGift, DrainEssence, ElusiveSpirit, ToxicConfusion, SapLife
+        }
+
+        public enum ProcType2Selection
+        {
+            Blackheart, TwistedCaress, ConcealedSurprise, Misdirection, DeviousSpirit
         }
     }
 }

@@ -23,6 +23,7 @@ namespace ResearchManager
         public static bool _asyncToggle = false;
 
         private static double _tick;
+        private static int _currentEnd = 0;
 
         public static string PluginDir;
 
@@ -55,11 +56,20 @@ namespace ResearchManager
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _tick + 0.5f)
             {
-                if ((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) >= 1) 
+                if (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) >= 1 
+                    || (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0 && Research.Completed.Contains((uint)_currentEnd))) 
                 {
                     ResearchGoal _current = Research.Goals.Where(c => !_finishedGoals.Contains(c) && N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                        == N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
+                        == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
                         .FirstOrDefault();
+
+                    if (_currentEnd == 0)
+                    {
+                        if (Utilz.Last(_current.ResearchId) == 9)
+                            _currentEnd = _current.ResearchId + 1;
+                        else if (Utilz.Last(_current.ResearchId) == 0)
+                            _currentEnd = _current.ResearchId;
+                    }
 
                     if (_current.Available) { return; }
 
@@ -73,9 +83,11 @@ namespace ResearchManager
                                 _finishedGoals.Add(_current);
 
                                 ResearchGoal _next = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                                    != N3EngineClientAnarchy.GetPerkName((int)DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
+                                    != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
                                     .FirstOrDefault();
 
+                                await Task.Delay(200);
+                                _currentEnd = 0;
                                 await Task.Delay(200);
                                 Research.Train(_next.ResearchId);
                                 await Task.Delay(200);

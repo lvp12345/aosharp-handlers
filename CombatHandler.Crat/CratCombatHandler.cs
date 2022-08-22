@@ -75,7 +75,7 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("AggDefTrimmer", false);
 
             _settings.AddVariable("Nukes", false);
-            _settings.AddVariable("AoeRoot", false);
+            _settings.AddVariable("AOERoot", false);
 
             _settings.AddVariable("Calm12Man", false);
             _settings.AddVariable("CalmSector7", false);
@@ -103,7 +103,7 @@ namespace CombatHandler.Bureaucrat
             //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), MalaiseTargetDebuff, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs);
             RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs);
-            RegisterSpellProcessor(RelevantNanos.Shackles, AoeRoot, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.PuissantVoidInertia, AOERoot, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalmDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.AoECalms, AoECalmDebuff, CombatActionPriority.High);
@@ -834,16 +834,15 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-        private bool AoeRoot(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AOERoot(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (!IsSettingEnabled("AoeRoot") || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("AOERoot") || !CanCast(spell)) { return false; }
 
             SimpleChar target = DynelManager.Characters
                 .Where(c => c.Name == "Flaming Vengeance" 
-                    || c.Name == "Hand of the Colonel"
-                    || c.Name == "Harbinger of Pestilence")
+                    || c.Name == "Hand of the Colonel")
                 .Where(c => RootLogic(c, spell))
                 .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 50f)
                 .FirstOrDefault();
@@ -903,11 +902,6 @@ namespace CombatHandler.Bureaucrat
         protected bool RobotSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool IsAoeRoot(Buff buff)
-        {
-            return RelevantNanos.AoeRootDebuffs.Any(id => id == buff.Id);
         }
 
         #endregion
@@ -1021,7 +1015,7 @@ namespace CombatHandler.Bureaucrat
             public const int SkilledGunSlinger = 263251;
             public const int GreaterGunSlinger = 263250;
             public const int MastersBidding = 268171;
-            public const int Shackles = 224129;
+            public const int PuissantVoidInertia = 224129;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
             public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Id != GreaterGunSlinger && spell.Id != SkilledGunSlinger).ToArray();

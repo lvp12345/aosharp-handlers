@@ -37,6 +37,7 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("AIDot", true);
 
             _settings.AddVariable("Pierce", false);
+            _settings.AddVariable("FlimFocus", false);
 
             _settings.AddVariable("NanoHoTTeam", false);
             _settings.AddVariable("CostTeam", false);
@@ -63,6 +64,8 @@ namespace CombatHandler.NanoTechnician
             RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianPoweredNanoFortress, PoweredNanoFortress, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianIncreaseMomentum, IncreaseMomentum, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianUnstableLibrary, UnstableLibrary, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.Low);
 
 
             //Buffs
@@ -267,6 +270,13 @@ namespace CombatHandler.NanoTechnician
         }
 
         #endregion
+
+        private bool FlimFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("FlimFocus")) { return false; }
+
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
+        }
 
 
         private bool AOEBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

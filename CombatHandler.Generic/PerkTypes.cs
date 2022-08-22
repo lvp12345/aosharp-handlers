@@ -140,7 +140,7 @@ namespace CombatHandler.Generic
             {PerkHash.FireFrenzy , PerkType.TARGETED_DAMAGE},
             {PerkHash.Flay , PerkType.TARGETED_DAMAGE},
             {PerkHash.FleshQuiver , PerkType.TARGETED_DAMAGE},
-            {PerkHash.FlimFocus , PerkType.SELF_BUFF},
+            {PerkHash.FlimFocus , PerkType.OTHER},
             {PerkHash.FlurryOfCuts , PerkType.TARGETED_DAMAGE},
             {PerkHash.FollowupSmash , PerkType.TARGETED_DAMAGE},
             {PerkHash.ForceOpponent , PerkType.TARGETED_DAMAGE},

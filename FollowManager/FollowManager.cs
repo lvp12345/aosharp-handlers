@@ -64,8 +64,6 @@ namespace FollowManager
 
             _settings.AddVariable("FollowSelection", (int)FollowSelection.None);
 
-            Chat.RegisterCommand("leadfollow", LeadFollowSwitch);
-
             Chat.WriteLine("FollowManager Loaded!");
             Chat.WriteLine("/followmanager for settings.");
 
@@ -278,15 +276,6 @@ namespace FollowManager
                 Chat.WriteLine($"Cannot find {targetDynel.Name}. Make sure to type captial first letter.");
                 _settings["NavFollow"] = false;
                 return;
-            }
-        }
-
-        private void LeadFollowSwitch(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                _settings["Follow"] = !_settings["Follow"].AsBool();
-                Chat.WriteLine($"Lead follow : {_settings["Follow"].AsBool()}");
             }
         }
 

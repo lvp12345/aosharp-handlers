@@ -1,13 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using AOSharp.Core;
-using AOSharp.Core.IPC;
+﻿using AOSharp.Core;
 using AOSharp.Core.UI;
 using AOSharp.Common.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using AOSharp.Core.Inventory;
 using AOSharp.Common.Unmanaged.Interfaces;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,12 +48,12 @@ namespace ResearchManager
         private void OnUpdate(object s, float deltaTime)
         {
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
-                && Time.NormalTime > _tick + 0.5f)
+                && Time.NormalTime > _tick + 3f)
             {
                 if (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) >= 1 
                     || (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0 && Research.Completed.Contains((uint)_currentEnd))) 
                 {
-                    ResearchGoal _current = Research.Goals.Where(c => !_finishedGoals.Contains(c) && N3EngineClientAnarchy.GetPerkName(c.ResearchId)
+                    ResearchGoal _current = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                         == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
                         .FirstOrDefault();
 
@@ -71,9 +65,7 @@ namespace ResearchManager
                             _currentEnd = _current.ResearchId;
                     }
 
-                    if (_current.Available) { return; }
-
-                    if (_asyncToggle == false)
+                    if (_asyncToggle == false && (Research.Completed.Contains((uint)_current.ResearchId) || !_current.Available))
                     {
                         Task.Factory.StartNew(
                             async () =>

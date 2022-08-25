@@ -12,7 +12,7 @@ using AOSharp.Common.GameData.UI;
 
 namespace AssistManager
 {
-    public class HelpManager : AOPluginEntry
+    public class AssistManager : AOPluginEntry
     {
         private static IPCChannel IPCChannel;
 

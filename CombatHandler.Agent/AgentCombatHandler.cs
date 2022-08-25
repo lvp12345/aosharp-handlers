@@ -54,6 +54,9 @@ namespace CombatHandler.Agent
 
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.GrimReaper);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.LaserAim);
+
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
             _settings.AddVariable("EvasionDebuff", false);
@@ -62,20 +65,26 @@ namespace CombatHandler.Agent
             _settings.AddVariable("Damage", false);
             _settings.AddVariable("Detaunt", false);
 
-
-            _settings.AddVariable("LazerAim", false);
-            _settings.AddVariable("NotumChargedRounds", false);
-
             _settings.AddVariable("Concentration", false);
 
             _settings.AddVariable("FalseProfSelection", (int)FalseProfSelection.None);
 
             RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
-            ////LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, LEProc);
-            RegisterPerkProcessor(PerkHash.LEProcAgentLaserAim, LaserAim);
-            RegisterPerkProcessor(PerkHash.LEProcAgentNotumChargedRounds, NotumChargedRounds);
+            //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, GrimReaper, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentDisableCuffs, DisableCuffs, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentNoEscape, NoEscape, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentIntenseMetabolism, IntenseMetabolism, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentMinorNanobotEnhance, MinorNanobotEnhance, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcAgentNotumChargedRounds, NotumChargedRounds, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentLaserAim, LaserAim, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentNanoEnhancedTargeting, NanoEnhancedTargeting, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentPlasteelPiercingRounds, PlasteelPiercingRounds, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentCellKiller, CellKiller, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentImprovedFocus, ImprovedFocus, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, BrokenAnkle, CombatActionPriority.Low);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GenericBuff);
@@ -373,6 +382,91 @@ namespace CombatHandler.Agent
             }
         }
 
+        #region Perks
+
+
+        private bool DisableCuffs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.DisableCuffs != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool GrimReaper(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.GrimReaper != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool IntenseMetabolism(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.IntenseMetabolism != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool MinorNanobotEnhance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.MinorNanobotEnhance != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool NoEscape(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType1Selection.NoEscape != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool BrokenAnkle(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.BrokenAnkle != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool CellKiller(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.CellKiller != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool ImprovedFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.ImprovedFocus != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool LaserAim(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.LaserAim != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool NanoEnhancedTargeting(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.NanoEnhancedTargeting != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool NotumChargedRounds(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.NotumChargedRounds != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+        private bool PlasteelPiercingRounds(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcType2Selection.PlasteelPiercingRounds != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
         #region Healing
 
         private void AssignTargetToHealPet()
@@ -551,26 +645,6 @@ namespace CombatHandler.Agent
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool LaserAim(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LazerAim")) { return false; }
-
-            if (IsSettingEnabled("NotumChargedRounds") && IsSettingEnabled("LazerAim")) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool NotumChargedRounds(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("NotumChargedRounds")) { return false; }
-
-            if (IsSettingEnabled("NotumChargedRounds") && IsSettingEnabled("LazerAim")) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-
-
         private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
@@ -674,6 +748,16 @@ namespace CombatHandler.Agent
         {
             None, Target, OS
         }
+        public enum ProcType1Selection
+        {
+            GrimReaper, DisableCuffs, NoEscape, IntenseMetabolism, MinorNanobotEnhance
+        }
+
+        public enum ProcType2Selection
+        {
+            NotumChargedRounds, LaserAim, NanoEnhancedTargeting, PlasteelPiercingRounds, CellKiller, ImprovedFocus, BrokenAnkle
+        }
+
         private static class RelevantNanos
         {
             public static int[] DetauntProcs = { 226437, 226435, 226433, 226431, 226429, 226427 };

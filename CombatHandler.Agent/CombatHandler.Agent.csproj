@@ -60,10 +60,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="UI\AgentFalseProfsView.xml">
+    <Content Include="UI\AgentProcsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\AgentProcView.xml">
+    <Content Include="UI\AgentFalseProfsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\AgentHealingView.xml">

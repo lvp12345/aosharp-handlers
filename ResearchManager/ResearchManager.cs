@@ -12,12 +12,9 @@ namespace ResearchManager
     {
         protected Settings _settings;
 
-        public static List<ResearchGoal> _finishedGoals = new List<ResearchGoal>();
-
         public static bool _asyncToggle = false;
 
         private static double _tick;
-        private static int _currentEnd = 0;
 
         public static string PluginDir;
 
@@ -50,45 +47,29 @@ namespace ResearchManager
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _tick + 3f)
             {
-                if (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) >= 1 
-                    || (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0 && Research.Completed.Contains((uint)_currentEnd))) 
+                ResearchGoal _current = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
+                    == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
+                    .FirstOrDefault();
+
+                if (_asyncToggle == false && (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0 || !_current.Available))
                 {
-                    ResearchGoal _current = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                        == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
-                        .FirstOrDefault();
+                    Task.Factory.StartNew(
+                        async () =>
+                        {
+                            _asyncToggle = true;
 
-                    if (_currentEnd == 0)
-                    {
-                        if (Utilz.Last(_current.ResearchId) == 9)
-                            _currentEnd = _current.ResearchId + 1;
-                        else if (Utilz.Last(_current.ResearchId) == 0)
-                            _currentEnd = _current.ResearchId;
-                    }
+                            ResearchGoal _next = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
+                                != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
+                                .FirstOrDefault();
 
-                    if (_asyncToggle == false && (Research.Completed.Contains((uint)_current.ResearchId) || !_current.Available))
-                    {
-                        Task.Factory.StartNew(
-                            async () =>
-                            {
-                                _asyncToggle = true;
+                            await Task.Delay(200);
+                            Research.Train(_next.ResearchId);
+                            Chat.WriteLine($"Changing to line - {N3EngineClientAnarchy.GetPerkName(_next.ResearchId)} [{_next.ResearchId}]");
+                            await Task.Delay(200);
 
-                                _finishedGoals.Add(_current);
-
-                                ResearchGoal _next = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                                    != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
-                                    .FirstOrDefault();
-
-                                await Task.Delay(200);
-                                _currentEnd = 0;
-                                await Task.Delay(200);
-                                Research.Train(_next.ResearchId);
-                                await Task.Delay(200);
-
-                                _asyncToggle = false;
-                            });
-                    }
+                            _asyncToggle = false;
+                        });
                 }
-
                 _tick = Time.NormalTime;
             }
         }

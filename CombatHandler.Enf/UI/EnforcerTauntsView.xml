@@ -12,7 +12,7 @@
     </OptionRadioButtonGroup>
     <TextInputView name="DelaySingleBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="*Delay is calculated as seconds." layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="*Delay calculated as seconds." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>
 </root>

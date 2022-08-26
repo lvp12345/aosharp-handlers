@@ -33,11 +33,11 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int AdvCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AdvCompleteHealPercentage : 20;
         [JsonIgnore]
-        public int EnfDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfDelaySingle : 1;
+        public int EnfTauntDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfTauntDelaySingle : 1;
         [JsonIgnore]
-        public int EnfDelayAOE => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfDelayAOE : 1;
+        public int EnfTauntDelayArea => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfTauntDelayArea : 1;
         [JsonIgnore]
-        public int EnfDelayAbsorbs => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfDelayAbsorbs : 1;
+        public int EnfCycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay : 1;
 
         public static Config Load(string path)
         {
@@ -241,54 +241,54 @@ namespace CombatHandler.Generic
                 }
             }
         }
-        public event EventHandler<int> EnfDelayAOEChangedEvent;
-        private int _enfDelayAOE = 1;
-        public int EnfDelayAOE
+        public event EventHandler<int> EnfTauntDelayAreaChangedEvent;
+        private int _enfTauntDelayArea = 1;
+        public int EnfTauntDelayArea
         {
             get
             {
-                return _enfDelayAOE;
+                return _enfTauntDelayArea;
             }
             set
             {
-                if (_enfDelayAOE != value)
+                if (_enfTauntDelayArea != value)
                 {
-                    _enfDelayAOE = value;
-                    EnfDelayAOEChangedEvent?.Invoke(this, value);
+                    _enfTauntDelayArea = value;
+                    EnfTauntDelayAreaChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> EnfDelaySingleChangedEvent;
-        private int _enfDelaySingle = 1;
-        public int EnfDelaySingle
+        public event EventHandler<int> EnfTauntDelaySingleChangedEvent;
+        private int _enfTauntDelaySingle = 1;
+        public int EnfTauntDelaySingle
         {
             get
             {
-                return _enfDelaySingle;
+                return _enfTauntDelaySingle;
             }
             set
             {
-                if (_enfDelaySingle != value)
+                if (_enfTauntDelaySingle != value)
                 {
-                    _enfDelaySingle = value;
-                    EnfDelaySingleChangedEvent?.Invoke(this, value);
+                    _enfTauntDelaySingle = value;
+                    EnfTauntDelaySingleChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> EnfDelayAbsorbsChangedEvent;
-        private int _enfDelayAbsorbs = 1;
-        public int EnfDelayAbsorbs
+        public event EventHandler<int> EnfCycleAbsorbsDelayChangedEvent;
+        private int _enfCycleAbsorbsDelay = 1;
+        public int EnfCycleAbsorbsDelay
         {
             get
             {
-                return _enfDelayAbsorbs;
+                return _enfCycleAbsorbsDelay;
             }
             set
             {
-                if (_enfDelayAbsorbs != value)
+                if (_enfCycleAbsorbsDelay != value)
                 {
-                    _enfDelayAbsorbs = value;
-                    EnfDelayAbsorbsChangedEvent?.Invoke(this, value);
+                    _enfCycleAbsorbsDelay = value;
+                    EnfCycleAbsorbsDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }

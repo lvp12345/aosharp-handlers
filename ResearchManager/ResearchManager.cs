@@ -64,7 +64,7 @@ namespace ResearchManager
 
                             await Task.Delay(200);
                             Research.Train(_next.ResearchId);
-                            Chat.WriteLine($"Changing to line - {N3EngineClientAnarchy.GetPerkName(_next.ResearchId)} [{_next.ResearchId}]");
+                            //Chat.WriteLine($"Changing to line - {N3EngineClientAnarchy.GetPerkName(_next.ResearchId)} [{_next.ResearchId}]");
                             await Task.Delay(200);
 
                             _asyncToggle = false;

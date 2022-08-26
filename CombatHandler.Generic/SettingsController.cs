@@ -92,10 +92,10 @@ namespace CombatHandler.Generic
                             {
                                 AppendSettingsTab(settingsName, settingsWindow);
 
-                                settingsWindow.FindView("ChannelBox", out TextInputView channelValue);
+                                settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
-                                if (channelValue != null)
-                                    channelValue.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                                if (channelInput != null)
+                                    channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
                             }
                         }
                     }

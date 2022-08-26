@@ -51,7 +51,6 @@ namespace FollowManager
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.NavFollow, OnNavFollowMessage);
 
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
             Config.CharSettings[Game.ClientInst].FollowPlayerChangedEvent += FollowPlayer_Changed;
@@ -127,30 +126,30 @@ namespace FollowManager
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
-                SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView followBox);
-                SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView navFollowBox);
-                SettingsController.settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceBox);
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView followInput);
+                SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView navFollowInput);
+                SettingsController.settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceInput);
 
-                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
+                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                 {
-                    if (int.TryParse(channelBox.Text, out int channelValue)
+                    if (int.TryParse(channelInput.Text, out int channelValue)
                         && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
                     {
                         Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
                     }
                 }
-                if (followBox != null && !string.IsNullOrEmpty(followBox.Text))
+                if (followInput != null && !string.IsNullOrEmpty(followInput.Text))
                 {
-                    Config.CharSettings[Game.ClientInst].FollowPlayer = followBox.Text;
+                    Config.CharSettings[Game.ClientInst].FollowPlayer = followInput.Text;
                 }
-                if (navFollowBox != null && !string.IsNullOrEmpty(navFollowBox.Text))
+                if (navFollowInput != null && !string.IsNullOrEmpty(navFollowInput.Text))
                 {
-                    Config.CharSettings[Game.ClientInst].NavFollowIdentity = navFollowBox.Text;
+                    Config.CharSettings[Game.ClientInst].NavFollowIdentity = navFollowInput.Text;
                 }
-                if (navFollowDistanceBox != null && !string.IsNullOrEmpty(navFollowDistanceBox.Text))
+                if (navFollowDistanceInput != null && !string.IsNullOrEmpty(navFollowDistanceInput.Text))
                 {
-                    if (int.TryParse(navFollowDistanceBox.Text, out int navFollowDistanceValue))
+                    if (int.TryParse(navFollowDistanceInput.Text, out int navFollowDistanceValue))
                     {
                         Config.CharSettings[Game.ClientInst].NavFollowDistance = navFollowDistanceValue;
                     }
@@ -177,9 +176,9 @@ namespace FollowManager
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
-                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].NavFollowIdentity))
-                    .Where(x => x.Name == Config.CharSettings[Game.ClientInst].NavFollowIdentity)
+                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].NavFollowIdentity) 
+                        && !x.Flags.HasFlag(CharacterFlags.Pet) 
+                        && x.Name == Config.CharSettings[Game.ClientInst].NavFollowIdentity)
                     .FirstOrDefault();
 
                 if (identity != null)
@@ -190,10 +189,6 @@ namespace FollowManager
                     if (DynelManager.LocalPlayer.DistanceFrom(identity) > Config.CharSettings[Game.ClientInst].NavFollowDistance)
                         MovementController.Instance.SetDestination(identity.Position);
 
-                    IPCChannel.Broadcast(new NavFollowMessage()
-                    {
-                        Target = identity.Identity
-                    });
                     _followTimer = Time.NormalTime;
                 }
             }
@@ -202,20 +197,15 @@ namespace FollowManager
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
-                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].FollowPlayer))
-                    .Where(x => x.Name == Config.CharSettings[Game.ClientInst].FollowPlayer)
+                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].FollowPlayer) 
+                        && !x.Flags.HasFlag(CharacterFlags.Pet) 
+                        && x.Name == Config.CharSettings[Game.ClientInst].FollowPlayer)
                     .FirstOrDefault();
 
                 if (identity != null)
                 {
                     if (identity.Identity != DynelManager.LocalPlayer.Identity)
                         OSFollow(identity);
-
-                    IPCChannel.Broadcast(new FollowMessage()
-                    {
-                        Target = identity.Identity // change this to the new target with selection param
-                    });
 
                     _followTimer = Time.NormalTime;
                 }
@@ -254,29 +244,6 @@ namespace FollowManager
             };
             Network.Send(n3Msg);
             MovementController.Instance.SetMovement(MovementAction.Update);
-        }
-
-        private void OnNavFollowMessage(int sender, IPCMessage msg)
-        {
-            NavFollowMessage followMessage = (NavFollowMessage)msg;
-
-            Dynel targetDynel = DynelManager.GetDynel(followMessage.Target);
-
-            if (targetDynel != null)
-            {
-                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) <= 15f)
-                    MovementController.Instance.Halt();
-
-                if (DynelManager.LocalPlayer.DistanceFrom(targetDynel) > 15f)
-                    MovementController.Instance.SetDestination(targetDynel.Position);
-                _followTimer = Time.NormalTime;
-            }
-            else
-            {
-                Chat.WriteLine($"Cannot find {targetDynel.Name}. Make sure to type captial first letter.");
-                _settings["NavFollow"] = false;
-                return;
-            }
         }
 
         public enum FollowSelection

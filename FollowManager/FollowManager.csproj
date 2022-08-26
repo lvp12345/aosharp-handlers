@@ -51,7 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
-    <Compile Include="IPCMessages\NavFollowMessage.cs" />
     <Compile Include="IPCMessages\FollowMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="FollowManager.cs" />

@@ -51,8 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
-    <Compile Include="IPCMessages\AssistMessage.cs" />
-    <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="AssistManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />

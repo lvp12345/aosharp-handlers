@@ -56,6 +56,7 @@ namespace SyncManager
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
+            Network.N3MessageReceived += Network_N3MessageReceived;
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("SyncMove", false);
@@ -96,11 +97,11 @@ namespace SyncManager
         {
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
-                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
+                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                 {
-                    if (int.TryParse(channelBox.Text, out int channelValue)
+                    if (int.TryParse(channelInput.Text, out int channelValue)
                         && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
                     {
                         Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
@@ -227,6 +228,32 @@ namespace SyncManager
                             bag.Use();
                         }
                     });
+            }
+        }
+        private void Network_N3MessageReceived(object s, N3Message n3Msg)
+        {
+            if (!_settings["SyncTrade"].AsBool()) { return; }
+
+            if (n3Msg.N3MessageType == N3MessageType.Trade)
+            {
+                TradeMessage tradeMsg = (TradeMessage)n3Msg;
+
+                if (tradeMsg.Action == TradeAction.Accept)
+                {
+                    Network.Send(new TradeMessage()
+                    {
+                        Unknown1 = 2,
+                        Action = (TradeAction) 3,
+                    });
+                }
+                if (tradeMsg.Action == TradeAction.Confirm)
+                {
+                    Network.Send(new TradeMessage()
+                    {
+                        Unknown1 = 2,
+                        Action = (TradeAction)1,
+                    });
+                }
             }
         }
         private void Network_N3MessageSent(object s, N3Message n3Msg)

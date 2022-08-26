@@ -211,11 +211,11 @@ namespace CombatHandler.Trader
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "TraderHealingView" }, _healingView);
 
-                window.FindView("HealPercentageBox", out TextInputView textinput1);
+                window.FindView("HealPercentageBox", out TextInputView healInput);
 
-                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null)
                 {
-                    textinput1.Text = $"{TraderHealPercentage}";
+                    healInput.Text = $"{TraderHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -223,11 +223,11 @@ namespace CombatHandler.Trader
                 SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "TraderHealingView" }, _healingView, out var container);
                 _healingWindow = container;
 
-                container.FindView("HealPercentageBox", out TextInputView textinput1);
+                container.FindView("HealPercentageBox", out TextInputView healInput);
 
-                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null)
                 {
-                    textinput1.Text = $"{TraderHealPercentage}";
+                    healInput.Text = $"{TraderHealPercentage}";
                 }
             }
         }
@@ -268,11 +268,11 @@ namespace CombatHandler.Trader
 
             if (window != null && window.IsValid)
             {
-                window.FindView("HealPercentageBox", out TextInputView textinput1);
+                window.FindView("HealPercentageBox", out TextInputView healInput);
 
-                if (textinput1 != null && !string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                 {
-                    if (int.TryParse(textinput1.Text, out int healValue))
+                    if (int.TryParse(healInput.Text, out int healValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
                         {

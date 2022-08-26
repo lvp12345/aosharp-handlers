@@ -170,17 +170,17 @@ namespace CombatHandler.Adventurer
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "AdvHealingView" }, _healingView);
 
-                window.FindView("HealPercentageBox", out TextInputView textinput1);
-                window.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null)
                 {
-                    textinput1.Text = $"{AdvHealPercentage}";
+                    healInput.Text = $"{AdvHealPercentage}";
                 }
 
-                if (textinput2 != null && string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null)
                 {
-                    textinput2.Text = $"{AdvCompleteHealPercentage}";
+                    completeHealInput.Text = $"{AdvCompleteHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -188,17 +188,17 @@ namespace CombatHandler.Adventurer
                 SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "AdvHealingView" }, _healingView, out var container);
                 _healingWindow = container;
 
-                container.FindView("HealPercentageBox", out TextInputView textinput1);
-                container.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                container.FindView("HealPercentageBox", out TextInputView healInput);
+                container.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null)
                 {
-                    textinput1.Text = $"{AdvHealPercentage}";
+                    healInput.Text = $"{AdvHealPercentage}";
                 }
 
-                if (textinput2 != null && string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null)
                 {
-                    textinput2.Text = $"{AdvCompleteHealPercentage}";
+                    completeHealInput.Text = $"{AdvCompleteHealPercentage}";
                 }
             }
         }
@@ -259,12 +259,12 @@ namespace CombatHandler.Adventurer
 
             if (window != null && window.IsValid)
             {
-                window.FindView("HealPercentageBox", out TextInputView textinput1);
-                window.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && !string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                 {
-                    if (int.TryParse(textinput1.Text, out int healValue))
+                    if (int.TryParse(healInput.Text, out int healValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].AdvHealPercentage != healValue)
                         {
@@ -274,9 +274,9 @@ namespace CombatHandler.Adventurer
                         }
                     }
                 }
-                if (textinput2 != null && !string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null && !string.IsNullOrEmpty(completeHealInput.Text))
                 {
-                    if (int.TryParse(textinput2.Text, out int completeHealValue))
+                    if (int.TryParse(completeHealInput.Text, out int completeHealValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage != completeHealValue)
                         {

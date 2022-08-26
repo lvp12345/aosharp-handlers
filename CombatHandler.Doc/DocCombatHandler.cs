@@ -171,24 +171,44 @@ namespace CombatHandler.Doctor
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot re-use the view, as crashes client. I don't know why. 
 
+
+                //
+                //
+                //
+                //
+                //
+                //
+                ///
+                ////////////  / ///////////////
+                /////////// v   ///////////////
+                /////////  ////////////
+                ///////////// ///////////// //////////
+                ////////////////
+                ////////
+                ////////
+                //////////
+                /////////////
+                //////////////
+
+                //Do we need this?
                 if (window.Views.Contains(_healingView)) { return; }
 
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\DocHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "DocHealingView" }, _healingView);
 
-                window.FindView("HealPercentageBox", out TextInputView textinput1);
-                window.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null)
                 {
-                    textinput1.Text = $"{DocHealPercentage}";
+                    healInput.Text = $"{DocHealPercentage}";
                 }
 
-                if (textinput2 != null && string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null)
                 {
-                    textinput2.Text = $"{DocCompleteHealPercentage}";
+                    completeHealInput.Text = $"{DocCompleteHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -196,17 +216,17 @@ namespace CombatHandler.Doctor
                 SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "DocHealingView" }, _healingView, out var container);
                 _healingWindow = container;
 
-                container.FindView("HealPercentageBox", out TextInputView textinput1);
-                container.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                container.FindView("HealPercentageBox", out TextInputView healInput);
+                container.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null)
                 {
-                    textinput1.Text = $"{DocHealPercentage}";
+                    healInput.Text = $"{DocHealPercentage}";
                 }
 
-                if (textinput2 != null && string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null)
                 {
-                    textinput2.Text = $"{DocCompleteHealPercentage}";
+                    completeHealInput.Text = $"{DocCompleteHealPercentage}";
                 }
             }
         }
@@ -268,12 +288,12 @@ namespace CombatHandler.Doctor
 
             if (window != null && window.IsValid)
             {
-                window.FindView("HealPercentageBox", out TextInputView textinput1);
-                window.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && !string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                 {
-                    if (int.TryParse(textinput1.Text, out int healValue))
+                    if (int.TryParse(healInput.Text, out int healValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].DocHealPercentage != healValue)
                         {
@@ -283,9 +303,9 @@ namespace CombatHandler.Doctor
                         }
                     }
                 }
-                if (textinput2 != null && !string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null && !string.IsNullOrEmpty(completeHealInput.Text))
                 {
-                    if (int.TryParse(textinput2.Text, out int completeHealValue))
+                    if (int.TryParse(completeHealInput.Text, out int completeHealValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage != completeHealValue)
                         {

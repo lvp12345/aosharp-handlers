@@ -72,11 +72,8 @@ namespace AssistManager
                         {
                             AppendSettingsTab("Assist Manager", settingsWindow);
 
-                            settingsWindow.FindView("ChannelBox", out TextInputView channelValue);
                             settingsWindow.FindView("AssistNamedCharacter", out TextInputView assistInput);
 
-                            if (channelValue != null)
-                                channelValue.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
                             if (assistInput != null)
                                 assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
                         }

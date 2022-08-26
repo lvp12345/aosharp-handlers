@@ -29,15 +29,21 @@ namespace CombatHandler.Enf
 
         private static double _absorbs;
         private static double _aoeTaunt;
-        private static double _aoeTauntOst;
         private static double _singleTaunt;
-        private static double _singleTauntTick;
+
+        private static int EnfDelayAOE;
+        private static int EnfDelayAbsorbs;
+        private static int EnfDelaySingle;
 
         private static double _ncuUpdateTime;
 
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+
+            Config.CharSettings[Game.ClientInst].EnfDelayAOEChangedEvent += EnfDelayAOE_Changed;
+            Config.CharSettings[Game.ClientInst].EnfDelaySingleChangedEvent += EnfDelaySingle_Changed;
+            Config.CharSettings[Game.ClientInst].EnfDelayAbsorbsChangedEvent += EnfDelayAbsorbs_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -47,20 +53,18 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
 
-            _settings.AddVariable("RaidTaunt", false);
             _settings.AddVariable("AOETaunt", false);
-            _settings.AddVariable("Absorbs", false);
+            _settings.AddVariable("CycleAbsorbs", false);
             _settings.AddVariable("TauntProc", false);
 
             _settings.AddVariable("TrollForm", false);
-
-            _settings.AddVariable("OST", false);
 
             _settings.AddVariable("ScorpioTauntTool", false);
 
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
             //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, VortexOfHate, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerAirOfHatred, AirOfHatred, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerBustKneecaps, BustKneecaps, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerIgnorePain, IgnorePain, CombatActionPriority.Low);
@@ -108,9 +112,33 @@ namespace CombatHandler.Enf
             //}
 
             PluginDirectory = pluginDir;
+
+            EnfDelayAOE = Config.CharSettings[Game.ClientInst].EnfDelayAOE;
+            EnfDelaySingle = Config.CharSettings[Game.ClientInst].EnfDelaySingle;
+            EnfDelayAbsorbs = Config.CharSettings[Game.ClientInst].EnfDelayAbsorbs;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
+
+        public static void EnfDelaySingle_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EnfDelaySingle = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void EnfDelayAOE_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EnfDelayAOE = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void EnfDelayAbsorbs_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EnfDelayAbsorbs = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -132,15 +160,27 @@ namespace CombatHandler.Enf
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView);
+
+                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+
+                if (absorbsInput != null)
+                {
+                    absorbsInput.Text = $"{EnfDelayAbsorbs}";
+                }
             }
             else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+
+                container.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+
+                if (absorbsInput != null)
+                {
+                    absorbsInput.Text = $"{EnfDelayAbsorbs}";
+                }
             }
         }
 
@@ -149,15 +189,37 @@ namespace CombatHandler.Enf
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerTauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView);
+
+                window.FindView("DelaySingleBox", out TextInputView singleInput);
+                window.FindView("DelayAOEBox", out TextInputView aoeInput);
+
+                if (singleInput != null)
+                {
+                    singleInput.Text = $"{EnfDelaySingle}";
+                }
+                if (aoeInput != null)
+                {
+                    aoeInput.Text = $"{EnfDelayAOE}";
+                }
             }
             else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView, out var container);
                 _tauntWindow = container;
+
+                container.FindView("DelaySingleBox", out TextInputView singleInput);
+                container.FindView("DelayAOEBox", out TextInputView aoeInput);
+
+                if (singleInput != null)
+                {
+                    singleInput.Text = $"{EnfDelaySingle}";
+                }
+                if (aoeInput != null)
+                {
+                    aoeInput.Text = $"{EnfDelayAOE}";
+                }
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -182,6 +244,52 @@ namespace CombatHandler.Enf
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
+
+            var window = SettingsController.FindValidWindow(_windows);
+
+            if (window != null && window.IsValid)
+            {
+                window.FindView("DelaySingleBox", out TextInputView singleInput);
+                window.FindView("DelayAOEBox", out TextInputView aoeInput);
+                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+
+                if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
+                {
+                    if (int.TryParse(singleInput.Text, out int singleValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].EnfDelaySingle != singleValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].EnfDelaySingle = singleValue;
+                            EnfDelaySingle = singleValue;
+                            Config.Save();
+                        }
+                    }
+                }
+                if (aoeInput != null && !string.IsNullOrEmpty(aoeInput.Text))
+                {
+                    if (int.TryParse(aoeInput.Text, out int aoeValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].EnfDelayAOE != aoeValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].EnfDelayAOE = aoeValue;
+                            EnfDelayAOE = aoeValue;
+                            Config.Save();
+                        }
+                    }
+                }
+                if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
+                {
+                    if (int.TryParse(absorbsInput.Text, out int absorbsValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].EnfDelayAbsorbs != absorbsValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].EnfDelayAbsorbs = absorbsValue;
+                            EnfDelayAbsorbs = absorbsValue;
+                            Config.Save();
+                        }
+                    }
+                }
+            }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
@@ -305,7 +413,7 @@ namespace CombatHandler.Enf
 
         private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if(HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer)) { return false; }
+            if (HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -314,63 +422,33 @@ namespace CombatHandler.Enf
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (SingleTauntsSelection.OS == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() && Time.NormalTime > _singleTauntTick + 1)
+            if (SingleTauntsSelection.OS == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 
+                && Time.NormalTime > _singleTaunt + EnfDelaySingle)
             {
-                List<SimpleChar> mobs = DynelManager.NPCs
+                SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.IsInLineOfSight
                         && !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && IsNotFightingMe(c)
-                        && IsAttackingUs(c)
-                        && (c.FightingTarget.Profession != Profession.Enforcer
-                                || c.FightingTarget.Profession != Profession.Soldier
-                                || c.FightingTarget.Profession != Profession.MartialArtist))
-                    .ToList();
-
-                foreach (SimpleChar mob in mobs)
-                {
-                    if (mob != null)
-                    {
-                        _singleTauntTick = Time.NormalTime;
-                        actionTarget.Target = mob;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
-                }
-            }
-
-            if (IsSettingEnabled("RaidTaunt"))
-            {
-                SimpleChar mob = DynelManager.NPCs
-                    .Where(c => c.Name == "Azdaja the Joyous" 
-                    || c.Name == "The Awoken Nightmare, Phobettor"
-                    || c.Name == "Abmouth Supremus"
-                    || c.Name == "Technomaster Sinuh"
-                    || c.Name == "Collector")
+                        && IsAttackingUs(c))
+                    .OrderBy(c => c.MaxHealth)
+                        //&& (c.FightingTarget.Profession != Profession.Enforcer
+                        //        && c.FightingTarget.Profession != Profession.Soldier
+                        //        && c.FightingTarget.Profession != Profession.MartialArtist))
                     .FirstOrDefault();
 
                 if (mob != null)
                 {
+                    _singleTaunt = Time.NormalTime;
                     actionTarget.Target = mob;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
             }
 
-
-            if (IsSettingEnabled("AOETaunt") && Time.NormalTime > _singleTaunt + 6)
-            {
-                if (fightingTarget != null)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.Target = fightingTarget;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            if (!IsSettingEnabled("AOETaunt") && SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32())
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 
+                && Time.NormalTime > _singleTaunt + EnfDelaySingle)
             {
                 if (fightingTarget != null)
                 {
@@ -423,26 +501,11 @@ namespace CombatHandler.Enf
 
         private bool Fortify(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.FightingTarget != null 
-                && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BIO_COCOON_BUFF)) { return false; }
 
-            List<Spell> mongobuff = Spell.List.Where(x => x.Nanoline == NanoLine.MongoBuff).OrderBy(x => x.StackingOrder).ToList();
-
-            if (IsSettingEnabled("OST") && !mongobuff.FirstOrDefault().IsReady && Time.NormalTime > _absorbs + 8)
-            {
-                _absorbs = Time.NormalTime;
-                return true;
-            }
-
-            if (!IsSettingEnabled("Absorbs")) { return false; }
-
-            if (!IsSettingEnabled("OST") && fightingTarget != null && Time.NormalTime > _absorbs + 15)
+            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + EnfDelayAbsorbs)
             {
                 _absorbs = Time.NormalTime;
                 return true;
@@ -460,33 +523,10 @@ namespace CombatHandler.Enf
 
         private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget != null 
-                && DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh") { return false; }
-
-            if (!CanCast(spell)) { return false; }
-
-            if (IsSettingEnabled("OST"))
-            {
-                if (Time.NormalTime > _aoeTauntOst + 7) // 10
-                {
-                    _aoeTauntOst = Time.NormalTime;
-                    return true;
-                }
-            }
-
-            if (!IsSettingEnabled("AOETaunt") || fightingTarget == null) { return false; }
-
-            if (!IsSettingEnabled("Absorbs") && Time.NormalTime > _aoeTaunt + 9)
-            {
-                _aoeTaunt = Time.NormalTime;
-                return true;
-            }
-
-            List<Spell> absorbbuff = Spell.List.Where(x => x.Nanoline == NanoLine.AbsorbACBuff).OrderBy(x => x.StackingOrder).ToList();
-
-            if (IsSettingEnabled("Absorbs") && absorbbuff.FirstOrDefault() != null && Time.NormalTime > _aoeTaunt + 9)
+            if (Time.NormalTime > _aoeTaunt + EnfDelayAOE
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1))
             {
                 _aoeTaunt = Time.NormalTime;
                 return true;

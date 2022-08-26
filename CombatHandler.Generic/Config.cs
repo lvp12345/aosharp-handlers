@@ -32,6 +32,12 @@ namespace CombatHandler.Generic
         public int AdvHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AdvHealPercentage : 90;
         [JsonIgnore]
         public int AdvCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AdvCompleteHealPercentage : 20;
+        [JsonIgnore]
+        public int EnfDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfDelaySingle : 1;
+        [JsonIgnore]
+        public int EnfDelayAOE => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfDelayAOE : 1;
+        [JsonIgnore]
+        public int EnfDelayAbsorbs => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfDelayAbsorbs : 1;
 
         public static Config Load(string path)
         {
@@ -232,6 +238,57 @@ namespace CombatHandler.Generic
                 {
                     _advCompleteHealPercentage = value;
                     AdvCompleteHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> EnfDelayAOEChangedEvent;
+        private int _enfDelayAOE = 1;
+        public int EnfDelayAOE
+        {
+            get
+            {
+                return _enfDelayAOE;
+            }
+            set
+            {
+                if (_enfDelayAOE != value)
+                {
+                    _enfDelayAOE = value;
+                    EnfDelayAOEChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> EnfDelaySingleChangedEvent;
+        private int _enfDelaySingle = 1;
+        public int EnfDelaySingle
+        {
+            get
+            {
+                return _enfDelaySingle;
+            }
+            set
+            {
+                if (_enfDelaySingle != value)
+                {
+                    _enfDelaySingle = value;
+                    EnfDelaySingleChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> EnfDelayAbsorbsChangedEvent;
+        private int _enfDelayAbsorbs = 1;
+        public int EnfDelayAbsorbs
+        {
+            get
+            {
+                return _enfDelayAbsorbs;
+            }
+            set
+            {
+                if (_enfDelayAbsorbs != value)
+                {
+                    _enfDelayAbsorbs = value;
+                    EnfDelayAbsorbsChangedEvent?.Invoke(this, value);
                 }
             }
         }

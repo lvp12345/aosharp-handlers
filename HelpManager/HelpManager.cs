@@ -218,11 +218,11 @@ namespace HelpManager
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
+                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
-                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
+                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                 {
-                    if (int.TryParse(channelBox.Text, out int channelValue)
+                    if (int.TryParse(channelInput.Text, out int channelValue)
                         && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
                     {
                         Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;

@@ -4,7 +4,6 @@ using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using AOSharp.Common.GameData;
-using AssistManager.IPCMessages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
 using System.Collections.Generic;
@@ -14,8 +13,6 @@ namespace AssistManager
 {
     public class AssistManager : AOPluginEntry
     {
-        private static IPCChannel IPCChannel;
-
         public static Config Config { get; private set; }
 
         protected Settings _settings;
@@ -36,15 +33,12 @@ namespace AssistManager
             PluginDir = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AssistManager\\{Game.ClientInst}\\Config.json");
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
-            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
             Config.CharSettings[Game.ClientInst].AssistPlayerChangedEvent += AssistPlayer_Changed;
+
             Game.OnUpdate += OnUpdate;
 
             _settings.AddVariable("AttackSelection", (int)AttackSelection.None);
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Assist, OnAssistMessage);
 
             RegisterSettingsWindow("Assist Manager", "AssistManagerSettingWindow.xml");
 
@@ -59,23 +53,11 @@ namespace AssistManager
             SettingsController.CleanUp();
         }
 
-        private void OnZoned(object s, EventArgs e)
-        {
-
-        }
-
-        public static void IPCChannel_Changed(object s, int e)
-        {
-            IPCChannel.SetChannelId(Convert.ToByte(e));
-
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
         public static void AssistPlayer_Changed(object s, string e)
         {
             Config.CharSettings[Game.ClientInst].AssistPlayer = e;
 
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 
@@ -119,21 +101,13 @@ namespace AssistManager
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelBox);
-                SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView assistValue);
+                SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView assistInput);
 
-                if (channelBox != null && !string.IsNullOrEmpty(channelBox.Text))
+                if (assistInput != null && !string.IsNullOrEmpty(assistInput.Text))
                 {
-                    if (int.TryParse(channelBox.Text, out int channelValue))
+                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != assistInput.Text)
                     {
-                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
-                    }
-                }
-                if (assistValue != null && assistValue.Text != String.Empty)
-                {
-                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != assistValue.Text)
-                    {
-                        Config.CharSettings[Game.ClientInst].AssistPlayer = assistValue.Text;
+                        Config.CharSettings[Game.ClientInst].AssistPlayer = assistInput.Text;
                         Config.Save();
                     }
                 }
@@ -146,18 +120,17 @@ namespace AssistManager
             }
 
             if (AttackSelection.Assist == (AttackSelection)_settings["AttackSelection"].AsInt32()
-                && Time.NormalTime > _assistTimer + 1)
+                && Time.NormalTime > _assistTimer + 0.5)
             {
                 SimpleChar identity = DynelManager.Characters
-                    .Where(c => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].AssistPlayer))
-                    .Where(c => c.IsAlive)
-                    .Where(x => !x.Flags.HasFlag(CharacterFlags.Pet))
-                    .Where(c => c.Name == Config.CharSettings[Game.ClientInst].AssistPlayer)
+                    .Where(c => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].AssistPlayer)
+                        && c.IsAlive && !c.Flags.HasFlag(CharacterFlags.Pet) 
+                        && c.Name == Config.CharSettings[Game.ClientInst].AssistPlayer)
                     .FirstOrDefault();
 
                 if (identity == null) { return; }
 
-                if (identity != null && identity.FightingTarget == null &&
+                if (identity.FightingTarget == null &&
                     DynelManager.LocalPlayer.FightingTarget != null)
                 {
                     DynelManager.LocalPlayer.StopAttack();
@@ -165,30 +138,14 @@ namespace AssistManager
                     _assistTimer = Time.NormalTime;
                 }
 
-                if (identity != null && identity.FightingTarget != null &&
+                if (identity.FightingTarget != null &&
                     (DynelManager.LocalPlayer.FightingTarget == null ||
                     (DynelManager.LocalPlayer.FightingTarget != null && DynelManager.LocalPlayer.FightingTarget.Identity != identity.FightingTarget.Identity)))
                 {
                     DynelManager.LocalPlayer.Attack(identity.FightingTarget);
 
-                    IPCChannel.Broadcast(new AssistMessage()
-                    {
-                        Target = identity.Identity
-                    });
                     _assistTimer = Time.NormalTime;
                 }
-            }
-        }
-
-        private void OnAssistMessage(int sender, IPCMessage msg)
-        {
-            AssistMessage assistMessage = (AssistMessage)msg;
-
-            Dynel targetDynel = DynelManager.GetDynel(assistMessage.Target);
-
-            if (targetDynel != null && DynelManager.LocalPlayer.FightingTarget == null)
-            {
-                DynelManager.LocalPlayer.Attack(targetDynel);
             }
         }
 

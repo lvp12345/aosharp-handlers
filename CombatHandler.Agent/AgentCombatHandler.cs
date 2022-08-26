@@ -170,7 +170,6 @@ namespace CombatHandler.Agent
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentProcView.xml");
@@ -189,7 +188,6 @@ namespace CombatHandler.Agent
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_falseProfView)) { return; }
 
                 _falseProfView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentFalseProfsView.xml");
@@ -208,7 +206,6 @@ namespace CombatHandler.Agent
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentBuffsView.xml");
@@ -226,8 +223,6 @@ namespace CombatHandler.Agent
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
                 _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentDebuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Debuffs", XmlViewName = "AgentDebuffsView" }, _debuffView);
             }
@@ -251,17 +246,17 @@ namespace CombatHandler.Agent
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "AgentHealingView" }, _healingView);
 
-                window.FindView("HealPercentageBox", out TextInputView textinput1);
-                window.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null)
                 {
-                    textinput1.Text = $"{AgentHealPercentage}";
+                    healInput.Text = $"{AgentHealPercentage}";
                 }
 
-                if (textinput2 != null && string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null)
                 {
-                    textinput2.Text = $"{AgentCompleteHealPercentage}";
+                    completeHealInput.Text = $"{AgentCompleteHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -269,17 +264,17 @@ namespace CombatHandler.Agent
                 SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "AgentHealingView" }, _healingView, out var container);
                 _healingWindow = container;
 
-                container.FindView("HealPercentageBox", out TextInputView textinput1);
-                container.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                container.FindView("HealPercentageBox", out TextInputView healInput);
+                container.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null)
                 {
-                    textinput1.Text = $"{AgentHealPercentage}";
+                    healInput.Text = $"{AgentHealPercentage}";
                 }
 
-                if (textinput2 != null && string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null)
                 {
-                    textinput2.Text = $"{AgentCompleteHealPercentage}";
+                    completeHealInput.Text = $"{AgentCompleteHealPercentage}";
                 }
             }
         }
@@ -304,12 +299,12 @@ namespace CombatHandler.Agent
 
             if (window != null && window.IsValid)
             {
-                window.FindView("HealPercentageBox", out TextInputView textinput1);
-                window.FindView("CompleteHealPercentageBox", out TextInputView textinput2);
+                window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
-                if (textinput1 != null && !string.IsNullOrEmpty(textinput1.Text))
+                if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                 {
-                    if (int.TryParse(textinput1.Text, out int healValue))
+                    if (int.TryParse(healInput.Text, out int healValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
                         {
@@ -319,9 +314,9 @@ namespace CombatHandler.Agent
                         }
                     }
                 }
-                if (textinput2 != null && !string.IsNullOrEmpty(textinput2.Text))
+                if (completeHealInput != null && !string.IsNullOrEmpty(completeHealInput.Text))
                 {
-                    if (int.TryParse(textinput2.Text, out int completeHealValue))
+                    if (int.TryParse(completeHealInput.Text, out int completeHealValue))
                     {
                         if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != completeHealValue)
                         {

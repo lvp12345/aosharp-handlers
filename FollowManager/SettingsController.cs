@@ -72,13 +72,13 @@ namespace FollowManager
                         {
                             AppendSettingsTab("Follow Manager", settingsWindow);
 
-                            settingsWindow.FindView("ChannelBox", out TextInputView channelValue);
+                            settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
                             settingsWindow.FindView("FollowNamedCharacter", out TextInputView followBox);
                             settingsWindow.FindView("FollowNamedIdentity", out TextInputView navFollowBox);
                             settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceBox);
 
-                            if (channelValue != null)
-                                channelValue.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                            if (channelInput != null)
+                                channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
                             if (followBox != null)
                                 followBox.Text = $"{Config.CharSettings[Game.ClientInst].FollowPlayer}";
                             if (navFollowBox != null)

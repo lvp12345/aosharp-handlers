@@ -15,8 +15,6 @@ namespace AssistManager
         protected string _path;
 
         [JsonIgnore]
-        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
-        [JsonIgnore]
         public string AssistPlayer => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AssistPlayer : string.Empty;
         public static Config Load(string path)
         {
@@ -66,25 +64,6 @@ namespace AssistManager
 
     public class CharacterSettings
     {
-        public event EventHandler<int> IPCChannelChangedEvent;
-        private int _ipcChannel = 0;
-
-        //Breaking out auto-property
-        public int IPCChannel
-        {
-            get
-            {
-                return _ipcChannel;
-            }
-            set
-            {
-                if (_ipcChannel != value)
-                {
-                    _ipcChannel = value;
-                    IPCChannelChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
         public event EventHandler<string> AssistPlayerChangedEvent;
         private string _assistPlayer = string.Empty;
 

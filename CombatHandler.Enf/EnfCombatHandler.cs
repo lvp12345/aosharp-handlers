@@ -3,14 +3,7 @@ using AOSharp.Core;
 using AOSharp.Core.UI;
 using System.Linq;
 using System;
-using AOSharp.Common.GameData.UI;
 using AOSharp.Core.IPC;
-using System.Threading.Tasks;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using System.Threading;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Collections.Generic;
-using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 
 namespace CombatHandler.Enf
@@ -28,12 +21,12 @@ namespace CombatHandler.Enf
         private static View _procView;
 
         private static double _absorbs;
-        private static double _aoeTaunt;
+        private static double _areaTaunt;
         private static double _singleTaunt;
 
-        private static int EnfDelayAOE;
-        private static int EnfDelayAbsorbs;
-        private static int EnfDelaySingle;
+        private static int EnfTauntDelayArea;
+        private static int EnfCycleAbsorbsDelay;
+        private static int EnfTauntDelaySingle;
 
         private static double _ncuUpdateTime;
 
@@ -41,9 +34,9 @@ namespace CombatHandler.Enf
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
-            Config.CharSettings[Game.ClientInst].EnfDelayAOEChangedEvent += EnfDelayAOE_Changed;
-            Config.CharSettings[Game.ClientInst].EnfDelaySingleChangedEvent += EnfDelaySingle_Changed;
-            Config.CharSettings[Game.ClientInst].EnfDelayAbsorbsChangedEvent += EnfDelayAbsorbs_Changed;
+            Config.CharSettings[Game.ClientInst].EnfTauntDelaySingleChangedEvent += EnfTauntDelaySingle_Changed;
+            Config.CharSettings[Game.ClientInst].EnfTauntDelayAreaChangedEvent += EnfTauntDelayArea_Changed;
+            Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelayChangedEvent += EnfCycleAbsorbsDelay_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -53,7 +46,7 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
 
-            _settings.AddVariable("AOETaunt", false);
+            _settings.AddVariable("AreaTaunt", false);
             _settings.AddVariable("CycleAbsorbs", false);
             _settings.AddVariable("TauntProc", false);
 
@@ -81,9 +74,9 @@ namespace CombatHandler.Enf
             //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
-            //Spells (Im not sure the spell lines are up to date to support the full line of SL mongos)
+            //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AoeTaunt, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AreaTaunt, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChangeBuff);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, Fortify, CombatActionPriority.High);
@@ -113,33 +106,104 @@ namespace CombatHandler.Enf
 
             PluginDirectory = pluginDir;
 
-            EnfDelayAOE = Config.CharSettings[Game.ClientInst].EnfDelayAOE;
-            EnfDelaySingle = Config.CharSettings[Game.ClientInst].EnfDelaySingle;
-            EnfDelayAbsorbs = Config.CharSettings[Game.ClientInst].EnfDelayAbsorbs;
+            EnfTauntDelayArea = Config.CharSettings[Game.ClientInst].EnfTauntDelayArea;
+            EnfTauntDelaySingle = Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle;
+            EnfCycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
 
-        public static void EnfDelaySingle_Changed(object s, int e)
+        #region Events
+
+        private void HandleBuffViewClick(object s, ButtonBase button)
         {
-            Config.CharSettings[Game.ClientInst].EnfDelaySingle = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerBuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView);
+
+                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+
+                if (absorbsInput != null)
+                {
+                    absorbsInput.Text = $"{EnfCycleAbsorbsDelay}";
+                }
+            }
+            else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView, out var container);
+                _buffWindow = container;
+
+                container.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+
+                if (absorbsInput != null)
+                {
+                    absorbsInput.Text = $"{EnfCycleAbsorbsDelay}";
+                }
+            }
         }
 
-        public static void EnfDelayAOE_Changed(object s, int e)
+        private void HandleTauntViewClick(object s, ButtonBase button)
         {
-            Config.CharSettings[Game.ClientInst].EnfDelayAOE = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-        public static void EnfDelayAbsorbs_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].EnfDelayAbsorbs = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerTauntsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView);
+
+                window.FindView("DelaySingleBox", out TextInputView singleInput);
+                window.FindView("DelayAOEBox", out TextInputView areaInput);
+
+                if (singleInput != null)
+                {
+                    singleInput.Text = $"{EnfTauntDelaySingle}";
+                }
+                if (areaInput != null)
+                {
+                    areaInput.Text = $"{EnfTauntDelayArea}";
+                }
+            }
+            else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView, out var container);
+                _tauntWindow = container;
+
+                container.FindView("DelaySingleBox", out TextInputView singleInput);
+                container.FindView("DelayAOEBox", out TextInputView areaInput);
+
+                if (singleInput != null)
+                {
+                    singleInput.Text = $"{EnfTauntDelaySingle}";
+                }
+                if (areaInput != null)
+                {
+                    areaInput.Text = $"{EnfTauntDelayArea}";
+                }
+            }
         }
 
+        private void HandleProcViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_procView)) { return; }
+
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "EnforcerProcsView" }, _procView);
+            }
+            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "EnforcerProcsView" }, _procView, out var container);
+                _procWindow = container;
+            }
+        }
+
+        #endregion
+
+        #region Callbacks
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -155,92 +219,8 @@ namespace CombatHandler.Enf
                 Chat.WriteLine(e);
             }
         }
-        private void BuffView(object s, ButtonBase button)
-        {
-            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
-            {
-                _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerBuffsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView);
 
-                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
-
-                if (absorbsInput != null)
-                {
-                    absorbsInput.Text = $"{EnfDelayAbsorbs}";
-                }
-            }
-            else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView, out var container);
-                _buffWindow = container;
-
-                container.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
-
-                if (absorbsInput != null)
-                {
-                    absorbsInput.Text = $"{EnfDelayAbsorbs}";
-                }
-            }
-        }
-
-        private void TauntView(object s, ButtonBase button)
-        {
-            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
-            {
-                _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerTauntsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView);
-
-                window.FindView("DelaySingleBox", out TextInputView singleInput);
-                window.FindView("DelayAOEBox", out TextInputView aoeInput);
-
-                if (singleInput != null)
-                {
-                    singleInput.Text = $"{EnfDelaySingle}";
-                }
-                if (aoeInput != null)
-                {
-                    aoeInput.Text = $"{EnfDelayAOE}";
-                }
-            }
-            else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView, out var container);
-                _tauntWindow = container;
-
-                container.FindView("DelaySingleBox", out TextInputView singleInput);
-                container.FindView("DelayAOEBox", out TextInputView aoeInput);
-
-                if (singleInput != null)
-                {
-                    singleInput.Text = $"{EnfDelaySingle}";
-                }
-                if (aoeInput != null)
-                {
-                    aoeInput.Text = $"{EnfDelayAOE}";
-                }
-            }
-        }
-
-        private void HandleProcViewClick(object s, ButtonBase button)
-        {
-            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
-            {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
-                if (window.Views.Contains(_procView)) { return; }
-
-                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerProcsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "EnforcerProcsView" }, _procView);
-            }
-            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "EnforcerProcsView" }, _procView, out var container);
-                _procWindow = container;
-            }
-        }
+        #endregion
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -251,29 +231,29 @@ namespace CombatHandler.Enf
             if (window != null && window.IsValid)
             {
                 window.FindView("DelaySingleBox", out TextInputView singleInput);
-                window.FindView("DelayAOEBox", out TextInputView aoeInput);
+                window.FindView("DelayAreaBox", out TextInputView areaInput);
                 window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
                 {
                     if (int.TryParse(singleInput.Text, out int singleValue))
                     {
-                        if (Config.CharSettings[Game.ClientInst].EnfDelaySingle != singleValue)
+                        if (Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle != singleValue)
                         {
-                            Config.CharSettings[Game.ClientInst].EnfDelaySingle = singleValue;
-                            EnfDelaySingle = singleValue;
+                            Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle = singleValue;
+                            EnfTauntDelaySingle = singleValue;
                             Config.Save();
                         }
                     }
                 }
-                if (aoeInput != null && !string.IsNullOrEmpty(aoeInput.Text))
+                if (areaInput != null && !string.IsNullOrEmpty(areaInput.Text))
                 {
-                    if (int.TryParse(aoeInput.Text, out int aoeValue))
+                    if (int.TryParse(areaInput.Text, out int aoeValue))
                     {
-                        if (Config.CharSettings[Game.ClientInst].EnfDelayAOE != aoeValue)
+                        if (Config.CharSettings[Game.ClientInst].EnfTauntDelayArea != aoeValue)
                         {
-                            Config.CharSettings[Game.ClientInst].EnfDelayAOE = aoeValue;
-                            EnfDelayAOE = aoeValue;
+                            Config.CharSettings[Game.ClientInst].EnfTauntDelayArea = aoeValue;
+                            EnfTauntDelayArea = aoeValue;
                             Config.Save();
                         }
                     }
@@ -282,10 +262,10 @@ namespace CombatHandler.Enf
                 {
                     if (int.TryParse(absorbsInput.Text, out int absorbsValue))
                     {
-                        if (Config.CharSettings[Game.ClientInst].EnfDelayAbsorbs != absorbsValue)
+                        if (Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay != absorbsValue)
                         {
-                            Config.CharSettings[Game.ClientInst].EnfDelayAbsorbs = absorbsValue;
-                            EnfDelayAbsorbs = absorbsValue;
+                            Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay = absorbsValue;
+                            EnfCycleAbsorbsDelay = absorbsValue;
                             Config.Save();
                         }
                     }
@@ -308,13 +288,13 @@ namespace CombatHandler.Enf
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = BuffView;
+                    buffView.Clicked = HandleBuffViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
                 {
                     tauntView.Tag = SettingsController.settingsWindow;
-                    tauntView.Clicked = TauntView;
+                    tauntView.Clicked = HandleTauntViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
@@ -411,6 +391,7 @@ namespace CombatHandler.Enf
 
         #endregion
 
+        #region Logic
 
         private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -424,7 +405,7 @@ namespace CombatHandler.Enf
             if (!IsSettingEnabled("Buffing")) { return false; }
 
             if (SingleTauntsSelection.OS == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 
-                && Time.NormalTime > _singleTaunt + EnfDelaySingle)
+                && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle)
             {
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
@@ -449,7 +430,7 @@ namespace CombatHandler.Enf
             }
 
             if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 
-                && Time.NormalTime > _singleTaunt + EnfDelaySingle)
+                && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle)
             {
                 if (fightingTarget != null)
                 {
@@ -506,7 +487,7 @@ namespace CombatHandler.Enf
 
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BIO_COCOON_BUFF)) { return false; }
 
-            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + EnfDelayAbsorbs)
+            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + EnfCycleAbsorbsDelay)
             {
                 _absorbs = Time.NormalTime;
                 return true;
@@ -522,24 +503,25 @@ namespace CombatHandler.Enf
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool AoeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AreaTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-            if (Time.NormalTime > _aoeTaunt + EnfDelayAOE
+            if (!IsSettingEnabled("AreaTaunt")) { return false; }
+
+            if (Time.NormalTime > _areaTaunt + EnfTauntDelayArea
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1))
             {
-                _aoeTaunt = Time.NormalTime;
+                _areaTaunt = Time.NormalTime;
                 return true;
             }
 
             return false;
         }
 
-        private bool ShouldBeTaunted(SimpleChar target)
-        {
-            return !target.IsPlayer && !target.IsPet && target.IsValid && target.IsInLineOfSight;
-        }
+        #endregion
+
+        #region Misc
 
         public enum ProcType1Selection
         {
@@ -575,5 +557,27 @@ namespace CombatHandler.Enf
             public const int ICE_BURN = 269460;
             public const int BIO_COCOON_BUFF = 209802;
         }
+
+        public static void EnfTauntDelaySingle_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void EnfTauntDelayArea_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EnfTauntDelayArea = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void EnfCycleAbsorbsDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        #endregion
     }
 }

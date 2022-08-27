@@ -27,6 +27,7 @@ namespace CombatHandler.Generic
         protected double _lastCombatTime = double.MinValue;
 
         private static double _updateTick;
+        private static double _aggDefTick;
 
         protected readonly string PluginDir;
 
@@ -438,10 +439,21 @@ namespace CombatHandler.Generic
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
 
+            //if (Time.NormalTime > _aggDefTick + 1f)
+            //{
+            //    Chat.WriteLine($"{DynelManager.LocalPlayer.GetStat(Stat.AnimPlay)}");
+
+            //    if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) < 100)
+            //    {
+            //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
+            //        Chat.WriteLine($"Changing to 100");
+            //    }
+
+            //    _aggDefTick = Time.NormalTime;
+            //}
+
             if (Time.NormalTime > _updateTick + 6f)
             {
-                _updateTick = Time.NormalTime;
-
                 List<SimpleChar> PlayersInRange = DynelManager.Characters
                     .Where(x => x.IsPlayer)
                     .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
@@ -456,6 +468,8 @@ namespace CombatHandler.Generic
 
                     });
                 }
+
+                _updateTick = Time.NormalTime;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -1513,13 +1527,24 @@ namespace CombatHandler.Generic
 
             return false;
         }
-
+        //This should be a float to be more accurate?
         protected bool FindMemberWithHealthBelow(int healthPercentTreshold, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.HealthPercent <= healthPercentTreshold)
             {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
+                Task.Factory.StartNew(
+                    async () =>
+                    {
+                        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
+                        await Task.Delay(444);
+                        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
+                    });
+
+                if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
+                {
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
             }
 
             if (DynelManager.LocalPlayer.IsInTeam())
@@ -1534,9 +1559,20 @@ namespace CombatHandler.Generic
 
                 if (dyingTeamMember != null)
                 {
-                    actionTarget.Target = dyingTeamMember;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    Task.Factory.StartNew(
+                        async () =>
+                        {
+                            DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
+                            await Task.Delay(444);
+                            DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
+                        });
+
+                    if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
+                    {
+                        actionTarget.Target = dyingTeamMember;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
             }
 
@@ -1547,8 +1583,19 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.HealthPercent <= healthPercentTreshold)
             {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
+                Task.Factory.StartNew(
+                    async () =>
+                    {
+                        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
+                        await Task.Delay(444);
+                        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
+                    });
+
+                if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
+                {
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
             }
 
             SimpleChar dyingTeamMember = DynelManager.Characters
@@ -1560,9 +1607,20 @@ namespace CombatHandler.Generic
 
             if (dyingTeamMember != null)
             {
-                actionTarget.Target = dyingTeamMember;
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                Task.Factory.StartNew(
+                    async () =>
+                    {
+                        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
+                        await Task.Delay(444);
+                        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
+                    });
+
+                if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
+                {
+                    actionTarget.Target = dyingTeamMember;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;

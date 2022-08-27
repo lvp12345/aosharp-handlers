@@ -439,19 +439,6 @@ namespace CombatHandler.Generic
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
 
-            //if (Time.NormalTime > _aggDefTick + 1f)
-            //{
-            //    Chat.WriteLine($"{DynelManager.LocalPlayer.GetStat(Stat.AnimPlay)}");
-
-            //    if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) < 100)
-            //    {
-            //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
-            //        Chat.WriteLine($"Changing to 100");
-            //    }
-
-            //    _aggDefTick = Time.NormalTime;
-            //}
-
             if (Time.NormalTime > _updateTick + 6f)
             {
                 List<SimpleChar> PlayersInRange = DynelManager.Characters

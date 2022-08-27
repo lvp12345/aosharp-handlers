@@ -450,8 +450,12 @@ namespace CombatHandler.Doctor
 
             if (!CanCast(spell) || DocHealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32()
-                || HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                return FindMemberWithHealthBelow(DocHealPercentage, ref actionTarget);
+            }
+
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
 
                 if (DynelManager.LocalPlayer.IsInTeam())

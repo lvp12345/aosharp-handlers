@@ -352,7 +352,20 @@ namespace CombatHandler.NanoTechnician
         {
             if (AOESelection.VE == (AOESelection)_settings["AOESelection"].AsInt32() || fightingTarget == null) { return false; }
 
-            return true;
+            Task.Factory.StartNew(
+                async () =>
+                {
+                    DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
+                    await Task.Delay(444);
+                    DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
+                });
+
+            if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private bool PierceNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

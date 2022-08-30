@@ -153,7 +153,7 @@ namespace CombatHandler.Enf
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView);
 
                 window.FindView("DelaySingleBox", out TextInputView singleInput);
-                window.FindView("DelayAOEBox", out TextInputView areaInput);
+                window.FindView("DelayAreaBox", out TextInputView areaInput);
 
                 if (singleInput != null)
                 {
@@ -170,7 +170,7 @@ namespace CombatHandler.Enf
                 _tauntWindow = container;
 
                 container.FindView("DelaySingleBox", out TextInputView singleInput);
-                container.FindView("DelayAOEBox", out TextInputView areaInput);
+                container.FindView("DelayAreaBox", out TextInputView areaInput);
 
                 if (singleInput != null)
                 {

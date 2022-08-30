@@ -509,8 +509,14 @@ namespace CombatHandler.Enf
 
             if (!IsSettingEnabled("AreaTaunt")) { return false; }
 
+            if (EnfTauntDelayArea == 0)
+            {
+                _areaTaunt = Time.NormalTime;
+                return true;
+            }
+
             if (Time.NormalTime > _areaTaunt + EnfTauntDelayArea
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1))
+                && fightingTarget != null)
             {
                 _areaTaunt = Time.NormalTime;
                 return true;

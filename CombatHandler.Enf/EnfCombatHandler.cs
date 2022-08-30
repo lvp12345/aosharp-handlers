@@ -511,7 +511,6 @@ namespace CombatHandler.Enf
 
             if (EnfTauntDelayArea == 0)
             {
-                _areaTaunt = Time.NormalTime;
                 return true;
             }
 

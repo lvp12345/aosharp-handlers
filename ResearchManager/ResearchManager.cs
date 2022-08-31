@@ -51,7 +51,7 @@ namespace ResearchManager
                     == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
                     .FirstOrDefault();
 
-                if (_asyncToggle == false && (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0 || !_current.Available))
+                if (_asyncToggle == false && (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0 || !_current.Available || Utilz.Last(_current.ResearchId) >= 8))
                 {
                     Task.Factory.StartNew(
                         async () =>
@@ -59,7 +59,8 @@ namespace ResearchManager
                             _asyncToggle = true;
 
                             ResearchGoal _next = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                                != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
+                                != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
+                                && Utilz.Last(c.ResearchId) < 8)
                                 .FirstOrDefault();
 
                             await Task.Delay(200);

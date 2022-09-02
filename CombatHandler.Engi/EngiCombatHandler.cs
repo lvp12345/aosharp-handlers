@@ -80,7 +80,6 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ReactiveArmor);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.AssaultForceRelief);
 
-            _settings.AddVariable("SpamBlindAura", false);
             _settings.AddVariable("SpamSnareAura", false);
 
             _settings.AddVariable("LegShot", false);
@@ -127,8 +126,8 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             //Pet Spawners
-            RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), PetSpawner);
-            RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Support).Select(x => x.Key).ToArray(), PetSpawner);
+            RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Attack).Select(c => c.Key).ToArray(), PetSpawner);
+            RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Support).Select(c => c.Key).ToArray(), PetSpawner);
 
             RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(), PetTargetBuff);
@@ -301,13 +300,16 @@ namespace CombatHandler.Engineer
                 CancelBuffs(RelevantNanos.ReflectAura);
             }
 
-            if (!IsSettingEnabled("SpamBlindAura"))
-            {
-                CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                    ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
-                CancelHostileAuras(RelevantNanos.Blinds);
-            }
+            //if (!IsSettingEnabled("SpamBlindAura"))
+            //{
+            //    CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+            //        ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
+            //    CancelHostileAuras(RelevantNanos.Blinds);
+            //}
 
+            CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+                ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
+            CancelHostileAuras(RelevantNanos.Blinds);
             CancelHostileAuras(RelevantNanos.ShieldRippers);
         }
 
@@ -539,20 +541,11 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (IsSettingEnabled("SpamBlindAura"))
-            {
-                if (Time.NormalTime - _recastBlinds > 9)
-                {
-                    _recastBlinds = Time.NormalTime;
-                    return true;
-                }
-            }
-
-            if (fightingTarget == null) { return false; }
-
             if (DebuffingAuraSelection.Blind == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32())
             {
-                if (Time.NormalTime - _recastBlinds > 9)
+                if (Time.NormalTime - _recastBlinds > 9 && DynelManager.Characters.Where(c => c.IsAlive && c.IsNpc && !c.IsPet
+                                                                && c.FightingTarget != null && c.Position
+                                                                .DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f).Any())
                 {
                     _recastBlinds = Time.NormalTime;
                     return true;
@@ -744,6 +737,8 @@ namespace CombatHandler.Engineer
 
         protected bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1) { return false; }
+
             if (PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
             {
                 ResetTrimmers();

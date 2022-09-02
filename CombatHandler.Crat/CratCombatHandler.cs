@@ -341,8 +341,8 @@ namespace CombatHandler.Bureaucrat
                 }
             }
 
-            CancelDebuffAurasIfNeeded();
-            CancelBuffAurasIfNeeded();
+            HandleCancelDebuffAuras();
+            HandleCancelBuffAuras();
         }
 
         #region Perks
@@ -441,10 +441,8 @@ namespace CombatHandler.Bureaucrat
                 {
                     return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
                 }
-                else
-                {
-                    return GenericBuff(spell, fightingTarget, ref actionTarget);
-                }
+
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
@@ -456,40 +454,32 @@ namespace CombatHandler.Bureaucrat
 
             List<Pet> pets = DynelManager.LocalPlayer.Pets
                 .Where(x => x.Character.Buffs.Contains(NanoLine.Root) || x.Character.Buffs.Contains(NanoLine.Snare)
-                || x.Character.Buffs.Contains(NanoLine.Mezz))
+                        || x.Character.Buffs.Contains(NanoLine.Mezz))
                 .ToList();
 
             if (pets?.Count > 1)
-            {
                 return true;
-            }
 
             return false;
         }
 
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            if (!IsSettingEnabled("MastersBidding")) { return false; }
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || !IsSettingEnabled("MastersBidding")) { return false; }
 
             Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
                 && (pet.Character.GetStat(Stat.NPCFamily) != 98)
                 && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
 
             if (petToBuff != null)
-            {
                 spell.Cast(petToBuff.Character, true);
-            }
 
             return false;
         }
 
         public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget == null || fightingTarget == null) { return false; }
-
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
 
             Pet petToPerk = FindPetThat(CanPerkPuppeteer);
             if (petToPerk != null)
@@ -1108,7 +1098,7 @@ namespace CombatHandler.Bureaucrat
             petTrimmedAggDef[PetType.Support] = false;
         }
 
-        private void CancelBuffAurasIfNeeded()
+        private void HandleCancelBuffAuras()
         {
             if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
             {
@@ -1124,7 +1114,7 @@ namespace CombatHandler.Bureaucrat
             }
         }
 
-        private void CancelDebuffAurasIfNeeded()
+        private void HandleCancelDebuffAuras()
         {
             CancelHostileAuras(RelevantNanos.CritDebuffAuras);
             CancelHostileAuras(RelevantNanos.NanoPointsDebuffAuras);

@@ -439,11 +439,10 @@ namespace CombatHandler.Generic
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
 
-            if (Time.NormalTime > _updateTick + 6f)
+            if (Time.NormalTime > _updateTick + 1f)
             {
                 List<SimpleChar> PlayersInRange = DynelManager.Characters
-                    .Where(x => x.IsPlayer)
-                    .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
+                    .Where(x => x.IsPlayer && DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
                     .ToList();
 
                 foreach (SimpleChar player in PlayersInRange)
@@ -573,10 +572,10 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged)
+                            && SpellChecksOther(spell, spell.Nanoline, c)
+                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -614,9 +613,8 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive)
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent < 30)
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.HealthPercent < 30)
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
@@ -668,8 +666,8 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -756,13 +754,13 @@ namespace CombatHandler.Generic
             if (!IsSettingEnabled(toggleName) || !CanCast(spell)) { return false; }
 
             SimpleChar debuffTarget = DynelManager.NPCs
-                .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => c.FightingTarget != null) //Is in combat
-                .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
-                .Where(c => c.IsInLineOfSight)
-                .Where(c => !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz))
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                .Where(c => SpellChecksOther(spell, spell.Nanoline, c)) //Needs debuff refreshed
+                .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name) 
+                        && c.FightingTarget != null
+                        && !c.Buffs.Contains(301844)
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && SpellChecksOther(spell, spell.Nanoline, c))
                 .OrderBy(c => c.MaxHealth)
                 .FirstOrDefault();
 
@@ -834,9 +832,9 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.Identity != DynelManager.LocalPlayer.Identity)
-                    .Where(c => SpellChecksNanoSkillsOther(spell, c))
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.Identity != DynelManager.LocalPlayer.Identity 
+                            && SpellChecksNanoSkillsOther(spell, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -859,8 +857,8 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -917,11 +915,10 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .Where(c => c.Profession != Profession.NanoTechnician)
-                    // Combines both together
-                    .Where(c => GetWieldedWeapons(c).HasFlag(supportedWeaponType))
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && SpellChecksOther(spell, spell.Nanoline, c) 
+                            && c.Profession != Profession.NanoTechnician 
+                            && GetWieldedWeapons(c).HasFlag(supportedWeaponType))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -953,10 +950,9 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    // Combines both together
-                    .Where(c => GetWieldedWeapons(c).HasFlag(supportedWeaponType))
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && SpellChecksOther(spell, spell.Nanoline, c)
+                            && GetWieldedWeapons(c).HasFlag(supportedWeaponType))
                     .FirstOrDefault();
 
                 if (teamMemberWithoutBuff != null)
@@ -1143,8 +1139,7 @@ namespace CombatHandler.Generic
         private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             Item bulletsammo = Inventory.Items
-                .Where(c => c.Name.Contains("Bullets"))
-                .Where(c => !c.Name.Contains("Crate"))
+                .Where(c => c.Name.Contains("Bullets") && !c.Name.Contains("Crate"))
                 .FirstOrDefault();
 
             actiontarget.ShouldSetTarget = false;
@@ -1155,8 +1150,7 @@ namespace CombatHandler.Generic
         private bool AmmoBoxEnergy(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             Item energyammo = Inventory.Items
-                .Where(c => c.Name.Contains("Energy"))
-                .Where(c => !c.Name.Contains("Crate"))
+                .Where(c => c.Name.Contains("Energy") && !c.Name.Contains("Crate"))
                 .FirstOrDefault();
 
             actiontarget.ShouldSetTarget = false;
@@ -1167,8 +1161,7 @@ namespace CombatHandler.Generic
         private bool AmmoBoxShotgun(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             Item shotgunammo = Inventory.Items
-                .Where(c => c.Name.Contains("Shotgun"))
-                .Where(c => !c.Name.Contains("Crate"))
+                .Where(c => c.Name.Contains("Shotgun") && !c.Name.Contains("Crate"))
                 .FirstOrDefault();
 
             actiontarget.ShouldSetTarget = false;
@@ -1179,8 +1172,7 @@ namespace CombatHandler.Generic
         private bool AmmoBoxArrows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             Item arrowammo = Inventory.Items
-                .Where(c => c.Name.Contains("Arrows"))
-                .Where(c => !c.Name.Contains("Crate"))
+                .Where(c => c.Name.Contains("Arrows") && !c.Name.Contains("Crate"))
                 .FirstOrDefault();
 
             actiontarget.ShouldSetTarget = false;
@@ -1190,24 +1182,26 @@ namespace CombatHandler.Generic
 
         private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (Inventory.Find(305476, 305476, out Item absorbdesflesh))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
-            }
-            if (Inventory.Find(204698, 204698, out Item absorbwithflesh))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
-            }
-            if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
-            }
+            //if (Inventory.Find(305476, 305476, out Item absorbdesflesh))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
+            //}
+            //if (Inventory.Find(204698, 204698, out Item absorbwithflesh))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
+            //}
+            //if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
+            //}
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 65 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1) 
+            if (item == null) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 75 && !Item.HasPendingUse) 
             { 
                 return true;
             }
@@ -1221,7 +1215,9 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 65 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1)
+            if (item == null) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 75 && !Item.HasPendingUse) //  && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1
             {
                 return true;
             }
@@ -1231,24 +1227,26 @@ namespace CombatHandler.Generic
 
         private bool DescFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
-            }
-            if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
-            }
-            if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
-            }
+            //if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
+            //}
+            //if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
+            //}
+            //if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
+            //}
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 65 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1)
+            if (item == null) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 75 && !Item.HasPendingUse)
             {
                 return true;
             }
@@ -1258,28 +1256,28 @@ namespace CombatHandler.Generic
 
         private bool WithFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            Inventory.Find(305476, 305476, out Item absorbdesflesh);
+            //Inventory.Find(305476, 305476, out Item absorbdesflesh);
 
-            if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
-            }
-            if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
-            }
-            if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
-            }
+            //if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
+            //}
+            //if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
+            //}
+            //if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
+            //}
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
-            if (absorbdesflesh != null) { return false; }
+            if (item == null) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 65 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1)
+            if (DynelManager.LocalPlayer.HealthPercent <= 75 && !Item.HasPendingUse)
             {
                 return true;
             }
@@ -1322,6 +1320,8 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("SpawnPets")) { return false; }
 
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1) { return false; }
+
             if (!CanLookupPetsAfterZone()) { return false; }
 
             if (!petData.Values.Any(x => (x.ShellId == item.LowId || x.ShellId == item.HighId) && !DynelManager.LocalPlayer.Pets.Any(p => p.Type == x.PetType))) { return false; }
@@ -1345,52 +1345,52 @@ namespace CombatHandler.Generic
         protected Pet FindAttackPetThat(Func<Pet, bool> Filter)
         {
             return DynelManager.LocalPlayer.Pets
-                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
-                .Where(pet => pet.Type == PetType.Attack)
-                .Where(pet => Filter.Invoke(pet))
+                .Where(c => c.Character != null && c.Character.Buffs != null
+                        && c.Type == PetType.Attack
+                        && Filter.Invoke(c))
                 .FirstOrDefault();
         }
 
         protected Pet FindSupportPetThat(Func<Pet, bool> Filter)
         {
             return DynelManager.LocalPlayer.Pets
-                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
-                .Where(pet => pet.Type == PetType.Support)
-                .Where(pet => Filter.Invoke(pet))
+                .Where(c => c.Character != null && c.Character.Buffs != null
+                        && c.Type == PetType.Support
+                        && Filter.Invoke(c))
                 .FirstOrDefault();
         }
 
         protected Pet FindPetThat(Func<Pet, bool> Filter)
         {
             return DynelManager.LocalPlayer.Pets
-                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
-                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
-                .Where(pet => Filter.Invoke(pet))
+                .Where(c => c.Character != null && c.Character.Buffs != null
+                        && (c.Type == PetType.Attack || c.Type == PetType.Attack || c.Type == PetType.Heal)
+                        && Filter.Invoke(c))
                 .FirstOrDefault();
         }
 
         protected Pet FindPets()
         {
             return DynelManager.LocalPlayer.Pets
-                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
-                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
+                .Where(c => c.Character != null && c.Character.Buffs != null
+                        && (c.Type == PetType.Attack || c.Type == PetType.Attack || c.Type == PetType.Heal))
                 .FirstOrDefault();
         }
         protected Pet FindPetsWithoutBuff(int[] buff)
         {
             return DynelManager.LocalPlayer.Pets
-                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
-                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
-                .Where(pet => !pet.Character.Buffs.Contains(buff))
+                .Where(c => c.Character != null && c.Character.Buffs != null
+                        && (c.Type == PetType.Attack || c.Type == PetType.Attack || c.Type == PetType.Heal)
+                        && !c.Character.Buffs.Contains(buff))
                 .FirstOrDefault();
         }
 
         protected Pet FindPetNeedsHeal(int percent)
         {
             return DynelManager.LocalPlayer.Pets
-                .Where(pet => pet.Character != null && pet.Character.Buffs != null)
-                .Where(pet => pet.Type == PetType.Support || pet.Type == PetType.Attack || pet.Type == PetType.Heal)
-                .Where(pet => pet.Character.HealthPercent <= percent)
+                .Where(c => c.Character != null && c.Character.Buffs != null
+                        && (c.Type == PetType.Attack || c.Type == PetType.Attack || c.Type == PetType.Heal)
+                        && c.Character.HealthPercent <= percent)
                 .FirstOrDefault();
         }
 
@@ -1472,13 +1472,12 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.Profession != Profession.Keeper)
-                    .Where(c => c.Profession != Profession.Engineer)
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
+                            && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
-                if (teamMemberWithoutBuff != null && teamMemberWithoutBuff.Profession != Profession.Keeper)
+                if (teamMemberWithoutBuff != null)
                 {
                     actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
@@ -1499,9 +1498,8 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive)
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 85)
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.HealthPercent <= 85)
                     .OrderBy(c => c.Profession == Profession.Doctor)
                     .OrderBy(c => c.Profession == Profession.Enforcer)
                     .FirstOrDefault();

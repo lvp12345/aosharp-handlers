@@ -288,11 +288,7 @@ namespace CombatHandler.Generic
 
         public static bool SelfAbsorbPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0)
-                return false;
-
-            if (!perkAction.IsAvailable)
-                return false;
+            if (!perkAction.IsAvailable) { return false; }
 
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
@@ -304,43 +300,43 @@ namespace CombatHandler.Generic
                     return false;
             }
 
-            if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
-                {
-                    return false;
-                }
-            }
-            if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
-                {
-                    return false;
-                }
-            }
-            if (Inventory.Find(305476, 305476, out Item absorbdesflesh))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
-                {
-                    return false;
-                }
-            }
-            if (Inventory.Find(204698, 204698, out Item absorbwithflesh))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
-                {
-                    return false;
-                }
-            }
-            if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp))
-                {
-                    return false;
-                }
-            }
+            //if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+            //    {
+            //        return false;
+            //    }
+            //}
+            //if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength))
+            //    {
+            //        return false;
+            //    }
+            //}
+            //if (Inventory.Find(305476, 305476, out Item absorbdesflesh))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
+            //    {
+            //        return false;
+            //    }
+            //}
+            //if (Inventory.Find(204698, 204698, out Item absorbwithflesh))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment))
+            //    {
+            //        return false;
+            //    }
+            //}
+            //if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
+            //{
+            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp))
+            //    {
+            //        return false;
+            //    }
+            //}
 
-            if (DynelManager.LocalPlayer.HealthPercent >= 65)
+            if (DynelManager.LocalPlayer.HealthPercent >= 70)
                 return false;
 
             return true;

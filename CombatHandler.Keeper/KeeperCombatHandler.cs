@@ -34,7 +34,7 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("SpamAntifear", false);
+            _settings.AddVariable("RecastAntiFear", false);
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RighteousSmite);
@@ -66,8 +66,8 @@ namespace CombatHandler.Keeper
             RegisterPerkProcessor(PerkHash.LEProcKeeperSubjugation, Subjugation, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcKeeperFaithfulReconstruction, FaithfulReconstruction, CombatActionPriority.Low);
 
-            //12man Antifear spam
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), AntifearSpam);
+            //Anti-Fear
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), RecastAntiFear);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder().OrderByStackingOrder(), GenericBuff);
@@ -300,9 +300,9 @@ namespace CombatHandler.Keeper
 
         #endregion
 
-        private bool AntifearSpam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("SpamAntifear")) { return true; }
+            if (IsSettingEnabled("RecastAntiFear")) { return true; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }

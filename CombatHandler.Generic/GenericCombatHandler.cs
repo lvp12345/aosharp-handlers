@@ -442,7 +442,7 @@ namespace CombatHandler.Generic
             if (Time.NormalTime > _updateTick + 1f)
             {
                 List<SimpleChar> PlayersInRange = DynelManager.Characters
-                    .Where(x => x.IsPlayer && DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
+                    .Where(c => c.IsPlayer && DynelManager.LocalPlayer.DistanceFrom(c) < 30f)
                     .ToList();
 
                 foreach (SimpleChar player in PlayersInRange)
@@ -451,7 +451,6 @@ namespace CombatHandler.Generic
                     {
                         Action = CharacterActionType.InfoRequest,
                         Target = player.Identity
-
                     });
                 }
 
@@ -565,9 +564,7 @@ namespace CombatHandler.Generic
 
         protected bool BuffInitEngi(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
+            if (fightingTarget != null || !CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
@@ -585,14 +582,12 @@ namespace CombatHandler.Generic
                     return true;
                 }
             }
-            else
+
+            if (SpellChecksPlayer(spell))
             {
-                if (SpellChecksPlayer(spell))
-                {
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
             }
 
             return false;
@@ -633,35 +628,23 @@ namespace CombatHandler.Generic
 
         protected bool GenericBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (IsInsideInnerSanctum()) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
-
-            if (spell.Name == "Elusive Target") { return false; }
+            if (!IsSettingEnabled("Buffing") || IsInsideInnerSanctum() 
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool CompositeBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!IsSettingEnabled("Composites")) { return false; }
-
-            if (IsInsideInnerSanctum()) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Composites") 
+                || IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool AllTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
@@ -683,9 +666,7 @@ namespace CombatHandler.Generic
 
         protected bool AllBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (SpellChecksPlayer(spell))
             {
@@ -699,9 +680,7 @@ namespace CombatHandler.Generic
 
         protected bool CombatBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
+            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             if (SpellChecksPlayer(spell))
             {
@@ -715,10 +694,7 @@ namespace CombatHandler.Generic
 
         protected bool DebuffTarget(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            // Check if we are fighting and if debuffing is enabled
-            if (fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("Buffing") || fightingTarget == null) { return false; }
 
             if (SpellChecksOther(spell, nanoline, fightingTarget))
             {
@@ -732,10 +708,7 @@ namespace CombatHandler.Generic
 
         protected bool ToggledDebuffTarget(string settingName, Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            // Check if we are fighting and if debuffing is enabled
-            if (fightingTarget == null || !IsSettingEnabled(settingName)) { return false; }
+            if (fightingTarget == null || !IsSettingEnabled(settingName) || !IsSettingEnabled("Buffing")) { return false; }
 
             if (SpellChecksOther(spell, nanoline, fightingTarget))
             {
@@ -749,12 +722,10 @@ namespace CombatHandler.Generic
 
         protected bool ToggledDebuffOthersInCombat(string toggleName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!IsSettingEnabled(toggleName) || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled(toggleName) || !CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             SimpleChar debuffTarget = DynelManager.NPCs
-                .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name) 
+                .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
                         && !c.Buffs.Contains(301844)
                         && c.IsInLineOfSight
@@ -770,7 +741,7 @@ namespace CombatHandler.Generic
                 return true;
             }
 
-            return false;
+            return true;
         }
 
         protected virtual bool TargetedDamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1047,8 +1018,9 @@ namespace CombatHandler.Generic
 
         private bool FreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                && !DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
+                || (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                && !DynelManager.LocalPlayer.Buffs.Contains(258231))) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)) { return false; }
 
@@ -1059,9 +1031,8 @@ namespace CombatHandler.Generic
 
         protected bool TauntTool(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !IsSettingEnabled("ScorpioTauntTool")) { return false; }
-
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Psychology)) { return false; }
+            if (fightingTarget == null || !IsSettingEnabled("ScorpioTauntTool")
+                || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Psychology)) { return false; }
 
             actionTarget.Target = fightingTarget;
             actionTarget.ShouldSetTarget = true;
@@ -1092,9 +1063,7 @@ namespace CombatHandler.Generic
 
         private bool FlowerOfLife(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (fightingtarget == null) { return false; }
-
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))) { return false; }
+            if (fightingtarget == null || DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))) { return false; }
 
             int approximateHealing = item.QualityLevel * 10;
 
@@ -1103,9 +1072,8 @@ namespace CombatHandler.Generic
 
         private bool SitKit(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent >= 66 && DynelManager.LocalPlayer.NanoPercent >= 66) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
+                || (DynelManager.LocalPlayer.HealthPercent >= 66 && DynelManager.LocalPlayer.NanoPercent >= 66)) { return false; }
 
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;
@@ -1114,11 +1082,9 @@ namespace CombatHandler.Generic
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)) { return false; }
-
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 8) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
+                || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 8
+                || (DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231))) { return false; }
 
             int targetHealing = item.UseModifiers
                 .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
@@ -1138,46 +1104,63 @@ namespace CombatHandler.Generic
 
         private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            Item bulletsammo = Inventory.Items
-                .Where(c => c.Name.Contains("Bullets") && !c.Name.Contains("Crate"))
-                .FirstOrDefault();
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            actiontarget.ShouldSetTarget = false;
+            return !Inventory.Items
+                .Where(c => c.Name == "Ammo: Box of Bullets")
+                .Any();
 
-            return bulletsammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
+            //Item bulletsammo = Inventory.Items
+            //    .Where(c => c.Name.Contains("Bullets") && !c.Name.Contains("Crate"))
+            //    .FirstOrDefault();
+
+            //return bulletsammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
         }
 
         private bool AmmoBoxEnergy(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            Item energyammo = Inventory.Items
-                .Where(c => c.Name.Contains("Energy") && !c.Name.Contains("Crate"))
-                .FirstOrDefault();
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            actiontarget.ShouldSetTarget = false;
+            return !Inventory.Items
+                .Where(c => c.Name == "Ammo: Box of Energy Weapon Ammo")
+                .Any();
 
-            return energyammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
+
+            //Item energyammo = Inventory.Items
+            //    .Where(c => c.Name.Contains("Energy") && !c.Name.Contains("Crate"))
+            //    .FirstOrDefault();
+
+            //return energyammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
         }
 
         private bool AmmoBoxShotgun(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            Item shotgunammo = Inventory.Items
-                .Where(c => c.Name.Contains("Shotgun") && !c.Name.Contains("Crate"))
-                .FirstOrDefault();
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            actiontarget.ShouldSetTarget = false;
+            return !Inventory.Items
+                .Where(c => c.Name == "Ammo: Box of Shotgun Shells")
+                .Any();
 
-            return shotgunammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
+            //Item shotgunammo = Inventory.Items
+            //    .Where(c => c.Name.Contains("Shotgun") && !c.Name.Contains("Crate"))
+            //    .FirstOrDefault();
+
+            //return shotgunammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
         }
 
         private bool AmmoBoxArrows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            Item arrowammo = Inventory.Items
-                .Where(c => c.Name.Contains("Arrows") && !c.Name.Contains("Crate"))
-                .FirstOrDefault();
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            actiontarget.ShouldSetTarget = false;
+            return !Inventory.Items
+                .Where(c => c.Name == "Ammo: Box of Arrows")
+                .Any();
 
-            return arrowammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
+            //Item arrowammo = Inventory.Items
+            //    .Where(c => c.Name.Contains("Arrows") && !c.Name.Contains("Crate"))
+            //    .FirstOrDefault();
+
+            //return arrowammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
         }
 
         private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -1195,34 +1178,24 @@ namespace CombatHandler.Generic
             //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             //}
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength) 
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
+                || Item.HasPendingUse
+                || DynelManager.LocalPlayer.HealthPercent > 75) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
-
-            if (item == null) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 75 && !Item.HasPendingUse) 
-            { 
-                return true;
-            }
-
-            return false;
+            return item != null;
         }
 
         private bool AssaultClass(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp) 
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
+                || Item.HasPendingUse
+                || DynelManager.LocalPlayer.HealthPercent > 75
+                //|| DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
+                ) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
-
-            if (item == null) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 75 && !Item.HasPendingUse) //  && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) >= 1
-            {
-                return true;
-            }
-
-            return false;
+            return item != null;
         }
 
         private bool DescFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -1240,18 +1213,12 @@ namespace CombatHandler.Generic
             //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             //}
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
+                || Item.HasPendingUse
+                || DynelManager.LocalPlayer.HealthPercent > 75) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
-
-            if (item == null) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 75 && !Item.HasPendingUse)
-            {
-                return true;
-            }
-
-            return false;
+            return item != null;
         }
 
         private bool WithFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -1271,27 +1238,21 @@ namespace CombatHandler.Generic
             //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             //}
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
+                || Item.HasPendingUse
+                || DynelManager.LocalPlayer.HealthPercent > 75) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
-
-            if (item == null) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 75 && !Item.HasPendingUse)
-            {
-                return true;
-            }
-
-            return false;
+            return item != null;
         }
 
         protected virtual bool Coffee(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FoodandDrinkBuffs))
-                return DamageItem(item, fightingTarget, ref actionTarget);
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FoodandDrinkBuffs)) { return false; }
 
-            return false;
+            return DamageItem(item, fightingTarget, ref actionTarget);
         }
+
         #endregion
 
         #region Pets
@@ -1306,25 +1267,16 @@ namespace CombatHandler.Generic
 
         protected bool PetSpawner(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!petData.ContainsKey(spell.Id)) { return false; }
+            if (!petData.ContainsKey(spell.Id) || Inventory.Find(petData[spell.Id].ShellId, out Item shell)) { return false; }
 
-            PetType petType = petData[spell.Id].PetType;
-
-            //Ignore spell if we already have the shell in our inventory
-            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) { return false; }
-
-            return NoShellPetSpawner(petType, spell, fightingTarget, ref actionTarget);
+            return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
         }
 
         protected virtual bool PetSpawnerItem(Dictionary<int, PetSpellData> petData, Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SpawnPets")) { return false; }
-
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1) { return false; }
-
-            if (!CanLookupPetsAfterZone()) { return false; }
-
-            if (!petData.Values.Any(x => (x.ShellId == item.LowId || x.ShellId == item.HighId) && !DynelManager.LocalPlayer.Pets.Any(p => p.Type == x.PetType))) { return false; }
+            if (!IsSettingEnabled("SpawnPets") || !CanLookupPetsAfterZone()
+                || (!petData.Values.Any(x => (x.ShellId == item.Id || x.ShellId == item.HighId) 
+                    && !DynelManager.LocalPlayer.Pets.Any(p => p.Type == x.PetType)))) { return false; }
 
             actionTarget.ShouldSetTarget = false;
             return true;
@@ -1339,7 +1291,7 @@ namespace CombatHandler.Generic
 
         private bool PetAlreadySpawned(PetType petType)
         {
-            return DynelManager.LocalPlayer.Pets.Any(x => (x.Type == PetType.Unknown || x.Type == petType));
+            return DynelManager.LocalPlayer.Pets.Any(c => (c.Type == PetType.Unknown || c.Type == petType));
         }
 
         protected Pet FindAttackPetThat(Func<Pet, bool> Filter)
@@ -1364,7 +1316,7 @@ namespace CombatHandler.Generic
         {
             return DynelManager.LocalPlayer.Pets
                 .Where(c => c.Character != null && c.Character.Buffs != null
-                        && (c.Type == PetType.Attack || c.Type == PetType.Attack || c.Type == PetType.Heal)
+                        && (c.Type == PetType.Attack || c.Type == PetType.Support || c.Type == PetType.Heal)
                         && Filter.Invoke(c))
                 .FirstOrDefault();
         }
@@ -1373,14 +1325,14 @@ namespace CombatHandler.Generic
         {
             return DynelManager.LocalPlayer.Pets
                 .Where(c => c.Character != null && c.Character.Buffs != null
-                        && (c.Type == PetType.Attack || c.Type == PetType.Attack || c.Type == PetType.Heal))
+                        && (c.Type == PetType.Attack || c.Type == PetType.Support || c.Type == PetType.Heal))
                 .FirstOrDefault();
         }
         protected Pet FindPetsWithoutBuff(int[] buff)
         {
             return DynelManager.LocalPlayer.Pets
                 .Where(c => c.Character != null && c.Character.Buffs != null
-                        && (c.Type == PetType.Attack || c.Type == PetType.Attack || c.Type == PetType.Heal)
+                        && (c.Type == PetType.Attack || c.Type == PetType.Support || c.Type == PetType.Heal)
                         && !c.Character.Buffs.Contains(buff))
                 .FirstOrDefault();
         }
@@ -1389,7 +1341,7 @@ namespace CombatHandler.Generic
         {
             return DynelManager.LocalPlayer.Pets
                 .Where(c => c.Character != null && c.Character.Buffs != null
-                        && (c.Type == PetType.Attack || c.Type == PetType.Attack || c.Type == PetType.Heal)
+                        && (c.Type == PetType.Attack || c.Type == PetType.Support || c.Type == PetType.Heal)
                         && c.Character.HealthPercent <= percent)
                 .FirstOrDefault();
         }
@@ -1430,28 +1382,41 @@ namespace CombatHandler.Generic
 
         private void SynchronizePetCombatState(Pet pet)
         {
-            if (pet != null)
+            if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
+                pet?.Follow();
+
+            if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
             {
-                if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
-                {
-                    if (pet.Character.IsAttacking && pet.Character.FightingTarget != null
-                        && pet.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
-                    {
-                        pet.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
-                    }
-                    else if (!pet.Character.IsAttacking)
-                    {
-                        pet.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
-                    }
-                }
-                else if (!DynelManager.LocalPlayer.IsAttacking)
-                {
-                    if (pet.Character.IsAttacking)
-                    {
-                        pet.Follow();
-                    }
-                }
+                if (pet?.Character.IsAttacking == false)
+                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+
+                if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
+                    && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
+                        pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
             }
+
+            //if (pet != null)
+            //{
+            //    if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
+            //    {
+            //        if (pet.Character.IsAttacking && pet.Character.FightingTarget != null
+            //            && pet.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
+            //        {
+            //            pet.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+            //        }
+            //        else if (!pet.Character.IsAttacking)
+            //        {
+            //            pet.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+            //        }
+            //    }
+            //    else if (!DynelManager.LocalPlayer.IsAttacking)
+            //    {
+            //        if (pet.Character.IsAttacking)
+            //        {
+            //            pet.Follow();
+            //        }
+            //    }
+            //}
         }
 
         #endregion
@@ -1465,53 +1430,39 @@ namespace CombatHandler.Generic
 
         protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                actionTarget.Target = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
                             && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
-                if (teamMemberWithoutBuff != null)
+                if (actionTarget.Target != null)
                 {
-                    actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
+
+                //SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                //    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                //            && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
+                //            && SpellChecksOther(spell, spell.Nanoline, c))
+                //    .FirstOrDefault();
+
+                //if (teamMemberWithoutBuff != null)
+                //{
+                //    actionTarget.Target = teamMemberWithoutBuff;
+                //    actionTarget.ShouldSetTarget = true;
+                //    return true;
+                //}
             }
 
             return false;
         }
 
-        protected bool SomeoneNeedsHealing()
-        {
-            if (DynelManager.LocalPlayer.HealthPercent <= 85)
-            {
-                return true;
-            }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.HealthPercent <= 85)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .FirstOrDefault();
-
-                if (dyingTeamMember != null)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
         //This should be a float to be more accurate?
         protected bool FindMemberWithHealthBelow(int healthPercentTreshold, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1532,12 +1483,13 @@ namespace CombatHandler.Generic
                 //}
 
                 actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar dyingTeamMember = DynelManager.Characters
+                actionTarget.Target = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight)
                     .OrderBy(c => c.Profession == Profession.Doctor)
@@ -1545,27 +1497,41 @@ namespace CombatHandler.Generic
                     .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
 
-                if (dyingTeamMember != null)
+                if (actionTarget.Target != null)
                 {
-                    //Task.Factory.StartNew(
-                    //    async () =>
-                    //    {
-                    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
-                    //        await Task.Delay(444);
-                    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
-                    //    });
-
-                    //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
-                    //{
-                    //    actionTarget.Target = dyingTeamMember;
-                    //    actionTarget.ShouldSetTarget = true;
-                    //    return true;
-                    //}
-
-                    actionTarget.Target = dyingTeamMember;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
+
+                //SimpleChar dyingTeamMember = DynelManager.Characters
+                //    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                //        && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight)
+                //    .OrderBy(c => c.Profession == Profession.Doctor)
+                //    .OrderBy(c => c.Profession == Profession.Enforcer)
+                //    .OrderBy(c => c.HealthPercent)
+                //    .FirstOrDefault();
+
+                //if (dyingTeamMember != null)
+                //{
+                //    //Task.Factory.StartNew(
+                //    //    async () =>
+                //    //    {
+                //    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
+                //    //        await Task.Delay(444);
+                //    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
+                //    //    });
+
+                //    //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
+                //    //{
+                //    //    actionTarget.Target = dyingTeamMember;
+                //    //    actionTarget.ShouldSetTarget = true;
+                //    //    return true;
+                //    //}
+
+                //    actionTarget.Target = dyingTeamMember;
+                //    actionTarget.ShouldSetTarget = true;
+                //    return true;
+                //}
             }
 
             return false;
@@ -1590,102 +1556,87 @@ namespace CombatHandler.Generic
                 //}
 
                 actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
-            SimpleChar dyingTeamMember = DynelManager.Characters
+            actionTarget.Target = DynelManager.Characters
                 .Where(c => c.IsPlayer && c.HealthPercent <= healthPercentTreshold
                     && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && c.IsInLineOfSight)
                 .OrderBy(c => c.Profession == Profession.Doctor)
                 .OrderBy(c => c.Profession == Profession.Enforcer)
                 .FirstOrDefault();
 
-            if (dyingTeamMember != null)
+            if (actionTarget.Target != null)
             {
-                //Task.Factory.StartNew(
-                //    async () =>
-                //    {
-                //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
-                //        await Task.Delay(444);
-                //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
-                //    });
-
-                //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
-                //{
-                //    actionTarget.Target = dyingTeamMember;
-                //    actionTarget.ShouldSetTarget = true;
-                //    return true;
-                //}
-
-                actionTarget.Target = dyingTeamMember;
                 actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
-            return false;
-        }
 
-        protected bool HasNano(int nanoId)
-        {
-            return Spell.Find(nanoId, out Spell spell);
+
+            //SimpleChar dyingTeamMember = DynelManager.Characters
+            //    .Where(c => c.IsPlayer && c.HealthPercent <= healthPercentTreshold
+            //        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && c.IsInLineOfSight)
+            //    .OrderBy(c => c.Profession == Profession.Doctor)
+            //    .OrderBy(c => c.Profession == Profession.Enforcer)
+            //    .FirstOrDefault();
+
+            //if (dyingTeamMember != null)
+            //{
+            //    //Task.Factory.StartNew(
+            //    //    async () =>
+            //    //    {
+            //    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
+            //    //        await Task.Delay(444);
+            //    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
+            //    //    });
+
+            //    //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
+            //    //{
+            //    //    actionTarget.Target = dyingTeamMember;
+            //    //    actionTarget.ShouldSetTarget = true;
+            //    //    return true;
+            //    //}
+
+            //    actionTarget.Target = dyingTeamMember;
+            //    actionTarget.ShouldSetTarget = true;
+            //    return true;
+            //}
+
+            return false;
         }
 
         protected bool SpellChecksOther(Spell spell, NanoLine nanoline, SimpleChar fightingTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
-
-            if (Playfield.ModelIdentity.Instance == 152) { return false; }
-
-            if (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
+            if (!IsSettingEnabled("Buffing") 
+                || DynelManager.LocalPlayer.Nano < spell.Cost
+                || Playfield.ModelIdentity.Instance == 152 
+                || (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity))) { return false; }
 
             if (fightingTarget.Buffs.Find(nanoline, out Buff buff))
             {
-                //Don't cast if weaker than existing
-                if (spell.StackingOrder <= buff.StackingOrder) { return false; }
-
-                if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
-
-                return true;
-            }
-            else
-            {
-                if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
+                if (spell.StackingOrder <= buff.StackingOrder || (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))) { return false; }
 
                 return true;
             }
 
-            //if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
-            //{
-            //    //Don't cast if weaker than existing
-            //    if (spell.StackingOrder < buff.StackingOrder) { return false; }
+            if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
 
-            //    //Don't cast if greater than 10% time remaining
-            //    if (spell.Nanoline == buff.Nanoline && buff.RemainingTime / buff.TotalTime > 0.1) { return false; }
-            //}
-
-            //return true;
+            return true;
         }
 
         protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
-
-            if (Playfield.ModelIdentity.Instance == 152) { return false; }
+            if (!IsSettingEnabled("Buffing") 
+                || DynelManager.LocalPlayer.Nano < spell.Cost 
+                || Playfield.ModelIdentity.Instance == 152) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
             {
-                if (spell.StackingOrder < buff.StackingOrder) { return false; }
+                if (spell.StackingOrder < buff.StackingOrder || DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
 
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-                if (buff.RemainingTime < 10)
-                {
-                    return true;
-                }
+                return buff.RemainingTime < 10;
             }
 
             return false;
@@ -1693,24 +1644,16 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksNanoSkillsOther(Spell spell, SimpleChar fightingTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
-
-            if (Playfield.ModelIdentity.Instance == 152) { return false; }
-
-            if (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity)) { return false; }
+            if (!IsSettingEnabled("Buffing")
+                || DynelManager.LocalPlayer.Nano < spell.Cost
+                || Playfield.ModelIdentity.Instance == 152
+                || (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity))) { return false; }
 
             if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
             {
-                if (spell.StackingOrder < buff.StackingOrder) { return false; }
+                if (spell.StackingOrder < buff.StackingOrder || fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
 
-                if (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
-
-                if (buff.RemainingTime < 10)
-                {
-                    return true;
-                }
+                return buff.RemainingTime < 10;
             }
 
             return false;
@@ -1718,29 +1661,18 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksPlayer(Spell spell)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (DynelManager.LocalPlayer.Nano < spell.Cost) { return false; }
-
-            if (Playfield.ModelIdentity.Instance == 152) { return false; }
+            if (!IsSettingEnabled("Buffing") 
+                || DynelManager.LocalPlayer.Nano < spell.Cost
+                || Playfield.ModelIdentity.Instance == 152) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
             {
-                //Don't cast if weaker than existing
-                if (spell.StackingOrder <= buff.StackingOrder) { return false; }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
-
-                //if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+                if (spell.StackingOrder <= buff.StackingOrder || DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
 
                 return true;
             }
-            else
-            {
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
 
-                return true;
-            }
+            return DynelManager.LocalPlayer.RemainingNCU >= spell.NCU;
         }
 
         protected bool CanCast(Spell spell)

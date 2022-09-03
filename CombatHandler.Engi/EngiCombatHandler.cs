@@ -300,13 +300,6 @@ namespace CombatHandler.Engineer
                 CancelBuffs(RelevantNanos.ReflectAura);
             }
 
-            //if (!IsSettingEnabled("SpamBlindAura"))
-            //{
-            //    CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-            //        ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
-            //    CancelHostileAuras(RelevantNanos.Blinds);
-            //}
-
             CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
                 ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
             CancelHostileAuras(RelevantNanos.Blinds);
@@ -437,12 +430,10 @@ namespace CombatHandler.Engineer
             {
                 return TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
             }
-            else
-            {
-                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.AssaultRifleBuffs)) { return false; }
 
-                return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-            }
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.AssaultRifleBuffs)) { return false; }
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -737,8 +728,6 @@ namespace CombatHandler.Engineer
 
         protected bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1) { return false; }
-
             if (PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
             {
                 ResetTrimmers();

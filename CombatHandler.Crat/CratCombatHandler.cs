@@ -737,9 +737,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (!IsSettingEnabled("Nukes")) { return false; }
+            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Nukes")) { return false; }
 
             if (Spell.Find(273631, out Spell workplace))
             {
@@ -753,33 +751,29 @@ namespace CombatHandler.Bureaucrat
 
         private bool WorkplaceDepressionTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (!IsSettingEnabled("Nukes")) { return false; }
-
-            if (fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)) { return false; }
-
-            if (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000) { return false; }
+            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Nukes")
+                || fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)
+                || (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000)) { return false; }
 
             return true;
         }
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-            if (!CanCast(spell)) { return false; }
+            if (spell.Nanoline == NanoLine.GeneralRadiationACDebuff || spell.Nanoline == NanoLine.GeneralProjectileACDebuff)
+            {
+                if (fightingTarget != null)
+                {
+                    return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                }
+
+                return false;
+            }
 
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
             {
-                if (spell.Nanoline == NanoLine.GeneralRadiationACDebuff || spell.Nanoline == NanoLine.GeneralProjectileACDebuff)
-                {
-                    if (fightingTarget != null)
-                    {
-                        return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    }
-                }
-
                 SimpleChar debuffTarget = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
@@ -853,9 +847,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool CanPerkPuppeteer(Pet pet)
         {
-            if (pet.Type != PetType.Attack) { return false; }
-
-            return true;
+            return pet.Type == PetType.Attack;
         }
 
         protected bool FindSpellNanoLineFallbackToId(Spell spell, Buff[] buffs, out Buff buff)
@@ -875,6 +867,7 @@ namespace CombatHandler.Bureaucrat
                     return true;
                 }
             }
+
             buff = null;
             return false;
         }

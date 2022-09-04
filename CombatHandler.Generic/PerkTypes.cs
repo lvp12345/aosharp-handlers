@@ -40,7 +40,7 @@ namespace CombatHandler.Generic
             {PerkHash.Bearhug , PerkType.TARGETED_DAMAGE},
             {PerkHash.Beckoning , PerkType.TARGETED_DAMAGE},
             {PerkHash.BigSmash , PerkType.TARGETED_DAMAGE},
-            {PerkHash.BioCocoon , PerkType.CUSTOM},
+            {PerkHash.BioCocoon , PerkType.OTHER},
             {PerkHash.BioRegrowth , PerkType.HEAL},
             {PerkHash.BioRejuvenation , PerkType.HEAL},
             {PerkHash.BioShield , PerkType.SELF_BUFF},

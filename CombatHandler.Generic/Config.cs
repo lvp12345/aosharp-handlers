@@ -38,6 +38,8 @@ namespace CombatHandler.Generic
         public int EnfTauntDelayArea => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfTauntDelayArea : 1;
         [JsonIgnore]
         public int EnfCycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay : 1;
+        [JsonIgnore]
+        public int EngiBioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EngiBioCocoonPercentage : 65;
 
         public static Config Load(string path)
         {
@@ -289,6 +291,23 @@ namespace CombatHandler.Generic
                 {
                     _enfCycleAbsorbsDelay = value;
                     EnfCycleAbsorbsDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> EngiBioCocoonPercentageChangedEvent;
+        private int _engiBioCocoonPercentage = 65;
+        public int EngiBioCocoonPercentage
+        {
+            get
+            {
+                return _engiBioCocoonPercentage;
+            }
+            set
+            {
+                if (_engiBioCocoonPercentage != value)
+                {
+                    _engiBioCocoonPercentage = value;
+                    EngiBioCocoonPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

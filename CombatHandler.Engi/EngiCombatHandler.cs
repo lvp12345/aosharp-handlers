@@ -1,23 +1,20 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Linq;
-using System;
-using AOSharp.Common.GameData.UI;
-using AOSharp.Core.IPC;
-using System.Threading.Tasks;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using System.Threading;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Collections.Generic;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.IPC;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CombatHandler.Engineer
 {
     class EngiCombatHandler : GenericCombatHandler
     {
         private static string PluginDirectory;
+
+        private static int EngiBioCocoonPercentage;
 
         private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
@@ -48,13 +45,14 @@ namespace CombatHandler.Engineer
         private static View _procView;
 
         private double _lastTrimTime = 0;
-        private double _recastBlinds = Time.NormalTime;
 
         private static double _ncuUpdateTime;
 
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+
+            Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentageChangedEvent += EngiBioCocoonPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -80,8 +78,6 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ReactiveArmor);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.AssaultForceRelief);
 
-            _settings.AddVariable("SpamSnareAura", false);
-
             _settings.AddVariable("LegShot", false);
 
             RegisterSettingsWindow("Engi Handler", "EngineerSettingsView.xml");
@@ -103,6 +99,7 @@ namespace CombatHandler.Engineer
 
             //Leg Shot
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolMasteryBuff);
@@ -168,9 +165,18 @@ namespace CombatHandler.Engineer
             }
 
             PluginDirectory = pluginDir;
+
+            EngiBioCocoonPercentage = Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage;
         }
 
         public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow };
+
+        public static void EngiBioCocoonPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -258,8 +264,44 @@ namespace CombatHandler.Engineer
             if (IsSettingEnabled("SyncPets"))
                 SynchronizePetCombatStateWithOwner();
 
+            //var window = SettingsController.FindValidWindow(_windows);
+
+            //if (window != null && window.IsValid)
+            //{
+            //    window.FindView("EngiBioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+            //    if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+            //    {
+            //        if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+            //        {
+            //            if (Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage != bioCocoonValue)
+            //            {
+            //                Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = bioCocoonValue;
+            //                EngiBioCocoonPercentage = bioCocoonValue;
+            //                Config.Save();
+            //            }
+            //        }
+            //    }
+            //}
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                SettingsController.settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                {
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage != bioCocoonValue)
+                        {
+                            //Is there even need to save here if we have event handler for it?
+                            Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = bioCocoonValue;
+                            EngiBioCocoonPercentage = bioCocoonValue;
+                            Config.Save();
+                        }
+                    }
+                }
+
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                 {
                     petView.Tag = SettingsController.settingsWindow;
@@ -308,7 +350,24 @@ namespace CombatHandler.Engineer
 
         #region Perks
 
+        //Perks
 
+        private bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.HealthPercent > EngiBioCocoonPercentage) { return false; }
+
+            return true;
+        }
+
+        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
+
+            return true;
+        }
+
+
+        //LE Procs
         private bool CushionBlows(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ProcType1Selection.CushionBlows != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
@@ -409,14 +468,7 @@ namespace CombatHandler.Engineer
             return false;
         }
 
-        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LegShot")) { return false; }
-
-            return LegShotPerk(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool ShouldSpamAoeSnare()
+        private bool SnareMobExists()
         {
             return DynelManager.NPCs
                 .Where(c => c.Name == "Flaming Vengeance" ||
@@ -505,7 +557,7 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (IsSettingEnabled("SpamSnareAura") && ShouldSpamAoeSnare())
+            if (SnareMobExists())
             {
                 Pet petToCastOn = FindPetThat(pet => true);
                 if (petToCastOn != null)
@@ -532,18 +584,11 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (DebuffingAuraSelection.Blind == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32())
-            {
-                if (Time.NormalTime - _recastBlinds > 9 && DynelManager.Characters.Where(c => c.IsAlive && c.IsNpc && !c.IsPet
-                                                                && c.FightingTarget != null && c.Position
-                                                                .DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f).Any())
-                {
-                    _recastBlinds = Time.NormalTime;
-                    return true;
-                }
-            }
+            if (DebuffingAuraSelection.Blind != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
-            return false;
+            return DynelManager.Characters.Where(c => c.IsAlive && c.IsNpc && !c.IsPet
+                                                            && c.FightingTarget != null && c.Position
+                                                            .DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f).Any();
         }
 
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

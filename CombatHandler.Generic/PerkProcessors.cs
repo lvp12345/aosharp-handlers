@@ -59,18 +59,12 @@ namespace CombatHandler.Generic
             {PerkHash.BattlegroupHeal3, BattleGroupHealPerk3 },
             {PerkHash.BattlegroupHeal4, BattleGroupHealPerk4 },
             {PerkHash.WitOfTheAtrox, WitOfTheAtrox },
-            {PerkHash.BioCocoon, BioCocoon },
             {PerkHash.EvasiveStance, EvasiveStance },
         };
 
         private static bool WitOfTheAtrox(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
-        }
-
-        private static bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return SelfAbsorbPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private static bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

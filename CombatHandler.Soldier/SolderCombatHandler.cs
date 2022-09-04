@@ -419,9 +419,9 @@ namespace CombatHandler.Soldier
 
         private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("LegShot")) { return false; }
+            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
 
-            return LegShotPerk(perk, fightingTarget, ref actionTarget);
+            return true;
         }
 
         private bool NotumGrenades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

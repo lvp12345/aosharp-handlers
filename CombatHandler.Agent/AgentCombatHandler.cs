@@ -172,12 +172,12 @@ namespace CombatHandler.Agent
                 //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_procView)) { return; }
 
-                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentProcView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "AgentProcView" }, _procView);
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "AgentProcsView" }, _procView);
             }
             else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
             {
-                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "AgentProcView" }, _procView, out var container);
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "AgentProcsView" }, _procView, out var container);
                 _procWindow = container;
             }
         }

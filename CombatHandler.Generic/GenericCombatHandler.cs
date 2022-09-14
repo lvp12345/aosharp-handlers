@@ -733,7 +733,7 @@ namespace CombatHandler.Generic
                 return true;
             }
 
-            return true;
+            return false;
         }
 
         protected virtual bool TargetedDamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

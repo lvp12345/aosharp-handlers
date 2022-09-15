@@ -397,13 +397,16 @@ namespace CombatHandler.Metaphysicist
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            Pet petToPerk = FindPetThat(CanPerkChannelRage);
-            if (petToPerk != null)
+            actionTarget.Target = DynelManager.LocalPlayer.Pets
+                .Where(c => CanPerkChannelRage(c))
+                .FirstOrDefault().Character;
+
+            if (actionTarget.Target != null)
             {
-                actionTarget.Target = petToPerk.Character;
                 actionTarget.ShouldSetTarget = true;
                 return true;
             }
+
             return false;
         }
 
@@ -430,13 +433,21 @@ namespace CombatHandler.Metaphysicist
 
             if (!IsSettingEnabled("MastersBidding")) { return false; }
 
-            Pet petToBuff = FindPetThat(pet => !pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                && (pet.Character.GetStat(Stat.NPCFamily) != 98)
-                && (pet.Type == PetType.Attack || pet.Type == PetType.Support));
-
-            if (petToBuff != null)
+            if (DynelManager.LocalPlayer.Pets
+                .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && c.Character.GetStat(Stat.NPCFamily) != 98)
+                .Any())
             {
-                spell.Cast(petToBuff.Character, true);
+                actionTarget.Target = DynelManager.LocalPlayer.Pets
+                    .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && c.Character.GetStat(Stat.NPCFamily) != 98)
+                    .FirstOrDefault().Character;
+
+                if (actionTarget.Target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;

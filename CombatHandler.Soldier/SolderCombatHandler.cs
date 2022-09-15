@@ -321,15 +321,13 @@ namespace CombatHandler.Soldier
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => !c.Buffs.Contains(NanoLine.AAOBuffs))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
+                    actionTarget.Target = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && !c.Buffs.Contains(NanoLine.AAOBuffs))
+                        .FirstOrDefault();
 
-                    if (teamMemberWithoutBuff != null)
+                    if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
                     {
-                        actionTarget.Target = teamMemberWithoutBuff;
                         actionTarget.ShouldSetTarget = true;
                         return true;
                     }
@@ -347,15 +345,13 @@ namespace CombatHandler.Soldier
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .Where(c => c.SpecialAttacks.Contains(SpecialAttack.Burst))
-                    .FirstOrDefault();
+                    actionTarget.Target = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.SpecialAttacks.Contains(SpecialAttack.Burst))
+                        .FirstOrDefault();
 
-                    if (teamMemberWithoutBuff != null)
+                    if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
                     {
-                        actionTarget.Target = teamMemberWithoutBuff;
                         actionTarget.ShouldSetTarget = true;
                         return true;
                     }
@@ -369,29 +365,32 @@ namespace CombatHandler.Soldier
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
+        private bool HeavyCompWeaponChecks(SimpleChar _target)
+        {
+            return GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.AssaultRifle)
+                                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Smg)
+                                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Shotgun)
+                                || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Grenade) && _target.Profession != Profession.Engineer);
+        }
+
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Grenade) && c.Profession != Profession.Engineer)
-                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Smg))
-                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Shotgun))
-                    .Where(c => GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.AssaultRifle))
-                    .Where(c => !c.Buffs.Contains(NanoLine.FixerSuppressorBuff))
-                    .Where(c => !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))
+                actionTarget.Target = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff)
+                        && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))
                     .FirstOrDefault();
 
-                if (teamMemberWithoutBuff != null)
+                if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target)
+                    && HeavyCompWeaponChecks(actionTarget.Target))
                 {
-                    if (teamMemberWithoutBuff.Identity == DynelManager.LocalPlayer.Identity
+                    if (actionTarget.Target.Identity == DynelManager.LocalPlayer.Identity
                         && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
 
-                    actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
@@ -514,17 +513,23 @@ namespace CombatHandler.Soldier
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        .Where(c => c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician)
-                        .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
-
-                    if (teamMemberWithoutBuff != null)
+                    if (DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .Any())
                     {
-                        actionTarget.Target = teamMemberWithoutBuff;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
+                        actionTarget.Target = DynelManager.Characters
+                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
+                             && SpellChecksOther(spell, spell.Nanoline, c))
+                            .FirstOrDefault();
+
+                        if (actionTarget.Target != null)
+                        {
+                            actionTarget.ShouldSetTarget = true;
+                            return true;
+                        }
                     }
                 }
             }

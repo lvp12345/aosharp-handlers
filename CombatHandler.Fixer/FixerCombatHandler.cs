@@ -308,25 +308,31 @@ namespace CombatHandler.Fixer
 
         private bool LongHotBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing")
+                || fightingTarget != null || !CanCast(spell) || GenericCombatHandler.RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             if (IsSettingEnabled("LongHoTTeam"))
             {
-                if (fightingTarget != null || !CanCast(spell) || spell.Name.Contains("Veteran")) { return false; }
+                //idk
+                //if (fightingTarget != null || !CanCast(spell) || GenericCombatHandler.RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        //.Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
-                        .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
-
-                    if (teamMemberWithoutBuff != null)
+                    if (DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && SpellChecksOther(spell, spell.Nanoline, c))
+                        .Any())
                     {
-                        actionTarget.Target = teamMemberWithoutBuff;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
+                        actionTarget.Target = DynelManager.Characters
+                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && SpellChecksOther(spell, spell.Nanoline, c))
+                            .FirstOrDefault();
+
+                        if (actionTarget.Target != null)
+                        {
+                            actionTarget.ShouldSetTarget = true;
+                            return true;
+                        }
                     }
                 }
 
@@ -357,21 +363,17 @@ namespace CombatHandler.Fixer
 
         protected bool GSFTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing")
+                || fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
+                actionTarget.Target = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    //.Where(c => !c.Buffs.Contains(RelevantNanos.EVASION_BUFFS))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
-                if (teamMemberWithoutBuff != null)
+                if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
                 {
-                    actionTarget.Target = teamMemberWithoutBuff;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
@@ -382,9 +384,7 @@ namespace CombatHandler.Fixer
 
         private bool GsfBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (IsInsideInnerSanctum()) { return false; }
+            if (!IsSettingEnabled("Buffing") || IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("RKRunspeedTeam"))
             {
@@ -411,9 +411,7 @@ namespace CombatHandler.Fixer
 
         private bool ShadowlandsSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (IsInsideInnerSanctum()) { return false; }
+            if (!IsSettingEnabled("Buffing") || IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("SLRunspeed"))
             {
@@ -430,30 +428,18 @@ namespace CombatHandler.Fixer
 
         private bool GridArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") 
+                || !IsSettingEnabled("GridArmor") || !CanCast(spell)) { return false; }
 
-            if (!IsSettingEnabled("GridArmor") || !CanCast(spell)) { return false; }
-
-            if (Inventory.Items.FirstOrDefault(x => RelevantItems.GRID_ARMORS.Contains(x.HighId)) != null)
-            {
-                return false;
-            }
-
-            return true;
+            return !Inventory.Items.Any(x => RelevantItems.GRID_ARMORS.Contains(x.HighId));
         }
 
         private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") 
+                || !IsSettingEnabled("ShadowwebSpinner") || !CanCast(spell)) { return false; }
 
-            if (!IsSettingEnabled("ShadowwebSpinner") || !CanCast(spell)) { return false; }
-
-            if (Inventory.Items.FirstOrDefault(x => RelevantItems.SHADOWWEB_SPINNERS.Contains(x.HighId)) != null)
-            {
-                return false;
-            }
-
-            return true;
+            return !Inventory.Items.Any(x => RelevantItems.SHADOWWEB_SPINNERS.Contains(x.HighId));
         }
 
         private void EquipBackArmor()

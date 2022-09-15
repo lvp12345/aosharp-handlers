@@ -679,21 +679,27 @@ namespace CombatHandler.Agent
 
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
             {
-                SimpleChar debuffTarget = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.FightingTarget != null) //Is in combat
-                    .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz))
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c)) //Needs debuff refreshed
-                    .OrderBy(c => c.MaxHealth)
-                    .FirstOrDefault();
-
-                if (debuffTarget != null)
+                if (DynelManager.NPCs
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .Any())
                 {
-                    actionTarget = (debuffTarget, true);
-                    return true;
+                    actionTarget.Target = DynelManager.Characters
+                        .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                            && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
+                            && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (actionTarget.Target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
 
                 return false;

@@ -390,27 +390,30 @@ namespace CombatHandler.MartialArtist
 
         protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (IsInsideInnerSanctum()) { return false; }
+            if (!IsSettingEnabled("Buffing") 
+                || !CanCast(spell) || IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("EvadesTeam"))
             {
-                if (fightingTarget != null || !CanCast(spell)) { return false; }
-
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        .Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
-                        .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
-
-                    if (teamMemberWithoutBuff != null)
+                    if (DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && !c.Buffs.Contains(NanoLine.MajorEvasionBuffs)
+                                && SpellChecksOther(spell, spell.Nanoline, c))
+                        .Any())
                     {
-                        actionTarget.Target = teamMemberWithoutBuff;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
+                        actionTarget.Target = DynelManager.Characters
+                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && !c.Buffs.Contains(NanoLine.MajorEvasionBuffs)
+                                && SpellChecksOther(spell, spell.Nanoline, c))
+                            .FirstOrDefault();
+
+                        if (actionTarget.Target != null)
+                        {
+                            actionTarget.ShouldSetTarget = true;
+                            return true;
+                        }
                     }
                 }
             }
@@ -422,9 +425,8 @@ namespace CombatHandler.MartialArtist
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing")
+                 || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
@@ -440,9 +442,8 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing")
+                || fightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ControlledDestructionBuff)) { return false; }
 
@@ -476,17 +477,23 @@ namespace CombatHandler.MartialArtist
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => c.Identity != DynelManager.LocalPlayer.Identity)
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
-
-                if (teamMemberWithoutBuff != null)
+                if (DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.Identity != DynelManager.LocalPlayer.Identity
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                    .Any())
                 {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    actionTarget.Target = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.Identity != DynelManager.LocalPlayer.Identity
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (actionTarget.Target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
             }
 

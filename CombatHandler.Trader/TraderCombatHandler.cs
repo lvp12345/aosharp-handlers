@@ -466,17 +466,21 @@ namespace CombatHandler.Trader
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        //.Where(c => !c.Buffs.Contains(NanoLine.MajorEvasionBuffs))
-                        .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
-
-                    if (teamMemberWithoutBuff != null)
+                    if (DynelManager.Characters
+                       .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                               && SpellChecksOther(spell, spell.Nanoline, c))
+                       .Any())
                     {
-                        actionTarget.Target = teamMemberWithoutBuff;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
+                        actionTarget.Target = DynelManager.Characters
+                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && SpellChecksOther(spell, spell.Nanoline, c))
+                            .FirstOrDefault();
+
+                        if (actionTarget.Target != null)
+                        {
+                            actionTarget.ShouldSetTarget = true;
+                            return true;
+                        }
                     }
                 }
             }

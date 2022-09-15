@@ -512,23 +512,28 @@ namespace CombatHandler.Doctor
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") 
+                || fightingTarget != null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .Where(c => c.Profession == Profession.Doctor || c.Profession == Profession.NanoTechnician)
-                    .FirstOrDefault();
-
-                if (teamMemberWithoutBuff != null)
+                if (DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && (c.Profession == Profession.Doctor || c.Profession == Profession.NanoTechnician)
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .Any())
                 {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    actionTarget.Target = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && (c.Profession == Profession.Doctor || c.Profession == Profession.NanoTechnician)
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (actionTarget.Target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
             }
 
@@ -537,9 +542,7 @@ namespace CombatHandler.Doctor
 
         private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell) || DocHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || DocHealPercentage == 0) { return false; }
 
             if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
             {
@@ -620,21 +623,27 @@ namespace CombatHandler.Doctor
 
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
             {
-                SimpleChar debuffTarget = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.FightingTarget != null) //Is in combat
-                    .Where(c => !c.Buffs.Contains(301844)) // doesn't have ubt in ncu
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz))
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c)) //Needs debuff refreshed
-                    .OrderBy(c => c.MaxHealth)
-                    .FirstOrDefault();
-
-                if (debuffTarget != null)
+                if (DynelManager.NPCs
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .Any())
                 {
-                    actionTarget = (debuffTarget, true);
-                    return true;
+                    actionTarget.Target = DynelManager.NPCs
+                        .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                            && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
+                            && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (actionTarget.Target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
 
                 return false;

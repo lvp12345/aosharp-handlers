@@ -597,29 +597,35 @@ namespace CombatHandler.Shade
             return false;
         }
 
+
+        //TODO: Delete other FTYS and rename... maybe this works
         protected bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar teamMemberWithoutBuff = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    //.Where(c => !c.Buffs.Contains(RelevantNanos.EVASION_BUFFS))
-                    .Where(c => SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
-
-                if (teamMemberWithoutBuff != null)
+                if (DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .Any())
                 {
-                    actionTarget.Target = teamMemberWithoutBuff;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    actionTarget.Target = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                         && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (actionTarget.Target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
             }
 
-            return false;
+            if (fightingTarget == null) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

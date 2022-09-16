@@ -946,20 +946,20 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            //if (DynelManager.LocalPlayer.Pets
-            //    .Where(c => !c.Character.Buffs.Contains(NanoLine.ShieldoftheObedientServant))
-            //    .Any())
-            //{
-            //    actionTarget.Target = DynelManager.LocalPlayer.Pets
-            //        .Where(c => !c.Character.Buffs.Contains(NanoLine.ShieldoftheObedientServant))
-            //        .FirstOrDefault().Character;
+            if (DynelManager.LocalPlayer.Pets
+                .Where(c => !c.Character.Buffs.Contains(NanoLine.ShieldoftheObedientServant))
+                .Any())
+            {
+                actionTarget.Target = DynelManager.LocalPlayer.Pets
+                    .Where(c => !c.Character.Buffs.Contains(NanoLine.ShieldoftheObedientServant))
+                    .FirstOrDefault().Character;
 
-            //    if (actionTarget.Target != null)
-            //    {
-            //        actionTarget.ShouldSetTarget = true;
-            //        return true;
-            //    }
-            //}
+                if (actionTarget.Target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
 
             return false;
         }

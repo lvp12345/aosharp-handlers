@@ -119,7 +119,7 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.ReflectAura, ReflectAura);
             RegisterSpellProcessor(RelevantNanos.ShieldAura, ShieldAura);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
-            //RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
+            RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             //Pet Spawners
@@ -453,22 +453,22 @@ namespace CombatHandler.Engineer
         #endregion
 
         // WUT
-        //private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (fightingTarget != null) { return false; }
+        private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
 
-        //    actionTarget.Target = DynelManager.LocalPlayer.Pets
-        //        .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
-        //        .FirstOrDefault().Character;
+            actionTarget.Target = DynelManager.LocalPlayer.Pets
+                .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
+                .FirstOrDefault().Character;
 
-        //    if (actionTarget.Target != null)
-        //    {
-        //        actionTarget.ShouldSetTarget = true;
-        //        return true;
-        //    }
+            if (actionTarget.Target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
         private bool SnareMobExists()
         {
@@ -968,20 +968,20 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            //if (DynelManager.LocalPlayer.Pets
-            //    .Where(c => !c.Character.Buffs.Contains(NanoLine.DamageBuffs_LineA))
-            //    .Any())
-            //{
-            //    actionTarget.Target = DynelManager.LocalPlayer.Pets
-            //        .Where(c => !c.Character.Buffs.Contains(NanoLine.DamageBuffs_LineA))
-            //        .FirstOrDefault().Character;
+            if (DynelManager.LocalPlayer.Pets
+                .Where(c => !c.Character.Buffs.Contains(NanoLine.DamageBuffs_LineA))
+                .Any())
+            {
+                actionTarget.Target = DynelManager.LocalPlayer.Pets
+                    .Where(c => !c.Character.Buffs.Contains(NanoLine.DamageBuffs_LineA))
+                    .FirstOrDefault().Character;
 
-            //    if (actionTarget.Target != null)
-            //    {
-            //        actionTarget.ShouldSetTarget = true;
-            //        return true;
-            //    }
-            //}
+                if (actionTarget.Target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
 
             return false;
         }

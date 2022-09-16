@@ -453,22 +453,22 @@ namespace CombatHandler.Engineer
         #endregion
 
         // WUT
-        //private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (fightingTarget != null) { return false; }
+        private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
 
-        //    actionTarget.Target = DynelManager.LocalPlayer.Pets
-        //        .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
-        //        .FirstOrDefault().Character;
+            actionTarget.Target = DynelManager.LocalPlayer.Pets
+                .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
+                .FirstOrDefault().Character;
 
-        //    if (actionTarget.Target != null)
-        //    {
-        //        actionTarget.ShouldSetTarget = true;
-        //        return true;
-        //    }
+            if (actionTarget.Target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
         private bool SnareMobExists()
         {
@@ -617,9 +617,13 @@ namespace CombatHandler.Engineer
 
             if (DebuffingAuraSelection.Blind != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
-            return DynelManager.Characters.Where(c => c.IsAlive && c.IsNpc && !c.IsPet
-                                                            && c.FightingTarget != null && c.Position
-                                                            .DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f).Any();
+            return DynelManager.NPCs.Where(c => c.IsAlive
+                && c.FightingTarget != null
+                && !c.FightingTarget.Buffs.Contains(202732) && !c.FightingTarget.Buffs.Contains(214879)
+                && !c.FightingTarget.Buffs.Contains(284620) && !c.FightingTarget.Buffs.Contains(216382)
+                && !c.FightingTarget.IsPet
+                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f)
+                .Any();
         }
 
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

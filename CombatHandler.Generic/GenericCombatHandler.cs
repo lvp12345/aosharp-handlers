@@ -1390,33 +1390,24 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                actionTarget.Target = DynelManager.Characters
+                if (DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
+                                && SpellChecksOther(spell, spell.Nanoline, c))
+                    .Any())
+                {
+                    actionTarget.Target = DynelManager.Characters
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer)
+                                && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
+                                && SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
-                if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    if (actionTarget.Target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
-
-                //if (DynelManager.Characters
-                //    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                //            && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer)
-                //    .Any())
-                //{
-                //    actionTarget.Target = DynelManager.Characters
-                //        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                //                && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer)
-                //        .FirstOrDefault();
-
-                //    if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
-                //    {
-                //        actionTarget.ShouldSetTarget = true;
-                //        return true;
-                //    }
-                //}
             }
 
             return false;
@@ -1448,49 +1439,28 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                actionTarget.Target = DynelManager.Characters
+                if (DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight)
                     .OrderBy(c => c.Profession == Profession.Doctor)
                     .ThenBy(c => c.Profession == Profession.Enforcer)
                     .ThenBy(c => c.HealthPercent)
-                    .FirstOrDefault();
-
-                if (actionTarget.Target != null)
+                    .Any())
                 {
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    actionTarget.Target = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight)
+                        .OrderBy(c => c.Profession == Profession.Doctor)
+                        .ThenBy(c => c.Profession == Profession.Enforcer)
+                        .ThenBy(c => c.HealthPercent)
+                        .FirstOrDefault();
+
+                    if (actionTarget.Target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
-
-                //SimpleChar dyingTeamMember = DynelManager.Characters
-                //    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                //        && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight)
-                //    .OrderBy(c => c.Profession == Profession.Doctor)
-                //    .OrderBy(c => c.Profession == Profession.Enforcer)
-                //    .OrderBy(c => c.HealthPercent)
-                //    .FirstOrDefault();
-
-                //if (dyingTeamMember != null)
-                //{
-                //    //Task.Factory.StartNew(
-                //    //    async () =>
-                //    //    {
-                //    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
-                //    //        await Task.Delay(444);
-                //    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
-                //    //    });
-
-                //    //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
-                //    //{
-                //    //    actionTarget.Target = dyingTeamMember;
-                //    //    actionTarget.ShouldSetTarget = true;
-                //    //    return true;
-                //    //}
-
-                //    actionTarget.Target = dyingTeamMember;
-                //    actionTarget.ShouldSetTarget = true;
-                //    return true;
-                //}
             }
 
             return false;
@@ -1519,49 +1489,26 @@ namespace CombatHandler.Generic
                 return true;
             }
 
-            actionTarget.Target = DynelManager.Characters
+            if (DynelManager.Characters
                 .Where(c => c.IsPlayer && c.HealthPercent <= healthPercentTreshold
                     && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && c.IsInLineOfSight)
                 .OrderBy(c => c.Profession == Profession.Doctor)
                 .ThenBy(c => c.Profession == Profession.Enforcer)
-                .FirstOrDefault();
-
-            if (actionTarget.Target != null)
+                .Any())
             {
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                actionTarget.Target = DynelManager.Characters
+                    .Where(c => c.IsPlayer && c.HealthPercent <= healthPercentTreshold
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && c.IsInLineOfSight)
+                    .OrderBy(c => c.Profession == Profession.Doctor)
+                    .ThenBy(c => c.Profession == Profession.Enforcer)
+                    .FirstOrDefault();
+
+                if (actionTarget.Target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
-
-
-
-            //SimpleChar dyingTeamMember = DynelManager.Characters
-            //    .Where(c => c.IsPlayer && c.HealthPercent <= healthPercentTreshold
-            //        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && c.IsInLineOfSight)
-            //    .OrderBy(c => c.Profession == Profession.Doctor)
-            //    .OrderBy(c => c.Profession == Profession.Enforcer)
-            //    .FirstOrDefault();
-
-            //if (dyingTeamMember != null)
-            //{
-            //    //Task.Factory.StartNew(
-            //    //    async () =>
-            //    //    {
-            //    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
-            //    //        await Task.Delay(444);
-            //    //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
-            //    //    });
-
-            //    //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
-            //    //{
-            //    //    actionTarget.Target = dyingTeamMember;
-            //    //    actionTarget.ShouldSetTarget = true;
-            //    //    return true;
-            //    //}
-
-            //    actionTarget.Target = dyingTeamMember;
-            //    actionTarget.ShouldSetTarget = true;
-            //    return true;
-            //}
 
             return false;
         }

@@ -501,33 +501,22 @@ namespace CombatHandler.Engineer
 
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            actionTarget.Target = DynelManager.LocalPlayer.Pets
+            if (DynelManager.LocalPlayer.Pets
                 .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
                 && (c.Type == PetType.Attack || c.Type == PetType.Support))
-                .FirstOrDefault().Character;
-
-            if (actionTarget.Target != null)
+                .Any())
             {
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                actionTarget.Target = DynelManager.LocalPlayer.Pets
+                    .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                        && (c.Type == PetType.Attack || c.Type == PetType.Support))
+                    .FirstOrDefault().Character;
+
+                if (actionTarget.Target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
-
-            //if (DynelManager.LocalPlayer.Pets
-            //    .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
-            //        && (c.Type == PetType.Attack || c.Type == PetType.Support))
-            //    .Any())
-            //{
-            //    actionTarget.Target = DynelManager.LocalPlayer.Pets
-            //        .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
-            //        && (c.Type == PetType.Attack || c.Type == PetType.Support))
-            //        .FirstOrDefault().Character;
-
-            //    if (actionTarget.Target != null)
-            //    {
-            //        actionTarget.ShouldSetTarget = true;
-            //        return true;
-            //    }
-            //}
 
             return false;
         }
@@ -537,33 +526,22 @@ namespace CombatHandler.Engineer
 
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            actionTarget.Target = DynelManager.LocalPlayer.Pets
+            if (DynelManager.LocalPlayer.Pets
                     .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
                     && (c.Type == PetType.Attack || c.Type == PetType.Support))
+                    .Any())
+            {
+                actionTarget.Target = DynelManager.LocalPlayer.Pets
+                    .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                        && (c.Type == PetType.Attack || c.Type == PetType.Support))
                     .FirstOrDefault().Character;
 
-            if (actionTarget.Target != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                if (actionTarget.Target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
-
-            //if (DynelManager.LocalPlayer.Pets
-            //    .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
-            //        && (c.Type == PetType.Attack || c.Type == PetType.Support))
-            //    .Any())
-            //{
-            //    actionTarget.Target = DynelManager.LocalPlayer.Pets
-            //        .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
-            //        && (c.Type == PetType.Attack || c.Type == PetType.Support))
-            //        .FirstOrDefault().Character;
-
-            //    if (actionTarget.Target != null)
-            //    {
-            //        actionTarget.ShouldSetTarget = true;
-            //        return true;
-            //    }
-            //}
 
             return false;
         }
@@ -601,35 +579,24 @@ namespace CombatHandler.Engineer
 
             if (SnareMobExists())
             {
-                actionTarget.Target = DynelManager.NPCs
+                if (DynelManager.NPCs
+                    .Where(c => c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < 30f &&
+                        (c.Name == "Flaming Vengeance" ||
+                        c.Name == "Hand of the Colonel"))
+                    .Any())
+                {
+                    actionTarget.Target = DynelManager.NPCs
                         .Where(c => c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < 30f &&
                             (c.Name == "Flaming Vengeance" ||
                             c.Name == "Hand of the Colonel"))
                         .FirstOrDefault();
 
-                if (actionTarget.Target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    if (actionTarget.Target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
-
-                //if (DynelManager.NPCs
-                //    .Where(c => c.Name == "Flaming Vengeance" ||
-                //        c.Name == "Hand of the Colonel")
-                //    .Any())
-                //{
-                //    actionTarget.Target = DynelManager.NPCs
-                //        .Where(c => c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < 30f && 
-                //            (c.Name == "Flaming Vengeance" ||
-                //            c.Name == "Hand of the Colonel"))
-                //        .FirstOrDefault();
-
-                //    if (actionTarget.Target != null)
-                //    {
-                //        actionTarget.ShouldSetTarget = true;
-                //        return true;
-                //    }
-                //}
             }
 
             if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()

@@ -491,14 +491,19 @@ namespace CombatHandler.Bureaucrat
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
 
-            actionTarget.Target = DynelManager.LocalPlayer.Pets
+            if (DynelManager.LocalPlayer.Pets
                 .Where(c => CanPerkPuppeteer(c))
-                .FirstOrDefault().Character;
-
-            if (actionTarget.Target != null)
+                .Any())
             {
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                actionTarget.Target = DynelManager.LocalPlayer.Pets
+                    .Where(c => CanPerkPuppeteer(c))
+                    .FirstOrDefault().Character;
+
+                if (actionTarget.Target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;

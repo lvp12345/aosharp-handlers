@@ -143,7 +143,7 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, PetDamage);
 
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticEnergyBox);
-            RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
+            //RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
             RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
 
             ResetTrimmers();
@@ -693,28 +693,28 @@ namespace CombatHandler.Engineer
             return false;
         }
 
-        private bool SiphonBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PetPerkSelection.Def != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
-                || !CanLookupPetsAfterZone()) { return false; }
+        //private bool SiphonBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (PetPerkSelection.Def != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
+        //        || !CanLookupPetsAfterZone()) { return false; }
 
-            if (DynelManager.LocalPlayer.Pets
-                .Where(c => !c.Character.Buffs.Contains(RelevantNanos.PerkSiphonBox))
-                .Any())
-            {
-                actionTarget.Target = DynelManager.LocalPlayer.Pets
-                    .Where(c => !c.Character.Buffs.Contains(RelevantNanos.PerkSiphonBox))
-                    .FirstOrDefault().Character;
+        //    if (DynelManager.LocalPlayer.Pets
+        //        .Where(c => !c.Character.Buffs.Contains(RelevantNanos.PerkSiphonBox))
+        //        .Any())
+        //    {
+        //        actionTarget.Target = DynelManager.LocalPlayer.Pets
+        //            .Where(c => !c.Character.Buffs.Contains(RelevantNanos.PerkSiphonBox))
+        //            .FirstOrDefault().Character;
 
-                if (actionTarget.Target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
+        //        if (actionTarget.Target != null)
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            return true;
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool TauntBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

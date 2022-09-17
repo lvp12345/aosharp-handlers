@@ -397,14 +397,19 @@ namespace CombatHandler.Metaphysicist
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            actionTarget.Target = DynelManager.LocalPlayer.Pets
+            if (DynelManager.LocalPlayer.Pets
                 .Where(c => CanPerkChannelRage(c))
-                .FirstOrDefault().Character;
-
-            if (actionTarget.Target != null)
+                .Any())
             {
-                actionTarget.ShouldSetTarget = true;
-                return true;
+                actionTarget.Target = DynelManager.LocalPlayer.Pets
+                    .Where(c => CanPerkChannelRage(c))
+                    .FirstOrDefault().Character;
+
+                if (actionTarget.Target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;

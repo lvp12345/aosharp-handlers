@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
 using SyncManager.IPCMessages;
+using System.Windows.Input;
 
 namespace SyncManager
 {
@@ -34,6 +35,7 @@ namespace SyncManager
         private static Item _bagItem;
 
         public static bool _openBags = false;
+        private static bool _init = false;
 
         private static double _useTimer;
 
@@ -95,6 +97,30 @@ namespace SyncManager
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F2) && !_init)
+            {
+                _init = true;
+
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
+
+                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Sync Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+                {
+                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Sync Manager")))
+                    {
+                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+
+                        SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+
+                        if (channelInput != null)
+                            channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                    }
+                }
+
+                _init = false;
+            }
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);

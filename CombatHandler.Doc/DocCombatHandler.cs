@@ -12,6 +12,7 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using System.Windows.Input;
 
 namespace CombatHandler.Doctor
 {
@@ -31,6 +32,8 @@ namespace CombatHandler.Doctor
         private static View _debuffView;
         private static View _healingView;
         private static View _procView;
+
+        private static bool _asyncToggle = false;
 
         private static double _ncuUpdateTime;
 
@@ -319,7 +322,6 @@ namespace CombatHandler.Doctor
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-
                 if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
                     healingView.Tag = SettingsController.settingsWindow;

@@ -419,17 +419,9 @@ namespace CombatHandler.Metaphysicist
         {
             if (!CanLookupPetsAfterZone()) { return false; }
 
-            List<Pet> pets = DynelManager.LocalPlayer.Pets
+            return DynelManager.LocalPlayer.Pets
                 .Where(x => x.Character.Buffs.Contains(NanoLine.Root) || x.Character.Buffs.Contains(NanoLine.Snare)
-                || x.Character.Buffs.Contains(NanoLine.Mezz))
-                .ToList();
-
-            if (pets?.Count > 1)
-            {
-                return true;
-            }
-
-            return false;
+                    || x.Character.Buffs.Contains(NanoLine.Mezz)).Any();
         }
 
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

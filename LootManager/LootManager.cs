@@ -12,6 +12,7 @@ using AOSharp.Common.Unmanaged.DataTypes;
 using AOSharp.Common.Unmanaged.Imports;
 using AOSharp.Common.Helpers;
 using System.Runtime.InteropServices;
+using System.Windows.Input;
 
 namespace LootManager
 {
@@ -31,6 +32,8 @@ namespace LootManager
 
         protected Settings _settings;
         public static Settings _settingsItems;
+
+        private static bool _init = false;
 
         private Window _infoWindow;
 
@@ -362,6 +365,41 @@ namespace LootManager
 
         private void OnUpdate(object sender, float deltaTime)
         {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F6) && !_init)
+            {
+                _init = true;
+
+                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+                {
+                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Loot Manager")))
+                    {
+                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+
+                        SettingsController.searchList = ItemListViewBase.Create(new Rect(999999, 999999, -999999, -999999), 0x40, 0x0f, 0);
+                        SettingsController.SetupMultiListView(SettingsController.searchList);
+                        for (int i = 1; i <= LootManager._settingsItems["ItemCount_ItemList"].AsInt32(); i++)
+                        {
+                            int lowId = LootManager._settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
+                            int highId = LootManager._settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
+                            int ql = LootManager._settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
+
+                            if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
+                            {
+                                ItemModel ItemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql };
+
+                                MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
+                                LootManager.PreItemList.Add(ItemModel, viewItem);
+                                SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
+                            }
+                        }
+                    }
+                }
+
+                _init = false;
+            }
+
             if (_settings["Toggle"].AsBool())
             {
                 if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 6))

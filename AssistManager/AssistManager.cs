@@ -8,6 +8,7 @@ using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
 using System.Collections.Generic;
 using AOSharp.Common.GameData.UI;
+using System.Windows.Input;
 
 namespace AssistManager
 {
@@ -27,6 +28,9 @@ namespace AssistManager
         public static View _infoView;
 
         public static string PluginDir;
+
+        private static bool _init = false;
+
         public override void Run(string pluginDir)
         {
             _settings = new Settings("AssistManager");
@@ -79,6 +83,30 @@ namespace AssistManager
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F4) && !_init)
+            {
+                _init = true;
+
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager\\{Game.ClientInst}\\Config.json");
+
+                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Help Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+                {
+                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Help Manager")))
+                    {
+                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+
+                        SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView assistInput);
+
+                        if (assistInput != null)
+                            assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
+                    }
+                }
+
+                _init = false;
+            }
+
             if (Time.NormalTime > _updateTick + 8f)
             {
                 List<SimpleChar> PlayersInRange = DynelManager.Characters

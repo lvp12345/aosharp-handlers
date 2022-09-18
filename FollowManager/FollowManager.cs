@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
+using System.Windows.Input;
 
 namespace FollowManager
 {
@@ -30,6 +31,8 @@ namespace FollowManager
         private static int NavFollowDistance;
 
         private static double _followTimer;
+
+        private static bool _init = false;
 
         public static Window _infoWindow;
 
@@ -124,6 +127,39 @@ namespace FollowManager
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F3) && !_init)
+            {
+                _init = true;
+
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\FollowManager\\{Game.ClientInst}\\Config.json");
+
+                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Follow Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+                {
+                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Follow Manager")))
+                    {
+                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+
+                        SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                        SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView followBox);
+                        SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView navFollowBox);
+                        SettingsController.settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceBox);
+
+                        if (channelInput != null)
+                            channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                        if (followBox != null)
+                            followBox.Text = $"{Config.CharSettings[Game.ClientInst].FollowPlayer}";
+                        if (navFollowBox != null)
+                            navFollowBox.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowIdentity}";
+                        if (navFollowDistanceBox != null)
+                            navFollowDistanceBox.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowDistance}";
+                    }
+                }
+
+                _init = false;
+            }
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);

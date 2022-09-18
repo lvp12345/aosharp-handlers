@@ -110,7 +110,7 @@ namespace LootManager
             }
         }
 
-        private static void SetupMultiListView(MultiListView multiListView)
+        public static void SetupMultiListView(MultiListView multiListView)
         {
             multiListView.SetLayoutMode(1);
             multiListView.AddColumn(0, "", 15);

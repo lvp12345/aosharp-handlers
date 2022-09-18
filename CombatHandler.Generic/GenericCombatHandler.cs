@@ -5,7 +5,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
@@ -25,6 +27,8 @@ namespace CombatHandler.Generic
         private double _lastPetSyncTime = Time.NormalTime;
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
+
+        private static bool _init = false;
 
         private static double _updateTick;
 
@@ -437,6 +441,33 @@ namespace CombatHandler.Generic
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
+
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1) && !_init)
+            {
+                _init = true;
+
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{Game.ClientInst}\\Config.json");
+
+                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+                {
+                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Handler")))
+                    {
+                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+
+                        SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                        SettingsController.settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView engiBioCocoonInput);
+
+                        if (channelInput != null)
+                            channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                        if (engiBioCocoonInput != null)
+                            engiBioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage}";
+                    }
+                }
+
+                _init = false;
+            }
 
             if (Time.NormalTime > _updateTick + 1f)
             {

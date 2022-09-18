@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
+using System.Windows.Input;
 
 namespace HelpManager
 {
@@ -33,6 +34,8 @@ namespace HelpManager
         private static string FollowPlayer;
         private static string NavFollowIdentity;
         private static int NavFollowDistance;
+
+        private static bool _init = false;
 
         private static double _updateTick;
         private static double _sitUpdateTimer;
@@ -196,6 +199,30 @@ namespace HelpManager
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F5) && !_init)
+            {
+                _init = true;
+
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager\\{Game.ClientInst}\\Config.json");
+
+                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Help Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+
+                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+                {
+                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Help Manager")))
+                    {
+                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+
+                        SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+
+                        if (channelInput != null)
+                            channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                    }
+                }
+
+                _init = false;
+            }
+
             if (Time.NormalTime > _updateTick + 8f)
             {
                 List<SimpleChar> PlayersInRange = DynelManager.Characters

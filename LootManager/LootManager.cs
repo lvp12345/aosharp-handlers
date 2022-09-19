@@ -178,16 +178,12 @@ namespace LootManager
         }
         private void HandleAddItemViewClick(object s, ButtonBase button)
         {
-            int lowId = ItemIdValue;
-            int highId = ItemIdValue;
-            int ql = MinQlValue;
-
-            if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
+            if (DummyItem.CreateDummyItemID(ItemIdValue, ItemIdValue, 69, out Identity item))
             {
                 try
                 {
                     MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
-                    ItemModel ItemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql, ItemName = ItemNameValue };
+                    ItemModel ItemModel = new ItemModel { LowId = ItemIdValue, HighId = ItemIdValue, Ql = 69 };
                     if (!SettingsController.searchList.Items.Contains(viewItem))
                     {
                         SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
@@ -369,7 +365,7 @@ namespace LootManager
             {
                 _init = true;
 
-                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 390, 630), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.None);
 
                 if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
                 {
@@ -385,10 +381,10 @@ namespace LootManager
 
                             if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
                             {
-                                ItemModel ItemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql };
+                                ItemModel itemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql };
 
                                 MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
-                                PreItemList.Add(ItemModel, viewItem);
+                                PreItemList.Add(itemModel, viewItem);
                                 SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
                             }
                         }
@@ -419,7 +415,7 @@ namespace LootManager
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("NameValue", out TextInputView _nameBox);
+                //SettingsController.settingsWindow.FindView("NameValue", out TextInputView _nameBox);
                 SettingsController.settingsWindow.FindView("ItemIdValue", out TextInputView _itemIdBox);
                 SettingsController.settingsWindow.FindView("MinQlValue", out TextInputView _minQlBox);
                 SettingsController.settingsWindow.FindView("MaxQlValue", out TextInputView _maxQlBox);
@@ -449,8 +445,8 @@ namespace LootManager
                                 {
                                     if (i != count)
                                     {
-                                        if (_nameBox != null && itemView.Key.ItemName != null)
-                                            _nameBox.Text = itemView.Key.ItemName.ToString();
+                                        //if (_nameBox != null && itemView.Key.ItemName != null)
+                                        //    _nameBox.Text = itemView.Key.ItemName;
                                         if (_itemIdBox != null && itemModel != null)
                                             _itemIdBox.Text = itemModel.LowId.ToString();
                                         if (_minQlBox != null && _settingsItems[$"Item_MinQl_ItemList_{i}"] != null)
@@ -460,8 +456,8 @@ namespace LootManager
                                     }
                                     else
                                     {
-                                        if (_nameBox != null && itemView.Key.ItemName != null)
-                                            _nameBox.Text = itemView.Key.ItemName.ToString();
+                                        //if (_nameBox != null && itemView.Key.ItemName != null)
+                                        //    _nameBox.Text = itemView.Key.ItemName;
                                         if (_itemIdBox != null && itemModel != null)
                                             _itemIdBox.Text = itemModel.LowId.ToString();
                                         if (_minQlBox != null && _settingsItems[$"Item_MinQl_ItemList_{i}"] != null)
@@ -474,11 +470,11 @@ namespace LootManager
                             }
                         }
 
-                if (_nameBox != null && !string.IsNullOrEmpty(_nameBox.Text))
-                {
-                    if (ItemNameValue != _nameBox.Text)
-                        ItemNameValue = _nameBox.Text;
-                }
+                //if (_nameBox != null && !string.IsNullOrEmpty(_nameBox.Text))
+                //{
+                //    if (ItemNameValue != _nameBox.Text)
+                //        ItemNameValue = _nameBox.Text;
+                //}
                 if (_itemIdBox != null && !string.IsNullOrEmpty(_itemIdBox.Text))
                 {
                     if (int.TryParse(_itemIdBox.Text, out int itemIdValue))
@@ -495,7 +491,7 @@ namespace LootManager
                             MinQlValue = minQlValue;
                     }
                 }
-                if (_maxQlBox != null && !string.IsNullOrEmpty(_nameBox.Text))
+                if (_maxQlBox != null && !string.IsNullOrEmpty(_maxQlBox.Text))
                 {
                     if (int.TryParse(_maxQlBox.Text, out int maxQlValue))
                     {

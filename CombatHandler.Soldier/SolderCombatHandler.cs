@@ -321,15 +321,21 @@ namespace CombatHandler.Soldier
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    actionTarget.Target = DynelManager.Characters
+                    if (DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && !c.Buffs.Contains(NanoLine.AAOBuffs))
+                        .Any())
+                    {
+                        actionTarget.Target = DynelManager.Characters
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && !c.Buffs.Contains(NanoLine.AAOBuffs))
                         .FirstOrDefault();
 
-                    if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
+                        if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
+                        {
+                            actionTarget.ShouldSetTarget = true;
+                            return true;
+                        }
                     }
                 }
             }
@@ -345,15 +351,21 @@ namespace CombatHandler.Soldier
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    actionTarget.Target = DynelManager.Characters
+                    if (DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.SpecialAttacks.Contains(SpecialAttack.Burst))
+                        .Any())
+                    {
+                        actionTarget.Target = DynelManager.Characters
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && c.SpecialAttacks.Contains(SpecialAttack.Burst))
                         .FirstOrDefault();
 
-                    if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
+                        if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
+                        {
+                            actionTarget.ShouldSetTarget = true;
+                            return true;
+                        }
                     }
                 }
             }
@@ -379,20 +391,27 @@ namespace CombatHandler.Soldier
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                actionTarget.Target = DynelManager.Characters
+                if (DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff)
                         && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))
-                    .FirstOrDefault();
-
-                if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target)
-                    && HeavyCompWeaponChecks(actionTarget.Target))
+                    .Any())
                 {
-                    if (actionTarget.Target.Identity == DynelManager.LocalPlayer.Identity
-                        && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
+                    actionTarget.Target = DynelManager.Characters
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff)
+                            && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))
+                        .FirstOrDefault();
 
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target)
+                        && HeavyCompWeaponChecks(actionTarget.Target))
+                    {
+                        if (actionTarget.Target.Identity == DynelManager.LocalPlayer.Identity
+                            && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
+
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
             }
 

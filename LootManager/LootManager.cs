@@ -35,6 +35,8 @@ namespace LootManager
 
         private static bool _init = false;
 
+        private static int _currentIgnore = 0;
+
         private Window _infoWindow;
 
         public static List<string> _basicIgnores = new List<string>()
@@ -310,7 +312,9 @@ namespace LootManager
 
         private void OnContainerOpened(object sender, Container container)
         {
-            if (!_settings["Toggle"].AsBool() || container.Identity.Type != IdentityType.Corpse) { return; }
+            if (!_settings["Toggle"].AsBool()
+                || container.Identity.Type != IdentityType.Corpse
+                ) { return; }
 
             if (_settings["ApplyRules"].AsBool())
             {
@@ -319,7 +323,10 @@ namespace LootManager
                     if (!RulesApply(item)) { item.Delete(); }
 
                     if (_settings["SingleItem"].AsBool() && ItemExists(item))
+                    {
+                        _currentIgnore = container.Identity.Instance;
                         continue;
+                    }
 
                     if (Inventory.NumFreeSlots >= 1)
                         item.MoveToInventory();
@@ -403,7 +410,8 @@ namespace LootManager
                     _lastCheckTime = Time.NormalTime;
 
                     corpsesToLoot = DynelManager.Corpses
-                        .Where(corpse => corpse.DistanceFrom(DynelManager.LocalPlayer) < 7)
+                        .Where(c => c.Identity.Instance != _currentIgnore)
+                        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7)
                         .FirstOrDefault();
 
                     if (corpsesToLoot != null)

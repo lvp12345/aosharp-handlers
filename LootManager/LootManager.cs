@@ -375,25 +375,25 @@ namespace LootManager
                 {
                     foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Loot Manager")))
                     {
-                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-
                         SettingsController.searchList = ItemListViewBase.Create(new Rect(999999, 999999, -999999, -999999), 0x40, 0x0f, 0);
                         SettingsController.SetupMultiListView(SettingsController.searchList);
-                        for (int i = 1; i <= LootManager._settingsItems["ItemCount_ItemList"].AsInt32(); i++)
+                        for (int i = 1; i <= _settingsItems["ItemCount_ItemList"].AsInt32(); i++)
                         {
-                            int lowId = LootManager._settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
-                            int highId = LootManager._settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
-                            int ql = LootManager._settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
+                            int lowId = _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
+                            int highId = _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
+                            int ql = _settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
 
                             if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
                             {
                                 ItemModel ItemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql };
 
                                 MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
-                                LootManager.PreItemList.Add(ItemModel, viewItem);
+                                PreItemList.Add(ItemModel, viewItem);
                                 SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
                             }
                         }
+
+                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
                     }
                 }
 

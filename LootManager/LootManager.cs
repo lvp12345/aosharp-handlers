@@ -318,7 +318,7 @@ namespace LootManager
                 {
                     if (!RulesApply(item)) { item.Delete(); }
 
-                    if (_settings["SingleItem"].AsBool() && !ItemExists(item))
+                    if (_settings["SingleItem"].AsBool() && ItemExists(item))
                         continue;
 
                     if (Inventory.NumFreeSlots >= 1)

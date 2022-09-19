@@ -327,9 +327,9 @@ namespace CombatHandler.Soldier
                         .Any())
                     {
                         actionTarget.Target = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && !c.Buffs.Contains(NanoLine.AAOBuffs))
-                        .FirstOrDefault();
+                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && !c.Buffs.Contains(NanoLine.AAOBuffs))
+                            .FirstOrDefault();
 
                         if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
                         {
@@ -357,9 +357,9 @@ namespace CombatHandler.Soldier
                         .Any())
                     {
                         actionTarget.Target = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.SpecialAttacks.Contains(SpecialAttack.Burst))
-                        .FirstOrDefault();
+                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && c.SpecialAttacks.Contains(SpecialAttack.Burst))
+                            .FirstOrDefault();
 
                         if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
                         {

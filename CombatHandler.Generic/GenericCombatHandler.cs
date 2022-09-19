@@ -1587,7 +1587,7 @@ namespace CombatHandler.Generic
             {
                 if (spell.StackingOrder < buff.StackingOrder || (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))) { return false; }
 
-                if (spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 30f) { return false; }
+                if (spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 20f) { return false; }
 
                 return true;
             }
@@ -1607,7 +1607,7 @@ namespace CombatHandler.Generic
             {
                 if (spell.StackingOrder < buff.StackingOrder || DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
 
-                if (spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 30f) { return false; }
+                if (spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 20f) { return false; }
 
                 return true;
             }

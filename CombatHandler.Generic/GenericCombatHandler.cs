@@ -442,7 +442,8 @@ namespace CombatHandler.Generic
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
 
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1) && !_init)
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1) && !_init
+                && IsActiveWindow)
             {
                 _init = true;
 

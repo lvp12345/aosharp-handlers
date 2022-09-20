@@ -368,40 +368,40 @@ namespace LootManager
 
         private void OnUpdate(object sender, float deltaTime)
         {
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F6) && !_init)
-            {
-                _init = true;
+            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F6) && !_init)
+            //{
+            //    _init = true;
 
-                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 390, 630), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.None);
+            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 390, 630), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.None);
 
-                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-                {
-                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Loot Manager")))
-                    {
-                        SettingsController.searchList = ItemListViewBase.Create(new Rect(999999, 999999, -999999, -999999), 0x40, 0x0f, 0);
-                        SettingsController.SetupMultiListView(SettingsController.searchList);
-                        for (int i = 1; i <= _settingsItems["ItemCount_ItemList"].AsInt32(); i++)
-                        {
-                            int lowId = _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
-                            int highId = _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
-                            int ql = _settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
+            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+            //    {
+            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Loot Manager")))
+            //        {
+            //            SettingsController.searchList = ItemListViewBase.Create(new Rect(999999, 999999, -999999, -999999), 0x40, 0x0f, 0);
+            //            SettingsController.SetupMultiListView(SettingsController.searchList);
+            //            for (int i = 1; i <= _settingsItems["ItemCount_ItemList"].AsInt32(); i++)
+            //            {
+            //                int lowId = _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
+            //                int highId = _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
+            //                int ql = _settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
 
-                            if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
-                            {
-                                ItemModel itemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql };
+            //                if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
+            //                {
+            //                    ItemModel itemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql };
 
-                                MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
-                                PreItemList.Add(itemModel, viewItem);
-                                SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
-                            }
-                        }
+            //                    MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
+            //                    PreItemList.Add(itemModel, viewItem);
+            //                    SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
+            //                }
+            //            }
 
-                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-                    }
-                }
+            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+            //        }
+            //    }
 
-                _init = false;
-            }
+            //    _init = false;
+            //}
 
             if (_settings["Toggle"].AsBool())
             {

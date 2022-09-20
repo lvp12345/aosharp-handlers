@@ -442,33 +442,33 @@ namespace CombatHandler.Generic
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
 
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1) && !_init
-                && IsActiveWindow)
-            {
-                _init = true;
+            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1) && !_init
+            //    && IsActiveWindow)
+            //{
+            //    _init = true;
 
-                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{Game.ClientInst}\\Config.json");
+            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{Game.ClientInst}\\Config.json");
 
-                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
-                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-                {
-                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Handler")))
-                    {
-                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+            //    {
+            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Handler")))
+            //        {
+            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
 
-                        SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                        SettingsController.settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView engiBioCocoonInput);
+            //            SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+            //            SettingsController.settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView engiBioCocoonInput);
 
-                        if (channelInput != null)
-                            channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
-                        if (engiBioCocoonInput != null)
-                            engiBioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage}";
-                    }
-                }
+            //            if (channelInput != null)
+            //                channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+            //            if (engiBioCocoonInput != null)
+            //                engiBioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage}";
+            //        }
+            //    }
 
-                _init = false;
-            }
+            //    _init = false;
+            //}
 
             if (Time.NormalTime > _updateTick + 1f)
             {

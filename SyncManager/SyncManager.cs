@@ -97,29 +97,29 @@ namespace SyncManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F2) && !_init)
-            {
-                _init = true;
+            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F2) && !_init)
+            //{
+            //    _init = true;
 
-                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
+            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
 
-                SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Sync Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Sync Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
-                if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-                {
-                    foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Sync Manager")))
-                    {
-                        SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
+            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
+            //    {
+            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Sync Manager")))
+            //        {
+            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
 
-                        SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+            //            SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
-                        if (channelInput != null)
-                            channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
-                    }
-                }
+            //            if (channelInput != null)
+            //                channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+            //        }
+            //    }
 
-                _init = false;
-            }
+            //    _init = false;
+            //}
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {

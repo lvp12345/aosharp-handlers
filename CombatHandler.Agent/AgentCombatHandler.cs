@@ -720,7 +720,7 @@ namespace CombatHandler.Agent
         {
             if (!IsSettingEnabled("Concentration") || !CanCast(spell) || fightingTarget == null) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return AllBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DotStrainA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

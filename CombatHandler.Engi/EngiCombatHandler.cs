@@ -485,7 +485,7 @@ namespace CombatHandler.Engineer
                 return TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
             }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.AssaultRifleBuffs)) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(269482)) { return false; }
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }

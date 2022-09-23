@@ -956,7 +956,7 @@ namespace CombatHandler.Generic
                             spell.Nanoline == NanoLine.PistolBuff) { return false; }
 
                         if (actionTarget.Target.Buffs.Contains(NanoLine.AssaultRifleBuffs) &&
-                            spell.Nanoline == NanoLine.AssaultRifleBuffs) { return false; }
+                            (spell.Nanoline == NanoLine.AssaultRifleBuffs || spell.Nanoline == NanoLine.GrenadeBuffs)) { return false; }
 
                         actionTarget.ShouldSetTarget = true;
                         return true;

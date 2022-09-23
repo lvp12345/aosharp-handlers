@@ -107,6 +107,8 @@ namespace CombatHandler.Metaphysicist
             //Team buffs
             RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
 
+
+            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
             RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMetBuff);
             RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMetBuff);
             RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PyschoModiBuff);
@@ -445,6 +447,18 @@ namespace CombatHandler.Metaphysicist
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
+            }
+
+            return false;
+        }
+
+        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.Pets.Where(c => c == null).Any())
+            {
+                return true;
             }
 
             return false;
@@ -856,6 +870,7 @@ namespace CombatHandler.Metaphysicist
         {
             public const int MastersBidding = 268171;
             public const int EvadeBuff = 29272;
+            public const int PetWarp = 209488;
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
             public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };

@@ -108,7 +108,7 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GenericBuff);
 
-
+            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
             RegisterSpellProcessor(RelevantNanos.BoostedTendons, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, TeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamBuff);
@@ -541,6 +541,17 @@ namespace CombatHandler.Engineer
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
+            }
+
+            return false;
+        }
+        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.Pets.Where(c => c == null).Any())
+            {
+                return true;
             }
 
             return false;
@@ -1056,6 +1067,7 @@ namespace CombatHandler.Engineer
             public const int IntrusiveAuraCancellation = 204372;
             public const int BoostedTendons = 269463;
             public const int PetHealingCH = 270351;
+            public const int PetWarp = 209488;
 
             public static readonly Spell[] DamageBuffLineA = Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA)
                 .Where(spell => spell.Id != RelevantNanos.BoostedTendons).OrderByStackingOrder().ToArray();

@@ -1588,7 +1588,9 @@ namespace CombatHandler.Generic
             {
                 if (spell.StackingOrder < buff.StackingOrder || (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))) { return false; }
 
-                if (spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 20f) { return false; }
+                if (spell.NanoSchool != NanoSchool.Combat && spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 20f) { return false; }
+
+                if (spell.NanoSchool == NanoSchool.Combat && spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 5f) { return false; }
 
                 return true;
             }

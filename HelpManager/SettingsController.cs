@@ -73,9 +73,12 @@ namespace HelpManager
                             AppendSettingsTab("Help Manager", settingsWindow);
 
                             settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                            settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
 
                             if (channelInput != null)
                                 channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                            if (sitPercentageInput != null)
+                                sitPercentageInput.Text = $"{Config.CharSettings[Game.ClientInst].SitPercentage}";
                         }
                     }
                     catch (Exception e)

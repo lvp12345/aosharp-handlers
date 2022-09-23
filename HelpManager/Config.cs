@@ -16,6 +16,8 @@ namespace HelpManager
 
         [JsonIgnore]
         public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
+        [JsonIgnore]
+        public int SitPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SitPercentage : 65;
 
         public static Config Load(string path)
         {
@@ -81,6 +83,24 @@ namespace HelpManager
                 {
                     _ipcChannel = value;
                     IPCChannelChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
+        public event EventHandler<int> SitPercentageChangedEvent;
+        private int _sitPercentage = 65;
+        public int SitPercentage
+        {
+            get
+            {
+                return _sitPercentage;
+            }
+            set
+            {
+                if (_sitPercentage != value)
+                {
+                    _sitPercentage = value;
+                    SitPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

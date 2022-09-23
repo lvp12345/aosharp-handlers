@@ -35,6 +35,8 @@ namespace HelpManager
         private static string NavFollowIdentity;
         private static int NavFollowDistance;
 
+        private static int SitPercentage;
+
         private static bool _init = false;
 
         private static double _updateTick;
@@ -160,6 +162,8 @@ namespace HelpManager
             Chat.WriteLine("/helpmanager for settings.");
 
             PluginDirectory = pluginDir;
+
+            SitPercentage = Config.CharSettings[Game.ClientInst].SitPercentage;
         }
 
         public override void Teardown()
@@ -177,6 +181,12 @@ namespace HelpManager
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
 
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void SitPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].SitPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -246,6 +256,7 @@ namespace HelpManager
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                SettingsController.settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
 
                 if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                 {
@@ -253,6 +264,14 @@ namespace HelpManager
                         && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
                     {
                         Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                    }
+                }
+                if (sitPercentageInput != null && !string.IsNullOrEmpty(sitPercentageInput.Text))
+                {
+                    if (int.TryParse(sitPercentageInput.Text, out int sitPercentageValue)
+                        && Config.CharSettings[Game.ClientInst].SitPercentage != sitPercentageValue)
+                    {
+                        Config.CharSettings[Game.ClientInst].SitPercentage = sitPercentageValue;
                     }
                 }
 
@@ -594,7 +613,7 @@ namespace HelpManager
                     if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
                         && DynelManager.LocalPlayer.MovementState != MovementState.Sit)
                     {
-                        if (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
+                        if (DynelManager.LocalPlayer.NanoPercent < SitPercentage || DynelManager.LocalPlayer.HealthPercent < SitPercentage)
                         {
                             Task.Factory.StartNew(
                                async () =>

@@ -65,6 +65,7 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
             _settings.AddVariable("BuffPets", true);
+            _settings.AddVariable("WarpPets", true);
 
             _settings.AddVariable("MastersBidding", false);
 
@@ -78,7 +79,7 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("AOERoot", false);
 
             _settings.AddVariable("Calm12Man", false);
-            _settings.AddVariable("CalmSector7", false);
+            //_settings.AddVariable("CalmSector7", false);
 
             RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
@@ -109,7 +110,7 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.AoECalms, AoECalmDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.RkCalms, RKCalmDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
+            //RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
 
             //Debuff Aura
             RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, DebuffNanoDrainAura);
@@ -117,6 +118,7 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, DebuffCritAura);
 
             //Buffs
+            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfBuff);
@@ -433,6 +435,18 @@ namespace CombatHandler.Bureaucrat
 
         #region Buffs
 
+        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.Pets.Where(c => c == null).Any())
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
@@ -554,32 +568,32 @@ namespace CombatHandler.Bureaucrat
 
         #region Calms
 
-        private bool CalmSector7(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+        //private bool CalmSector7(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (!CanCast(spell)) { return false; }
+        //    if (!CanCast(spell)) { return false; }
 
-            if (!IsSettingEnabled("CalmSector7")) { return false; }
+        //    if (!IsSettingEnabled("CalmSector7")) { return false; }
 
-            SimpleChar target = DynelManager.NPCs
-                .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => c.IsInLineOfSight)
-                .Where(c => c.Name == "Kyr'Ozch Guardian")
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                .Where(c => c.MaxHealth < 1000000)
-                .FirstOrDefault();
+        //    SimpleChar target = DynelManager.NPCs
+        //        .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+        //        .Where(c => c.IsInLineOfSight)
+        //        .Where(c => c.Name == "Kyr'Ozch Guardian")
+        //        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+        //        .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+        //        .Where(c => c.MaxHealth < 1000000)
+        //        .FirstOrDefault();
 
-            if (target != null)
-            {
-                actionTarget.Target = target;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+        //    if (target != null)
+        //    {
+        //        actionTarget.Target = target;
+        //        actionTarget.ShouldSetTarget = true;
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool RKCalmDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1101,6 +1115,7 @@ namespace CombatHandler.Bureaucrat
             public const int GreaterGunSlinger = 263250;
             public const int MastersBidding = 268171;
             public const int PuissantVoidInertia = 224129;
+            public const int PetWarp = 209488;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
             public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Id != GreaterGunSlinger && spell.Id != SkilledGunSlinger).ToArray();

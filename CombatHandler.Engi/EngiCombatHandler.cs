@@ -1110,11 +1110,11 @@ namespace CombatHandler.Engineer
 
         public enum BuffingAuraSelection
         {
-            Armor, Reflect, Damage, Shield
+            None, Armor, Reflect, Damage, Shield
         }
         public enum DebuffingAuraSelection
         {
-            Blind, PetSnare, ShieldRipper
+            None, Blind, PetSnare, ShieldRipper
         }
         public enum ProcType1Selection
         {

@@ -45,6 +45,7 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("SpawnPets", true);
             _settings.AddVariable("BuffPets", true);
             _settings.AddVariable("MezzPet", false);
+            _settings.AddVariable("WarpPets", false);
 
             _settings.AddVariable("MastersBidding", false);
 

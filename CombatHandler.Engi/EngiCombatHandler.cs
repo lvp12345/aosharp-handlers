@@ -550,12 +550,10 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("WarpPets") || !CanCast(spell)) { return false; }
 
-            if (DynelManager.LocalPlayer.Pets.Where(c => c.Character == null).Any())
-            {
-                return true;
-            }
+            //Maybe?
+            //if (!CanLookupPetsAfterZone()) { return false; }
 
-            return false;
+            return true;
         }
 
         private bool ArmorAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

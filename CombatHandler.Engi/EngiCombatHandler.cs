@@ -945,17 +945,9 @@ namespace CombatHandler.Engineer
         {
             if (!CanLookupPetsAfterZone()) { return false; }
 
-            List<Pet> pets = DynelManager.LocalPlayer.Pets
-                .Where(x => x.Character.Buffs.Contains(NanoLine.Root) || x.Character.Buffs.Contains(NanoLine.Snare)
-                || x.Character.Buffs.Contains(NanoLine.Mezz))
-                .ToList();
-
-            if (pets?.Count > 1)
-            {
-                return true;
-            }
-
-            return false;
+            return DynelManager.LocalPlayer.Pets
+                .Where(c => c.Character == null || c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare)
+                    || c.Character.Buffs.Contains(NanoLine.Mezz)).Any();
         }
 
         protected bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

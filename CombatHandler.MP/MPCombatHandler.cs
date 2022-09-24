@@ -423,8 +423,8 @@ namespace CombatHandler.Metaphysicist
             if (!CanLookupPetsAfterZone()) { return false; }
 
             return DynelManager.LocalPlayer.Pets
-                .Where(x => x.Character.Buffs.Contains(NanoLine.Root) || x.Character.Buffs.Contains(NanoLine.Snare)
-                    || x.Character.Buffs.Contains(NanoLine.Mezz)).Any();
+                .Where(c => c.Character == null || c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare)
+                    || c.Character.Buffs.Contains(NanoLine.Mezz)).Any();
         }
 
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

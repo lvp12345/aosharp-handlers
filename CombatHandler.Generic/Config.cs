@@ -40,6 +40,12 @@ namespace CombatHandler.Generic
         public int EnfCycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay : 1;
         [JsonIgnore]
         public int EngiBioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EngiBioCocoonPercentage : 65;
+        [JsonIgnore]
+        public int NTNanoAegisPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTNanoAegisPercentage : 70;
+        [JsonIgnore]
+        public int NTNullitySpherePercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTNullitySpherePercentage : 35;
+        [JsonIgnore]
+        public int NTIzgimmersWealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage : 25;
 
         public static Config Load(string path)
         {
@@ -308,6 +314,74 @@ namespace CombatHandler.Generic
                 {
                     _engiBioCocoonPercentage = value;
                     EngiBioCocoonPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> NTNanoAegisPercentageChangedEvent;
+        private int _ntNanoAegisPercentage = 70;
+        public int NTNanoAegisPercentage
+        {
+            get
+            {
+                return _ntNanoAegisPercentage;
+            }
+            set
+            {
+                if (_ntNanoAegisPercentage != value)
+                {
+                    _ntNanoAegisPercentage = value;
+                    NTNanoAegisPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> NTNullitySpherePercentageChangedEvent;
+        private int _ntNullitySpherePercentage = 35;
+        public int NTNullitySpherePercentage
+        {
+            get
+            {
+                return _ntNullitySpherePercentage;
+            }
+            set
+            {
+                if (_ntNullitySpherePercentage != value)
+                {
+                    _ntNullitySpherePercentage = value;
+                    NTNullitySpherePercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> NTIzgimmersWealthPercentageChangedEvent;
+        private int _ntIzgimmersWealthPercentage = 35;
+        public int NTIzgimmersWealthPercentage
+        {
+            get
+            {
+                return _ntIzgimmersWealthPercentage;
+            }
+            set
+            {
+                if (_ntIzgimmersWealthPercentage != value)
+                {
+                    _ntIzgimmersWealthPercentage = value;
+                    NTIzgimmersWealthPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> NTCycleAbsorbsDelayChangedEvent;
+        private int _ntCycleAbsorbsDelay = 1;
+        public int NTCycleAbsorbsDelay
+        {
+            get
+            {
+                return _ntCycleAbsorbsDelay;
+            }
+            set
+            {
+                if (_ntCycleAbsorbsDelay != value)
+                {
+                    _ntCycleAbsorbsDelay = value;
+                    NTCycleAbsorbsDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }

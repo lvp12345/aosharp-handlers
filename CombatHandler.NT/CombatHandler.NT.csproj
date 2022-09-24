@@ -60,6 +60,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\NTNukesView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\NTDebuffsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\NTProcsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

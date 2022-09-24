@@ -50,7 +50,7 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("CycleAbsorbs", true);
+            _settings.AddVariable("CycleAbsorbs", false);
 
             _settings.AddVariable("AIDot", true);
 
@@ -291,6 +291,7 @@ namespace CombatHandler.NanoTechnician
                         {
                             Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = absorbsValue;
                             NTCycleAbsorbsDelay = absorbsValue;
+                            //Do we even need this?
                             Config.Save();
                         }
                     }

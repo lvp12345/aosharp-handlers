@@ -457,7 +457,7 @@ namespace CombatHandler.Metaphysicist
         {
             if (!IsSettingEnabled("WarpPets") || !CanCast(spell)) { return false; }
 
-            if (DynelManager.LocalPlayer.Pets.Where(c => c == null).Any())
+            if (DynelManager.LocalPlayer.Pets.Where(c => c.Character == null).Any())
             {
                 return true;
             }

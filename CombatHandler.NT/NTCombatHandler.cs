@@ -555,7 +555,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")/* || fightingTarget == null*/) { return false; }
+            if (!IsSettingEnabled("Buffing") || fightingTarget == null) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent <= NTIzgimmersWealthPercentage)
             {

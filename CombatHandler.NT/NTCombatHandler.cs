@@ -50,7 +50,7 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("Absorbs", true);
+            _settings.AddVariable("CycleAbsorbs", true);
 
             _settings.AddVariable("AIDot", true);
 
@@ -275,6 +275,26 @@ namespace CombatHandler.NanoTechnician
                 OnRemainingNCUMessage(0, ncuMessage);
 
                 _ncuUpdateTime = Time.NormalTime;
+            }
+
+            var window = SettingsController.FindValidWindow(_windows);
+
+            if (window != null && window.IsValid)
+            {
+                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+
+                if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
+                {
+                    if (int.TryParse(absorbsInput.Text, out int absorbsValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay != absorbsValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = absorbsValue;
+                            NTCycleAbsorbsDelay = absorbsValue;
+                            Config.Save();
+                        }
+                    }
+                }
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

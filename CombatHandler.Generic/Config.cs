@@ -369,7 +369,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> NTCycleAbsorbsDelayChangedEvent;
-        private int _ntCycleAbsorbsDelay = 1;
+        private int _ntCycleAbsorbsDelay = 15;
         public int NTCycleAbsorbsDelay
         {
             get

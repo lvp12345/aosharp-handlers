@@ -19,11 +19,22 @@ namespace CombatHandler.NanoTechnician
     {
         private static string PluginDirectory;
 
+        private static int NTNanoAegisPercentage;
+        private static int NTNullitySpherePercentage;
+        private static int NTIzgimmersWealthPercentage;
+        private static int NTCycleAbsorbsDelay;
+
+        private static double _absorbs;
+
         private static Window _buffWindow;
         private static Window _procWindow;
+        private static Window _debuffWindow;
+        private static Window _nukeWindow;
 
         private static View _procView;
         private static View _buffView;
+        private static View _debuffView;
+        private static View _nukeView;
 
         private static double _ncuUpdateTime;
 
@@ -31,8 +42,15 @@ namespace CombatHandler.NanoTechnician
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
+            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentageChangedEvent += NTNanoAegisPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentageChangedEvent += NTNullitySpherePercentage_Changed;
+            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentageChangedEvent += NTIzgimmersWealthPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelayChangedEvent += NTCycleAbsorbsDelay_Changed;
+
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
+
+            _settings.AddVariable("Absorbs", true);
 
             _settings.AddVariable("AIDot", true);
 
@@ -69,9 +87,9 @@ namespace CombatHandler.NanoTechnician
 
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis);
-            RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.NanobotShelter, GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
@@ -84,13 +102,14 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHoT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
 
-            if (Spell.Find(RelevantNanos.SuperiorFleetingImmunity, out Spell immunity))
-            {
-                RegisterSpellProcessor(immunity, GenericBuff);
-            }
+            //if (Spell.Find(RelevantNanos.SuperiorFleetingImmunity, out Spell immunity))
+            //{
+            //    RegisterSpellProcessor(immunity, GenericBuff);
+            //}
 
             //Team buffs
-            RegisterSpellProcessor(RelevantNanos.AbsortAcTargetBuffs, GenericBuff);
+            //RegisterSpellProcessor(RelevantNanos.AbsortAcTargetBuffs, GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), CycleAbsorbs);
 
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AiDotNuke, CombatActionPriority.Medium);
@@ -105,8 +124,41 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(RelevantNanos.AoeBlinds, AOEBlind);
 
             PluginDirectory = pluginDir;
+
+            NTNanoAegisPercentage = Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage;
+            NTNullitySpherePercentage = Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage;
+            NTIzgimmersWealthPercentage = Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage;
+            NTCycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _procWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _procWindow, _debuffWindow, _nukeWindow };
+
+        public static void NTNanoAegisPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void NTNullitySpherePercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void NTIzgimmersWealthPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void NTCycleAbsorbsDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -123,22 +175,71 @@ namespace CombatHandler.NanoTechnician
                 Chat.WriteLine(e);
             }
         }
+
+        private void HandleDebuffsViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_debuffView)) { return; }
+
+                _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\NTDebuffsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Debuffs", XmlViewName = "NTDebuffsView" }, _debuffView);
+            }
+            else if (_debuffWindow == null || (_debuffWindow != null && !_debuffWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_debuffWindow, PluginDir, new WindowOptions() { Name = "Debuffs", XmlViewName = "NTDebuffsView" }, _debuffView, out var container);
+                _debuffWindow = container;
+            }
+        }
+
+        private void HandleNukesViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_nukeView)) { return; }
+
+                _nukeView = View.CreateFromXml(PluginDirectory + "\\UI\\NTNukesView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Nukes", XmlViewName = "NTNukesView" }, _nukeView);
+            }
+            else if (_nukeWindow == null || (_nukeWindow != null && !_nukeWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_nukeWindow, PluginDir, new WindowOptions() { Name = "Nukes", XmlViewName = "NTNukesView" }, _nukeView, out var container);
+                _nukeWindow = container;
+            }
+        }
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\NTBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "NTBuffsView" }, _buffView);
+
+                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+
+                if (absorbsInput != null)
+                {
+                    absorbsInput.Text = $"{NTCycleAbsorbsDelay}";
+                }
             }
             else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "NTBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+
+                container.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+
+                if (absorbsInput != null)
+                {
+                    absorbsInput.Text = $"{NTCycleAbsorbsDelay}";
+                }
             }
         }
 
@@ -178,6 +279,50 @@ namespace CombatHandler.NanoTechnician
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                SettingsController.settingsWindow.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                SettingsController.settingsWindow.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
+                SettingsController.settingsWindow.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
+
+                if (nanoAegisInput != null && !string.IsNullOrEmpty(nanoAegisInput.Text))
+                {
+                    if (int.TryParse(nanoAegisInput.Text, out int nanoAegisValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage != nanoAegisValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = nanoAegisValue;
+                            NTNanoAegisPercentage = nanoAegisValue;
+                            //Do we even need this?
+                            Config.Save();
+                        }
+                    }
+                }
+                if (nullSphereInput != null && !string.IsNullOrEmpty(nullSphereInput.Text))
+                {
+                    if (int.TryParse(nullSphereInput.Text, out int nullSphereValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage != nullSphereValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = nullSphereValue;
+                            NTNullitySpherePercentage = nullSphereValue;
+                            //Do we even need this?
+                            Config.Save();
+                        }
+                    }
+                }
+                if (izWealthInput != null && !string.IsNullOrEmpty(izWealthInput.Text))
+                {
+                    if (int.TryParse(izWealthInput.Text, out int izWealthValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage != izWealthValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = izWealthValue;
+                            NTIzgimmersWealthPercentage = izWealthValue;
+                            //Do we even need this?
+                            Config.Save();
+                        }
+                    }
+                }
+
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
@@ -188,6 +333,18 @@ namespace CombatHandler.NanoTechnician
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
+                {
+                    debuffView.Tag = SettingsController.settingsWindow;
+                    debuffView.Clicked = HandleDebuffsViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("NukesView", out Button nukeView))
+                {
+                    nukeView.Tag = SettingsController.settingsWindow;
+                    nukeView.Clicked = HandleNukesViewClick;
                 }
             }
         }
@@ -337,7 +494,7 @@ namespace CombatHandler.NanoTechnician
             if (!IsSettingEnabled("Buffing")) { return false; }
 
             actionTarget.ShouldSetTarget = false;
-            return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
+            return DynelManager.LocalPlayer.HealthPercent <= NTNanoAegisPercentage && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -345,7 +502,7 @@ namespace CombatHandler.NanoTechnician
             if (!IsSettingEnabled("Buffing")) { return false; }
 
             actionTarget.ShouldSetTarget = false;
-            return DynelManager.LocalPlayer.HealthPercent < 50 && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
+            return DynelManager.LocalPlayer.HealthPercent <= NTNullitySpherePercentage && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
         }
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -367,6 +524,20 @@ namespace CombatHandler.NanoTechnician
 
             return true;
         }
+        private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
+
+            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + NTCycleAbsorbsDelay)
+            {
+                _absorbs = Time.NormalTime;
+                return true;
+            }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
 
         private bool PierceNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -384,14 +555,15 @@ namespace CombatHandler.NanoTechnician
 
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing")/* || fightingTarget == null*/) { return false; }
 
-            if (fightingTarget == null) { return false; }
+            if (DynelManager.LocalPlayer.NanoPercent <= NTIzgimmersWealthPercentage)
+            {
+                actionTarget.ShouldSetTarget = false;
+                return true;
+            }
 
-            if (DynelManager.LocalPlayer.NanoPercent > 25) { return false; }
-
-            actionTarget.ShouldSetTarget = false;
-            return true;
+            return false;
         }
 
         private bool AiDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -435,6 +607,7 @@ namespace CombatHandler.NanoTechnician
             public const int Garuk = 275692;
             public const int PierceReflect = 266287;
             public const int VolcanicEruption = 28638;
+            public const int BioCocoon = 209802;
             public static readonly int[] AOENukes = { 266293, 28638,
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };

@@ -20,7 +20,7 @@ namespace AssistManager
 
         private static string AssistPlayer;
 
-        private static double _updateTick;
+        //private static double _updateTick;
         private static double _assistTimer;
 
         public static Window _infoWindow;
@@ -28,8 +28,6 @@ namespace AssistManager
         public static View _infoView;
 
         public static string PluginDir;
-
-        private static bool _init = false;
 
         public override void Run(string pluginDir)
         {
@@ -42,7 +40,7 @@ namespace AssistManager
 
             Game.OnUpdate += OnUpdate;
 
-            _settings.AddVariable("AttackSelection", (int)AttackSelection.None);
+            _settings.AddVariable("Toggle", false);
 
             RegisterSettingsWindow("Assist Manager", "AssistManagerSettingWindow.xml");
 
@@ -107,25 +105,25 @@ namespace AssistManager
             //    _init = false;
             //}
 
-            if (Time.NormalTime > _updateTick + 8f)
-            {
-                List<SimpleChar> PlayersInRange = DynelManager.Characters
-                    .Where(x => x.IsPlayer)
-                    .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
-                    .ToList();
+            //if (Time.NormalTime > _updateTick + 8f)
+            //{
+            //    List<SimpleChar> PlayersInRange = DynelManager.Characters
+            //        .Where(x => x.IsPlayer)
+            //        .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
+            //        .ToList();
 
-                foreach (SimpleChar player in PlayersInRange)
-                {
-                    Network.Send(new CharacterActionMessage()
-                    {
-                        Action = CharacterActionType.InfoRequest,
-                        Target = player.Identity
+            //    foreach (SimpleChar player in PlayersInRange)
+            //    {
+            //        Network.Send(new CharacterActionMessage()
+            //        {
+            //            Action = CharacterActionType.InfoRequest,
+            //            Target = player.Identity
 
-                    });
-                }
+            //        });
+            //    }
 
-                _updateTick = Time.NormalTime;
-            }
+            //    _updateTick = Time.NormalTime;
+            //}
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
@@ -147,7 +145,7 @@ namespace AssistManager
                 }
             }
 
-            if (AttackSelection.Assist == (AttackSelection)_settings["AttackSelection"].AsInt32()
+            if (_settings["Toggle"].AsBool()
                 && Time.NormalTime > _assistTimer + 0.5)
             {
                 SimpleChar identity = DynelManager.Characters
@@ -175,11 +173,6 @@ namespace AssistManager
                     _assistTimer = Time.NormalTime;
                 }
             }
-        }
-
-        public enum AttackSelection
-        {
-            None, Assist
         }
     }
 }

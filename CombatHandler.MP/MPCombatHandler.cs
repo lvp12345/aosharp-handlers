@@ -400,16 +400,14 @@ namespace CombatHandler.Metaphysicist
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            if (DynelManager.LocalPlayer.Pets
-                .Where(c => CanPerkChannelRage(c))
-                .Any())
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                actionTarget.Target = DynelManager.LocalPlayer.Pets
-                    .Where(c => CanPerkChannelRage(c))
-                    .FirstOrDefault().Character;
+                if (pet.Character == null) continue;
 
-                if (actionTarget.Target != null)
+                if (CanPerkChannelRage(pet))
                 {
+                    actionTarget.Target = pet.Character;
+
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
@@ -433,18 +431,15 @@ namespace CombatHandler.Metaphysicist
 
             if (!IsSettingEnabled("MastersBidding")) { return false; }
 
-            if (DynelManager.LocalPlayer.Pets
-                .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && c.Character.GetStat(Stat.NPCFamily) != 98)
-                .Any())
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                actionTarget.Target = DynelManager.LocalPlayer.Pets
-                    .Where(c => !c.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && c.Character.GetStat(Stat.NPCFamily) != 98)
-                    .FirstOrDefault().Character;
+                if (pet.Character == null) continue;
 
-                if (actionTarget.Target != null)
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && pet.Character.GetStat(Stat.NPCFamily) != 98)
                 {
+                    actionTarget.Target = pet.Character;
+
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
@@ -455,10 +450,13 @@ namespace CombatHandler.Metaphysicist
 
         protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
 
-            //Maybe?
-            //if (!CanLookupPetsAfterZone()) { return false; }
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null)
+                    return true;
+            }
 
             return true;
         }

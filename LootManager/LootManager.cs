@@ -45,6 +45,12 @@ namespace LootManager
             "Health and Nano Stim",
             "Aggression Enhancer",
             "Ammo"
+            //"Ammo: Box of Bullets",
+            //"Ammo: Box of Arrows",
+            //"Ammo: Box of Launcher Grenades",
+            //"Ammo: Box of Shotgun Shells",
+            //"Ammo: Box of Energy Weapon Ammo",
+            //"Ammo: Box of Flamethrower Ammunition"
         };
 
         public static string PluginDir;
@@ -355,9 +361,13 @@ namespace LootManager
                     {
                         Backpack _bag = FindBagWithSpace();
 
-                        foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory && !_basicIgnores.Contains(c.Name)))
+                        foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory))
                         {
-                            itemtomove.MoveToContainer(_bag);
+                            foreach (string str in _basicIgnores)
+                            {
+                                if (!itemtomove.Name.Contains(str))
+                                    itemtomove.MoveToContainer(_bag);
+                            }
                         }
 
                         item.MoveToContainer(_bag);

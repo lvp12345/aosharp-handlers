@@ -597,11 +597,11 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                    .Where(c => c.MaxHealth < 1000000)
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && !c.Buffs.Contains(NanoLine.Mezz)
+                        && c.MaxHealth < 1000000)
                     .FirstOrDefault();
 
                 if (target != null)
@@ -615,13 +615,13 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                    .Where(c => c.FightingTarget != null)
-                    .Where(c => IsAttackingUs(c))
-                    .Where(c => c.MaxHealth < 1000000)
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && !c.Buffs.Contains(NanoLine.Mezz)
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && IsAttackingUs(c))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -645,11 +645,11 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                    .Where(c => c.MaxHealth < 1000000)
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && !c.Buffs.Contains(NanoLine.Mezz)
+                        && c.MaxHealth < 1000000)
                     .FirstOrDefault();
 
                 if (target != null)
@@ -663,13 +663,13 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                    .Where(c => c.FightingTarget != null)
-                    .Where(c => IsAttackingUs(c))
-                    .Where(c => c.MaxHealth < 1000000)
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && !c.Buffs.Contains(NanoLine.Mezz)
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && IsAttackingUs(c))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -693,11 +693,11 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                    .Where(c => c.MaxHealth < 1000000)
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && !c.Buffs.Contains(NanoLine.Mezz)
+                        && c.MaxHealth < 1000000)
                     .FirstOrDefault();
 
                 if (target != null)
@@ -711,13 +711,13 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                    .Where(c => c.IsInLineOfSight)
-                    .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-                    .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                    .Where(c => c.FightingTarget != null)
-                    .Where(c => IsAttackingUs(c))
-                    .Where(c => c.MaxHealth < 1000000)
+                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && !c.Buffs.Contains(NanoLine.Mezz)
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && IsAttackingUs(c))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -738,10 +738,10 @@ namespace CombatHandler.Bureaucrat
             if (!IsSettingEnabled("Calm12Man") || !CanCast(spell)) { return false; }
 
             List<SimpleChar> targets = DynelManager.NPCs
-                .Where(x => x.IsAlive)
-                .Where(x => x.Name == "Right Hand of Madness" || x.Name == "Deranged Xan")
-                .Where(x => x.DistanceFrom(DynelManager.LocalPlayer) < 20f)
-                .Where(x => !x.Buffs.Contains(267535) || !x.Buffs.Contains(267536))
+                .Where(c => c.IsAlive 
+                    && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+                    && (c.Name == "Right Hand of Madness" || c.Name == "Deranged Xan")
+                    && (!c.Buffs.Contains(267535) || !c.Buffs.Contains(267536)))
                 .ToList();
 
             if (targets.Count >= 1)
@@ -797,23 +797,16 @@ namespace CombatHandler.Bureaucrat
 
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
             {
-                if (DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
-                        && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && SpellChecksOther(spell, spell.Nanoline, c))
-                    .Any())
+                //This is optimal USE THIS
+                foreach (SimpleChar _mob in DynelManager.NPCs)
                 {
-                    actionTarget.Target = DynelManager.NPCs
-                        .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
-                            && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
-                            && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
+                    if (debuffOSTargetsToIgnore.Contains(_mob.Name)
+                        || _mob.FightingTarget == null || _mob.Buffs.Contains(301844) || !_mob.IsInLineOfSight
+                        || _mob.Buffs.Contains(NanoLine.Mezz) || _mob.Buffs.Contains(NanoLine.AOEMezz)
+                        || _mob.DistanceFrom(DynelManager.LocalPlayer) >= 30f) 
+                            continue;
 
-                    if (actionTarget.Target != null)
+                    if (SpellChecksOther(spell, spell.Nanoline, _mob))
                     {
                         actionTarget.ShouldSetTarget = true;
                         return true;

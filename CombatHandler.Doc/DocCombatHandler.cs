@@ -668,7 +668,7 @@ namespace CombatHandler.Doctor
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("Nuking") || fightingTarget == null) { return false; }
 
             return true;
         }

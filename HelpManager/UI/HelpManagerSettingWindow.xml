@@ -8,8 +8,10 @@
     <TextView value="Channel" layout_borders="Rect(5,5,5,5)"/>
     <TextInputView name="ChannelBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="% Health" layout_borders="Rect(5,5,5,5)"/>
-    <TextInputView name="SitPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    <View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+      <TextView value="% Health" layout_borders="Rect(5,5,5,5)"/>
+      <TextInputView name="SitPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    </View>
     <OptionCheckBox label="Auto sit" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__AutoSit" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="(12man) Morph Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__MorphPathing" layout_borders="Rect(10,1,5,1)"/>

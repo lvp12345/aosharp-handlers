@@ -44,13 +44,23 @@ namespace LootManager
             "Health and Nano Recharger",
             "Health and Nano Stim",
             "Aggression Enhancer",
-            "Ammo"
-            //"Ammo: Box of Bullets",
-            //"Ammo: Box of Arrows",
-            //"Ammo: Box of Launcher Grenades",
-            //"Ammo: Box of Shotgun Shells",
-            //"Ammo: Box of Energy Weapon Ammo",
-            //"Ammo: Box of Flamethrower Ammunition"
+            "Ammo",
+            "Nano Can",
+            "Twinking Nano Can",
+            "Combat Nano Can",
+            "Crate",
+            "Free",
+            "Strength of the",
+            "Barrow",
+            "Aggression Multiplier",
+            "Gnuff's",
+            "Desecrated Flesh",
+            "Withered Flesh",
+            "Novictum Ring",
+            "Portable",
+            "Kizzermole",
+            "Lava capsule",
+            "Throwing Grenade"
         };
 
         public static string PluginDir;

@@ -858,6 +858,7 @@ namespace CombatHandler.Bureaucrat
                     .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 50f
                         && (c.Name == "Flaming Vengeance"
                         || c.Name == "Hand of the Colonel"))
+                    .OrderByDescending(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
                 if (actionTarget.Target != null)

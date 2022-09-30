@@ -109,7 +109,7 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GenericBuff);
 
-            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.BoostedTendons, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, TeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamBuff);

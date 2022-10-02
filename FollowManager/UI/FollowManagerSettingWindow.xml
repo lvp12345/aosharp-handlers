@@ -22,7 +22,7 @@
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Follow distance" layout_borders="Rect(5,5,5,5)"/>
-    <TextInputView name="NavFollowDistanceBox" min_size="Point(60,14)" max_size="Point(60,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextInputView name="NavFollowDistanceBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>

@@ -47,7 +47,7 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("MezzPet", false);
             _settings.AddVariable("WarpPets", false);
 
-            _settings.AddVariable("MastersBidding", false);
+            _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
 
             _settings.AddVariable("Cost", false);
             _settings.AddVariable("CostTeam", false);
@@ -138,9 +138,11 @@ namespace CombatHandler.Metaphysicist
 
             //Pet Buffs
             RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
+            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
+            RegisterSpellProcessor(RelevantNanos.InducedApathy, InducedApathy);
+
             RegisterSpellProcessor(RelevantNanos.EvadeBuff, EvasionPetBuff);
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamageBuff);
-            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(RelevantNanos.ChantBuffs, ChantBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealingConstructEmpowerment).OrderByStackingOrder(), HealPetBuff);
@@ -425,23 +427,57 @@ namespace CombatHandler.Metaphysicist
                     || c.Character.Buffs.Contains(NanoLine.Mezz)).Any();
         }
 
-        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+
+        protected bool InducedApathy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
-            if (!IsSettingEnabled("MastersBidding")) { return false; }
+            if (PetProcSelection.InducedApathy != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
 
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && pet.Character.GetStat(Stat.NPCFamily) != 98)
+                    && pet.Type == PetType.Attack)
                 {
-                    actionTarget.Target = pet.Character;
+                    if (spell.IsReady)
+                        spell.Cast(pet.Character, true);
 
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    //Not working for some reason
+
+                    //actionTarget.Target = pet.Character;
+                    //actionTarget.ShouldSetTarget = true;
+
+                    //return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (PetProcSelection.MastersBidding != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && pet.Type == PetType.Attack)
+                {
+                    if (spell.IsReady)
+                        spell.Cast(pet.Character, true);
+
+                    //Not working for some reason
+
+                    //actionTarget.Target = pet.Character;
+                    //actionTarget.ShouldSetTarget = true;
+
+                    //return true;
                 }
             }
 
@@ -866,6 +902,7 @@ namespace CombatHandler.Metaphysicist
         private static class RelevantNanos
         {
             public const int MastersBidding = 268171;
+            public const int InducedApathy = 301888;
             public const int EvadeBuff = 29272;
             public const int PetWarp = 209488;
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
@@ -892,6 +929,11 @@ namespace CombatHandler.Metaphysicist
             //public static readonly string[] TwoHandedNames = { "Azure Cobra of Orma", "Wixel's Notum Python", "Asp of Semol", "Viper Staff" };
             //public static readonly string[] OneHandedNames = { "Asp of Titaniush", "Gold Acantophis", "Bitis Striker", "Coplan's Hand Taipan", "The Crotalus" };
             //public static readonly string[] ShieldNames = { "Shield of Zset", "Shield of Esa", "Shield of Asmodian", "Mocham's Guard", "Death Ward", "Belthior's Flame Ward", "Wave Breaker", "Living Shield of Evernan", "Solar Guard", "Notum Defender", "Vital Buckler" };
+        }
+
+        public enum PetProcSelection
+        {
+            None, InducedApathy, MastersBidding
         }
 
         public enum ProcType1Selection

@@ -483,12 +483,17 @@ namespace CombatHandler.Bureaucrat
                 if (pet.Character == null) continue;
 
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && (pet.Character.GetStat(Stat.NPCFamily) != 98))
+                    && pet.Type == PetType.Attack)
                 {
-                    actionTarget.Target = pet.Character;
+                    if (spell.IsReady)
+                        spell.Cast(pet.Character, true);
 
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    //Not working for some reason
+
+                    //actionTarget.Target = pet.Character;
+                    //actionTarget.ShouldSetTarget = true;
+
+                    //return true;
                 }
             }
 

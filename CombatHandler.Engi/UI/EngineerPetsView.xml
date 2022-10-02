@@ -2,13 +2,11 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <OptionCheckBox label="Spawn pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Buff pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Sync pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SyncPets" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Warp pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__WarpPets" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionCheckBox label="Spawn Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Buff Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Heal Pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealPets" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Procs" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__PetProcSelection">

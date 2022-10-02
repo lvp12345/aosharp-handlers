@@ -808,8 +808,8 @@ namespace CombatHandler.Bureaucrat
 
                     if (SpellChecksOther(spell, spell.Nanoline, _mob))
                     {
-                        actionTarget.ShouldSetTarget = true;
                         actionTarget.Target = _mob;
+                        actionTarget.ShouldSetTarget = true;
                         return true;
                     }
                 }

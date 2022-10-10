@@ -159,10 +159,10 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), RobotSpawner);
 
             //Pet Shells
-            foreach (PetSpellData petData in PetsList.Pets.Values)
-            {
-                RegisterItemProcessor(petData.ShellId, petData.ShellId2, RobotSpawnerItem);
-            }
+            //foreach (PetSpellData petData in PetsList.Pets.Values)
+            //{
+            //    RegisterItemProcessor(petData.ShellId, petData.ShellId2, RobotSpawnerItem);
+            //}
 
             //Pet Trimmers
             ResetTrimmers();

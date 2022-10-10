@@ -1324,7 +1324,11 @@ namespace CombatHandler.Generic
 
         protected bool PetSpawner(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!petData.ContainsKey(spell.Id) || Inventory.Find(petData[spell.Id].ShellId, out Item shell)) { return false; }
+            if (DynelManager.LocalPlayer.Pets.Where(c => c.Type == petData[spell.Id].PetType).Any()) return false;
+
+            if (!petData.ContainsKey(spell.Id)) { return false; }
+
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) { shell.Use(); }
 
             return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
         }

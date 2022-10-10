@@ -159,12 +159,6 @@ namespace CombatHandler.Engineer
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpointsLow, RelevantTrimmers.DivertEnergyToHitpointsLow, PetDivertHpTrimmer);
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpointsHigh, RelevantTrimmers.DivertEnergyToHitpointsHigh, PetDivertHpTrimmer);
 
-            //Pet Shells
-            foreach (PetSpellData petData in PetsList.Pets.Values)
-            {
-                RegisterItemProcessor(petData.ShellId, petData.ShellId2, PetSpawnerItem);
-            }
-
             PluginDirectory = pluginDir;
 
             EngiBioCocoonPercentage = Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage;
@@ -865,6 +859,9 @@ namespace CombatHandler.Engineer
             if (PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
             {
                 ResetTrimmers();
+
+                if (!CanCast(spell)) { return false; }
+
                 return true;
             }
             return false;

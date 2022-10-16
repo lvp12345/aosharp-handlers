@@ -323,12 +323,12 @@ namespace CombatHandler.Soldier
                 {
                     if (DynelManager.Characters
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && !c.Buffs.Contains(NanoLine.AAOBuffs))
+                            && !c.Buffs.Contains(NanoLine.AAOBuffs) && !c.Buffs.Contains(NanoLine.AdventurerMorphBuff))
                         .Any())
                     {
                         actionTarget.Target = DynelManager.Characters
                             .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && !c.Buffs.Contains(NanoLine.AAOBuffs))
+                                && !c.Buffs.Contains(NanoLine.AAOBuffs) && !c.Buffs.Contains(NanoLine.AdventurerMorphBuff))
                             .FirstOrDefault();
 
                         if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))

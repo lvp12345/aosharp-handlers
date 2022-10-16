@@ -1328,10 +1328,7 @@ namespace CombatHandler.Generic
 
             if (!petData.ContainsKey(spell.Id)) { return false; }
 
-            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell))
-            {
-                shell.Use();
-            }
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) { shell.Use(); }
 
             return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
         }
@@ -1573,6 +1570,7 @@ namespace CombatHandler.Generic
             if (!IsSettingEnabled("Buffing")
                 || !CanCast(spell)
                 || Playfield.ModelIdentity.Instance == 152
+                || !fightingTarget.IsInLineOfSight
                 || (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity))) { return false; }
 
             if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
@@ -1589,6 +1587,7 @@ namespace CombatHandler.Generic
             if (!IsSettingEnabled("Buffing")
                 || !CanCast(spell)
                 || Playfield.ModelIdentity.Instance == 152
+                || !fightingTarget.IsInLineOfSight
                 || (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity))) { return false; }
 
             if (fightingTarget.Buffs.Find(nanoline, out Buff buff))

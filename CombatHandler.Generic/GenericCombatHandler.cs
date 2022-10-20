@@ -1449,25 +1449,10 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        //This should be a float to be more accurate?
         protected bool FindMemberWithHealthBelow(int healthPercentTreshold, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.HealthPercent <= healthPercentTreshold)
             {
-                //Task.Factory.StartNew(
-                //    async () =>
-                //    {
-                //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
-                //        await Task.Delay(444);
-                //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
-                //    });
-
-                //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
-                //{
-                //    actionTarget.Target = DynelManager.LocalPlayer;
-                //    return true;
-                //}
-
                 actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;
                 return true;
@@ -1475,27 +1460,22 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                if (DynelManager.Characters
+                SimpleChar _teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight)
+                        && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 40f
+                        && c.Health >= 1)
                     .OrderBy(c => c.Profession == Profession.Doctor)
                     .ThenBy(c => c.Profession == Profession.Enforcer)
+                    .ThenBy(c => c.Profession == Profession.Soldier)
                     .ThenBy(c => c.HealthPercent)
-                    .Any())
-                {
-                    actionTarget.Target = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight)
-                        .OrderBy(c => c.Profession == Profession.Doctor)
-                        .ThenBy(c => c.Profession == Profession.Enforcer)
-                        .ThenBy(c => c.HealthPercent)
-                        .FirstOrDefault();
+                    .FirstOrDefault();
 
-                    if (actionTarget.Target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
+                if (_teamMember != null)
+                {
+                    actionTarget.Target = _teamMember;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
                 }
             }
 
@@ -1525,25 +1505,21 @@ namespace CombatHandler.Generic
                 return true;
             }
 
-            if (DynelManager.Characters
-                .Where(c => c.IsPlayer && c.HealthPercent <= healthPercentTreshold
-                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && c.IsInLineOfSight)
+            SimpleChar _teamMember = DynelManager.Players
+                .Where(c => c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight
+                    && c.DistanceFrom(DynelManager.LocalPlayer) < 40f
+                    && c.Health >= 1)
                 .OrderBy(c => c.Profession == Profession.Doctor)
                 .ThenBy(c => c.Profession == Profession.Enforcer)
-                .Any())
-            {
-                actionTarget.Target = DynelManager.Characters
-                    .Where(c => c.IsPlayer && c.HealthPercent <= healthPercentTreshold
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f && c.IsInLineOfSight)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .ThenBy(c => c.Profession == Profession.Enforcer)
-                    .FirstOrDefault();
+                .ThenBy(c => c.Profession == Profession.Soldier)
+                .ThenBy(c => c.HealthPercent)
+                .FirstOrDefault();
 
-                if (actionTarget.Target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+            if (_teamMember != null)
+            {
+                actionTarget.Target = _teamMember;
+                actionTarget.ShouldSetTarget = true;
+                return true;
             }
 
             return false;

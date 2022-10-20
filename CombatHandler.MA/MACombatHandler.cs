@@ -45,18 +45,13 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("SingleTaunt", false);
-            _settings.AddVariable("OSTaunt", false);
-
-            _settings.AddVariable("Heal", false);
-            _settings.AddVariable("OSHeal", false);
-
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AbsoluteFist);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.SelfReconstruction);
 
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
+            _settings.AddVariable("TauntsSelection", (int)TauntsSelection.None);
 
             _settings.AddVariable("EvadesTeam", false);
 
@@ -156,8 +151,7 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-
-                if (window.Views.Contains(_procView)) { return; }
+                //if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "MAProcsView" }, _procView);
@@ -175,8 +169,7 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-
-                if (window.Views.Contains(_buffView)) { return; }
+                //if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "MABuffsView" }, _buffView);
@@ -194,8 +187,7 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-
-                if (window.Views.Contains(_healingView)) { return; }
+                //if (window.Views.Contains(_healingView)) { return; }
 
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "MAHealingView" }, _healingView);
@@ -227,8 +219,7 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-
-                if (window.Views.Contains(_tauntView)) { return; }
+                //if (window.Views.Contains(_tauntView)) { return; }
 
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "MATauntsView" }, _tauntView);
@@ -339,46 +330,37 @@ namespace CombatHandler.MartialArtist
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
+            if (TauntsSelection.OS == (TauntsSelection)_settings["TauntsSelection"].AsInt32()
+/*                && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle*/)
             {
-                List<SimpleChar> mobs = DynelManager.NPCs
+                SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.IsInLineOfSight
                         && !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && IsNotFightingMe(c)
-                        && IsAttackingUs(c)
-                        && (c.FightingTarget.Profession != Profession.Enforcer
-                                || c.FightingTarget.Profession != Profession.Soldier
-                                || c.FightingTarget.Profession != Profession.MartialArtist))
-                    .ToList();
+                        && IsAttackingUs(c))
+                    .OrderBy(c => c.MaxHealth)
+                    //&& (c.FightingTarget.Profession != Profession.Enforcer
+                    //        && c.FightingTarget.Profession != Profession.Soldier
+                    //        && c.FightingTarget.Profession != Profession.MartialArtist))
+                    .FirstOrDefault();
 
-                foreach (SimpleChar mob in mobs)
+                if (mob != null)
                 {
-                    if (mob != null)
-                    {
-                        _singleTauntTick = Time.NormalTime;
-                        actionTarget.Target = mob;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
+                    //_singleTaunt = Time.NormalTime;
+                    actionTarget.Target = mob;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
                 }
             }
 
-            if (!IsSettingEnabled("SingleTaunt")) { return false; }
-
-            if (DynelManager.LocalPlayer.FightingTarget != null
-                && (DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh"
-                || DynelManager.LocalPlayer.FightingTarget.Name == "Collector"))
-            {
-                return true;
-            }
-
-            if (Time.NormalTime > _singleTaunt + 9)
+            if (TauntsSelection.Target == (TauntsSelection)_settings["TauntsSelection"].AsInt32()
+/*                && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle*/)
             {
                 if (fightingTarget != null)
                 {
-                    _singleTaunt = Time.NormalTime;
+                    //_singleTaunt = Time.NormalTime;
                     actionTarget.Target = fightingTarget;
                     actionTarget.ShouldSetTarget = true;
                     return true;
@@ -539,9 +521,7 @@ namespace CombatHandler.MartialArtist
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
@@ -557,9 +537,9 @@ namespace CombatHandler.MartialArtist
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-            if (!CanCast(spell) || HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
             return FindMemberWithHealthBelow(MAHealPercentage, ref actionTarget);
         }
@@ -647,6 +627,11 @@ namespace CombatHandler.MartialArtist
         {
             None, SingleTeam, SingleOS
         }
+        public enum TauntsSelection
+        {
+            None, Target, OS
+        }
+
         public enum ProcType1Selection
         {
             AbsoluteFist, StrengthenKi, DisruptKi, SmashingFist, StrengthenSpirit, StingingFist

@@ -1140,7 +1140,7 @@ namespace CombatHandler.Generic
         private bool HealthAndNanoStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
-                || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 8
+                || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
                 || (DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231))) { return false; }
 
             int targetHealing = item.UseModifiers

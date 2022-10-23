@@ -60,11 +60,10 @@ namespace ResearchManager
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _tick + 3f)
             {
-                ResearchGoal _current = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                    == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
-                    .FirstOrDefault();
-
-                if (_asyncToggle == false && (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0 || !_current.Available))
+                if (_asyncToggle == false && (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0
+                    || !Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
+                        == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
+                        .FirstOrDefault().Available))
                 {
                     Task.Factory.StartNew(
                         async () =>

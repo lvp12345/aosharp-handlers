@@ -51,7 +51,7 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
-            _settings.AddVariable("TauntsSelection", (int)TauntsSelection.None);
+            _settings.AddVariable("SingleTauntSelection", (int)SingleTauntSelection.None);
 
             _settings.AddVariable("EvadesTeam", false);
 
@@ -330,7 +330,7 @@ namespace CombatHandler.MartialArtist
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (TauntsSelection.OS == (TauntsSelection)_settings["TauntsSelection"].AsInt32()
+            if (SingleTauntSelection.OS == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32()
 /*                && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle*/)
             {
                 SimpleChar mob = DynelManager.NPCs
@@ -355,7 +355,7 @@ namespace CombatHandler.MartialArtist
                 }
             }
 
-            if (TauntsSelection.Target == (TauntsSelection)_settings["TauntsSelection"].AsInt32()
+            if (SingleTauntSelection.Target == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32()
 /*                && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle*/)
             {
                 if (fightingTarget != null)
@@ -627,7 +627,7 @@ namespace CombatHandler.MartialArtist
         {
             None, SingleTeam, SingleOS
         }
-        public enum TauntsSelection
+        public enum SingleTauntSelection
         {
             None, Target, OS
         }

@@ -2,7 +2,7 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionRadioButtonGroup label="Taunts" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__TauntsSelection">
+    <OptionRadioButtonGroup label="Single Taunts" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SingleTauntSelection">
       <RadioButton label="None" value="0"/>
       <RadioButton label="Target" value="1"/>
       <RadioButton label="OS" value="2"/>

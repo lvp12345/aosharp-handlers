@@ -72,7 +72,8 @@ namespace ResearchManager
                             _asyncToggle = true;
 
                             ResearchGoal _next = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                                != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
+                                != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
+                                && c.Available)
                                 .FirstOrDefault();
 
                             await Task.Delay(200);

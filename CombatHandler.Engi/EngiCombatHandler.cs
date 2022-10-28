@@ -583,30 +583,8 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (SnareMobExists())
-            {
-                if (DynelManager.NPCs
-                    .Where(c => c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < 30f &&
-                        (c.Name == "Flaming Vengeance" ||
-                        c.Name == "Hand of the Colonel"))
-                    .Any())
-                {
-                    actionTarget.Target = DynelManager.NPCs
-                        .Where(c => c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < 30f &&
-                            (c.Name == "Flaming Vengeance" ||
-                            c.Name == "Hand of the Colonel"))
-                        .FirstOrDefault();
-
-                    if (actionTarget.Target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
-                }
-            }
-
             if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
+                || !SnareMobExists()) { return false; }
 
             return PetTargetBuff(spell, fightingTarget, ref actionTarget);
         }

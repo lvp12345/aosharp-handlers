@@ -1150,7 +1150,7 @@ namespace CombatHandler.Generic
                 .Cast<SpellData.Healing>()
                 .Sum(x => x.Average);
 
-            if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 570f) == null
+            if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 595f) == null
                 && (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing))
             {
                 actiontarget.ShouldSetTarget = true;

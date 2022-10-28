@@ -104,8 +104,8 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), InitDebuffs, CombatActionPriority.Medium);
             //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), CratDebuffOthersInCombat, CombatActionPriority.Medium);
             //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), MalaiseTargetDebuff, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs);
-            RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs);
+            RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.PuissantVoidInertia, AOERoot, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalmDebuff, CombatActionPriority.High);
@@ -864,7 +864,7 @@ namespace CombatHandler.Bureaucrat
                     .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 50f
                         && (c.Name == "Flaming Vengeance"
                         || c.Name == "Hand of the Colonel"))
-                    .OrderByDescending(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
                 if (actionTarget.Target != null)

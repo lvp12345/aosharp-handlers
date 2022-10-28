@@ -133,7 +133,9 @@ namespace CombatHandler.Generic
                     "Masked Eleet",
                     "Dust Brigade Security Drone",
                     "Nanovoider",
-                    "Punishment"
+                    "Punishment",
+                    "Flaming Chaos",
+                    "Flaming Punishment"
         };
 
         public static IPCChannel IPCChannel;

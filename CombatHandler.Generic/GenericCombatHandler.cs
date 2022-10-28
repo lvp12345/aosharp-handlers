@@ -1145,14 +1145,13 @@ namespace CombatHandler.Generic
                 || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
                 || (DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231))) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 570f) != null) { return false; }
-
             int targetHealing = item.UseModifiers
                 .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
                 .Cast<SpellData.Healing>()
                 .Sum(x => x.Average);
 
-            if (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing)
+            if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 570f) == null
+                && (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing))
             {
                 actiontarget.ShouldSetTarget = true;
                 actiontarget.Target = DynelManager.LocalPlayer;

@@ -36,6 +36,8 @@ namespace CombatHandler.Trader
         private static double _drainTick;
         private static double _ncuUpdateTime;
 
+        private static bool _purpleReady = false;
+
         public TraderCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
@@ -498,24 +500,20 @@ namespace CombatHandler.Trader
 
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
-            if (perk.IsAvailable && PerkAction.List.FirstOrDefault(c => c.Name == "Purple Heart").IsAvailable)
-                return true;
+            if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
 
-            return false;
+            return perk.IsAvailable;
         }
 
         private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
-            if (perk.IsAvailable && PerkAction.List.FirstOrDefault(c => c.Name == "Sacrifice").IsAvailable)
-                return true;
+            if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
 
-            return false;
+            return perk.IsAvailable;
         }
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

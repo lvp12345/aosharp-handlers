@@ -388,6 +388,7 @@ namespace CombatHandler.Generic
                     return true;
                 }
             }
+
             return false;
         }
 

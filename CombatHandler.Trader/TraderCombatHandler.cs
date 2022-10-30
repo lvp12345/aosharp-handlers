@@ -498,7 +498,8 @@ namespace CombatHandler.Trader
 
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
+            if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
 
             if (perk.IsAvailable && PerkAction.List.FirstOrDefault(c => c.Name == "Purple Heart").IsAvailable)
                 return true;
@@ -508,7 +509,8 @@ namespace CombatHandler.Trader
 
         private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
+            if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
 
             if (perk.IsAvailable && PerkAction.List.FirstOrDefault(c => c.Name == "Sacrifice").IsAvailable)
                 return true;

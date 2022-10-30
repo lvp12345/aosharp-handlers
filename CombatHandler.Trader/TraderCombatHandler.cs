@@ -61,9 +61,6 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("GTH", true);
 
-            _settings.AddVariable("Sacrifice", false);
-            _settings.AddVariable("PurpleHeart", false);
-
             _settings.AddVariable("NanoHealTeam", false);
             _settings.AddVariable("EvadesTeam", false);
 
@@ -93,6 +90,8 @@ namespace CombatHandler.Trader
 
             //Leg Shot
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
+            RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
 
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing); // Self
@@ -501,14 +500,20 @@ namespace CombatHandler.Trader
         {
             if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
 
-            return Sacrifice(perk, fightingTarget, ref actionTarget);
+            if (perk.IsAvailable && PerkAction.List.FirstOrDefault(c => c.Name == "Purple Heart").IsAvailable)
+                return true;
+
+            return false;
         }
 
         private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
 
-            return PurpleHeart(perk, fightingTarget, ref actionTarget);
+            if (perk.IsAvailable && PerkAction.List.FirstOrDefault(c => c.Name == "Sacrifice").IsAvailable)
+                return true;
+
+            return false;
         }
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

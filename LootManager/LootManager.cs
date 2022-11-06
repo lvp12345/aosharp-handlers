@@ -25,6 +25,7 @@ namespace LootManager
 
         private static List<Vector3> _corpsePosList = new List<Vector3>();
         private static Vector3 _currentPos = Vector3.Zero;
+        private static List<Identity> _corpseIdList = new List<Identity>();
 
         private static int MinQlValue;
         private static int MaxQlValue;
@@ -35,6 +36,11 @@ namespace LootManager
         public static Settings _settingsItems;
 
         private static bool _init = false;
+        private static bool _internalOpen = false;
+        private static bool _weAreDoingThings = false;
+        private static bool _currentlyLooting = false;
+
+        private static double _nowTimer = Time.NormalTime;
 
         private static int _currentIgnore = 0;
 
@@ -322,7 +328,11 @@ namespace LootManager
         private void OnContainerOpened(object sender, Container container)
         {
             if (!_settings["Toggle"].AsBool()
-                || container.Identity.Type != IdentityType.Corpse) { return; }
+                || container.Identity.Type != IdentityType.Corpse
+                || !_internalOpen
+                || !_weAreDoingThings) { return; }
+
+            _currentlyLooting = true;
 
             foreach (Item item in container.Items)
             {
@@ -347,7 +357,12 @@ namespace LootManager
             }
 
             _corpsePosList.Add(_currentPos);
+            _corpseIdList.Add(container.Identity);
+            Chat.WriteLine($"Adding bits");
             Item.Use(container.Identity);
+            _currentlyLooting = false;
+            _internalOpen = false;
+            _weAreDoingThings = false;
         }
 
         private void OnUpdate(object sender, float deltaTime)
@@ -389,34 +404,56 @@ namespace LootManager
 
             if (_settings["Toggle"].AsBool())
             {
+                //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
+                if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 2f)
+                {
+                    if (_currentlyLooting) { return; }
+
+                    //Chat.WriteLine($"Resetting");
+                    //Sigh
+                    _internalOpen = false;
+                    _weAreDoingThings = false;
+                }
+
+                if (_weAreDoingThings) { return; }
+
+                //Tidying up of the stupid ass logic
                 foreach (Vector3 corpsePos in _corpsePosList)
                     if (DynelManager.Corpses.Where(c => c.Position == corpsePos).ToList().Count == 0)
                     {
                         _corpsePosList.Remove(corpsePos);
+                        //Chat.WriteLine($"Removing vector3");
                         return;
                     }
 
-                if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 5)
-                    && !_init)
-                {
-
-                    _lastCheckTime = Time.NormalTime;
-                    _init = true;
-
-                    foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
-                        && !_corpsePosList.Contains(c.Position)))
+                foreach (Identity corpseId in _corpseIdList)
+                    if (DynelManager.Corpses.Where(c => c.Identity == corpseId).ToList().Count == 0)
                     {
-                        Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
-                            c.Identity != corpse.Identity
-                            && c.Position.DistanceFrom(corpse.Position) <= 1f);
-
-                        if (_corpse != null) { continue; }
-
-                        corpse.Open();
-                        _currentPos = corpse.Position;
+                        _corpseIdList.Remove(corpseId);
+                        //Chat.WriteLine($"Removing identity");
+                        return;
                     }
 
-                    _init = false;
+                foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
+                    && !_corpsePosList.Contains(c.Position)
+                    && !_corpseIdList.Contains(c.Identity)).Take(1))
+                {
+                    Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
+                        c.Identity != corpse.Identity
+                        && c.Position.DistanceFrom(corpse.Position) <= 1f);
+
+                    if (_corpse != null || _weAreDoingThings) { continue; }
+
+                    //Chat.WriteLine($"Opening");
+                    //This is so we can open ourselves without the event auto closing
+                    _internalOpen = true;
+                    //Sigh
+                    _weAreDoingThings = true;
+                    _nowTimer = Time.NormalTime;
+                    corpse.Open();
+
+                    //This is so we can pass the vector to the event
+                    _currentPos = corpse.Position;
                 }
             }
 

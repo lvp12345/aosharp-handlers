@@ -394,7 +394,7 @@ namespace LootManager
                         return;
                     }
 
-                if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 3)
+                if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 6)
                     && !_init)
                 {
 

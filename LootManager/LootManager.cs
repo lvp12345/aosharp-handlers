@@ -24,6 +24,7 @@ namespace LootManager
         public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
 
         private static List<Vector3> _corpsePosList = new List<Vector3>();
+        private static Vector3 _currentPos = Vector3.Zero;
 
         private static int MinQlValue;
         private static int MaxQlValue;
@@ -345,6 +346,7 @@ namespace LootManager
                 }
             }
 
+            _corpsePosList.Add(_currentPos);
             Item.Use(container.Identity);
         }
 
@@ -394,7 +396,7 @@ namespace LootManager
                         return;
                     }
 
-                if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 6)
+                if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 5)
                     && !_init)
                 {
 
@@ -411,7 +413,7 @@ namespace LootManager
                         if (_corpse != null) { continue; }
 
                         corpse.Open();
-                        _corpsePosList.Add(corpse.Position);
+                        _currentPos = corpse.Position;
                     }
 
                     _init = false;

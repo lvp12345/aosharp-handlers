@@ -23,7 +23,7 @@ namespace LootManager
         public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
         public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
 
-        private static List<Identity> _corpseIdList = new List<Identity>();
+        private static List<Vector3> _corpsePosList = new List<Vector3>();
 
         private static int MinQlValue;
         private static int MaxQlValue;
@@ -386,10 +386,10 @@ namespace LootManager
 
             if (_settings["Toggle"].AsBool())
             {
-                foreach (Identity corpseId in _corpseIdList)
-                    if (DynelManager.Corpses.Where(c => c.Identity == corpseId).ToList().Count == 0)
+                foreach (Vector3 corpsePos in _corpsePosList)
+                    if (DynelManager.Corpses.Where(c => c.Position == corpsePos).ToList().Count == 0)
                     {
-                        _corpseIdList.Remove(corpseId);
+                        _corpsePosList.Remove(corpsePos);
                         return;
                     }
 
@@ -401,7 +401,7 @@ namespace LootManager
                     _init = true;
 
                     foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
-                        && !_corpseIdList.Contains(c.Identity)))
+                        && !_corpsePosList.Contains(c.Position)))
                     {
                         Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
                             c.Identity != corpse.Identity
@@ -410,7 +410,7 @@ namespace LootManager
                         if (_corpse != null) { continue; }
 
                         corpse.Open();
-                        _corpseIdList.Add(corpse.Identity);
+                        _corpsePosList.Add(corpse.Position);
                     }
 
                     _init = false;

@@ -284,7 +284,8 @@ namespace LootManager
                 if (_settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.Id ||
                     _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.HighId ||
                     _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == item.Id ||
-                    _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == item.HighId)
+                    _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == item.HighId ||
+                    _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.Id + 1)
                 {
                     return true;
                 }

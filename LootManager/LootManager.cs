@@ -23,7 +23,7 @@ namespace LootManager
         public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
         public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
 
-        public static Corpse corpsesToLoot;
+        private static List<Identity> _corpseIdList = new List<Identity>();
 
         private static int MinQlValue;
         private static int MaxQlValue;
@@ -39,29 +39,7 @@ namespace LootManager
 
         private Window _infoWindow;
 
-        public static List<string> _basicIgnores = new List<string>()
-        {
-            "Health and Nano Recharger",
-            "Health and Nano Stim",
-            "Aggression Enhancer",
-            "Ammo",
-            "Nano Can",
-            "Twinking Nano Can",
-            "Combat Nano Can",
-            "Crate",
-            "Free",
-            "Strength of the",
-            "Barrow",
-            "Aggression Multiplier",
-            "Gnuff's",
-            "Desecrated Flesh",
-            "Withered Flesh",
-            "Novictum Ring",
-            "Portable",
-            "Kizzermole",
-            "Lava capsule",
-            "Throwing Grenade"
-        };
+        private static List<Item> _invItems = new List<Item>();
 
         public static string PluginDir;
 
@@ -77,7 +55,6 @@ namespace LootManager
 
                 _settings.AddVariable("Toggle", false);
                 _settings.AddVariable("ApplyRules", false);
-                _settings.AddVariable("SingleItem", false);
 
                 _settings["Toggle"] = false;
 
@@ -96,19 +73,31 @@ namespace LootManager
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
-                Chat.RegisterCommand("ignoreloot", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("setinv", (string command, string[] param, ChatWindow chatWindow) =>
                 {
-                    _basicIgnores.Add(param[0]);
-                    Chat.WriteLine($"Ignore item {param[0]} added.");
+                    foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                        if (!_invItems.Contains(item))
+                            _invItems.Add(item);
                 });
 
-                Chat.RegisterCommand("printignore", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("clearinv", (string command, string[] param, ChatWindow chatWindow) =>
                 {
-                    for (int i = 0; i <= _basicIgnores.Capacity; i++)
-                    {
-                        Chat.WriteLine($"{_basicIgnores[i]}.");
-                    }
+                    _invItems.Clear();
                 });
+
+                //Chat.RegisterCommand("ignoreloot", (string command, string[] param, ChatWindow chatWindow) =>
+                //{
+                //    _basicIgnores.Add(param[0]);
+                //    Chat.WriteLine($"Ignore item {param[0]} added.");
+                //});
+
+                //Chat.RegisterCommand("printignore", (string command, string[] param, ChatWindow chatWindow) =>
+                //{
+                //    for (int i = 0; i <= _basicIgnores.Capacity; i++)
+                //    {
+                //        Chat.WriteLine($"{_basicIgnores[i]}.");
+                //    }
+                //});
 
                 Chat.WriteLine("Loot Manager loaded!");
                 Chat.WriteLine("/lootmanager for settings.");
@@ -293,6 +282,8 @@ namespace LootManager
             for (int i = 1; i <= count; i++)
             {
                 if (_settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.Id ||
+                    _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.HighId ||
+                    _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == item.Id ||
                     _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == item.HighId)
                 {
                     return true;
@@ -329,61 +320,31 @@ namespace LootManager
         private void OnContainerOpened(object sender, Container container)
         {
             if (!_settings["Toggle"].AsBool()
-                || container.Identity.Type != IdentityType.Corpse
-                ) { return; }
+                || container.Identity.Type != IdentityType.Corpse) { return; }
 
-            if (_settings["ApplyRules"].AsBool())
+            foreach (Item item in container.Items)
             {
-                foreach (Item item in container.Items)
+                if (Inventory.NumFreeSlots >= 1)
                 {
-                    if (!RulesApply(item)) { item.Delete(); }
-
-                    if (_settings["SingleItem"].AsBool() && ItemExists(item))
-                    {
-                        _currentIgnore = container.Identity.Instance;
-                        continue;
-                    }
-
-                    if (Inventory.NumFreeSlots >= 1)
+                    if (RulesApply(item))
                         item.MoveToInventory();
-                    else
+                }
+                else
+                {
+                    Backpack _bag = FindBagWithSpace();
+
+                    if (_bag == null) { return; }
+
+                    foreach (Item itemtomove in Inventory.Items.Where(c => !_invItems.Contains(c)))
                     {
-                        Backpack _bag = FindBagWithSpace();
-
-                        if (_bag == null) { return; }
-
-                        foreach (Item itemtomove in Inventory.Items.Where(c => RulesApply(c)))
-                        {
-                            itemtomove.MoveToContainer(_bag);
-                        }
-
-                        item.MoveToContainer(_bag);
+                        itemtomove.MoveToContainer(_bag);
                     }
+
+                    item.MoveToInventory();
                 }
             }
-            else
-            {
-                foreach (Item item in container.Items)
-                {
-                    if (Inventory.NumFreeSlots >= 1)
-                        item.MoveToInventory();
-                    else
-                    {
-                        Backpack _bag = FindBagWithSpace();
 
-                        foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot == IdentityType.Inventory))
-                        {
-                            foreach (string str in _basicIgnores)
-                            {
-                                if (!itemtomove.Name.Contains(str))
-                                    itemtomove.MoveToContainer(_bag);
-                            }
-                        }
-
-                        item.MoveToContainer(_bag);
-                    }
-                }
-            }
+            Item.Use(container.Identity);
         }
 
         private void OnUpdate(object sender, float deltaTime)
@@ -425,19 +386,34 @@ namespace LootManager
 
             if (_settings["Toggle"].AsBool())
             {
-                if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 6))
-                {
-                    _lastCheckTime = Time.NormalTime;
-
-                    corpsesToLoot = DynelManager.Corpses
-                        .Where(c => c.Identity.Instance != _currentIgnore)
-                        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7)
-                        .FirstOrDefault();
-
-                    if (corpsesToLoot != null)
+                foreach (Identity corpseId in _corpseIdList)
+                    if (DynelManager.Corpses.Where(c => c.Identity == corpseId).ToList().Count == 0)
                     {
-                        corpsesToLoot.Open();
+                        _corpseIdList.Remove(corpseId);
+                        return;
                     }
+
+                if (Time.NormalTime - _lastCheckTime > new Random().Next(1, 3)
+                    && !_init)
+                {
+
+                    _lastCheckTime = Time.NormalTime;
+                    _init = true;
+
+                    foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
+                        && !_corpseIdList.Contains(c.Identity)))
+                    {
+                        Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
+                            c.Identity != corpse.Identity
+                            && c.Position.DistanceFrom(corpse.Position) <= 1f);
+
+                        if (_corpse != null) { continue; }
+
+                        corpse.Open();
+                        _corpseIdList.Add(corpse.Identity);
+                    }
+
+                    _init = false;
                 }
             }
 

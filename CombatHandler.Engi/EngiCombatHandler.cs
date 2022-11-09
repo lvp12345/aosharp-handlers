@@ -169,6 +169,7 @@ namespace CombatHandler.Engineer
         public static void EngiBioCocoonPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = e;
+            EngiBioCocoonPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -291,8 +292,6 @@ namespace CombatHandler.Engineer
                         {
                             //Is there even need to save here if we have event handler for it?
                             Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = bioCocoonValue;
-                            EngiBioCocoonPercentage = bioCocoonValue;
-                            Config.Save();
                         }
                     }
                 }

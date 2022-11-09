@@ -58,7 +58,7 @@ namespace AssistManager
         public static void AssistPlayer_Changed(object s, string e)
         {
             Config.CharSettings[Game.ClientInst].AssistPlayer = e;
-
+            AssistPlayer = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -134,7 +134,6 @@ namespace AssistManager
                     if (Config.CharSettings[Game.ClientInst].AssistPlayer != assistInput.Text)
                     {
                         Config.CharSettings[Game.ClientInst].AssistPlayer = assistInput.Text;
-                        Config.Save();
                     }
                 }
 
@@ -149,9 +148,9 @@ namespace AssistManager
                 && Time.NormalTime > _assistTimer + 0.5)
             {
                 SimpleChar identity = DynelManager.Characters
-                    .Where(c => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].AssistPlayer)
+                    .Where(c => !string.IsNullOrEmpty(AssistPlayer)
                         && c.IsAlive && !c.Flags.HasFlag(CharacterFlags.Pet) 
-                        && c.Name == Config.CharSettings[Game.ClientInst].AssistPlayer)
+                        && c.Name == AssistPlayer)
                     .FirstOrDefault();
 
                 if (identity == null) { return; }

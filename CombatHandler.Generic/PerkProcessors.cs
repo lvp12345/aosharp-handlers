@@ -39,7 +39,6 @@ namespace CombatHandler.Generic
                 case PerkType.PET_HEAL:
                 case PerkType.DISABLED:
                 case PerkType.LE_PROC:
-                case PerkType.OTHER:
                     return null;
                 default:
                     Chat.WriteLine("Attempt to register unknown perk type for perk name: " + perkAction.Name);

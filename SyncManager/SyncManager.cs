@@ -516,7 +516,9 @@ namespace SyncManager
 
             if (usableMsg.ItemLowId == 291043 || usableMsg.ItemLowId == 291043 || usableMsg.ItemLowId == 204103 || usableMsg.ItemLowId == 204104 ||
                 usableMsg.ItemLowId == 204105 || usableMsg.ItemLowId == 204106 || usableMsg.ItemLowId == 204107 || usableMsg.ItemHighId == 204107 ||
-                usableMsg.ItemLowId == 303138 || usableMsg.ItemLowId == 303141 || usableMsg.ItemLowId == 303137 || usableMsg.ItemHighId == 303136)
+                usableMsg.ItemLowId == 303138 || usableMsg.ItemLowId == 303141 || usableMsg.ItemLowId == 303137 || usableMsg.ItemHighId == 303136 ||
+                usableMsg.ItemLowId == 204698 || usableMsg.ItemLowId == 204653 || usableMsg.ItemLowId == 206013 || usableMsg.ItemLowId == 267168 ||
+                usableMsg.ItemLowId == 267167 || usableMsg.ItemLowId == 305476 || usableMsg.ItemLowId == 305478 || usableMsg.ItemLowId == 303179)
                 return;
 
             if (usableMsg.ItemLowId == 226308 || usableMsg.ItemLowId == 226290 || usableMsg.ItemLowId == 226291 || usableMsg.ItemLowId == 226307 || usableMsg.ItemLowId == 226288)
@@ -734,7 +736,6 @@ namespace SyncManager
 
         private void OnUseMessage(int sender, IPCMessage msg)
         {
-
             if (IsActiveWindow || Game.IsZoning) { return; }
 
             UseMessage useMsg = (UseMessage)msg;

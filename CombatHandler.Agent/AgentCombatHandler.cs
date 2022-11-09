@@ -137,6 +137,7 @@ namespace CombatHandler.Agent
         public static void AgentHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].AgentHealPercentage = e;
+            AgentHealPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -144,6 +145,7 @@ namespace CombatHandler.Agent
         public static void AgentCompleteHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = e;
+            AgentCompleteHealPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -309,8 +311,6 @@ namespace CombatHandler.Agent
                         if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
                         {
                             Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
-                            AgentHealPercentage = healValue;
-                            Config.Save();
                         }
                     }
                 }
@@ -321,8 +321,6 @@ namespace CombatHandler.Agent
                         if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != completeHealValue)
                         {
                             Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = completeHealValue;
-                            AgentCompleteHealPercentage = completeHealValue;
-                            Config.Save();
                         }
                     }
                 }

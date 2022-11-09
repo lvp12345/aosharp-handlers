@@ -114,14 +114,16 @@ namespace CombatHandler.Adventurer
 
         public static void AdvHealPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].DocHealPercentage = e;
+            Config.CharSettings[Game.ClientInst].AdvHealPercentage = e;
+            AdvHealPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 
         public static void AdvCompleteHealPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = e;
+            Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage = e;
+            AdvCompleteHealPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -269,8 +271,6 @@ namespace CombatHandler.Adventurer
                         if (Config.CharSettings[Game.ClientInst].AdvHealPercentage != healValue)
                         {
                             Config.CharSettings[Game.ClientInst].AdvHealPercentage = healValue;
-                            AdvHealPercentage = healValue;
-                            Config.Save();
                         }
                     }
                 }
@@ -281,8 +281,6 @@ namespace CombatHandler.Adventurer
                         if (Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage != completeHealValue)
                         {
                             Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage = completeHealValue;
-                            AdvCompleteHealPercentage = completeHealValue;
-                            Config.Save();
                         }
                     }
                 }

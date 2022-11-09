@@ -90,21 +90,21 @@ namespace FollowManager
         public static void FollowPlayer_Changed(object s, string e)
         {
             Config.CharSettings[Game.ClientInst].FollowPlayer = e;
-
+            FollowPlayer = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void NavFollowIdentity_Changed(object s, string e)
         {
             Config.CharSettings[Game.ClientInst].NavFollowIdentity = e;
-
+            NavFollowIdentity = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void NavFollowDistance_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].NavFollowDistance = e;
-
+            NavFollowDistance = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -212,17 +212,17 @@ namespace FollowManager
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
-                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].NavFollowIdentity) 
+                    .Where(x => !string.IsNullOrEmpty(NavFollowIdentity) 
                         && !x.Flags.HasFlag(CharacterFlags.Pet) 
-                        && x.Name == Config.CharSettings[Game.ClientInst].NavFollowIdentity)
+                        && x.Name == NavFollowIdentity)
                     .FirstOrDefault();
 
                 if (identity != null)
                 {
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= Config.CharSettings[Game.ClientInst].NavFollowDistance)
+                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= NavFollowDistance)
                         MovementController.Instance.Halt();
 
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > Config.CharSettings[Game.ClientInst].NavFollowDistance)
+                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > NavFollowDistance)
                         MovementController.Instance.SetDestination(identity.Position);
 
                     _followTimer = Time.NormalTime;
@@ -233,9 +233,9 @@ namespace FollowManager
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
-                    .Where(x => !string.IsNullOrEmpty(Config.CharSettings[Game.ClientInst].FollowPlayer) 
+                    .Where(x => !string.IsNullOrEmpty(FollowPlayer) 
                         && !x.Flags.HasFlag(CharacterFlags.Pet) 
-                        && x.Name == Config.CharSettings[Game.ClientInst].FollowPlayer)
+                        && x.Name == FollowPlayer)
                     .FirstOrDefault();
 
                 if (identity != null)

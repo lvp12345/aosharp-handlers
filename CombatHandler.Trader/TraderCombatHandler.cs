@@ -143,6 +143,7 @@ namespace CombatHandler.Trader
         public static void TraderHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].TraderHealPercentage = e;
+            TraderHealPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -276,8 +277,6 @@ namespace CombatHandler.Trader
                         if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
                         {
                             Config.CharSettings[Game.ClientInst].TraderHealPercentage = healValue;
-                            TraderHealPercentage = healValue;
-                            Config.Save();
                         }
                     }
                 }

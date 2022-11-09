@@ -125,6 +125,7 @@ namespace CombatHandler.MartialArtist
         public static void MAHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].MAHealPercentage = e;
+            MAHealPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -248,8 +249,6 @@ namespace CombatHandler.MartialArtist
                         if (Config.CharSettings[Game.ClientInst].MAHealPercentage != healValue)
                         {
                             Config.CharSettings[Game.ClientInst].MAHealPercentage = healValue;
-                            MAHealPercentage = healValue;
-                            Config.Save();
                         }
                     }
                 }

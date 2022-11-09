@@ -135,6 +135,7 @@ namespace CombatHandler.NanoTechnician
         public static void NTNanoAegisPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = e;
+            NTNanoAegisPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -142,6 +143,7 @@ namespace CombatHandler.NanoTechnician
         public static void NTNullitySpherePercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = e;
+            NTNullitySpherePercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -149,6 +151,7 @@ namespace CombatHandler.NanoTechnician
         public static void NTIzgimmersWealthPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = e;
+            NTIzgimmersWealthPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -156,6 +159,7 @@ namespace CombatHandler.NanoTechnician
         public static void NTCycleAbsorbsDelay_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = e;
+            NTCycleAbsorbsDelay = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -290,9 +294,6 @@ namespace CombatHandler.NanoTechnician
                         if (Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay != absorbsValue)
                         {
                             Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = absorbsValue;
-                            NTCycleAbsorbsDelay = absorbsValue;
-                            //Do we even need this?
-                            Config.Save();
                         }
                     }
                 }
@@ -311,9 +312,6 @@ namespace CombatHandler.NanoTechnician
                         if (Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage != nanoAegisValue)
                         {
                             Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = nanoAegisValue;
-                            NTNanoAegisPercentage = nanoAegisValue;
-                            //Do we even need this?
-                            Config.Save();
                         }
                     }
                 }
@@ -324,9 +322,6 @@ namespace CombatHandler.NanoTechnician
                         if (Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage != nullSphereValue)
                         {
                             Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = nullSphereValue;
-                            NTNullitySpherePercentage = nullSphereValue;
-                            //Do we even need this?
-                            Config.Save();
                         }
                     }
                 }
@@ -337,9 +332,6 @@ namespace CombatHandler.NanoTechnician
                         if (Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage != izWealthValue)
                         {
                             Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = izWealthValue;
-                            NTIzgimmersWealthPercentage = izWealthValue;
-                            //Do we even need this?
-                            Config.Save();
                         }
                     }
                 }

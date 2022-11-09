@@ -128,6 +128,7 @@ namespace CombatHandler.Doctor
         public static void DocHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].DocHealPercentage = e;
+            DocHealPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -135,6 +136,7 @@ namespace CombatHandler.Doctor
         public static void DocCompleteHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = e;
+            DocCompleteHealPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -305,8 +307,6 @@ namespace CombatHandler.Doctor
                         if (Config.CharSettings[Game.ClientInst].DocHealPercentage != healValue)
                         {
                             Config.CharSettings[Game.ClientInst].DocHealPercentage = healValue;
-                            DocHealPercentage = healValue;
-                            Config.Save();
                         }
                     }
                 }
@@ -317,8 +317,6 @@ namespace CombatHandler.Doctor
                         if (Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage != completeHealValue)
                         {
                             Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = completeHealValue;
-                            DocCompleteHealPercentage = completeHealValue;
-                            Config.Save();
                         }
                     }
                 }

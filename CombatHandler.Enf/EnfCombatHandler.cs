@@ -241,8 +241,6 @@ namespace CombatHandler.Enf
                         if (Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle != singleValue)
                         {
                             Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle = singleValue;
-                            EnfTauntDelaySingle = singleValue;
-                            Config.Save();
                         }
                     }
                 }
@@ -253,8 +251,6 @@ namespace CombatHandler.Enf
                         if (Config.CharSettings[Game.ClientInst].EnfTauntDelayArea != aoeValue)
                         {
                             Config.CharSettings[Game.ClientInst].EnfTauntDelayArea = aoeValue;
-                            EnfTauntDelayArea = aoeValue;
-                            Config.Save();
                         }
                     }
                 }
@@ -265,8 +261,6 @@ namespace CombatHandler.Enf
                         if (Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay != absorbsValue)
                         {
                             Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay = absorbsValue;
-                            EnfCycleAbsorbsDelay = absorbsValue;
-                            Config.Save();
                         }
                     }
                 }
@@ -566,6 +560,7 @@ namespace CombatHandler.Enf
         public static void EnfTauntDelaySingle_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle = e;
+            EnfTauntDelaySingle = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -573,12 +568,14 @@ namespace CombatHandler.Enf
         public static void EnfTauntDelayArea_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].EnfTauntDelayArea = e;
+            EnfTauntDelayArea = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void EnfCycleAbsorbsDelay_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay = e;
+            EnfCycleAbsorbsDelay = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }

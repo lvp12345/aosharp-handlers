@@ -40,7 +40,7 @@ namespace CombatHandler.Generic
             {PerkHash.Bearhug , PerkType.TARGETED_DAMAGE},
             {PerkHash.Beckoning , PerkType.TARGETED_DAMAGE},
             {PerkHash.BigSmash , PerkType.TARGETED_DAMAGE},
-            {PerkHash.BioCocoon , PerkType.OTHER},
+            {PerkHash.BioCocoon , PerkType.DISABLED},
             {PerkHash.BioRegrowth , PerkType.HEAL},
             {PerkHash.BioRejuvenation , PerkType.HEAL},
             {PerkHash.BioShield , PerkType.SELF_BUFF},
@@ -140,7 +140,7 @@ namespace CombatHandler.Generic
             {PerkHash.FireFrenzy , PerkType.TARGETED_DAMAGE},
             {PerkHash.Flay , PerkType.TARGETED_DAMAGE},
             {PerkHash.FleshQuiver , PerkType.TARGETED_DAMAGE},
-            {PerkHash.FlimFocus , PerkType.OTHER},
+            {PerkHash.FlimFocus , PerkType.DISABLED},
             {PerkHash.FlurryOfCuts , PerkType.TARGETED_DAMAGE},
             {PerkHash.FollowupSmash , PerkType.TARGETED_DAMAGE},
             {PerkHash.ForceOpponent , PerkType.TARGETED_DAMAGE},
@@ -184,7 +184,7 @@ namespace CombatHandler.Generic
             {PerkHash.LaserPaintTarget , PerkType.TARGETED_DAMAGE},
             {PerkHash.LayOnHands , PerkType.HEAL},
             {PerkHash.Leadership , PerkType.DISABLED},
-            {PerkHash.LegShot , PerkType.OTHER},
+            {PerkHash.LegShot , PerkType.DISABLED},
             {PerkHash.LEProcAdventurerAesirAbsorption , PerkType.LE_PROC},
             {PerkHash.LEProcAdventurerBasicDressing , PerkType.LE_PROC},
             {PerkHash.LEProcAdventurerCharringBlow , PerkType.LE_PROC},
@@ -378,7 +378,7 @@ namespace CombatHandler.Generic
             {PerkHash.NightKiller , PerkType.TARGETED_DAMAGE},
             {PerkHash.NocturnalStrike , PerkType.TARGETED_DAMAGE},
             {PerkHash.NotumOverflow , PerkType.TARGETED_DAMAGE},
-            {PerkHash.NotumShield , PerkType.OTHER},
+            {PerkHash.NotumShield , PerkType.DISABLED},
             {PerkHash.Numb , PerkType.TARGETED_DAMAGE},
             {PerkHash.Obliterate , PerkType.TARGETED_DAMAGE},
             {PerkHash.Opening , PerkType.TARGETED_DAMAGE},
@@ -486,7 +486,7 @@ namespace CombatHandler.Generic
             {PerkHash.TremorHand , PerkType.TARGETED_DAMAGE},
             {PerkHash.TriangulateTarget , PerkType.TARGETED_DAMAGE},
             {PerkHash.TriggerHappy , PerkType.TARGETED_DAMAGE},
-            {PerkHash.TrollForm , PerkType.OTHER},
+            {PerkHash.TrollForm , PerkType.DISABLED},
             {PerkHash.UnhallowedFury , PerkType.TARGETED_DAMAGE},
             {PerkHash.UnhallowedWrath , PerkType.TARGETED_DAMAGE},
             {PerkHash.UnsealedBlight , PerkType.DISABLED},
@@ -507,6 +507,6 @@ namespace CombatHandler.Generic
 
     enum PerkType
     {
-        SELF_BUFF, HEAL, NANO_HEAL, TARGETED_DAMAGE, DAMAGE_BUFF, GENERIC, LE_PROC, CUSTOM, PET_BUFF, DISABLED, CLEANSE, PET_HEAL, UNKNOWN, OTHER
+        SELF_BUFF, HEAL, NANO_HEAL, TARGETED_DAMAGE, DAMAGE_BUFF, GENERIC, LE_PROC, CUSTOM, PET_BUFF, DISABLED, CLEANSE, PET_HEAL, UNKNOWN
     }
 }

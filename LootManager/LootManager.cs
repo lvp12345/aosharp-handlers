@@ -375,7 +375,7 @@ namespace LootManager
 
             _corpsePosList.Add(_currentPos);
             _corpseIdList.Add(container.Identity);
-            Chat.WriteLine($"Adding bits");
+            //Chat.WriteLine($"Adding bits");
             Item.Use(container.Identity);
             _currentlyLooting = false;
             _internalOpen = false;

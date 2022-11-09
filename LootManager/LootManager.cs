@@ -85,11 +85,15 @@ namespace LootManager
                     foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                         if (!_invItems.Contains(item))
                             _invItems.Add(item);
+
+                    Chat.WriteLine("Set inventory list, items will be ignored.");
                 });
 
                 Chat.RegisterCommand("clearinv", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     _invItems.Clear();
+
+                    Chat.WriteLine("Cleared inventory list.");
                 });
 
                 //Chat.RegisterCommand("ignoreloot", (string command, string[] param, ChatWindow chatWindow) =>
@@ -338,7 +342,12 @@ namespace LootManager
             {
                 if (Inventory.NumFreeSlots >= 1)
                 {
-                    if (RulesApply(item))
+                    if (_settings["ApplyRules"].AsBool())
+                    {
+                        if (RulesApply(item))
+                            item.MoveToInventory();
+                    }
+                    else
                         item.MoveToInventory();
                 }
                 else
@@ -352,7 +361,13 @@ namespace LootManager
                         itemtomove.MoveToContainer(_bag);
                     }
 
-                    item.MoveToInventory();
+                    if (_settings["ApplyRules"].AsBool())
+                    {
+                        if (RulesApply(item))
+                            item.MoveToInventory();
+                    }
+                    else
+                        item.MoveToInventory();
                 }
             }
 

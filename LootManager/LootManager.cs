@@ -356,8 +356,10 @@ namespace LootManager
 
                     if (_bag == null) { return; }
 
-                    foreach (Item itemtomove in Inventory.Items.Where(c => !_invItems.Contains(c)))
+                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                     {
+                        if (_invItems.Contains(itemtomove)) { continue; }
+
                         itemtomove.MoveToContainer(_bag);
                     }
 

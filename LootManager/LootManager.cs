@@ -48,6 +48,8 @@ namespace LootManager
 
         private static List<Item> _invItems = new List<Item>();
 
+        private static List<string> _ignores = new List<string>();
+
         public static string PluginDir;
 
         public override void Run(string pluginDir)
@@ -96,19 +98,31 @@ namespace LootManager
                     Chat.WriteLine("Cleared inventory list.");
                 });
 
-                //Chat.RegisterCommand("ignoreloot", (string command, string[] param, ChatWindow chatWindow) =>
-                //{
-                //    _basicIgnores.Add(param[0]);
-                //    Chat.WriteLine($"Ignore item {param[0]} added.");
-                //});
+                Chat.RegisterCommand("addignore", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    if (param.Length > 1)
+                        if (!_ignores.Contains(param[0]))
+                        _ignores.Add(param[0]);
 
-                //Chat.RegisterCommand("printignore", (string command, string[] param, ChatWindow chatWindow) =>
-                //{
-                //    for (int i = 0; i <= _basicIgnores.Capacity; i++)
-                //    {
-                //        Chat.WriteLine($"{_basicIgnores[i]}.");
-                //    }
-                //});
+                    Chat.WriteLine("Removed from ignore list.");
+                });
+
+                Chat.RegisterCommand("removeignore", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    if (param.Length > 1)
+                        if (_ignores.Contains(param[0]))
+                            _ignores.Remove(param[0]);
+
+                    Chat.WriteLine("Added to ignore list.");
+                });
+
+                Chat.RegisterCommand("clearignore", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    _ignores.Clear();
+
+                    Chat.WriteLine("Cleared ignore list.");
+                });
+
 
                 Chat.WriteLine("Loot Manager loaded!");
                 Chat.WriteLine("/lootmanager for settings.");
@@ -347,7 +361,7 @@ namespace LootManager
                         if (RulesApply(item))
                             item.MoveToInventory();
                     }
-                    else
+                    else if (!_ignores.Contains(item.Name))
                         item.MoveToInventory();
                 }
                 else
@@ -368,7 +382,7 @@ namespace LootManager
                         if (RulesApply(item))
                             item.MoveToInventory();
                     }
-                    else
+                    else if (!_ignores.Contains(item.Name))
                         item.MoveToInventory();
                 }
             }

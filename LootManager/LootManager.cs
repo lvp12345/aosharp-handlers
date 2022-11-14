@@ -467,7 +467,7 @@ namespace LootManager
 
                 foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
                     && !_corpsePosList.Contains(c.Position)
-                    && !_corpseIdList.Contains(c.Identity)).Take(1))
+                    && !_corpseIdList.Contains(c.Identity)).Take(3))
                 {
                     Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
                         c.Identity != corpse.Identity

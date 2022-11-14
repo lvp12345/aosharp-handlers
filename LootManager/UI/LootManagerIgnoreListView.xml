@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="LootManagerIgnoreList" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(1,0,1,0)">
+      <TextView name ="Ignores" value="Ignores" layout_borders="Rect(1,0,1,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore1" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore2" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore3" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore4" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore5" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore6" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore7" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore8" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore9" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <TextView name ="Ignore10" value="" layout_borders="Rect(2,0,2,0)"/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+  </BorderView>
+</root>

@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="LootManagerLootList" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View view_layout="horizontal" layout_borders="Rect(1,0,1,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name" value="Name" layout_borders="Rect(1,0,1,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin" value="Min QL" layout_borders="Rect(1,0,1,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax" value="Max QL" layout_borders="Rect(1,0,1,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item1" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name1" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin1" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax1" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item2" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name2" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin2" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax2" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item3" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name3" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin3" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax3" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item4" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name4" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin4" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax4" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item5" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name5" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin5" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax5" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item6" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name6" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin6" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax6" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item7" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name7" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin7" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax7" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item8" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name8" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin8" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax8" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item9" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name9" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin9" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax9" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <View name ="Item10" view_layout="horizontal" layout_borders="Rect(2,0,2,0)">
+      <HLayoutSpacer/>
+      <TextView name ="Name10" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMin10" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+      <TextView name ="QlMax10" value="" layout_borders="Rect(2,0,2,0)"/>
+      <HLayoutSpacer/>
+    </View>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+	</BorderView>	
+</root>

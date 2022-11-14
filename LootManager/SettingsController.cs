@@ -54,7 +54,7 @@ namespace LootManager
                 {
                     try
                     {
-                        settingsWindow = Window.Create(new Rect(50, 50, 390, 630), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.None);
+                        settingsWindow = Window.Create(new Rect(50, 50, 390, 630), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {

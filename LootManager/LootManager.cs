@@ -125,6 +125,7 @@ namespace LootManager
 
 
                 Chat.WriteLine("Loot Manager loaded!");
+                Chat.WriteLine("Currently not working well.");
                 Chat.WriteLine("/lootmanager for settings.");
 
 

@@ -81,22 +81,22 @@ namespace CombatHandler.Soldier
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), BuffExcludeInnerSanctum);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), Buff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), ShotgunBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HeavyWeaponsBuffs).OrderByStackingOrder(), HeavyWeaponBuff);
 
             RegisterSpellProcessor(RelevantNanos.ArBuffs, ARBuff);
             RegisterSpellProcessor(RelevantNanos.HeavyComp, HeavyCompBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), Buff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAOBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolMasteryBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), BurstBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
@@ -340,7 +340,7 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -374,7 +374,7 @@ namespace CombatHandler.Soldier
 
             if (!DynelManager.LocalPlayer.SpecialAttacks.Contains(SpecialAttack.Burst)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool HeavyCompWeaponChecks(SimpleChar _target)
@@ -446,7 +446,7 @@ namespace CombatHandler.Soldier
         {
             if (!IsSettingEnabled("NotumGrenades")) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -460,8 +460,8 @@ namespace CombatHandler.Soldier
                         && c.IsInLineOfSight
                         && !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && IsNotFightingMe(c)
-                        && IsAttackingUs(c)
+                        && !FightingMe(c)
+                        && AttackingTeam(c)
                         && (c.FightingTarget.Profession != Profession.Enforcer
                                 || c.FightingTarget.Profession != Profession.Soldier
                                 || c.FightingTarget.Profession != Profession.MartialArtist))
@@ -555,7 +555,7 @@ namespace CombatHandler.Soldier
 
             if (!IsSettingEnabled("Init")) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion

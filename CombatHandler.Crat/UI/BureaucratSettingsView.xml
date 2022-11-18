@@ -5,11 +5,11 @@
     <TextView value="Channel" layout_borders="Rect(5,5,5,5)"/>
     <TextInputView name="ChannelBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Nuking" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Nukes" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Nuking" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Nuking" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <!--<OptionCheckBox label="(S7) Guardian Calm" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CalmSector7" layout_borders="Rect(10,1,5,1)"/>-->
     <OptionCheckBox label="(12Man) LMN Calm" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Calm12Man" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="(Raids) Root Adds" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AOERoot" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="(Raids) Root Adds" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Root" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <Button name="BuffsView" label="Buffs" layout_borders="Rect(5,5,3,5)"/>

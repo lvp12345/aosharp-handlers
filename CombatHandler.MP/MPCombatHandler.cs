@@ -101,9 +101,9 @@ namespace CombatHandler.Metaphysicist
             RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, DiffuseRage, CombatActionPriority.Low);
 
             //Self buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), BuffExcludeInnerSanctum);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), Buff);
 
             //Team buffs
             RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
@@ -119,7 +119,7 @@ namespace CombatHandler.Metaphysicist
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifierBuff);
             RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolMasteryBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke, CombatActionPriority.Medium);
@@ -501,7 +501,7 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsSettingEnabled("Cost"))
             {
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return Buff(spell, fightingTarget, ref actionTarget);
             }
 
             if (IsSettingEnabled("CostTeam"))
@@ -522,29 +522,29 @@ namespace CombatHandler.Metaphysicist
 
         private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("NanoShutdownDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("NanoShutdownDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("NanoResistanceDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("NanoResistanceDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("DamageDebuffs", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("DamageDebuffs", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("CompositesNanoSkills")) 
             {
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return Buff(spell, fightingTarget, ref actionTarget);
             }
 
             if (IsSettingEnabled("CompositesNanoSkillsTeam"))
             {
-                return TeamBuff(spell, fightingTarget, ref actionTarget);
+                return TeamBuff(spell, ref actionTarget);
             }
 
             return false;
@@ -667,12 +667,16 @@ namespace CombatHandler.Metaphysicist
 
         private bool InterruptModifierBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledBuff("InterruptChance", spell, fightingTarget, ref actionTarget);
+            if (!IsSettingEnabled("InterruptChance")) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool MPDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
         {
-            return ToggledDebuffOthersInCombat("OSDamageDebuffs", spell, fightingTarget, ref actionTarget);
+            if (!IsSettingEnabled("OSDamageDebuffs")) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

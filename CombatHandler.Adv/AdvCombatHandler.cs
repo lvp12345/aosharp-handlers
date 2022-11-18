@@ -82,12 +82,12 @@ namespace CombatHandler.Adventurer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHealing, CombatActionPriority.High);
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.General1HEdgedBuff).OrderByStackingOrder(), MeleeBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), RangedBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.General1HEdgedBuff).OrderByStackingOrder(), Melee);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Ranged);
             //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(RelevantNanos.ArmorBuffs, ArmorBuff);
 
             //Morphs
@@ -419,7 +419,7 @@ namespace CombatHandler.Adventurer
         {
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         #region Morphs
@@ -428,25 +428,25 @@ namespace CombatHandler.Adventurer
         {
             if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
         private bool LeetMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
         private bool WolfMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
         private bool SaberMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool WolfAgility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -455,7 +455,7 @@ namespace CombatHandler.Adventurer
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
         private bool SaberDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -463,7 +463,7 @@ namespace CombatHandler.Adventurer
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
         private bool LeetCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -471,7 +471,7 @@ namespace CombatHandler.Adventurer
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
         private bool DragonScales(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -479,7 +479,7 @@ namespace CombatHandler.Adventurer
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -488,41 +488,32 @@ namespace CombatHandler.Adventurer
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvHealPercentage == 0) { return false; }
 
-            if (!CanCast(spell) 
-                || AdvHealPercentage == 0
-                || HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
-            return FindMemberWithHealthBelow(AdvHealPercentage, ref actionTarget);
+            return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell) || AdvHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindMemberWithHealthBelow(AdvHealPercentage, ref actionTarget);
-            }
-            else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindPlayerWithHealthBelow(AdvHealPercentage, ref actionTarget);
-            }
+                return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
+            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+                return FindPlayerWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
 
             return false;
         }
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvCompleteHealPercentage == 0) { return false; }
 
-            if (!IsSettingEnabled("CH") || !CanCast(spell)
-                || AdvCompleteHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("CH")) { return false; }
 
-            return FindMemberWithHealthBelow(AdvCompleteHealPercentage, ref actionTarget);
+            return FindMemberWithHealthBelow(AdvCompleteHealPercentage, spell, ref actionTarget);
         }
 
         #endregion

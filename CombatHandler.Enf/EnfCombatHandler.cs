@@ -75,14 +75,14 @@ namespace CombatHandler.Enf
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
             //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AreaTaunt, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChangeBuff);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee2HE, Melee2HEBuffWeapon);
@@ -91,10 +91,10 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeEnergyBuffWeapon);
 
             //Team buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), MeleeBuff);
-            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, TeamBuff);
-            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TeamBuff);
-            RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), Melee);
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, Buff);
 
             RegisterItemProcessor(244655, 244655, TauntTool);
 
@@ -391,7 +391,7 @@ namespace CombatHandler.Enf
         {
             if (HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -406,8 +406,8 @@ namespace CombatHandler.Enf
                         && c.IsInLineOfSight
                         && !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && IsNotFightingMe(c)
-                        && IsAttackingUs(c))
+                        && !FightingMe(c)
+                        && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                         //&& (c.FightingTarget.Profession != Profession.Enforcer
                         //        && c.FightingTarget.Profession != Profession.Soldier
@@ -477,31 +477,29 @@ namespace CombatHandler.Enf
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
 
             if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + EnfCycleAbsorbsDelay)
             {
+                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
                 _absorbs = Time.NormalTime;
                 return true;
             }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell) || !IsSettingEnabled("TauntProc")) { return false; }
+            if (!IsSettingEnabled("TauntProc")) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool AreaTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-            if (!IsSettingEnabled("AreaTaunt")) { return false; }
+            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("AreaTaunt") || !CanCast(spell)) { return false; }
 
             if (EnfTauntDelayArea == 0)
             {

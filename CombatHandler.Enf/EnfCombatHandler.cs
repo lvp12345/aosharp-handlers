@@ -409,9 +409,6 @@ namespace CombatHandler.Enf
                         && !FightingMe(c)
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
-                        //&& (c.FightingTarget.Profession != Profession.Enforcer
-                        //        && c.FightingTarget.Profession != Profession.Soldier
-                        //        && c.FightingTarget.Profession != Profession.MartialArtist))
                     .FirstOrDefault();
 
                 if (mob != null)

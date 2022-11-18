@@ -139,6 +139,7 @@ namespace CombatHandler.Trader
             PluginDirectory = pluginDir;
 
             TraderHealPercentage = Config.CharSettings[Game.ClientInst].TraderHealPercentage;
+            TraderHealthDrainPercentage = Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage;
         }
         public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _debuffWindow, _procWindow };
 

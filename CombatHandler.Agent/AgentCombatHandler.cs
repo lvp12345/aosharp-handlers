@@ -48,7 +48,7 @@ namespace CombatHandler.Agent
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("DotStrainA", false);
+            _settings.AddVariable("DOTA", false);
 
             _settings.AddVariable("CritTeam", false);
 
@@ -87,17 +87,19 @@ namespace CombatHandler.Agent
             RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, BrokenAnkle, CombatActionPriority.Low);
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AimedShotBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExecutionerBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RifleBuffs).OrderByStackingOrder(), RifleBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgentProcBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AimedShotBuffs).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExecutionerBuff).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RifleBuffs).OrderByStackingOrder(), Rifle);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgentProcBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcentrationCriticalLine).OrderByStackingOrder(), Concentration, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.DetauntProcs, DetauntProc);
+            RegisterSpellProcessor(RelevantNanos.DOTProcs, DamageProc);
 
-            RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.CH, CompleteHealing, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Healing, Healing, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.CompleteHealing, CompleteHealing, CombatActionPriority.High);
 
             //False Profs
             RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);
@@ -112,18 +114,13 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(RelevantNanos.FalseProfSol, FalseProfSoldier);
             RegisterSpellProcessor(RelevantNanos.FalseProfTrader, FalseProfTrader);
 
-            RegisterSpellProcessor(RelevantNanos.DetauntProcs, DetauntProc);
-            RegisterSpellProcessor(RelevantNanos.DotProcs, DamageProc);
-
             //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), TeamBuff);
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, CritIncrease);
 
-            //Debuffs/DoTs
+            //Debuffs
             RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffs, CombatActionPriority.Low);
-            //RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffTarget, CombatActionPriority.Low);
-            //RegisterSpellProcessor(RelevantNanos.InitDebuffs, OSInitDebuff, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DotStrainA);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DOTA);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff);
 
             PluginDirectory = pluginDir;
@@ -241,8 +238,6 @@ namespace CombatHandler.Agent
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_healingView)) { return; }
 
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentHealingView.xml");
@@ -359,7 +354,7 @@ namespace CombatHandler.Agent
                 }
             }
 
-            if (CanLookupPetsAfterZone())
+            if (CanLookupPetsAfterZone() && DynelManager.LocalPlayer.Pets.Count() >= 1)
             {
                 SynchronizePetCombatStateWithOwner();
                 AssignTargetToHealPet();
@@ -371,7 +366,7 @@ namespace CombatHandler.Agent
             }
             if (IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage"))
             {
-                CancelBuffs(RelevantNanos.DotProcs);
+                CancelBuffs(RelevantNanos.DOTProcs);
             }
         }
 
@@ -481,234 +476,183 @@ namespace CombatHandler.Agent
 
         private SimpleChar GetTargetToHeal()
         {
-            if (DynelManager.LocalPlayer.HealthPercent < 90)
-            {
-                return DynelManager.LocalPlayer;
-            }
-
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive)
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent < 90)
-                    .OrderByDescending(c => c.HealthPercent)
+                SimpleChar dyingTeamMember = DynelManager.Players
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent < 90)
+                    .OrderBy(c => c)
+                    .ThenByDescending(c => c.HealthPercent)
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
-                {
                     return dyingTeamMember;
-                }
             }
 
+            if (DynelManager.LocalPlayer.HealthPercent < 90)
+                return DynelManager.LocalPlayer;
+
             Pet dyingPet = DynelManager.LocalPlayer.Pets
-                 .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
-                 .Where(pet => pet.Character.HealthPercent < 90)
+                 .Where(pet => pet.Character.HealthPercent < 90
+                    && (pet.Type == PetType.Attack || pet.Type == PetType.Social))
                  .OrderByDescending(pet => pet.Character.HealthPercent)
                  .FirstOrDefault();
 
             if (dyingPet != null)
-            {
                 return dyingPet.Character;
-            }
 
             return null;
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell) || AgentHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AgentHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindMemberWithHealthBelow(AgentHealPercentage, ref actionTarget);
-            }
-            else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindPlayerWithHealthBelow(AgentHealPercentage, ref actionTarget);
-            }
+                return FindMemberWithHealthBelow(AgentHealPercentage, spell, ref actionTarget);
+
+            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+                return FindPlayerWithHealthBelow(AgentHealPercentage, spell, ref actionTarget);
 
             return false;
         }
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("CH") || AgentCompleteHealPercentage == 0) { return false; }
 
-            if (!IsSettingEnabled("CH") || AgentCompleteHealPercentage == 0) { return false; }
-
-            return FindMemberWithHealthBelow(AgentCompleteHealPercentage, ref actionTarget);
+            return FindMemberWithHealthBelow(AgentCompleteHealPercentage, spell, ref actionTarget);
         }
 
         #endregion
 
         #region Instanced Logic
 
-        //private bool FalseProfDoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Heal") && !IsSettingEnabled("OSHeal")) { return false; }
-
-        //    return GenericBuff(spell, fightingTarget, ref actionTarget);
-        //}
-
         private bool FalseProfEnforcer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Enforcer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfEngineer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Engineer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfNanoTechnician(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.NanoTechnician != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfTrader(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Trader != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfBeauracrat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Beauracrat != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfMartialArtist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.MartialArtist != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfFixer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Fixer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfAdventurer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Adventurer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfDoctor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Doctor != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FalseProfSoldier(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Soldier != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool FalseProfMetaphysicist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Metaphysicist != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool RifleBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Rifle(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.AssassinsAimedShot, out Buff AAS)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.SteadyNerves, out Buff SN)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
-            {
-                if (!IsSettingEnabled("CritTeam")) { return false; }
+                if (IsSettingEnabled("CritTeam"))
+                    return TeamBuff(spell, ref actionTarget);
 
-                return TeamBuff(spell, fightingTarget, ref actionTarget);
-            }
-
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
-
+        //TODO:
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Detaunt")) { return false; }
 
             if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage"))) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
+        //TODO:
         private bool DamageProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Damage")) { return false; }
 
             if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage"))) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell)) { return false; }
-
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-            {
-                if (DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
-                        && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && SpellChecksOther(spell, spell.Nanoline, c))
-                    .Any())
-                {
-                    actionTarget.Target = DynelManager.Characters
-                        .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
-                            && c.FightingTarget != null && !c.Buffs.Contains(301844) && c.IsInLineOfSight
-                            && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
-
-                    if (actionTarget.Target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
-                }
-
-                return false;
-            }
+                return OSDebuff(spell, ref actionTarget);
 
             if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
                 && fightingTarget != null)
             {
                 if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
-                return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -716,19 +660,17 @@ namespace CombatHandler.Agent
 
         private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Concentration") || !CanCast(spell) || fightingTarget == null) { return false; }
-
-            return AllBuff(spell, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("Concentration", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool DotStrainA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DOTA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("DotStrainA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("DOTA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool EvasionDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("EvasionDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("EvasionDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -771,15 +713,15 @@ namespace CombatHandler.Agent
             public static int[] FalseProfEnf = { 117217, 117228, 32041 };
             public static int[] FalseProfMa = { 117215, 117226, 32035 };
             public static int[] FalseProfNt = { 117207, 117218, 32037 };
-            public static int[] DotProcs = { 226425, 226423, 226421, 226419, 226417, 226415, 226413, 226410 };
+            public static int[] DOTProcs = { 226425, 226423, 226421, 226419, 226417, 226415, 226413, 226410 };
             public static int[] TeamCritBuffs = { 160791, 160789, 160787 };
             public static int AssassinsAimedShot = 275007;
             public static int SteadyNerves = 160795;
-            public static int CH = 28650;
+            public static int CompleteHealing = 28650;
             public static int TeamCH = 42409; //Add logic later
             public const int TiredLimbs = 99578;
             public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder().Where(spell => spell.Id != TiredLimbs).ToArray();
-            public static int[] HEALS = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
+            public static int[] Healing = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
                 43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
                 28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };

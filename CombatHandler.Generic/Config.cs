@@ -130,6 +130,23 @@ namespace CombatHandler.Generic
                 }
             }
         }
+        public event EventHandler<int> TraderHealthDrainPercentageChangedEvent;
+        private int _traderHealthDrainPercentage = 90;
+        public int TraderHealthDrainPercentage
+        {
+            get
+            {
+                return _traderHealthDrainPercentage;
+            }
+            set
+            {
+                if (_traderHealthDrainPercentage != value)
+                {
+                    _traderHealthDrainPercentage = value;
+                    TraderHealthDrainPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> MAHealPercentageChangedEvent;
         private int _maHealPercentage = 90;
         public int MAHealPercentage

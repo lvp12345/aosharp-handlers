@@ -20,6 +20,7 @@ namespace CombatHandler.Trader
         private static string PluginDirectory;
 
         private static int TraderHealPercentage;
+        private static int TraderHealthDrainPercentage;
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
@@ -43,6 +44,7 @@ namespace CombatHandler.Trader
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
             Config.CharSettings[Game.ClientInst].TraderHealPercentageChangedEvent += TraderHealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentageChangedEvent += TraderHealthDrainPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -98,16 +100,16 @@ namespace CombatHandler.Trader
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing); // Self
             RegisterSpellProcessor(RelevantNanos.TeamHeal, Healing); // Team
+            RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain); // Drain
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEHeal);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
-            RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
 
             //Self Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, Buff);
+            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, Buff);
+            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, Buff);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, EvadesTeam);
@@ -144,6 +146,13 @@ namespace CombatHandler.Trader
         {
             Config.CharSettings[Game.ClientInst].TraderHealPercentage = e;
             TraderHealPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void TraderHealthDrainPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage = e;
+            TraderHealthDrainPercentage = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
@@ -212,10 +221,15 @@ namespace CombatHandler.Trader
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "TraderHealingView" }, _healingView);
 
                 window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
 
                 if (healInput != null)
                 {
                     healInput.Text = $"{TraderHealPercentage}";
+                }
+                if (healthDrainInput != null)
+                {
+                    healthDrainInput.Text = $"{TraderHealthDrainPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -224,10 +238,15 @@ namespace CombatHandler.Trader
                 _healingWindow = container;
 
                 container.FindView("HealPercentageBox", out TextInputView healInput);
+                container.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
 
                 if (healInput != null)
                 {
                     healInput.Text = $"{TraderHealPercentage}";
+                }
+                if (healthDrainInput != null)
+                {
+                    healthDrainInput.Text = $"{TraderHealthDrainPercentage}";
                 }
             }
         }
@@ -269,6 +288,7 @@ namespace CombatHandler.Trader
             if (window != null && window.IsValid)
             {
                 window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                 {
@@ -277,6 +297,16 @@ namespace CombatHandler.Trader
                         if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
                         {
                             Config.CharSettings[Game.ClientInst].TraderHealPercentage = healValue;
+                        }
+                    }
+                }
+                if (healthDrainInput != null && !string.IsNullOrEmpty(healthDrainInput.Text))
+                {
+                    if (int.TryParse(healthDrainInput.Text, out int heallthDrainValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage != heallthDrainValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage = heallthDrainValue;
                         }
                     }
                 }
@@ -414,24 +444,18 @@ namespace CombatHandler.Trader
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-            return FindMemberWithHealthBelow(60, ref actionTarget);
+            return FindMemberWithHealthBelow(60, spell, ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || TraderHealPercentage == 0) { return false; }
-
-            if (!CanCast(spell) || TraderHealPercentage == 0) { return false; }
+            if (TraderHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindMemberWithHealthBelow(TraderHealPercentage, ref actionTarget);
-            }
+                return FindMemberWithHealthBelow(TraderHealPercentage, spell, ref actionTarget);
 
             if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindPlayerWithHealthBelow(TraderHealPercentage, ref actionTarget);
-            }
+                return FindPlayerWithHealthBelow(TraderHealPercentage, spell, ref actionTarget);
 
             if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
             {
@@ -447,10 +471,27 @@ namespace CombatHandler.Trader
                     if (dyingTeamMember.Count >= 4) { return false; }
                 }
 
-                return FindMemberWithHealthBelow(TraderHealPercentage, ref actionTarget);
+                return FindMemberWithHealthBelow(TraderHealPercentage, spell, ref actionTarget);
+            }
+
+            if (fightingTarget == null || TraderHealthDrainPercentage == 0 || !IsSettingEnabled("HealthDrain")) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= TraderHealthDrainPercentage)
+            {
+                if (SpellChecksOther(spell, spell.Nanoline, fightingTarget))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
             }
 
             return false;
+        }
+
+        private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return ToggledCombatTargetDebuff("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -477,7 +518,7 @@ namespace CombatHandler.Trader
 
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -509,29 +550,24 @@ namespace CombatHandler.Trader
         {
             if (NanoDrainSelection.Shadowlands != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()) { return false; }
 
-            return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledDebuffTarget("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (NanoDrainSelection.RubiKa != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()) { return false; }
 
-            return DebuffTarget(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("MyEnemy", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("MyEnemy", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("GTH", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("GTH", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -544,7 +580,7 @@ namespace CombatHandler.Trader
 
                 if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
 
-                return DebuffTarget(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+                return CombatTargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
             }
 
             if (_drainTarget == null) { return false; }
@@ -587,7 +623,7 @@ namespace CombatHandler.Trader
 
                 if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
 
-                return DebuffTarget(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                return CombatTargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
             }
 
             if (_drainTarget == null) { return false; }
@@ -622,26 +658,26 @@ namespace CombatHandler.Trader
 
         private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("AAODrain") || fightingTarget == null) { return false; }
 
-            return ToggledDebuffTarget("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
         }
 
         private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("AADDrain") || fightingTarget == null) { return false; }
 
-            return ToggledDebuffTarget("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
         }
 
         private bool TraderACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledDebuffTarget("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledCombatTargetDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool TeamNanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

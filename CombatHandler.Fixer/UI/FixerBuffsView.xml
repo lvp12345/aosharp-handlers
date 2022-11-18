@@ -5,18 +5,22 @@
     <OptionCheckBox label="Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Buffing" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionCheckBox label="Shadowweb Spinner" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShadowwebSpinner" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Grid Armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GridArmor" layout_borders="Rect(10,1,5,1)"/>
+    <OptionRadioButtonGroup label="Armor" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ArmorSelection">
+      <RadioButton label="None" value="0"/>
+      <RadioButton label="Shadowweb Spinner" value="1"/>
+      <RadioButton label="Grid" value="2"/>
+    </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Rubi-Ka Runspeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RKRunspeed" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Rubi-Ka Runspeed (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RKRunspeedTeam" layout_borders="Rect(10,1,5,1)"/>
+    <OptionRadioButtonGroup label="Runspeed" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RunspeedSelection">
+      <RadioButton label="None" value="0"/>
+      <RadioButton label="Rubi-Ka" value="1"/>
+      <RadioButton label="Shadowlands" value="2"/>
+    </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="SL Runspeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLRunspeed" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Short HOT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHOT" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Short HOT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamShortHOT" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Short HoT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoT" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Short HoT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHoTTeam" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Long HoT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LongHoTTeam" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Long HOT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamLongHOT" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>
 </root>

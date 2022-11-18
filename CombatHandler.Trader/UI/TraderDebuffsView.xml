@@ -8,7 +8,6 @@
     <OptionCheckBox label="AAO Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AAODrain" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="AAD Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AADDrain" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Damage Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageDrain" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Health Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealthDrain" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="AC Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ACDrains" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

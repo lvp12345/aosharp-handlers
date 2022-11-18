@@ -100,7 +100,7 @@ namespace CombatHandler.Trader
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing); // Self
             RegisterSpellProcessor(RelevantNanos.TeamHeal, Healing); // Team
-            RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain); // Drain
+            RegisterSpellProcessor(RelevantNanos.HealthDrain, Healing); // Drain
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEHeal);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
@@ -112,7 +112,7 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, Buff);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, EvadesTeam);
+            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
 
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), TeamNanoHeal);
@@ -131,10 +131,10 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack).OrderByStackingOrder(), RansackDrain, CombatActionPriority.High);
 
             //AC Drains/Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderDebuffACNanos).OrderByStackingOrder(), TraderACDrain, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), TraderACDrain, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), TraderACDrain, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DebuffNanoACHeavy).OrderByStackingOrder(), TraderACDrain, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderDebuffACNanos).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DebuffNanoACHeavy).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -319,7 +319,6 @@ namespace CombatHandler.Trader
             {
                 _drainTarget = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
-                        && c.IsAlive
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
@@ -490,32 +489,12 @@ namespace CombatHandler.Trader
             return false;
         }
 
-        private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledCombatTargetDebuff("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("EvadesTeam"))
-            {
-                if (DynelManager.LocalPlayer.IsInTeam())
-                {
-                    SimpleChar _target = DynelManager.Characters
-                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && SpellChecksOther(spell, spell.Nanoline, c))
-                            .FirstOrDefault();
-
-                    if (_target != null)
-                    {
-                        actionTarget.Target = _target;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
-                }
-            }
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
 
             if (fightingTarget != null || !CanCast(spell)) { return false; }
 
@@ -573,18 +552,10 @@ namespace CombatHandler.Trader
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
             if (RansackSelection.Target == (RansackSelection)_settings["RansackSelection"].AsInt32())
-            {
-                if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
                 return CombatTargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
-            }
 
-            if (_drainTarget == null) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (RansackSelection.OS == (RansackSelection)_settings["RansackSelection"].AsInt32())
             {
@@ -616,18 +587,10 @@ namespace CombatHandler.Trader
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
             if (DepriveSelection.Target == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-            {
-                if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
                 return CombatTargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
-            }
 
-            if (_drainTarget == null) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (DepriveSelection.OS == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
             {
@@ -659,51 +622,55 @@ namespace CombatHandler.Trader
 
         private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
             return ToggledCombatTargetDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AAODrain") || fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
             return ToggledCombatTargetDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
         }
 
         private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AADDrain") || fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
             return ToggledCombatTargetDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
         }
 
-        private bool TraderACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
             return ToggledCombatTargetDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool TeamNanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (fightingTarget == null) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NanoPointHeals)) { return false; }
+            //if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NanoPointHeals)) { return false; }
 
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar lowNanoTeamMember = DynelManager.Characters
-                    .Where(c => Team.Members
-                        .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                            .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.NanoPercent <= 80)
-                    .FirstOrDefault();
+            //if (DynelManager.LocalPlayer.IsInTeam())
+            //{
+            //    SimpleChar lowNanoTeamMember = DynelManager.Characters
+            //        .Where(c => Team.Members
+            //            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+            //                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+            //        .Where(c => c.NanoPercent <= 80)
+            //        .FirstOrDefault();
 
-                if (lowNanoTeamMember != null)
-                {
-                    actionTarget.Target = lowNanoTeamMember;
-                    return true;
-                }
-            }
+            //    if (lowNanoTeamMember != null)
+            //    {
+            //        actionTarget.Target = lowNanoTeamMember;
+            //        return true;
+            //    }
+            //}
 
-            return false;
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         public enum PerkSelection

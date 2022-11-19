@@ -92,21 +92,21 @@ namespace CombatHandler.Trader
             RegisterPerkProcessor(PerkHash.LEProcTraderRefinanceLoans, RefinanceLoans, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcTraderPaymentPlan, PaymentPlan, CombatActionPriority.Low);
 
-            //Leg Shot
+            //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
             RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
 
             //Heals
-            RegisterSpellProcessor(RelevantNanos.Heal, Healing); // Self
-            RegisterSpellProcessor(RelevantNanos.TeamHeal, Healing); // Team
-            RegisterSpellProcessor(RelevantNanos.HealthDrain, Healing); // Drain
+            RegisterSpellProcessor(RelevantNanos.Heal, Healing);
+            RegisterSpellProcessor(RelevantNanos.TeamHeal, Healing);
+            RegisterSpellProcessor(RelevantNanos.HealthDrain, Healing);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEHeal);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
 
-            //Self Buffs
+            //Buffs
             RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, Buff);
             RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, Buff);
             RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, Buff);
@@ -115,22 +115,17 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
 
             //Team Nano heal (Rouse Outfit nanoline)
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), TeamNanoHeal);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal);
 
-            //GTH/Your Enemy Drains
+            //Debuffs
             RegisterSpellProcessor(RelevantNanos.GrandThefts, GrandTheftHumidity, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.MyEnemiesEnemyIsMyFriend, MyEnemy);
-
-            //AAO/AAD/Damage Drains
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAADDrain).OrderByStackingOrder(), AADDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAAODrain).OrderByStackingOrder(), AAODrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.DivestDamage, DamageDrain, CombatActionPriority.Medium);
-
-            //Deprive/Ransack Drains
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), ACDrain, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Deprive).OrderByStackingOrder(), DepriveDrain, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack).OrderByStackingOrder(), RansackDrain, CombatActionPriority.High);
-
-            //AC Drains/Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderDebuffACNanos).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
@@ -292,25 +287,14 @@ namespace CombatHandler.Trader
                 window.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
-                {
                     if (int.TryParse(healInput.Text, out int healValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
-                        {
                             Config.CharSettings[Game.ClientInst].TraderHealPercentage = healValue;
-                        }
-                    }
-                }
+
                 if (healthDrainInput != null && !string.IsNullOrEmpty(healthDrainInput.Text))
-                {
                     if (int.TryParse(healthDrainInput.Text, out int heallthDrainValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage != heallthDrainValue)
-                        {
                             Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage = heallthDrainValue;
-                        }
-                    }
-                }
             }
 
             if ((RansackSelection.OS == (RansackSelection)_settings["RansackSelection"].AsInt32()
@@ -442,8 +426,6 @@ namespace CombatHandler.Trader
 
         private bool LEHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
             return FindMemberWithHealthBelow(60, spell, ref actionTarget);
         }
 
@@ -496,7 +478,7 @@ namespace CombatHandler.Trader
             if (IsSettingEnabled("EvadesTeam"))
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
 
-            if (fightingTarget != null || !CanCast(spell)) { return false; }
+            if (fightingTarget != null) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
@@ -648,7 +630,7 @@ namespace CombatHandler.Trader
             return ToggledCombatTargetDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool TeamNanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
 

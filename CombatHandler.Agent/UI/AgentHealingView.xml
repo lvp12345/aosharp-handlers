@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HealingView" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Complete Healing*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CH" layout_borders="Rect(10,1,5,1)"/>
     <TextInputView name="CompleteHealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>

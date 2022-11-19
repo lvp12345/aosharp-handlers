@@ -38,6 +38,10 @@ namespace CombatHandler.Fixer
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
+            _settings.AddVariable("ShortHOT", false);
+            _settings.AddVariable("TeamShortHOT", false);
+            _settings.AddVariable("TeamLongHOT", false);
+
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.BootlegRemedies);
 

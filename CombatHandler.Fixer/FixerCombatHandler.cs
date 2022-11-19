@@ -75,8 +75,8 @@ namespace CombatHandler.Fixer
             RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, Buff);
             RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
-            RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, Runspeed);
-            RegisterSpellProcessor(RelevantNanos.ShadowlandsRunspeed, Runspeed);
+            RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);
+            RegisterSpellProcessor(RelevantNanos.ShadowlandsRunspeed, SLRunspeed);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDecrease);
             RegisterSpellProcessor(RelevantNanos.Grid, Armor);
@@ -308,32 +308,23 @@ namespace CombatHandler.Fixer
             return ToggledCombatTargetDebuff("Evasion", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-
-        private bool Runspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SLRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum() || RunspeedSelection.Shadowlands != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
 
-            if (RunspeedSelection.RubiKa == (RunspeedSelection)_settings["RunspeedSelection"].AsInt32())
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool RKRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum() || RunspeedSelection.RubiKa != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.ShadowlandsRunspeed))
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.ShadowlandsRunspeed))
-                {
-                    CancelBuffs(RelevantNanos.ShadowlandsRunspeed);
-                }
-
-                return CombatGenericBuff(spell, fightingTarget, ref actionTarget);
+                CancelBuffs(RelevantNanos.ShadowlandsRunspeed);
             }
 
-            if (RunspeedSelection.Shadowlands == (RunspeedSelection)_settings["RunspeedSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.ShadowlandsRunspeed))
-                {
-                    CancelBuffs(RelevantNanos.RubiKaRunspeed);
-                }
-
-                return CombatGenericBuff(spell, fightingTarget, ref actionTarget);
-            }
-
-            return false;
+            return CombatGenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool Armor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

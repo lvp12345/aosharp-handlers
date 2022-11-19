@@ -289,10 +289,8 @@ namespace CombatHandler.Fixer
         {
             if (IsSettingEnabled("TeamLongHOT"))
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
-            if (IsSettingEnabled("LongHOT"))
-                return Buff(spell, fightingTarget, ref actionTarget);
 
-            return false;
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

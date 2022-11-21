@@ -108,9 +108,9 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), Buff);
 
             //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), TeamNanoDelta);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
             RegisterSpellProcessor(RelevantNanos.PistolBuffs, Pistol);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), TeamCrit);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), Crit);
 
             //Buff Aura
             RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
@@ -191,8 +191,6 @@ namespace CombatHandler.Bureaucrat
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_petView)) { return; }
 
                 _petView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetsView.xml");
@@ -210,8 +208,6 @@ namespace CombatHandler.Bureaucrat
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratBuffsView.xml");
@@ -229,8 +225,6 @@ namespace CombatHandler.Bureaucrat
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratProcsView.xml");
@@ -248,8 +242,6 @@ namespace CombatHandler.Bureaucrat
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_debuffView)) { return; }
 
                 _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratDebuffsView.xml");
@@ -267,8 +259,6 @@ namespace CombatHandler.Bureaucrat
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_calmView)) { return; }
 
                 _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratCalmingView.xml");
@@ -446,7 +436,7 @@ namespace CombatHandler.Bureaucrat
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
-        private bool TeamNanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
                 if (IsSettingEnabled("NanoDeltaTeam"))
@@ -454,7 +444,7 @@ namespace CombatHandler.Bureaucrat
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
-        private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Crit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
                 return TeamBuff(spell, ref actionTarget);
@@ -596,9 +586,10 @@ namespace CombatHandler.Bureaucrat
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
                         && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && !c.Buffs.Contains(NanoLine.Mezz)
                         && c.MaxHealth < 1000000)
                     .FirstOrDefault();
 
@@ -614,9 +605,10 @@ namespace CombatHandler.Bureaucrat
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
                         && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && !c.Buffs.Contains(NanoLine.Mezz)
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && AttackingTeam(c))
@@ -643,9 +635,10 @@ namespace CombatHandler.Bureaucrat
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
                         && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && !c.Buffs.Contains(NanoLine.Mezz)
                         && c.MaxHealth < 1000000)
                     .FirstOrDefault();
 
@@ -661,9 +654,10 @@ namespace CombatHandler.Bureaucrat
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
                         && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && !c.Buffs.Contains(NanoLine.Mezz)
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && AttackingTeam(c))
@@ -690,9 +684,10 @@ namespace CombatHandler.Bureaucrat
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
                         && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && !c.Buffs.Contains(NanoLine.Mezz)
                         && c.MaxHealth < 1000000)
                     .FirstOrDefault();
 
@@ -708,9 +703,10 @@ namespace CombatHandler.Bureaucrat
             {
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
                         && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && !c.Buffs.Contains(NanoLine.Mezz)
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && AttackingTeam(c))

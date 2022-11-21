@@ -176,43 +176,8 @@ namespace CombatHandler.Keeper
                     procView.Clicked = HandleProcViewClick;
                 }
 
-                if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.HealAuras);
-                }
-                if (AuraSet1Selection.Nano != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.NanoAuras);
-                }
-                if (AuraSet2Selection.Damage != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.DamageAuras);
-                }
-                if (AuraSet2Selection.DeRoot != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.DerootAuras);
-                }
-                if (AuraSet3Selection.AAO != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.AAOAuras);
-                }
-                if (AuraSet3Selection.Reflect != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.ReflectAuras);
-                }
-                if (AuraSet4Selection.Sanc != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.SancAuras);
-                }
-                if (AuraSet4Selection.Reaper != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.ReaperAuras);
-                }
+                CancelAuras();
             }
-
-            //CancelBuffs(IsSettingEnabled("NanoAura") ? RelevantNanos.HealAuras : RelevantNanos.NanoAuras);
-            //CancelBuffs(IsSettingEnabled("ReflectAura") ? RelevantNanos.AAOAuras : RelevantNanos.ReflectAuras);
-            //CancelBuffs(IsSettingEnabled("DerootAura") ? RelevantNanos.DamageAuras : RelevantNanos.DerootAuras);
         }
 
         #region Perks
@@ -300,6 +265,8 @@ namespace CombatHandler.Keeper
 
         #endregion
 
+        #region Auras
+
         private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("RecastAntiFear")) { return true; }
@@ -363,6 +330,46 @@ namespace CombatHandler.Keeper
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
+        #endregion
+
+        #region Misc
+
+        private void CancelAuras()
+        {
+            if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.HealAuras);
+            }
+            if (AuraSet1Selection.Nano != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.NanoAuras);
+            }
+            if (AuraSet2Selection.Damage != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageAuras);
+            }
+            if (AuraSet2Selection.DeRoot != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DerootAuras);
+            }
+            if (AuraSet3Selection.AAO != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.AAOAuras);
+            }
+            if (AuraSet3Selection.Reflect != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ReflectAuras);
+            }
+            if (AuraSet4Selection.Sanc != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.SancAuras);
+            }
+            if (AuraSet4Selection.Reaper != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ReaperAuras);
+            }
+        }
+
         protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
         {
             return specialAttack != SpecialAttack.Dimach;
@@ -421,5 +428,7 @@ namespace CombatHandler.Keeper
         {
             HonorRestored, AmbientPurification, BenevolentBarrier, Subjugation, FaithfulReconstruction
         }
+
+        #endregion
     }
 }

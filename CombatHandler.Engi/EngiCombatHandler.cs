@@ -73,7 +73,7 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
             _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
 
-            _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.Off);
+            _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.ChaoticBox);
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ReactiveArmor);
@@ -143,8 +143,8 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.SedativeInjectors, SedativeInjectors);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, PetDamage);
 
-            RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticEnergyBox);
-            //RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
+            RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
+            RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
             RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
 
             ResetTrimmers();
@@ -290,7 +290,6 @@ namespace CombatHandler.Engineer
                     {
                         if (Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage != bioCocoonValue)
                         {
-                            //Is there even need to save here if we have event handler for it?
                             Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = bioCocoonValue;
                         }
                     }
@@ -314,54 +313,15 @@ namespace CombatHandler.Engineer
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                CancelBuffs();
             }
 
-            if (BuffingAuraSelection.Shield != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
-            {
-                CancelBuffs(RelevantNanos.ShieldAura);
-            }
-
-            if (BuffingAuraSelection.Damage != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
-            {
-                CancelBuffs(RelevantNanos.DamageAura);
-            }
-
-            if (BuffingAuraSelection.Armor != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
-            {
-                CancelBuffs(RelevantNanos.ArmorAura);
-            }
-
-            if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
-            {
-                CancelBuffs(RelevantNanos.ReflectAura);
-            }
-
-            CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
             CancelHostileAuras(RelevantNanos.Blinds);
             CancelHostileAuras(RelevantNanos.ShieldRippers);
         }
 
-        #region Perks
+        #region LE Procs
 
-        //Perks
-
-        private bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.HealthPercent > EngiBioCocoonPercentage) { return false; }
-
-            return true;
-        }
-
-        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
-
-            return true;
-        }
-
-
-        //LE Procs
         private bool CushionBlows(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ProcType1Selection.CushionBlows != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
@@ -446,6 +406,24 @@ namespace CombatHandler.Engineer
 
         #endregion
 
+        #region Perks
+
+        private bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.HealthPercent > EngiBioCocoonPercentage) { return false; }
+
+            return true;
+        }
+
+        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
+
+            return true;
+        }
+
+        #endregion
+
         // WUT
         private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -464,14 +442,6 @@ namespace CombatHandler.Engineer
             return false;
         }
 
-        private bool SnareMobExists()
-        {
-            return DynelManager.NPCs
-                .Where(c => c.Name == "Flaming Vengeance" ||
-                    c.Name == "Hand of the Colonel")
-                .Any();
-        }
-
         protected bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
@@ -480,7 +450,7 @@ namespace CombatHandler.Engineer
 
             if (DynelManager.LocalPlayer.Buffs.Contains(269482)) { return false; }
 
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) 
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
                     || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
@@ -668,16 +638,37 @@ namespace CombatHandler.Engineer
             return false;
         }
 
-        private bool ChaoticEnergyBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SiphonBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PetPerkSelection.Off != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
+            if (PetPerkSelection.SiphonBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
                 || !CanLookupPetsAfterZone() || actionTarget.Target != null) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
 
-                if (!pet.Character.Buffs.Contains(RelevantNanos.PerkChaoticEnergy))
+                if (!pet.Character.Buffs.Contains(RelevantNanos.PerkSiphonBox))
+                {
+                    actionTarget.Target = pet.Character;
+
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool ChaoticBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PetPerkSelection.ChaoticBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
+                || !CanLookupPetsAfterZone() || actionTarget.Target != null) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(RelevantNanos.PerkChaoticBox))
                 {
                     actionTarget.Target = pet.Character;
 
@@ -691,7 +682,7 @@ namespace CombatHandler.Engineer
 
         private bool TauntBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (PetPerkSelection.Def != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
+            if (PetPerkSelection.TauntBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
                 || !CanLookupPetsAfterZone()) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
@@ -923,6 +914,14 @@ namespace CombatHandler.Engineer
             return false;
         }
 
+        private bool SnareMobExists()
+        {
+            return DynelManager.NPCs
+                .Where(c => c.Name == "Flaming Vengeance" ||
+                    c.Name == "Hand of the Colonel")
+                .Any();
+        }
+
         protected bool CanTrim()
         {
             return _lastTrimTime + DelayBetweenTrims < Time.NormalTime;
@@ -971,6 +970,32 @@ namespace CombatHandler.Engineer
             ResetTrimmers();
         }
 
+        private void CancelBuffs()
+        {
+            if (BuffingAuraSelection.Shield != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ShieldAura);
+            }
+
+            if (BuffingAuraSelection.Damage != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageAura);
+            }
+
+            if (BuffingAuraSelection.Armor != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ArmorAura);
+            }
+
+            if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ReflectAura);
+            }
+
+            CancelBuffs(DebuffingAuraSelection.ShieldRipper == (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+                ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
+        }
+
         protected bool ShouldCancelHostileAuras()
         {
             return Time.NormalTime - _lastCombatTime > 5;
@@ -996,7 +1021,7 @@ namespace CombatHandler.Engineer
 
             public static readonly int[] PerkTauntBox = { 229131, 229130, 229129, 229128, 229127, 229126 };
             public static readonly int[] PerkSiphonBox = { 229657, 229656, 229655, 229654 };
-            public static readonly int[] PerkChaoticEnergy = { 227787 };
+            public static readonly int[] PerkChaoticBox = { 227787 };
             public static readonly int[] PetCleanse = { 269870, 269869 };
 
             public static readonly int[] ShieldRippers = { 154725, 154726, 154727, 154728 };
@@ -1022,7 +1047,7 @@ namespace CombatHandler.Engineer
 
         public enum PetPerkSelection
         {
-            Off, Def
+            TauntBox, ChaoticBox, SiphonBox
         }
         public enum PetProcSelection
         {

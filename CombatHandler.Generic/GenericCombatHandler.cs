@@ -627,6 +627,7 @@ namespace CombatHandler.Generic
             SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
+                        && c.Health > 0
                         && !c.Buffs.Contains(301844)
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -651,6 +652,7 @@ namespace CombatHandler.Generic
             SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
+                        && c.Health > 0
                         && !c.Buffs.Contains(301844)
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)

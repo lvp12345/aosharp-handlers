@@ -134,6 +134,7 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPPetInitiativeBuffs).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(), PetTargetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), PetTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, PetTargetBuff);
 
             RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing);
             RegisterSpellProcessor(RelevantNanos.PetHealingGreater, PetHealingGreater);
@@ -141,7 +142,6 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(RelevantNanos.SedativeInjectors, SedativeInjectors);
-            RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, PetDamage);
 
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
@@ -166,13 +166,7 @@ namespace CombatHandler.Engineer
 
         public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow };
 
-        public static void EngiBioCocoonPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = e;
-            EngiBioCocoonPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
+        #region Callbacks
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -190,13 +184,16 @@ namespace CombatHandler.Engineer
             }
         }
 
+        #endregion
+
+        #region Handles
         private void HandlePetViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                if (window.Views.Contains(_petView)) { return; }
+
                 _petView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPetsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Pets", XmlViewName = "EngineerPetsView" }, _petView);
             }
@@ -212,8 +209,8 @@ namespace CombatHandler.Engineer
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                if (window.Views.Contains(_buffView)) { return; }
+
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "EngineerBuffsView" }, _buffView);
             }
@@ -228,8 +225,6 @@ namespace CombatHandler.Engineer
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerProcsView.xml");
@@ -241,6 +236,7 @@ namespace CombatHandler.Engineer
                 _procWindow = container;
             }
         }
+        #endregion
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -285,15 +281,9 @@ namespace CombatHandler.Engineer
                 SettingsController.settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
-                {
                     if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage != bioCocoonValue)
-                        {
                             Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = bioCocoonValue;
-                        }
-                    }
-                }
 
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                 {
@@ -424,122 +414,9 @@ namespace CombatHandler.Engineer
 
         #endregion
 
-        // WUT
-        private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null) { return false; }
+        #region Buffs
 
-            actionTarget.Target = DynelManager.LocalPlayer.Pets
-                .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
-                .FirstOrDefault().Character;
-
-            if (actionTarget.Target != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
-            return false;
-        }
-
-        protected bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-                return TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
-                        || TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(269482)) { return false; }
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
-                    || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
-        protected bool Inits(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar target = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
-                        && SpellChecksOther(spell, spell.Nanoline, c)
-                        && GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged))
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.Target = target;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            if (SpellChecksPlayer(spell))
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PetProcSelection.MastersBidding != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
-
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && pet.Type == PetType.Attack)
-                {
-                    if (spell.IsReady)
-                        spell.Cast(pet.Character, true);
-                }
-            }
-
-            return false;
-        }
-        private bool SedativeInjectors(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PetProcSelection.SedativeInjectors != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
-
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
-                {
-                    actionTarget.Target = pet.Character;
-
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null)
-                    return true;
-            }
-
-            return false;
-        }
-
+        #region Auras
         private bool ArmorAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.Armor != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
@@ -597,6 +474,140 @@ namespace CombatHandler.Engineer
                 && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f)
                 .Any();
         }
+        #endregion
+
+        protected bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+                return TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
+                        || TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(269482)) { return false; }
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
+                    || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        protected bool Inits(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar target = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0
+                        && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
+                        && SpellChecksOther(spell, spell.Nanoline, c)
+                        && GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged))
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.Target = target;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (!GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)
+                || DynelManager.LocalPlayer.Profession == Profession.Doctor || DynelManager.LocalPlayer.Profession == Profession.NanoTechnician) { return false; }
+
+            if (SpellChecksPlayer(spell))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Pets
+
+        #region Buffs
+
+        protected bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.ShieldoftheObedientServant))
+                {
+                    actionTarget.Target = pet.Character;
+
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PetProcSelection.MastersBidding != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
+
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && pet.Type == PetType.Attack)
+                {
+                    if (spell.IsReady)
+                        spell.Cast(pet.Character, true);
+                }
+            }
+
+            return false;
+        }
+
+        private bool SedativeInjectors(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PetProcSelection.SedativeInjectors != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
+
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
+                {
+                    actionTarget.Target = pet.Character;
+
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Warp
+
+        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+
+            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
+        }
+
+        #endregion
+
+        #region Healing
 
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -637,6 +648,10 @@ namespace CombatHandler.Engineer
 
             return false;
         }
+
+        #endregion
+
+        #region Perks
 
         private bool SiphonBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -701,6 +716,10 @@ namespace CombatHandler.Engineer
             return false;
         }
 
+        #endregion
+
+        #region Trimmers
+
         protected bool PetDivertHpTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DivertHpTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
@@ -724,7 +743,6 @@ namespace CombatHandler.Engineer
 
             return false;
         }
-
 
         protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -841,6 +859,20 @@ namespace CombatHandler.Engineer
             return false;
         }
 
+        #endregion
+
+        #endregion
+
+        #region Misc
+
+        public static void EngiBioCocoonPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = e;
+            EngiBioCocoonPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
         protected bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
@@ -854,64 +886,10 @@ namespace CombatHandler.Engineer
             return false;
         }
 
-        protected virtual bool PetSpawnerItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return PetSpawnerItem(PetsList.Pets, item, fightingTarget, ref actionTarget);
-        }
-
         protected bool PetTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
-        }
-
-        public bool PetCleanse(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!CanLookupPetsAfterZone()) { return false; }
-
-            return DynelManager.LocalPlayer.Pets
-                .Where(c => c.Character == null || c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare)
-                    || c.Character.Buffs.Contains(NanoLine.Mezz)).Any();
-        }
-
-        protected bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.ShieldoftheObedientServant))
-                {
-                    actionTarget.Target = pet.Character;
-
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        protected bool PetDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.DamageBuffs_LineA))
-                {
-                    actionTarget.Target = pet.Character;
-
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private bool SnareMobExists()
@@ -946,11 +924,6 @@ namespace CombatHandler.Engineer
         protected bool CanTauntTrim(Pet pet)
         {
             return pet.Type == PetType.Attack && !attackPetTrimmedAggressive;
-        }
-
-        private bool CanPerkBox(Pet pet)
-        {
-            return !pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.GadgeteerPetProcs);
         }
 
         private void ResetTrimmers()
@@ -1070,6 +1043,26 @@ namespace CombatHandler.Engineer
         public enum ProcType2Selection
         {
             AssaultForceRelief, DroneMissiles, DroneExplosives, CongenialEncasement, PersonalProtection
+        }
+
+        #endregion
+
+        // WUT
+        private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
+
+            actionTarget.Target = DynelManager.LocalPlayer.Pets
+                .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
+                .FirstOrDefault().Character;
+
+            if (actionTarget.Target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
         }
     }
 }

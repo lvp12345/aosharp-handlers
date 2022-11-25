@@ -161,6 +161,8 @@ namespace CombatHandler.Metaphysicist
 
         public Window[] _windows => new Window[] { _petWindow, _buffWindow, _debuffWindow };
 
+        #region Callbacks
+
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -177,6 +179,9 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
+        #endregion
+
+        #region Handles
         private void HandlePetViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -253,6 +258,8 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
+        #endregion
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -280,6 +287,7 @@ namespace CombatHandler.Metaphysicist
             if (CanLookupPetsAfterZone())
             {
                 SynchronizePetCombatStateWithOwner();
+
                 AssignTargetToHealPet();
                 AssignTargetToMezzPet();
             }
@@ -312,7 +320,7 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
-        #region Perks
+        #region LE Procs
 
 
         private bool AnticipatedEvasion(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -397,6 +405,7 @@ namespace CombatHandler.Metaphysicist
 
         #endregion
 
+        #region Perks
 
         private bool ChannelRage(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -418,15 +427,11 @@ namespace CombatHandler.Metaphysicist
             return false;
         }
 
-        public bool PetCleanse(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!CanLookupPetsAfterZone()) { return false; }
+        #endregion
 
-            return DynelManager.LocalPlayer.Pets
-                .Where(c => c.Character == null || c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare)
-                    || c.Character.Buffs.Contains(NanoLine.Mezz)).Any();
-        }
+        #region Pets
 
+        #region Buffs
 
         protected bool InducedApathy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -484,18 +489,20 @@ namespace CombatHandler.Metaphysicist
             return false;
         }
 
+        #endregion
+
+        #region Warp
+
         protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
 
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null)
-                    return true;
-            }
-
-            return true;
+            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
         }
+
+        #endregion
+
+        #endregion
 
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -510,14 +517,6 @@ namespace CombatHandler.Metaphysicist
             }
 
             return false;
-        }
-        private bool CanPerkChannelRage(Pet pet)
-        {
-            if (!pet.Character.IsAlive) { return false; }
-
-            if (pet.Type != PetType.Attack) { return false; }
-
-            return !pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.ChannelRage);
         }
 
         private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -793,6 +792,15 @@ namespace CombatHandler.Metaphysicist
         private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool CanPerkChannelRage(Pet pet)
+        {
+            if (!pet.Character.IsAlive) { return false; }
+
+            if (pet.Type != PetType.Attack) { return false; }
+
+            return !pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.ChannelRage);
         }
 
         private Spell[] GetAttackPetsWithSLPetsFirst()

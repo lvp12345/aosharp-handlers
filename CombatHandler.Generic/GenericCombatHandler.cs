@@ -445,8 +445,8 @@ namespace CombatHandler.Generic
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
 
@@ -455,8 +455,8 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
             {
-                actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
@@ -526,8 +526,8 @@ namespace CombatHandler.Generic
 
             if (target != null)
             {
-                actionTarget.Target = target;
                 actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
                 return true;
             }
 
@@ -583,8 +583,8 @@ namespace CombatHandler.Generic
 
             if (target != null)
             {
-                actionTarget.Target = target;
                 actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
                 return true;
             }
 
@@ -637,8 +637,8 @@ namespace CombatHandler.Generic
 
             if (target != null)
             {
-                actionTarget.Target = target;
                 actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
                 return true;
             }
 
@@ -662,8 +662,8 @@ namespace CombatHandler.Generic
 
             if (target != null)
             {
-                actionTarget.Target = target;
                 actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
                 return true;
             }
 
@@ -702,8 +702,8 @@ namespace CombatHandler.Generic
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -743,7 +743,7 @@ namespace CombatHandler.Generic
 
                 if (target != null)
                 {
-                    if (actionTarget.Target.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
+                    if (target.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
                         (spell.Nanoline == NanoLine.FixerSuppressorBuff || spell.Nanoline == NanoLine.AssaultRifleBuffs)) { return false; }
 
                     actionTarget.Target = target;
@@ -770,13 +770,13 @@ namespace CombatHandler.Generic
 
                 if (target != null)
                 {
-                    if (actionTarget.Target.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
+                    if (target.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
                         (spell.Nanoline == NanoLine.FixerSuppressorBuff || spell.Nanoline == NanoLine.AssaultRifleBuffs)) { return false; }
 
-                    if (actionTarget.Target.Buffs.Contains(NanoLine.PistolBuff) &&
+                    if (target.Buffs.Contains(NanoLine.PistolBuff) &&
                         spell.Nanoline == NanoLine.PistolBuff) { return false; }
 
-                    if (actionTarget.Target.Buffs.Contains(NanoLine.AssaultRifleBuffs) &&
+                    if (target.Buffs.Contains(NanoLine.AssaultRifleBuffs) &&
                         (spell.Nanoline == NanoLine.AssaultRifleBuffs || spell.Nanoline == NanoLine.GrenadeBuffs)) { return false; }
 
                     actionTarget.Target = target;
@@ -1167,8 +1167,8 @@ namespace CombatHandler.Generic
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -1196,8 +1196,8 @@ namespace CombatHandler.Generic
 
                 if (teamMember != null)
                 {
-                    actionTarget.Target = teamMember;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = teamMember;
                     return true;
                 }
 
@@ -1207,8 +1207,8 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.HealthPercent <= healthPercentTreshold)
             {
-                actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
@@ -1233,8 +1233,8 @@ namespace CombatHandler.Generic
 
             if (player != null)
             {
-                actionTarget.Target = player;
                 actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = player;
                 return true;
             }
 

@@ -132,37 +132,7 @@ namespace CombatHandler.NanoTechnician
         }
         public Window[] _windows => new Window[] { _buffWindow, _procWindow, _debuffWindow, _nukeWindow };
 
-        public static void NTNanoAegisPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = e;
-            NTNanoAegisPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-
-        public static void NTNullitySpherePercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = e;
-            NTNullitySpherePercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-
-        public static void NTIzgimmersWealthPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = e;
-            NTIzgimmersWealthPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-
-        public static void NTCycleAbsorbsDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = e;
-            NTCycleAbsorbsDelay = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
+        #region Callbacks
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -179,6 +149,10 @@ namespace CombatHandler.NanoTechnician
                 Chat.WriteLine(e);
             }
         }
+
+        #endregion
+
+        #region Handles
 
         private void HandleDebuffsViewClick(object s, ButtonBase button)
         {
@@ -265,6 +239,8 @@ namespace CombatHandler.NanoTechnician
                 _procWindow = container;
             }
         }
+
+        #endregion
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -362,7 +338,7 @@ namespace CombatHandler.NanoTechnician
             }
         }
 
-        #region Perks
+        #region LE Procs
 
         private bool CircularLogic(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -441,6 +417,8 @@ namespace CombatHandler.NanoTechnician
 
         #endregion
 
+        #region Perks
+
         private bool FlimFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("FlimFocus")) { return false; }
@@ -448,79 +426,38 @@ namespace CombatHandler.NanoTechnician
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
+        #endregion
 
-        private bool AOEBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BlindSelection.AOE != (BlindSelection)_settings["BlindSelection"].AsInt32() || fightingTarget == null) { return false; }
-
-            return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
-        }
-
-        private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BlindSelection.Target != (BlindSelection)_settings["BlindSelection"].AsInt32() || fightingTarget == null) { return false; }
-
-            return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
-        }
+        #region Nukes
 
         private bool VolcanicEruption(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AOESelection.VE == (AOESelection)_settings["AOESelection"].AsInt32())
-            {
-                if (fightingTarget == null || !CanCast(spell)) { return false; }
+            if (AOESelection.VE != (AOESelection)_settings["AOESelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
 
-                actionTarget.ShouldSetTarget = false;
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
-        private bool NanoHoT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PierceNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NanoHoTTeam"))
-            {
-                if (Team.IsInTeam)
-                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+            if (!IsSettingEnabled("Pierce") || fightingTarget == null || !CanCast(spell)) { return false; }
 
-                return Buff(spell, fightingTarget, ref actionTarget);
-            }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return true;
         }
 
-        private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CostTeam"))
-            {
-                if (Team.IsInTeam)
-                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+            if (AOESelection.Normal != (AOESelection)_settings["AOESelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
 
-                return Buff(spell, fightingTarget, ref actionTarget);
-            }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            actionTarget.ShouldSetTarget = false;
-            return DynelManager.LocalPlayer.HealthPercent <= NTNanoAegisPercentage && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
-        }
-
-        private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            actionTarget.ShouldSetTarget = false;
-            return DynelManager.LocalPlayer.HealthPercent <= NTNullitySpherePercentage && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
+            return true;
         }
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AOESelection.VE == (AOESelection)_settings["AOESelection"].AsInt32() || fightingTarget == null) { return false; }
+            if (AOESelection.VE == (AOESelection)_settings["AOESelection"].AsInt32()
+                || AOESelection.Normal == (AOESelection)_settings["AOESelection"].AsInt32()
+                || fightingTarget == null) { return false; }
 
             //Task.Factory.StartNew(
             //    async () =>
@@ -537,6 +474,74 @@ namespace CombatHandler.NanoTechnician
 
             return true;
         }
+
+        private bool AiDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("AIDot") || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (fightingTarget.Health < 80000) { return false; }
+
+            if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Blinds
+
+        private bool AOEBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BlindSelection.AOE != (BlindSelection)_settings["BlindSelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
+        }
+
+        private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BlindSelection.Target != (BlindSelection)_settings["BlindSelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
+        }
+
+        #endregion
+
+        #region Buffs
+
+        private bool NanoHoT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("NanoHoTTeam"))
+                if (Team.IsInTeam)
+                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("CostTeam"))
+                if (Team.IsInTeam)
+                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            return DynelManager.LocalPlayer.HealthPercent <= NTNanoAegisPercentage && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
+        }
+
+        private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            return DynelManager.LocalPlayer.HealthPercent <= NTNullitySpherePercentage && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
+        }
+
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
@@ -552,47 +557,48 @@ namespace CombatHandler.NanoTechnician
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool PierceNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Pierce") || fightingTarget == null) { return false; }
-
-            return true;
-        }
-
-        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (AOESelection.VE != (AOESelection)_settings["AOESelection"].AsInt32() || fightingTarget == null) { return false; }
-
-            return true;
-        }
-
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("Buffing") || fightingTarget == null || !CanCast(spell)) { return false; }
 
-            if (DynelManager.LocalPlayer.NanoPercent <= NTIzgimmersWealthPercentage)
-            {
-                actionTarget.ShouldSetTarget = false;
-                return true;
-            }
-
-            return false;
+            return DynelManager.LocalPlayer.NanoPercent <= NTIzgimmersWealthPercentage;
         }
 
-        private bool AiDotNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!IsSettingEnabled("AIDot") || fightingTarget == null) { return false; }
-
-            if (fightingTarget.Health < 80000) { return false; }
-
-            if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
-
-            return true;
-        }
+        #endregion
 
         #region Misc
+
+        public static void NTNanoAegisPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = e;
+            NTNanoAegisPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void NTNullitySpherePercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = e;
+            NTNullitySpherePercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void NTIzgimmersWealthPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = e;
+            NTIzgimmersWealthPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void NTCycleAbsorbsDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = e;
+            NTCycleAbsorbsDelay = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
 
         public enum ProcType1Selection
         {
@@ -610,7 +616,7 @@ namespace CombatHandler.NanoTechnician
 
         public enum AOESelection
         {
-            None, AOE, VE
+            None, Normal, VE
         }
         private static class RelevantNanos
         {

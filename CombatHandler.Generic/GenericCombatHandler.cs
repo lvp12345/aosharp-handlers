@@ -894,7 +894,8 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
                 || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                || (DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231))) { return false; }
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
             int targetHealing = item.UseModifiers
                 .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
@@ -920,12 +921,6 @@ namespace CombatHandler.Generic
             return !Inventory.Items
                 .Where(c => c.Name == "Ammo: Box of Bullets")
                 .Any();
-
-            //Item bulletsammo = Inventory.Items
-            //    .Where(c => c.Name.Contains("Bullets") && !c.Name.Contains("Crate"))
-            //    .FirstOrDefault();
-
-            //return bulletsammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
         }
 
         private bool AmmoBoxEnergy(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -935,13 +930,6 @@ namespace CombatHandler.Generic
             return !Inventory.Items
                 .Where(c => c.Name == "Ammo: Box of Energy Weapon Ammo")
                 .Any();
-
-
-            //Item energyammo = Inventory.Items
-            //    .Where(c => c.Name.Contains("Energy") && !c.Name.Contains("Crate"))
-            //    .FirstOrDefault();
-
-            //return energyammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
         }
 
         private bool AmmoBoxShotgun(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -951,12 +939,6 @@ namespace CombatHandler.Generic
             return !Inventory.Items
                 .Where(c => c.Name == "Ammo: Box of Shotgun Shells")
                 .Any();
-
-            //Item shotgunammo = Inventory.Items
-            //    .Where(c => c.Name.Contains("Shotgun") && !c.Name.Contains("Crate"))
-            //    .FirstOrDefault();
-
-            //return shotgunammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
         }
 
         private bool AmmoBoxArrows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -966,12 +948,6 @@ namespace CombatHandler.Generic
             return !Inventory.Items
                 .Where(c => c.Name == "Ammo: Box of Arrows")
                 .Any();
-
-            //Item arrowammo = Inventory.Items
-            //    .Where(c => c.Name.Contains("Arrows") && !c.Name.Contains("Crate"))
-            //    .FirstOrDefault();
-
-            //return arrowammo == null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing);
         }
 
         private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -1116,6 +1092,15 @@ namespace CombatHandler.Generic
             return Time.NormalTime > _lastZonedTime + PostZonePetCheckBuffer;
         }
 
+        public bool PetCleanse(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanLookupPetsAfterZone()) { return false; }
+
+            return DynelManager.LocalPlayer.Pets
+                .Where(c => c.Character == null || c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare)
+                    || c.Character.Buffs.Contains(NanoLine.Mezz)).Any();
+        }
+
         protected bool PetTargetBuff(NanoLine buffNanoLine, PetType petType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
@@ -1165,11 +1150,6 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Checks
-
-        protected bool HasBuffNanoLine(NanoLine nanoLine, SimpleChar target)
-        {
-            return target.Buffs.Contains(nanoLine);
-        }
 
         protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1332,6 +1312,11 @@ namespace CombatHandler.Generic
             }
 
             return DynelManager.LocalPlayer.RemainingNCU >= spell.NCU;
+        }
+
+        protected bool HasBuffNanoLine(NanoLine nanoLine, SimpleChar target)
+        {
+            return target.Buffs.Contains(nanoLine);
         }
 
         protected bool CanCast(Spell spell)

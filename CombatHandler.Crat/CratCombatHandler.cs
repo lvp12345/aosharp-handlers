@@ -879,11 +879,6 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-        protected virtual bool RobotSpawnerItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return PetSpawnerItem(PetsList.Pets, item, fightingTarget, ref actionTarget);
-        }
-
         protected bool CarloSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);

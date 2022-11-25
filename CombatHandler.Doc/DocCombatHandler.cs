@@ -450,9 +450,7 @@ namespace CombatHandler.Doctor
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell) || DocHealPercentage == 0) { return false; }
+            if (DocHealPercentage == 0) { return false; }
 
             if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
             {
@@ -461,7 +459,6 @@ namespace CombatHandler.Doctor
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
                     List<SimpleChar> dyingTeamMember = DynelManager.Characters
@@ -482,9 +479,7 @@ namespace CombatHandler.Doctor
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!CanCast(spell) || DocHealPercentage == 0) { return false; }
+            if (DocHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {

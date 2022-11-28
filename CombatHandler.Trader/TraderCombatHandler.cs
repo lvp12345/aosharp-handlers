@@ -529,6 +529,8 @@ namespace CombatHandler.Trader
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget?.MaxHealth <= 1000000) { return false; }
+
             return ToggledCombatTargetDebuff("GTH", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 

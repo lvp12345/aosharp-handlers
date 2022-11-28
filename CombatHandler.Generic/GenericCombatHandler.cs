@@ -493,14 +493,16 @@ namespace CombatHandler.Generic
         #region Generic
         protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+
             if (Team.IsInTeam)
-                return TeamBuff(spell, ref actionTarget);
+                return TeamBuff(spell, fightingTarget, ref actionTarget);
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
         protected bool Buff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             if (SpellChecksPlayer(spell))
             {
@@ -512,7 +514,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool TeamBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool TeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
@@ -536,10 +538,12 @@ namespace CombatHandler.Generic
 
         protected bool BuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+
             if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
             if (Team.IsInTeam)
-                return TeamBuff(spell, ref actionTarget);
+                return TeamBuff(spell, fightingTarget, ref actionTarget);
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
@@ -549,6 +553,8 @@ namespace CombatHandler.Generic
 
         protected bool CombatGenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+
             if (Team.IsInTeam)
                 return CombatTeamBuff(spell, fightingTarget, ref actionTarget);
 
@@ -620,7 +626,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool OSDebuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool OSDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
@@ -676,7 +682,7 @@ namespace CombatHandler.Generic
         {
             if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
-            if (SpellChecksNanoSkillsPlayer(spell, fightingTarget))
+            if (SpellChecksNanoSkillsPlayer(spell))
             {
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
@@ -1241,7 +1247,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
+        protected bool SpellChecksNanoSkillsPlayer(Spell spell)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
 

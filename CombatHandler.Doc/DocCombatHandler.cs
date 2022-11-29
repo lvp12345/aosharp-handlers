@@ -515,7 +515,6 @@ namespace CombatHandler.Doctor
             {
                 SimpleChar target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
-                        && (c.Profession == Profession.Doctor || c.Profession == Profession.NanoTechnician)
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0

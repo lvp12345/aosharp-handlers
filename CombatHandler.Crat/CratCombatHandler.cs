@@ -129,7 +129,7 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.PuissantVoidInertia, Root, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalm, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.AoECalms, AOECalm, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AOECalms, AOECalm, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.RkCalms, RKCalm, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
             //RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
@@ -834,8 +834,32 @@ namespace CombatHandler.Bureaucrat
 
             SimpleChar target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Root)
                         && (c.Name == "Flaming Vengeance"
-                            || c.Name == "Hand of the Colonel"))
+                            || c.Name == "Hand of the Colonel"
+                            || c.Name == "Alien Seeker"
+                            || c.Name == "Alien Heavy Patroller"))
+                    .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.Target = target;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")
+                || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
+
+            SimpleChar target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && c.Name == "Alien Heavy Patroller")
                     .FirstOrDefault();
 
             if (target != null)
@@ -1072,7 +1096,7 @@ namespace CombatHandler.Bureaucrat
             224137, 224135, 224133, 224131, 219020 };
             public static readonly int[] RkCalms = { 155577, 100428, 100429, 100430, 100431, 100432,
             30093, 30056, 30065 };
-            public static readonly int[] AoECalms = { 100422, 100424, 100426 };
+            public static readonly int[] AOECalms = { 100422, 100424, 100426 };
 
             public static Dictionary<int, int> PetNanoToBuff = new Dictionary<int, int>
             {

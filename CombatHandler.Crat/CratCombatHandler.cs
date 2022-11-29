@@ -127,6 +127,7 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.PuissantVoidInertia, Root, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.ShacklesofObedience, Snare, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalm, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.AOECalms, AOECalm, CombatActionPriority.High);
@@ -834,6 +835,7 @@ namespace CombatHandler.Bureaucrat
 
             SimpleChar target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
+                        && c.IsMoving
                         && !c.Buffs.Contains(NanoLine.Root)
                         && (c.Name == "Flaming Vengeance"
                             || c.Name == "Hand of the Colonel"
@@ -858,6 +860,7 @@ namespace CombatHandler.Bureaucrat
 
             SimpleChar target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
+                        && c.IsMoving
                         && !c.Buffs.Contains(NanoLine.Root)
                         && c.Name == "Alien Heavy Patroller")
                     .FirstOrDefault();
@@ -1075,6 +1078,7 @@ namespace CombatHandler.Bureaucrat
             public const int GreaterGunSlinger = 263250;
             public const int MastersBidding = 268171;
             public const int PuissantVoidInertia = 224129;
+            public const int ShacklesofObedience = 82463;
             public const int PetWarp = 209488;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };

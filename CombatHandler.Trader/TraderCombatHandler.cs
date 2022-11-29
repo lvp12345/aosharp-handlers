@@ -510,20 +510,24 @@ namespace CombatHandler.Trader
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoDrainSelection.Shadowlands != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()) { return false; }
+            if (NanoDrainSelection.Shadowlands != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()
+                || fightingTarget?.MaxHealth <= 1000000) { return false; }
 
             return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoDrainSelection.RubiKa != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()) { return false; }
+            if (NanoDrainSelection.RubiKa != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()
+                || fightingTarget?.MaxHealth <= 1000000) { return false; }
 
             return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget?.MaxHealth <= 1000000) { return false; }
+
             return ToggledCombatTargetDebuff("MyEnemy", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
@@ -635,24 +639,6 @@ namespace CombatHandler.Trader
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
-
-            //if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NanoPointHeals)) { return false; }
-
-            //if (DynelManager.LocalPlayer.IsInTeam())
-            //{
-            //    SimpleChar lowNanoTeamMember = DynelManager.Characters
-            //        .Where(c => Team.Members
-            //            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-            //                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-            //        .Where(c => c.NanoPercent <= 80)
-            //        .FirstOrDefault();
-
-            //    if (lowNanoTeamMember != null)
-            //    {
-            //        actionTarget.Target = lowNanoTeamMember;
-            //        return true;
-            //    }
-            //}
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }

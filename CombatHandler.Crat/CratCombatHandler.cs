@@ -839,8 +839,7 @@ namespace CombatHandler.Bureaucrat
                         && !c.Buffs.Contains(NanoLine.Root)
                         && (c.Name == "Flaming Vengeance"
                             || c.Name == "Hand of the Colonel"
-                            || c.Name == "Alien Seeker"
-                            || c.Name == "Alien Heavy Patroller"))
+                            || c.Name == "Alien Seeker")
                     .FirstOrDefault();
 
             if (target != null)

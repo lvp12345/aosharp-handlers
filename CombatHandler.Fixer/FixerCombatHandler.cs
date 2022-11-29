@@ -79,8 +79,8 @@ namespace CombatHandler.Fixer
             RegisterSpellProcessor(RelevantNanos.ShadowlandsRunspeed, SLRunspeed);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDecrease);
-            RegisterSpellProcessor(RelevantNanos.Grid, Armor);
-            RegisterSpellProcessor(RelevantNanos.ShadowwebSpinner, Armor);
+            RegisterSpellProcessor(RelevantNanos.Grid, Grid);
+            RegisterSpellProcessor(RelevantNanos.ShadowwebSpinner, ShadowwebSpinner);
 
             PluginDirectory = pluginDir;
         }
@@ -327,21 +327,20 @@ namespace CombatHandler.Fixer
             return CombatGenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool Armor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)
+                || ArmorSelection.ShadowwebSpinner != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
 
-            if (ArmorSelection.ShadowwebSpinner == (ArmorSelection)_settings["ArmorSelection"].AsInt32())
-            {
-                return !Inventory.Items.Any(x => RelevantItems.ShadowwebSpinner.Contains(x.HighId));
-            }
+            return !Inventory.Items.Any(x => RelevantItems.ShadowwebSpinner.Contains(x.HighId));
+        }
 
-            if (ArmorSelection.Grid == (ArmorSelection)_settings["ArmorSelection"].AsInt32())
-            {
-                return !Inventory.Items.Any(x => RelevantItems.Grid.Contains(x.HighId));
-            }
+        private bool Grid(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)
+                || ArmorSelection.Grid != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
 
-            return false;
+            return !Inventory.Items.Any(x => RelevantItems.Grid.Contains(x.HighId));
         }
 
         private void EquipBackArmor()

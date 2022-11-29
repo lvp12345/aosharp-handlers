@@ -129,6 +129,9 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.PuissantVoidInertia, Root, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.ShacklesofObedience, Snare, CombatActionPriority.High);
 
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(), RedTape, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(), IntensifyStress, CombatActionPriority.High);
+
             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalm, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.AOECalms, AOECalm, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.RkCalms, RKCalm, CombatActionPriority.High);
@@ -432,6 +435,7 @@ namespace CombatHandler.Bureaucrat
 
             return true;
         }
+
         protected bool PistolSelfOnly(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
@@ -770,6 +774,20 @@ namespace CombatHandler.Bureaucrat
                 || (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000)) { return false; }
 
             return true;
+        }
+
+        private bool IntensifyStress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+            return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        private bool RedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+            return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

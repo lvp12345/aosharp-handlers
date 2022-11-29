@@ -511,7 +511,7 @@ namespace CombatHandler.Trader
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (NanoDrainSelection.Shadowlands != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()
-                || fightingTarget?.MaxHealth <= 1000000) { return false; }
+                || fightingTarget?.MaxHealth < 1000000) { return false; }
 
             return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -519,21 +519,21 @@ namespace CombatHandler.Trader
         private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (NanoDrainSelection.RubiKa != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()
-                || fightingTarget?.MaxHealth <= 1000000) { return false; }
+                || fightingTarget?.MaxHealth < 1000000) { return false; }
 
             return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget?.MaxHealth <= 1000000) { return false; }
+            if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
             return ToggledCombatTargetDebuff("MyEnemy", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget?.MaxHealth <= 1000000) { return false; }
+            if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
             return ToggledCombatTargetDebuff("GTH", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }

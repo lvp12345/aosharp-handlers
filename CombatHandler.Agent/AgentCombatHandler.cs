@@ -131,21 +131,8 @@ namespace CombatHandler.Agent
 
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow };
 
-        public static void AgentHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].AgentHealPercentage = e;
-            AgentHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
+        #region Callbacks
 
-        public static void AgentCompleteHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = e;
-            AgentCompleteHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -162,6 +149,9 @@ namespace CombatHandler.Agent
             }
         }
 
+        #endregion
+
+        #region Handles
 
         private void HandleProcViewClick(object s, ButtonBase button)
         {
@@ -276,6 +266,7 @@ namespace CombatHandler.Agent
             }
         }
 
+        #endregion
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -370,8 +361,7 @@ namespace CombatHandler.Agent
             }
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool DisableCuffs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -457,53 +447,6 @@ namespace CombatHandler.Agent
 
         #region Healing
 
-        private void AssignTargetToHealPet()
-        {
-            if (Time.NormalTime - _lastSwitchedHealTime > 5)
-            {
-                SimpleChar dyingTarget = GetTargetToHeal();
-                if (dyingTarget != null)
-                {
-                    Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal).FirstOrDefault();
-                    if (healPet != null)
-                    {
-                        healPet.Heal(dyingTarget.Identity);
-                        _lastSwitchedHealTime = Time.NormalTime;
-                    }
-                }
-            }
-        }
-
-        private SimpleChar GetTargetToHeal()
-        {
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar dyingTeamMember = DynelManager.Players
-                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent < 90)
-                    .OrderBy(c => c)
-                    .ThenByDescending(c => c.HealthPercent)
-                    .FirstOrDefault();
-
-                if (dyingTeamMember != null)
-                    return dyingTeamMember;
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent < 90)
-                return DynelManager.LocalPlayer;
-
-            Pet dyingPet = DynelManager.LocalPlayer.Pets
-                 .Where(pet => pet.Character.HealthPercent < 90
-                    && (pet.Type == PetType.Attack || pet.Type == PetType.Social))
-                 .OrderByDescending(pet => pet.Character.HealthPercent)
-                 .FirstOrDefault();
-
-            if (dyingPet != null)
-                return dyingPet.Character;
-
-            return null;
-        }
-
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AgentHealPercentage == 0) { return false; }
@@ -526,7 +469,9 @@ namespace CombatHandler.Agent
 
         #endregion
 
-        #region Instanced Logic
+        #region Buffs
+
+        #region False Profs
 
         private bool FalseProfEnforcer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -604,6 +549,13 @@ namespace CombatHandler.Agent
             return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
+
+        #endregion
+        private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return ToggledCombatTargetDebuff("Concentration", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
         private bool Rifle(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.AssassinsAimedShot, out Buff AAS)) { return false; }
@@ -642,6 +594,10 @@ namespace CombatHandler.Agent
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
+        #endregion
+
+        #region Debuffs
+
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
@@ -658,11 +614,6 @@ namespace CombatHandler.Agent
             return false;
         }
 
-        private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledCombatTargetDebuff("Concentration", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
         private bool DOTA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return ToggledCombatTargetDebuff("DOTA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
@@ -677,26 +628,51 @@ namespace CombatHandler.Agent
 
         #region Misc
 
-        public enum FalseProfSelection
+        private void AssignTargetToHealPet()
         {
-            None, Metaphysicist, Soldier, Enforcer, Engineer, Doctor, Fixer, Beauracrat, MartialArtist, NanoTechnician, Trader, Adventurer
-        }
-        public enum HealSelection
-        {
-            None, SingleTeam, SingleOS
-        }
-        public enum InitDebuffSelection
-        {
-            None, Target, OS
-        }
-        public enum ProcType1Selection
-        {
-            GrimReaper, DisableCuffs, NoEscape, IntenseMetabolism, MinorNanobotEnhance
+            if (Time.NormalTime - _lastSwitchedHealTime > 5)
+            {
+                SimpleChar dyingTarget = GetTargetToHeal();
+                if (dyingTarget != null)
+                {
+                    Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal).FirstOrDefault();
+                    if (healPet != null)
+                    {
+                        healPet.Heal(dyingTarget.Identity);
+                        _lastSwitchedHealTime = Time.NormalTime;
+                    }
+                }
+            }
         }
 
-        public enum ProcType2Selection
+        private SimpleChar GetTargetToHeal()
         {
-            NotumChargedRounds, LaserAim, NanoEnhancedTargeting, PlasteelPiercingRounds, CellKiller, ImprovedFocus, BrokenAnkle
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                SimpleChar dyingTeamMember = DynelManager.Players
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent < 90)
+                    .OrderBy(c => c)
+                    .ThenByDescending(c => c.HealthPercent)
+                    .FirstOrDefault();
+
+                if (dyingTeamMember != null)
+                    return dyingTeamMember;
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent < 90)
+                return DynelManager.LocalPlayer;
+
+            Pet dyingPet = DynelManager.LocalPlayer.Pets
+                 .Where(pet => pet.Character.HealthPercent < 90
+                    && (pet.Type == PetType.Attack || pet.Type == PetType.Social))
+                 .OrderByDescending(pet => pet.Character.HealthPercent)
+                 .FirstOrDefault();
+
+            if (dyingPet != null)
+                return dyingPet.Character;
+
+            return null;
         }
 
         private static class RelevantNanos
@@ -725,6 +701,40 @@ namespace CombatHandler.Agent
                 43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
                 28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
+        }
+        public enum FalseProfSelection
+        {
+            None, Metaphysicist, Soldier, Enforcer, Engineer, Doctor, Fixer, Beauracrat, MartialArtist, NanoTechnician, Trader, Adventurer
+        }
+        public enum HealSelection
+        {
+            None, SingleTeam, SingleOS
+        }
+        public enum InitDebuffSelection
+        {
+            None, Target, OS
+        }
+        public enum ProcType1Selection
+        {
+            GrimReaper, DisableCuffs, NoEscape, IntenseMetabolism, MinorNanobotEnhance
+        }
+
+        public enum ProcType2Selection
+        {
+            NotumChargedRounds, LaserAim, NanoEnhancedTargeting, PlasteelPiercingRounds, CellKiller, ImprovedFocus, BrokenAnkle
+        }
+        public static void AgentHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].AgentHealPercentage = e;
+            AgentHealPercentage = e;
+            Config.Save();
+        }
+
+        public static void AgentCompleteHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = e;
+            AgentCompleteHealPercentage = e;
+            Config.Save();
         }
 
         #endregion

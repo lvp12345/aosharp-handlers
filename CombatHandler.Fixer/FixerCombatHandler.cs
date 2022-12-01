@@ -86,6 +86,8 @@ namespace CombatHandler.Fixer
         }
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _procWindow };
 
+        #region Callbacks
+
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -101,6 +103,10 @@ namespace CombatHandler.Fixer
                 Chat.WriteLine(e);
             }
         }
+
+        #endregion
+
+        #region Handles
 
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
@@ -154,6 +160,8 @@ namespace CombatHandler.Fixer
             }
         }
 
+        #endregion
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -192,8 +200,7 @@ namespace CombatHandler.Fixer
             }
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool LucksCalamity(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -278,6 +285,8 @@ namespace CombatHandler.Fixer
 
         #endregion
 
+        #region Buffs
+
         private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (HasBuffNanoLine(NanoLine.FixerNCUBuff, DynelManager.LocalPlayer)) { return false; }
@@ -301,11 +310,6 @@ namespace CombatHandler.Fixer
                 return CombatBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
-        }
-
-        private bool EvasionDecrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledCombatTargetDebuff("Evasion", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool SLRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -342,6 +346,18 @@ namespace CombatHandler.Fixer
 
             return !Inventory.Items.Any(x => RelevantItems.Grid.Contains(x.HighId));
         }
+
+        #endregion
+
+        #region Debuffs
+        private bool EvasionDecrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return ToggledCombatTargetDebuff("Evasion", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Misc
 
         private void EquipBackArmor()
         {
@@ -408,5 +424,7 @@ namespace CombatHandler.Fixer
         {
             None, RubiKa, Shadowlands
         }
+
+        #endregion
     }
 }

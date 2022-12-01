@@ -47,6 +47,7 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
+            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
@@ -98,18 +99,18 @@ namespace CombatHandler.Doctor
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), Inits);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.TeamDeathlessBlessing, TeamDeathlessBlessing);
-            RegisterSpellProcessor(RelevantNanos.IndividualShortHOT, ShortHOT);
+            RegisterSpellProcessor(RelevantNanos.IndividualShortHOTs, ShortHOT);
 
             RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
-            RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealth, ShortMaxHealth);
+            RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
 
             //Debuffs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffs, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuff, CombatActionPriority.Medium);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Nuke).OrderByStackingOrder(), SingleTargetNuke, CombatActionPriority.Low);
 
@@ -509,27 +510,30 @@ namespace CombatHandler.Doctor
 
         #region Buffs
 
-        private bool Inits(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.IsInTeam())
+            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        && SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
-
-                if (target != null)
+                if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    actionTarget.Target = target;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (target != null)
+                    {
+                        actionTarget.Target = target;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
                 }
             }
 
-            if (fightingTarget != null) { return false; }
+            if (InitBuffSelection.Self != (InitBuffSelection)_settings["InitSelection"].AsInt32()) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
@@ -594,7 +598,7 @@ namespace CombatHandler.Doctor
 
         #region Debuffs
 
-        private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool InitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
                 return OSDebuff(spell, ref actionTarget);
@@ -647,7 +651,10 @@ namespace CombatHandler.Doctor
 
             return false;
         }
-
+        public enum InitBuffSelection
+        {
+            None, Self, Team
+        }
         public enum HealSelection
         {
             None, SingleTeam, SingleOS, Team, ImprovedLifeChanneler
@@ -677,13 +684,13 @@ namespace CombatHandler.Doctor
         private static class RelevantNanos
         {
             public const int TeamDeathlessBlessing = 269455;
-            public static readonly Spell[] IndividualShortHOT = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder()
+            public static readonly Spell[] IndividualShortHOTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder()
                 .Where(spell => spell.Id != TeamDeathlessBlessing).ToArray();
             public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
                 42399, 43882, 43874, 43880, 42401 };
 
             public const int ImprovedLC = 275011;
-            public static readonly Spell[] IndividualShortMaxHealth = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
+            public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
                 .Where(spell => spell.Id != ImprovedLC).ToArray();
 
             public const int TiredLimbs = 99578;

@@ -138,20 +138,8 @@ namespace CombatHandler.Trader
         }
         public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _debuffWindow, _procWindow };
 
-        public static void TraderHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].TraderHealPercentage = e;
-            TraderHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-        public static void TraderHealthDrainPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage = e;
-            TraderHealthDrainPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
+        #region Callbacks
+
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -167,6 +155,10 @@ namespace CombatHandler.Trader
                 Chat.WriteLine(e);
             }
         }
+
+        #endregion
+
+        #region Handles
 
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
@@ -264,6 +256,8 @@ namespace CombatHandler.Trader
                 _procWindow = container;
             }
         }
+
+        #endregion
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -340,8 +334,7 @@ namespace CombatHandler.Trader
             }
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool AccumulatedInterest(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -424,6 +417,37 @@ namespace CombatHandler.Trader
 
         #endregion
 
+        #region Perks
+
+        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
+
+            return true;
+        }
+
+        private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+
+            if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
+
+            return perk.IsAvailable;
+        }
+
+        private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+
+            if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
+
+            return perk.IsAvailable;
+        }
+
+        #endregion
+
+        #region Healing
+
         private bool LEHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return FindMemberWithHealthBelow(60, spell, ref actionTarget);
@@ -470,6 +494,16 @@ namespace CombatHandler.Trader
 
             return false;
         }
+        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Buffs
 
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -483,30 +517,9 @@ namespace CombatHandler.Trader
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
+        #endregion
 
-            return true;
-        }
-
-        private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null) { return false; }
-
-            if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
-
-            return perk.IsAvailable;
-        }
-
-        private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null) { return false; }
-
-            if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
-
-            return perk.IsAvailable;
-        }
+        #region Debuffs
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -636,11 +649,30 @@ namespace CombatHandler.Trader
             return ToggledCombatTargetDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null) { return false; }
+        #endregion
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+        #region Misc
+
+        private static class RelevantNanos
+        {
+            public const int QuantumUncertanity = 30745;
+            public const int ImprovedQuantumUncertanity = 270808;
+            public const int UnstoppableKiller = 275846;
+            public const int DivestDamage = 273407;
+            public const int UmbralWranglerPremium = 235291;
+            public const int MyEnemiesEnemyIsMyFriend = 270714;
+            public static int[] GrandThefts = { 269842, 280050 };
+            public static int[] HealthDrain = { 270357, 77195, 76478, 76475, 76487, 76481,
+                76484, 76491, 76494, 76499, 76571, 76503, 76651, 76614, 76656,
+                76653, 76679, 76681, 76684, 76686, 76691, 76688, 76717, 76715,
+                76720, 76722, 76724, 76727, 76729, 76732, 76742};
+            public static int[] Heal = { 273410, 252155, 121496, 121500, 121501, 121499,
+                121502, 121495, 121492, 121506, 121494, 121493, 121504, 121498, 121503,
+                76653, 76679, 76681, 76684, 76686, 76691, 76688, 76717, 76715,
+                121497, 121505};
+            public static int[] TeamHeal = { 118245, 118230, 118232, 118231, 118235, 118233,
+                118234, 118238, 118236, 118237, 118241, 118239, 118240, 118243, 118244,
+                118242, 43374};
         }
 
         public enum PerkSelection
@@ -673,27 +705,21 @@ namespace CombatHandler.Trader
         {
             UnopenedLetter, RigidLiquidation, DepleteAssets, Escrow, RefinanceLoans, PaymentPlan
         }
-
-        private static class RelevantNanos
+        public static void TraderHealPercentage_Changed(object s, int e)
         {
-            public const int QuantumUncertanity = 30745;
-            public const int ImprovedQuantumUncertanity = 270808;
-            public const int UnstoppableKiller = 275846;
-            public const int DivestDamage = 273407;
-            public const int UmbralWranglerPremium = 235291;
-            public const int MyEnemiesEnemyIsMyFriend = 270714;
-            public static int[] GrandThefts = { 269842, 280050 };
-            public static int[] HealthDrain = { 270357, 77195, 76478, 76475, 76487, 76481,
-                76484, 76491, 76494, 76499, 76571, 76503, 76651, 76614, 76656,
-                76653, 76679, 76681, 76684, 76686, 76691, 76688, 76717, 76715,
-                76720, 76722, 76724, 76727, 76729, 76732, 76742};
-            public static int[] Heal = { 273410, 252155, 121496, 121500, 121501, 121499,
-                121502, 121495, 121492, 121506, 121494, 121493, 121504, 121498, 121503,
-                76653, 76679, 76681, 76684, 76686, 76691, 76688, 76717, 76715,
-                121497, 121505};
-            public static int[] TeamHeal = { 118245, 118230, 118232, 118231, 118235, 118233,
-                118234, 118238, 118236, 118237, 118241, 118239, 118240, 118243, 118244,
-                118242, 43374};
+            Config.CharSettings[Game.ClientInst].TraderHealPercentage = e;
+            TraderHealPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
         }
+        public static void TraderHealthDrainPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage = e;
+            TraderHealthDrainPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        #endregion
     }
 }

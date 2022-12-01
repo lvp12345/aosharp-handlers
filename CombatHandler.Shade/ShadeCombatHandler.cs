@@ -120,7 +120,10 @@ namespace CombatHandler.Shade
 
             PluginDirectory = pluginDir;
         }
+
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _procWindow };
+
+        #region Callbacks
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -138,169 +141,9 @@ namespace CombatHandler.Shade
             }
         }
 
-        //public static bool IsRaidEnabled(string[] param)
-        //{
-        //    return param.Length > 0 && "raid".Equals(param[0]);
-        //}
+        #endregion
 
-        //public static Identity[] GetRegisteredCharactersInvite()
-        //{
-        //    Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
-        //    int firstTeamCount = registeredCharacters.Length > 6 ? 6 : registeredCharacters.Length;
-        //    Identity[] firstTeamCharacters = new Identity[firstTeamCount];
-        //    Array.Copy(registeredCharacters, firstTeamCharacters, firstTeamCount);
-        //    return firstTeamCharacters;
-        //}
-
-        //public static Identity[] GetRemainingRegisteredCharacters()
-        //{
-        //    Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
-        //    int characterCount = registeredCharacters.Length - 6;
-        //    Identity[] remainingCharacters = new Identity[characterCount];
-        //    if (characterCount > 0)
-        //    {
-        //        Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
-        //    }
-        //    return remainingCharacters;
-        //}
-
-        //public static void SendTeamInvite(Identity[] targets)
-        //{
-        //    foreach (Identity target in targets)
-        //    {
-        //        if (target != DynelManager.LocalPlayer.Identity)
-        //            Team.Invite(target);
-        //    }
-        //}
-
-        //public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
-        //{
-        //    if (SettingsController.IsCharacterRegistered(e.Requester))
-        //    {
-        //        e.Accept();
-        //    }
-        //}
-
-        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
-        //{
-        //    if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
-
-        //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
-
-        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
-        //    {
-        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
-        //        IPCChannel.Broadcast(new TargetMessage()
-        //        {
-        //            Target = lookAtMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.Attack)
-        //    {
-        //        AttackMessage attackMsg = (AttackMessage)n3Msg;
-        //        IPCChannel.Broadcast(new AttackIPCMessage()
-        //        {
-        //            Target = attackMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.StopFight)
-        //    {
-        //        StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
-        //        IPCChannel.Broadcast(new StopAttackIPCMessage());
-        //    }
-        //}
-
-        //public static void OnDisband(int sender, IPCMessage msg)
-        //{
-        //    Team.Leave();
-        //}
-
-
-        //public static void OnStopAttackMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    DynelManager.LocalPlayer.StopAttack();
-        //}
-
-        //public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    Team.Disband();
-        //    IPCChannel.Broadcast(new DisbandMessage());
-        //}
-
-        //public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    if (Team.IsLeader)
-        //        Team.ConvertToRaid();
-        //    else
-        //        Chat.WriteLine("Needs to be used from leader.");
-        //}
-
-        //public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    Team.Disband();
-        //    IPCChannel.Broadcast(new DisbandMessage());
-        //    Task task = new Task(() =>
-        //    {
-        //        Thread.Sleep(1000);
-        //        FormCommand("form", param, chatWindow);
-        //    });
-        //    task.Start();
-        //}
-
-        //public static void FormCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    if (!DynelManager.LocalPlayer.IsInTeam())
-        //    {
-        //        SendTeamInvite(GetRegisteredCharactersInvite());
-
-        //        if (IsRaidEnabled(param))
-        //        {
-        //            Task task = new Task(() =>
-        //            {
-        //                Thread.Sleep(1000);
-        //                Team.ConvertToRaid();
-        //                Thread.Sleep(1000);
-        //                SendTeamInvite(GetRemainingRegisteredCharacters());
-        //            });
-        //            task.Start();
-        //        }
-        //    }
-        //    else
-        //    {
-        //        Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
-        //    }
-        //}
-
-        //public static void OnTargetMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    TargetMessage targetMsg = (TargetMessage)msg;
-        //    Targeting.SetTarget(targetMsg.Target);
-        //}
-
-        //public static void OnAttackMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
-        //    Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
-        //    DynelManager.LocalPlayer.Attack(targetDynel, true);
-        //}
+        #region Handles
 
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
@@ -354,6 +197,8 @@ namespace CombatHandler.Shade
                 _procWindow = container;
             }
         }
+
+        #endregion
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -456,8 +301,7 @@ namespace CombatHandler.Shade
             }
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool BlackenedLegacy(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -541,6 +385,8 @@ namespace CombatHandler.Shade
 
         #endregion
 
+        #region Items
+
         private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingtarget == null) { return false; }
@@ -549,6 +395,82 @@ namespace CombatHandler.Shade
 
             return true;
         }
+
+
+        private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            // don't use if BM is locked (we will add this dynamically later)
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+
+            // don't use if we're above 40%
+            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+
+            // don't use if nothing is fighting us
+            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+
+            // don't use if we have another major absorb (example: nanomage booster) running
+            // we could check remaining absorb stat to be slightly more effective
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
+
+            // don't use if our fighting target has caress running
+            if (fightingtarget.Buffs.Contains(275242)) { return false; }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Perks
+        private bool PiercingMasteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+
+            // Don't PM if there are TR/SP chains in progress
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.SpiritPhylactery.Contains(action.Hash)))) { return false; }
+
+            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))
+                return true;
+
+            if (perkAction.Hash == PerkHash.Perforate)
+            {
+                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab))) { return false; }
+            }
+
+            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction perforate) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction lacerate))) { return true; }
+
+            if (perkAction.Hash == PerkHash.Impale)
+            {
+                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab || action == perforate || action == lacerate))) { return false; }
+            }
+
+            return true;
+        }
+
+        private bool SpiritPhylacteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+
+            //Don't SP if there are TR/PM chains in progress
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
+
+            return true;
+        }
+
+        private bool TotemicRitesPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+
+            //Don't TR if there are SP/PM chains in progress
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Buffs
+
+        #region Procs
 
         private bool InitDebuffProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
@@ -576,35 +498,7 @@ namespace CombatHandler.Shade
             return Buff(spell, fightingtarget, ref actiontarget);
         }
 
-        private bool ShadesCaressNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null
-                 || !CanCast(spell)) { return false; }
-
-            if (fightingTarget.HealthPercent < 5) { return false; }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                List<SimpleChar> teamMembersLowHp = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 80)
-                    .ToList();
-
-                if (teamMembersLowHp.Count >= 3)
-                {
-                    actionTarget.Target = fightingTarget;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 80 && fightingTarget.HealthPercent > 5) { return true; }
-
-            return false;
-        }
-
+        #endregion
 
         //TODO: Delete other FTYS and rename... maybe this works
         protected bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -658,27 +552,6 @@ namespace CombatHandler.Shade
             return false;
         }
 
-        private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            // don't use if BM is locked (we will add this dynamically later)
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
-
-            // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
-
-            // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            // don't use if we have another major absorb (example: nanomage booster) running
-            // we could check remaining absorb stat to be slightly more effective
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
-
-            // don't use if our fighting target has caress running
-            if (fightingtarget.Buffs.Contains(275242)) { return false; }
-
-            return true;
-        }
-
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
@@ -691,7 +564,7 @@ namespace CombatHandler.Shade
         }
 
         private bool SpiritSiphonNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {   
+        {
             if (!IsSettingEnabled("SpiritSiphon")) { return false; }
 
             if (fightingTarget == null && _shadeSiphon)
@@ -716,6 +589,38 @@ namespace CombatHandler.Shade
             return false;
         }
 
+        #endregion
+
+        #region Debuffs
+
+        private bool ShadesCaressNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null
+                 || !CanCast(spell)) { return false; }
+
+            if (fightingTarget.HealthPercent < 5) { return false; }
+
+            if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                List<SimpleChar> teamMembersLowHp = DynelManager.Characters
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 80)
+                    .ToList();
+
+                if (teamMembersLowHp.Count >= 3)
+                {
+                    actionTarget.Target = fightingTarget;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 80 && fightingTarget.HealthPercent > 5) { return true; }
+
+            return false;
+        }
         private bool HealthDrainNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
@@ -730,50 +635,10 @@ namespace CombatHandler.Shade
             return ToggledCombatTargetDebuff("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool PiercingMasteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null) { return false; }
 
-            // Don't PM if there are TR/SP chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.SpiritPhylactery.Contains(action.Hash)))) { return false; }
+        #endregion
 
-            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))
-                return true;
-
-            if (perkAction.Hash == PerkHash.Perforate)
-            {
-                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab))) { return false; }
-            }
-
-            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction perforate) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction lacerate))) { return true; }
-
-            if (perkAction.Hash == PerkHash.Impale)
-            {
-                if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab || action == perforate || action == lacerate))) { return false; }
-            }
-
-            return true;
-        }
-
-        private bool SpiritPhylacteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null) { return false; }
-
-            //Don't SP if there are TR/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
-
-            return true;
-        }
-
-        private bool TotemicRitesPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null) { return false; }
-
-            //Don't TR if there are SP/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
-
-            return true;
-        }
+        #region Misc
 
         private class RelevantItems 
         {
@@ -845,5 +710,7 @@ namespace CombatHandler.Shade
         {
             Blackheart, TwistedCaress, ConcealedSurprise, Misdirection, DeviousSpirit
         }
+
+        #endregion
     }
 }

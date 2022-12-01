@@ -64,6 +64,14 @@ namespace FollowManager
 
             Game.OnUpdate += OnUpdate;
 
+            _settings.AddVariable("Toggle", false);
+
+            Chat.RegisterCommand("toggle", (string command, string[] param, ChatWindow chatWindow) =>
+            {
+                _settings["Toggle"] = !_settings["Toggle"].AsBool();
+                Chat.WriteLine($"Toggle : {_settings["Toggle"]}");
+            });
+
             _settings.AddVariable("FollowSelection", (int)FollowSelection.None);
 
             Chat.WriteLine("FollowManager Loaded!");
@@ -198,7 +206,7 @@ namespace FollowManager
                 }
             }
 
-            if (FollowSelection.LeadFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
+            if (_settings["Toggle"].AsBool() && FollowSelection.LeadFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 IPCChannel.Broadcast(new FollowMessage()
@@ -208,7 +216,7 @@ namespace FollowManager
                 _followTimer = Time.NormalTime;
             }
 
-            if (FollowSelection.NavFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
+            if (_settings["Toggle"].AsBool() && FollowSelection.NavFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
@@ -229,7 +237,7 @@ namespace FollowManager
                 }
             }
 
-            if (FollowSelection.OSFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
+            if (_settings["Toggle"].AsBool() && FollowSelection.OSFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels

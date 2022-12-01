@@ -496,7 +496,7 @@ namespace CombatHandler.Trader
         }
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("NanoHealTeam")) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }

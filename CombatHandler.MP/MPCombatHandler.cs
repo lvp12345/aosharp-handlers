@@ -405,105 +405,42 @@ namespace CombatHandler.Metaphysicist
 
         #endregion
 
-        #region Perks
-
-        private bool ChannelRage(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        #region Nukes
+        private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!IsSettingEnabled("Buffing")) { return false; }
 
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
+
+            Spell singleNuke = Spell.List.FirstOrDefault(x => RelevantNanos.SingleTargetNukes.Contains(x.Id));
+
+            if (singleNuke != null)
             {
-                if (pet.Character == null) continue;
-
-                if (CanPerkChannelRage(pet))
-                {
-                    actionTarget.Target = pet.Character;
-
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+                if (fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
             }
 
-            return false;
+            return true;
+        }
+
+        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
+
+            Spell warmupNuke = Spell.List.FirstOrDefault(x => RelevantNanos.WarmUpfNukes.Contains(x.Id));
+
+            if (warmupNuke != null)
+            {
+                if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
+            }
+
+            return true;
         }
 
         #endregion
-
-        #region Pets
 
         #region Buffs
-
-        protected bool InducedApathy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            if (PetProcSelection.InducedApathy != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && pet.Type == PetType.Attack)
-                {
-                    if (spell.IsReady)
-                        spell.Cast(pet.Character, true);
-
-                    //Not working for some reason
-
-                    //actionTarget.Target = pet.Character;
-                    //actionTarget.ShouldSetTarget = true;
-
-                    //return true;
-                }
-            }
-
-            return false;
-        }
-
-        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            if (PetProcSelection.MastersBidding != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && pet.Type == PetType.Attack)
-                {
-                    if (spell.IsReady)
-                        spell.Cast(pet.Character, true);
-
-                    //Not working for some reason
-
-                    //actionTarget.Target = pet.Character;
-                    //actionTarget.ShouldSetTarget = true;
-
-                    //return true;
-                }
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        #region Warp
-
-        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
-
-            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
-        }
-
-        #endregion
-
-        #endregion
-
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Cost"))
@@ -519,24 +456,9 @@ namespace CombatHandler.Metaphysicist
             return false;
         }
 
-        private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledCombatTargetDebuff("NanoShutdownDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledCombatTargetDebuff("NanoResistanceDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledCombatTargetDebuff("DamageDebuffs", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
         private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompositesNanoSkills")) 
+            if (IsSettingEnabled("CompositesNanoSkills"))
             {
                 return Buff(spell, fightingTarget, ref actionTarget);
             }
@@ -671,45 +593,71 @@ namespace CombatHandler.Metaphysicist
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool MPDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        #endregion
+
+        #region Debufs
+        private bool MPDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("OSDamageDebuffs")) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
-
-            Spell singleNuke = Spell.List.FirstOrDefault(x => RelevantNanos.SingleTargetNukes.Contains(x.Id));
-
-            if (singleNuke != null)
-            {
-                if (fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-            }
-
-            return true;
+            return ToggledCombatTargetDebuff("NanoShutdownDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
-
-            Spell warmupNuke = Spell.List.FirstOrDefault(x => RelevantNanos.WarmUpfNukes.Contains(x.Id));
-
-            if (warmupNuke != null)
-            {
-                if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-            }
-
-            return true;
+            return ToggledCombatTargetDebuff("NanoResistanceDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
+        private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return ToggledCombatTargetDebuff("DamageDebuffs", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Pets
+
+        #region Warp
+
+        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+
+            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
+        }
+
+        #endregion
+
+        #region Perks
+
+        private bool ChannelRage(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (CanPerkChannelRage(pet))
+                {
+                    actionTarget.Target = pet.Character;
+
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Buffs
         private bool MezzPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MesmerizationConstructEmpowerment);
@@ -776,6 +724,68 @@ namespace CombatHandler.Metaphysicist
             return PetTargetBuff(NanoLine.NPCostBuff, PetType.Heal, spell, fightingTarget, ref actionTarget) ||
                 PetTargetBuff(NanoLine.NPCostBuff, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
+
+        protected bool InducedApathy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (PetProcSelection.InducedApathy != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && pet.Type == PetType.Attack)
+                {
+                    if (spell.IsReady)
+                        spell.Cast(pet.Character, true);
+
+                    //Not working for some reason
+
+                    //actionTarget.Target = pet.Character;
+                    //actionTarget.ShouldSetTarget = true;
+
+                    //return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (PetProcSelection.MastersBidding != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && pet.Type == PetType.Attack)
+                {
+                    if (spell.IsReady)
+                        spell.Cast(pet.Character, true);
+
+                    //Not working for some reason
+
+                    //actionTarget.Target = pet.Character;
+                    //actionTarget.ShouldSetTarget = true;
+
+                    //return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Misc
 
         private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -972,5 +982,7 @@ namespace CombatHandler.Metaphysicist
         //{
         //    return (SummonedWeaponSelection)settings["SummonedWeaponSelection"].AsInt32();
         //}
+
+        #endregion
     }
 }

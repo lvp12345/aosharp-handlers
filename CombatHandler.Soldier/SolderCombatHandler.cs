@@ -50,6 +50,7 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("ReflectSelection", (int)ReflectSelection.Shadowlands);
             _settings.AddVariable("AAOSelection", (int)AAOSelection.Self);
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
+            _settings.AddVariable("HeavyCompArtSelection", (int)HeavyCompArtSelection.Self);
 
             _settings.AddVariable("SingleTaunt", false);
             _settings.AddVariable("OSTaunt", false);
@@ -89,12 +90,12 @@ namespace CombatHandler.Soldier
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => !c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflects);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflects);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), Buff);
 
@@ -123,7 +124,27 @@ namespace CombatHandler.Soldier
         }
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
 
-        #region Events
+        #region Callbacks
+
+        public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
+        {
+            try
+            {
+                if (Game.IsZoning)
+                    return;
+
+                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
+                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e);
+            }
+        }
+
+        #endregion
+
+        #region Handles
 
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
@@ -197,26 +218,6 @@ namespace CombatHandler.Soldier
 
         #endregion
 
-        #region Callbacks
-
-        public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
-        {
-            try
-            {
-                if (Game.IsZoning)
-                    return;
-
-                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
-                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
-            }
-            catch (Exception e)
-            {
-                Chat.WriteLine(e);
-            }
-        }
-
-        #endregion
-
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -272,8 +273,7 @@ namespace CombatHandler.Soldier
             }
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool ConcussiveShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -363,109 +363,105 @@ namespace CombatHandler.Soldier
 
         #endregion
 
-        #region Instanced Logic
+        #region Perks
+        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Buffs
 
         private bool AAOBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (IsSettingEnabled("AAOTeam"))
+            if (AAOSelection.Team == (AAOSelection)_settings["AAOSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    if (DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && !c.Buffs.Contains(NanoLine.AAOBuffs) && !c.Buffs.Contains(NanoLine.AdventurerMorphBuff))
-                        .Any())
-                    {
-                        actionTarget.Target = DynelManager.Characters
-                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && !c.Buffs.Contains(NanoLine.AAOBuffs) && !c.Buffs.Contains(NanoLine.AdventurerMorphBuff))
-                            .FirstOrDefault();
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && !c.Buffs.Contains(NanoLine.AAOBuffs) && !c.Buffs.Contains(NanoLine.AdventurerMorphBuff)
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
 
-                        if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
-                        {
-                            actionTarget.ShouldSetTarget = true;
-                            return true;
-                        }
+                    if (target != null)
+                    {
+                        actionTarget.Target = target;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
                     }
                 }
             }
+
+            if (AAOSelection.Self != (AAOSelection)_settings["AAOSelection"].AsInt32()) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (IsSettingEnabled("BurstTeam"))
+            if (RiotControlSelection.Team == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    if (DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.SpecialAttacks.Contains(SpecialAttack.Burst))
-                        .Any())
-                    {
-                        actionTarget.Target = DynelManager.Characters
-                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && c.SpecialAttacks.Contains(SpecialAttack.Burst))
-                            .FirstOrDefault();
-
-                        if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target))
-                        {
-                            actionTarget.ShouldSetTarget = true;
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            if (!IsSettingEnabled("Burst")) { return false; }
-
-            if (!DynelManager.LocalPlayer.SpecialAttacks.Contains(SpecialAttack.Burst)) { return false; }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool HeavyCompWeaponChecks(SimpleChar _target)
-        {
-            return GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.AssaultRifle)
-                                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Smg)
-                                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Shotgun)
-                                || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Grenade) && _target.Profession != Profession.Engineer);
-        }
-
-        private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                if (DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff)
-                        && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))
-                    .Any())
-                {
-                    actionTarget.Target = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff)
-                            && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs))
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && !c.Buffs.Contains(NanoLine.AAOBuffs) && !c.Buffs.Contains(NanoLine.AdventurerMorphBuff)
+                            && SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
-                    if (actionTarget.Target != null && SpellChecksOther(spell, spell.Nanoline, actionTarget.Target)
-                        && HeavyCompWeaponChecks(actionTarget.Target))
+                    if (target != null)
                     {
-                        if (actionTarget.Target.Identity == DynelManager.LocalPlayer.Identity
-                            && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
-
+                        actionTarget.Target = target;
                         actionTarget.ShouldSetTarget = true;
                         return true;
                     }
                 }
             }
+
+            if (RiotControlSelection.Self != (RiotControlSelection)_settings["RiotControlSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HeavyCompArtSelection.Team == (HeavyCompArtSelection)_settings["HeavyCompArtSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs)
+                            && HeavyCompWeaponChecks(c)
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (target != null)
+                    {
+                        if (target.Identity == DynelManager.LocalPlayer.Identity
+                            && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
+
+                        actionTarget.Target = target;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
+            if (HeavyCompArtSelection.Self != (HeavyCompArtSelection)_settings["HeavyCompArtSelection"].AsInt32()) { return false; }
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
                                 || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun)
@@ -485,13 +481,6 @@ namespace CombatHandler.Soldier
         private bool ARBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
-        }
-
-        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
-
-            return true;
         }
 
         private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -616,9 +605,21 @@ namespace CombatHandler.Soldier
 
         #region Misc
 
+        private bool HeavyCompWeaponChecks(SimpleChar _target)
+        {
+            return GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.AssaultRifle)
+                                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Smg)
+                                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Shotgun)
+                                || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Grenade) && _target.Profession != Profession.Engineer);
+        }
+
         public enum ReflectSelection
         {
             RubiKa, RubiKaTeam, Shadowlands
+        }
+        public enum RiotControlSelection
+        {
+            Self, Team
         }
         public enum AAOSelection
         {
@@ -628,6 +629,11 @@ namespace CombatHandler.Soldier
         {
             None, Self, Team
         }
+        public enum HeavyCompArtSelection
+        {
+            None, Self, Team
+        }
+
 
         public enum ProcType1Selection
         {

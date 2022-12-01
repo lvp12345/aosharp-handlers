@@ -240,32 +240,6 @@ namespace CombatHandler.Generic
             Chat.RegisterCommand("convert", RaidCommand);
         }
 
-        private void OnZoned(object s, EventArgs e)
-        {
-            _lastZonedTime = Time.NormalTime;
-        }
-
-        public static void IPCChannel_Changed(object s, int e)
-        {
-            IPCChannel.SetChannelId(Convert.ToByte(e));
-
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-
-        public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
-        {
-            if (SettingsController.IsCharacterRegistered(e.Requester))
-            {
-                e.Accept();
-            }
-        }
-
-        protected void RegisterSettingsWindow(string settingsName, string xmlName)
-        {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
-        }
-
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -414,7 +388,7 @@ namespace CombatHandler.Generic
 
         #endregion
 
-        #region Instanced Logic
+        #region Logic
 
         protected bool Pistol(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1613,7 +1587,23 @@ namespace CombatHandler.Generic
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
         }
+        private void OnZoned(object s, EventArgs e)
+        {
+            _lastZonedTime = Time.NormalTime;
+        }
 
+        public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
+        {
+            if (SettingsController.IsCharacterRegistered(e.Requester))
+            {
+                e.Accept();
+            }
+        }
+
+        protected void RegisterSettingsWindow(string settingsName, string xmlName)
+        {
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+        }
 
         private static class RelevantItems
         {
@@ -1709,6 +1699,14 @@ namespace CombatHandler.Generic
                 PetType = petType;
             }
         }
+        public static void IPCChannel_Changed(object s, int e)
+        {
+            IPCChannel.SetChannelId(Convert.ToByte(e));
+
+            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
         #endregion
     }
 }

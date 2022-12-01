@@ -19,14 +19,21 @@
       <RadioButton label="Team" value="1"/>
     </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitSelection">
-      <RadioButton label="Self" value="0"/>
-      <RadioButton label="Team" value="1"/>
+    <OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitBuffSelection">
+      <RadioButton label="None" value="0"/>
+      <RadioButton label="Self" value="1"/>
+      <RadioButton label="Team" value="2"/>
     </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="AAO" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AAOSelection">
       <RadioButton label="Self" value="0"/>
       <RadioButton label="Team" value="1"/>
+    </OptionRadioButtonGroup>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionRadioButtonGroup label="Heavy Comp Artilery" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__HeavyCompArtSelection">
+      <RadioButton label="None" value="0"/>
+      <RadioButton label="Self" value="1"/>
+      <RadioButton label="Team" value="2"/>
     </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

@@ -417,17 +417,6 @@ namespace CombatHandler.NanoTechnician
 
         #endregion
 
-        #region Perks
-
-        private bool FlimFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("FlimFocus")) { return false; }
-
-            return CyclePerks(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Nukes
 
         private bool VolcanicEruption(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -504,6 +493,17 @@ namespace CombatHandler.NanoTechnician
                 || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
+        }
+
+        #endregion
+
+        #region Perks
+
+        private bool FlimFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("FlimFocus")) { return false; }
+
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion

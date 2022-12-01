@@ -126,21 +126,8 @@ namespace CombatHandler.Doctor
 
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow };
 
-        public static void DocHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].DocHealPercentage = e;
-            DocHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
+        #region Callbacks
 
-        public static void DocCompleteHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = e;
-            DocCompleteHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -157,6 +144,9 @@ namespace CombatHandler.Doctor
             }
         }
 
+        #endregion
+
+        #region Handles
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -181,27 +171,6 @@ namespace CombatHandler.Doctor
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why. 
-
-
-                //
-                //
-                //
-                //
-                //
-                //
-                ///
-                ////////////  / ///////////////
-                /////////// v   ///////////////
-                /////////  ////////////
-                ///////////// ///////////// //////////
-                ////////////////
-                ////////
-                ////////
-                //////////
-                /////////////
-                //////////////
-
                 //Do we need this?
                 if (window.Views.Contains(_healingView)) { return; }
 
@@ -279,6 +248,8 @@ namespace CombatHandler.Doctor
             }
         }
 
+        #endregion
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -351,8 +322,7 @@ namespace CombatHandler.Doctor
             }
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool Antiseptic(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -707,6 +677,22 @@ namespace CombatHandler.Doctor
             public static int[] TeamHeals = new[] { 273312, 273315, 270349, 43891, 223291, 43892, 43893, 43894, 43895, 43896, 43897, 43898, 43899,
                 43900, 43901, 43903, 43902, 42404, 43905, 43904, 42395, 43907, 43908, 43906, 42398, 43910, 43909, 42402,
                 43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408 };
+        }
+
+        public static void DocHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].DocHealPercentage = e;
+            DocHealPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void DocCompleteHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage = e;
+            DocCompleteHealPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
         }
 
         #endregion

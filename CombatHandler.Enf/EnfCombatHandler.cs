@@ -113,7 +113,26 @@ namespace CombatHandler.Enf
 
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
 
-        #region Events
+        #region Callbacks
+        public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
+        {
+            try
+            {
+                if (Game.IsZoning)
+                    return;
+
+                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
+                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e);
+            }
+        }
+
+        #endregion
+
+        #region Handles
 
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
@@ -203,25 +222,6 @@ namespace CombatHandler.Enf
 
         #endregion
 
-        #region Callbacks
-        public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
-        {
-            try
-            {
-                if (Game.IsZoning)
-                    return;
-
-                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
-                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
-            }
-            catch (Exception e)
-            {
-                Chat.WriteLine(e);
-            }
-        }
-
-        #endregion
-
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -300,7 +300,7 @@ namespace CombatHandler.Enf
         }
 
 
-        #region Perks
+        #region LE Procs
 
         private bool InspireRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -385,7 +385,19 @@ namespace CombatHandler.Enf
 
         #endregion
 
-        #region Logic
+        #region Perks
+
+        private bool TrollForm(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TrollForm")) { return false; }
+
+            return TrollFormPerk(perk, fightingTarget, ref actionTarget);
+        }
+
+
+        #endregion
+
+        #region Buffs
 
         private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -433,13 +445,6 @@ namespace CombatHandler.Enf
             }
 
             return false;
-        }
-
-        private bool TrollForm(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TrollForm")) { return false; }
-
-            return TrollFormPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -517,20 +522,6 @@ namespace CombatHandler.Enf
 
         #region Misc
 
-        public enum ProcType1Selection
-        {
-            VortexofHate, RagingBlow, Shieldoftheogre, InspireRage, Airofhatred, TearLigaments, VileRage
-        }
-
-        public enum ProcType2Selection
-        {
-            ViolationBuffer, InspireIre, ShrugOffHits, BustKneecaps, IgnorePain
-        }
-        public enum SingleTauntsSelection
-        {
-            None, Target, OS
-        }
-
         private static class RelevantNanos
         {
             public static readonly int[] SingleTargetTaunt = { 275014, 223123, 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
@@ -550,6 +541,20 @@ namespace CombatHandler.Enf
             public const int CORUSCATING_SCREEN = 55751;
             public const int ICE_BURN = 269460;
             public const int BioCocoon = 209802;
+        }
+
+        public enum ProcType1Selection
+        {
+            VortexofHate, RagingBlow, Shieldoftheogre, InspireRage, Airofhatred, TearLigaments, VileRage
+        }
+
+        public enum ProcType2Selection
+        {
+            ViolationBuffer, InspireIre, ShrugOffHits, BustKneecaps, IgnorePain
+        }
+        public enum SingleTauntsSelection
+        {
+            None, Target, OS
         }
 
         public static void EnfTauntDelaySingle_Changed(object s, int e)

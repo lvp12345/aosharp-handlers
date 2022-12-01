@@ -94,6 +94,8 @@ namespace CombatHandler.Keeper
         }
         public Window[] _windows => new Window[] { _buffWindow, _procWindow };
 
+        #region Callbacks
+
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -109,6 +111,10 @@ namespace CombatHandler.Keeper
                 Chat.WriteLine(e);
             }
         }
+
+        #endregion
+
+        #region Handles
 
         private void HandleProcViewClick(object s, ButtonBase button)
         {
@@ -147,6 +153,8 @@ namespace CombatHandler.Keeper
             }
         }
 
+        #endregion
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -180,8 +188,7 @@ namespace CombatHandler.Keeper
             }
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool EschewTheFaithless(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -265,6 +272,8 @@ namespace CombatHandler.Keeper
 
         #endregion
 
+        #region Buffs
+
         #region Auras
 
         private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -329,6 +338,8 @@ namespace CombatHandler.Keeper
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
+
+        #endregion
 
         #endregion
 

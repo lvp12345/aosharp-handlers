@@ -47,6 +47,10 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.FuseBodyArmor);
 
+            _settings.AddVariable("ReflectSelection", (int)ReflectSelection.Shadowlands);
+            _settings.AddVariable("AAOSelection", (int)AAOSelection.Self);
+            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
+
             _settings.AddVariable("SingleTaunt", false);
             _settings.AddVariable("OSTaunt", false);
 
@@ -84,12 +88,12 @@ namespace CombatHandler.Soldier
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => !c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), BuffExcludeInnerSanctum);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflects);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), Buff);
@@ -581,34 +585,29 @@ namespace CombatHandler.Soldier
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (IsSettingEnabled("InitTeam"))
+            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
-                    if (DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
                             && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
                             && SpellChecksOther(spell, spell.Nanoline, c))
-                        .Any())
-                    {
-                        actionTarget.Target = DynelManager.Characters
-                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
-                             && SpellChecksOther(spell, spell.Nanoline, c))
-                            .FirstOrDefault();
+                        .FirstOrDefault();
 
-                        if (actionTarget.Target != null)
-                        {
-                            actionTarget.ShouldSetTarget = true;
-                            return true;
-                        }
+                    if (target != null)
+                    {
+                        actionTarget.Target = target;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
                     }
                 }
             }
 
-            if (!IsSettingEnabled("Init")) { return false; }
+            if (InitBuffSelection.Self != (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
@@ -620,6 +619,14 @@ namespace CombatHandler.Soldier
         public enum ReflectSelection
         {
             RubiKa, RubiKaTeam, Shadowlands
+        }
+        public enum AAOSelection
+        {
+            Self, Team
+        }
+        public enum InitBuffSelection
+        {
+            None, Self, Team
         }
 
         public enum ProcType1Selection

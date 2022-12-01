@@ -174,6 +174,8 @@ namespace CombatHandler.Bureaucrat
 
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow };
 
+        #region Callbacks
+
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -189,6 +191,10 @@ namespace CombatHandler.Bureaucrat
                 Chat.WriteLine(e);
             }
         }
+
+        #endregion
+
+        #region Handles
 
         private void HandlePetViewClick(object s, ButtonBase button)
         {
@@ -275,10 +281,7 @@ namespace CombatHandler.Bureaucrat
             }
         }
 
-        private void OnZoned(object s, EventArgs e)
-        {
-            ResetTrimmers();
-        }
+        #endregion
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -335,8 +338,7 @@ namespace CombatHandler.Bureaucrat
             HandleCancelBuffAuras();
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool FormsinTriplicate(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -416,128 +418,6 @@ namespace CombatHandler.Bureaucrat
             if (ProcType2Selection.WrongWindow != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-
-        #endregion
-
-        #region Buffs
-
-        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null)
-                    return true;
-            }
-
-            return true;
-        }
-
-        protected bool PistolSelfOnly(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
-        private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-                if (IsSettingEnabled("NanoDeltaTeam"))
-                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-        private bool Crit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-                return TeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || !IsSettingEnabled("MastersBidding")) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && pet.Type == PetType.Attack)
-                {
-                    if (spell.IsReady)
-                        spell.Cast(pet.Character, true);
-                }
-            }
-
-            return false;
-        }
-
-        public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (CanPerkPuppeteer(pet))
-                {
-                    actionTarget.Target = pet.Character;
-
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
-
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
-
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
-
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -724,7 +604,7 @@ namespace CombatHandler.Bureaucrat
             if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Calm12Man") || !CanCast(spell)) { return false; }
 
             List<SimpleChar> targets = DynelManager.NPCs
-                .Where(c => c.IsAlive 
+                .Where(c => c.IsAlive
                     && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
                     && (c.Name == "Right Hand of Madness" || c.Name == "Deranged Xan")
                     && (!c.Buffs.Contains(267535) || !c.Buffs.Contains(267536)))
@@ -735,6 +615,119 @@ namespace CombatHandler.Bureaucrat
                 actionTarget.Target = targets.FirstOrDefault();
                 actionTarget.ShouldSetTarget = true;
                 return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Buffs
+
+        #region Auras
+
+        private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
+
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
+
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
+
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        protected bool PistolSelfOnly(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+                if (IsSettingEnabled("NanoDeltaTeam"))
+                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+        private bool Crit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+                return TeamBuff(spell, ref actionTarget);
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || !IsSettingEnabled("MastersBidding")) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && pet.Type == PetType.Attack)
+                {
+                    if (spell.IsReady)
+                        spell.Cast(pet.Character, true);
+                }
+            }
+
+            return false;
+        }
+
+        public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (CanPerkPuppeteer(pet))
+                {
+                    actionTarget.Target = pet.Character;
+
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;
@@ -885,75 +878,9 @@ namespace CombatHandler.Bureaucrat
 
         #endregion
 
-        #region Logic
-
-        private bool CanPerkPuppeteer(Pet pet)
-        {
-            return pet.Type == PetType.Attack;
-        }
-
-        protected bool FindSpellNanoLineFallbackToId(Spell spell, Buff[] buffs, out Buff buff)
-        {
-            if (buffs.Find(spell.Nanoline, out Buff buffFromNanoLine))
-            {
-                buff = buffFromNanoLine;
-                return true;
-            }
-            int spellId = spell.Id;
-            if (RelevantNanos.PetNanoToBuff.ContainsKey(spellId))
-            {
-                int buffId = RelevantNanos.PetNanoToBuff[spellId];
-                if (buffs.Find(buffId, out Buff buffFromId))
-                {
-                    buff = buffFromId;
-                    return true;
-                }
-            }
-
-            buff = null;
-            return false;
-        }
-
-        protected bool CarloSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool RobotSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Pets
 
-        private bool RobotNeedsBuff(Spell spell, Pet pet)
-        {
-            if (pet.Type != PetType.Attack) { return false; }
-
-            if (FindSpellNanoLineFallbackToId(spell, pet.Character.Buffs, out Buff buff))
-            {
-                //Don't cast if weaker than existing
-                if (spell.StackingOrder < buff.StackingOrder) { return false; }
-
-                //Don't cast if greater than 10% time remaining
-                if (buff.RemainingTime / buff.TotalTime > 0.1) { return false; }
-            }
-
-            return true;
-        }
-
-        private bool CorporateStrategy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return PetTargetBuff(NanoLine.PetShortTermDamageBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool PetTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
+        #region Trimmers
         protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
@@ -1047,6 +974,31 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
+        #endregion
+
+        #region Warp
+
+        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+
+            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
+        }
+
+        #endregion
+
+        #region Buffs
+
+        private bool CorporateStrategy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetTargetBuff(NanoLine.PetShortTermDamageBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool PetTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
         protected bool DroidMatrixBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
@@ -1068,90 +1020,61 @@ namespace CombatHandler.Bureaucrat
 
         #endregion
 
+        #endregion
+
         #region Misc
 
-        public enum InitDebuffSelection
+        private bool RobotNeedsBuff(Spell spell, Pet pet)
         {
-            None, Target, OS
-        }
+            if (pet.Type != PetType.Attack) { return false; }
 
-        public enum ProcType1Selection
-        {
-            PleaseHold, FormsinTriplicate, SocialServices, NextWindowOver, WaitInThatQueue
-        }
-
-        public enum ProcType2Selection
-        {
-            MobilityEmbargo, WrongWindow, TaxAudit, LostPaperwork, Deflation, InflationAdjustment, Papercut
-        }
-
-        public enum BuffingAuraSelection
-        {
-            AAOAAD, Crit, NanoResist
-        }
-        public enum DebuffingAuraSelection
-        {
-            None, NanoResist, Crit, MaxNano
-        }
-        public enum CalmingSelection
-        {
-            SL, RK, AOE
-        }
-        public enum ModeSelection
-        {
-            None, All, Adds
-        }
-
-        private static class RelevantNanos
-        {
-            public const int WorkplaceDepression = 273631;
-            public const int DroidDamageMatrix = 267916;
-            public const int DroidPressureMatrix = 302247;
-            public const int CorporateStrategy = 267611;
-            public const int LastMinNegotiations = 267535;
-            public const int SkilledGunSlinger = 263251;
-            public const int GreaterGunSlinger = 263250;
-            public const int MastersBidding = 268171;
-            public const int PuissantVoidInertia = 224129;
-            public const int ShacklesofObedience = 82463;
-            public const int PetWarp = 209488;
-
-            public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
-            public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Id != GreaterGunSlinger && spell.Id != SkilledGunSlinger).ToArray();
-            public static readonly int[] SingleTargetNukes = { 273307, WorkplaceDepression, 270250, 78400, 30082, 78394, 78395, 82000, 78396, 78397, 30091, 78399, 81996, 30083, 81997, 30068, 81998, 78398, 81999, 29618 };
-            public static readonly int[] AoeRoots = { 224129, 224127, 224125, 224123, 224121, 224119, 82166, 82164, 82163, 82161, 82160, 82159, 82158, 82157, 82156 };
-            public static readonly int[] AoeRootDebuffs = { 82137, 244634, 244633, 244630, 244631, 244632, 82138, 82139, 244629, 82140, 82141, 82142, 82143, 82144, 82145 };
-            public static readonly int[] AadBuffAuras = { 270783, 155807, 155806, 155805, 155809, 155808 };
-            public static readonly int[] CritBuffAuras = { 157503, 157499 };
-            public static readonly int[] NanoResBuffAuras = { 157504, 157500, 157501, 157502 };
-            public static readonly int[] NanoPointsDebuffAuras = { 275826, 157524, 157534, 157533, 157532, 157531 };
-            public static readonly int[] CritDebuffAuras = { 157530, 157529, 157528 };
-            public static readonly int[] NanoResDebuffAuras = { 157527, 157526, 157525, 157535 };
-            public static readonly int[] GeneralRadACDebuff = { 302143, 302142 };
-            public static readonly int[] GeneralProjACDebuff = { 302150, 302152 };
-            public static readonly int[] PetCleanse = { 269870, 269869 };
-
-            public static readonly int[] ShadowlandsCalms = { 224143, 224141, 224139, 224149, 224147, 224145,
-            224137, 224135, 224133, 224131, 219020 };
-            public static readonly int[] RkCalms = { 155577, 100428, 100429, 100430, 100431, 100432,
-            30093, 30056, 30065 };
-            public static readonly int[] AOECalms = { 100422, 100424, 100426 };
-
-            public static Dictionary<int, int> PetNanoToBuff = new Dictionary<int, int>
+            if (FindSpellNanoLineFallbackToId(spell, pet.Character.Buffs, out Buff buff))
             {
-                {DroidDamageMatrix, 285696},
-                {DroidPressureMatrix, 302246},
-                {CorporateStrategy, 285695}
-            };
+                //Don't cast if weaker than existing
+                if (spell.StackingOrder < buff.StackingOrder) { return false; }
 
+                //Don't cast if greater than 10% time remaining
+                if (buff.RemainingTime / buff.TotalTime > 0.1) { return false; }
+            }
+
+            return true;
         }
 
-        private static class RelevantTrimmers
+        private bool CanPerkPuppeteer(Pet pet)
         {
-            public const int IncreaseAggressivenessLow = 154940;
-            public const int IncreaseAggressivenessHigh = 154940;
-            public const int DivertEnergyToOffense = 88378;
-            public const int PositiveAggressiveDefensive = 88384;
+            return pet.Type == PetType.Attack;
+        }
+
+        protected bool FindSpellNanoLineFallbackToId(Spell spell, Buff[] buffs, out Buff buff)
+        {
+            if (buffs.Find(spell.Nanoline, out Buff buffFromNanoLine))
+            {
+                buff = buffFromNanoLine;
+                return true;
+            }
+            int spellId = spell.Id;
+            if (RelevantNanos.PetNanoToBuff.ContainsKey(spellId))
+            {
+                int buffId = RelevantNanos.PetNanoToBuff[spellId];
+                if (buffs.Find(buffId, out Buff buffFromId))
+                {
+                    buff = buffFromId;
+                    return true;
+                }
+            }
+
+            buff = null;
+            return false;
+        }
+
+        protected bool CarloSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool RobotSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget);
         }
 
         protected bool CanTrim()
@@ -1226,6 +1149,94 @@ namespace CombatHandler.Bureaucrat
             }
 
             return target.IsMoving;
+        }
+        private void OnZoned(object s, EventArgs e)
+        {
+            ResetTrimmers();
+        }
+
+        private static class RelevantNanos
+        {
+            public const int WorkplaceDepression = 273631;
+            public const int DroidDamageMatrix = 267916;
+            public const int DroidPressureMatrix = 302247;
+            public const int CorporateStrategy = 267611;
+            public const int LastMinNegotiations = 267535;
+            public const int SkilledGunSlinger = 263251;
+            public const int GreaterGunSlinger = 263250;
+            public const int MastersBidding = 268171;
+            public const int PuissantVoidInertia = 224129;
+            public const int ShacklesofObedience = 82463;
+            public const int PetWarp = 209488;
+
+            public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
+            public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Id != GreaterGunSlinger && spell.Id != SkilledGunSlinger).ToArray();
+            public static readonly int[] SingleTargetNukes = { 273307, WorkplaceDepression, 270250, 78400, 30082, 78394, 78395, 82000, 78396, 78397, 30091, 78399, 81996, 30083, 81997, 30068, 81998, 78398, 81999, 29618 };
+            public static readonly int[] AoeRoots = { 224129, 224127, 224125, 224123, 224121, 224119, 82166, 82164, 82163, 82161, 82160, 82159, 82158, 82157, 82156 };
+            public static readonly int[] AoeRootDebuffs = { 82137, 244634, 244633, 244630, 244631, 244632, 82138, 82139, 244629, 82140, 82141, 82142, 82143, 82144, 82145 };
+            public static readonly int[] AadBuffAuras = { 270783, 155807, 155806, 155805, 155809, 155808 };
+            public static readonly int[] CritBuffAuras = { 157503, 157499 };
+            public static readonly int[] NanoResBuffAuras = { 157504, 157500, 157501, 157502 };
+            public static readonly int[] NanoPointsDebuffAuras = { 275826, 157524, 157534, 157533, 157532, 157531 };
+            public static readonly int[] CritDebuffAuras = { 157530, 157529, 157528 };
+            public static readonly int[] NanoResDebuffAuras = { 157527, 157526, 157525, 157535 };
+            public static readonly int[] GeneralRadACDebuff = { 302143, 302142 };
+            public static readonly int[] GeneralProjACDebuff = { 302150, 302152 };
+            public static readonly int[] PetCleanse = { 269870, 269869 };
+
+            public static readonly int[] ShadowlandsCalms = { 224143, 224141, 224139, 224149, 224147, 224145,
+            224137, 224135, 224133, 224131, 219020 };
+            public static readonly int[] RkCalms = { 155577, 100428, 100429, 100430, 100431, 100432,
+            30093, 30056, 30065 };
+            public static readonly int[] AOECalms = { 100422, 100424, 100426 };
+
+            public static Dictionary<int, int> PetNanoToBuff = new Dictionary<int, int>
+            {
+                {DroidDamageMatrix, 285696},
+                {DroidPressureMatrix, 302246},
+                {CorporateStrategy, 285695}
+            };
+
+        }
+
+        private static class RelevantTrimmers
+        {
+            public const int IncreaseAggressivenessLow = 154940;
+            public const int IncreaseAggressivenessHigh = 154940;
+            public const int DivertEnergyToOffense = 88378;
+            public const int PositiveAggressiveDefensive = 88384;
+        }
+
+        public enum InitDebuffSelection
+        {
+            None, Target, OS
+        }
+
+        public enum ProcType1Selection
+        {
+            PleaseHold, FormsinTriplicate, SocialServices, NextWindowOver, WaitInThatQueue
+        }
+
+        public enum ProcType2Selection
+        {
+            MobilityEmbargo, WrongWindow, TaxAudit, LostPaperwork, Deflation, InflationAdjustment, Papercut
+        }
+
+        public enum BuffingAuraSelection
+        {
+            AAOAAD, Crit, NanoResist
+        }
+        public enum DebuffingAuraSelection
+        {
+            None, NanoResist, Crit, MaxNano
+        }
+        public enum CalmingSelection
+        {
+            SL, RK, AOE
+        }
+        public enum ModeSelection
+        {
+            None, All, Adds
         }
 
         #endregion

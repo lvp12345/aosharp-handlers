@@ -76,7 +76,7 @@ namespace CombatHandler.MartialArtist
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, MedicinalRemedy, CombatActionPriority.Low);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.ReduceInertia, BuffExcludeInnerSanctum);
+            RegisterSpellProcessor(RelevantNanos.ReduceInertia, GenericBuffExcludeInnerSanctum);
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCritBuff);
 
             //Spells

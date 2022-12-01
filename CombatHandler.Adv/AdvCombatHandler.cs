@@ -112,21 +112,8 @@ namespace CombatHandler.Adventurer
 
         public Window[] _windows => new Window[] { _morphWindow, _healingWindow, _procWindow };
 
-        public static void AdvHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].AdvHealPercentage = e;
-            AdvHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
+        #region Callbacks
 
-        public static void AdvCompleteHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage = e;
-            AdvCompleteHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             try
@@ -142,6 +129,11 @@ namespace CombatHandler.Adventurer
                 Chat.WriteLine(e);
             }
         }
+
+        #endregion
+
+        #region Handles
+
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -242,6 +234,8 @@ namespace CombatHandler.Adventurer
             }
         }
 
+        #endregion
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -330,8 +324,7 @@ namespace CombatHandler.Adventurer
             }
         }
 
-        #region Perks
-
+        #region LE Procs
 
         private bool AesirAbsorption(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -415,12 +408,39 @@ namespace CombatHandler.Adventurer
 
         #endregion
 
-        private bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
+        #region Healing
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvHealPercentage == 0) { return false; }
+
+            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+
+            return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
         }
+
+        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvHealPercentage == 0) { return false; }
+
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+                return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
+            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+                return FindPlayerWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
+
+            return false;
+        }
+
+        private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvCompleteHealPercentage == 0) { return false; }
+
+            if (!IsSettingEnabled("CH")) { return false; }
+
+            return FindMemberWithHealthBelow(AdvCompleteHealPercentage, spell, ref actionTarget);
+        }
+
+        #endregion
 
         #region Morphs
 
@@ -484,36 +504,13 @@ namespace CombatHandler.Adventurer
 
         #endregion
 
-        #region Healing
+        #region Buffs
 
-        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvHealPercentage == 0) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
-            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
-
-            return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
-        }
-
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvHealPercentage == 0) { return false; }
-
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
-            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindPlayerWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
-
-            return false;
-        }
-
-        private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvCompleteHealPercentage == 0) { return false; }
-
-            if (!IsSettingEnabled("CH")) { return false; }
-
-            return FindMemberWithHealthBelow(AdvCompleteHealPercentage, spell, ref actionTarget);
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -555,6 +552,22 @@ namespace CombatHandler.Adventurer
         public enum ProcType2Selection
         {
             HealingHerbs, Combustion, CharringBlow, RestoreVigor, MacheteSlice, BasicDressing
+        }
+
+        public static void AdvHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].AdvHealPercentage = e;
+            AdvHealPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+
+        public static void AdvCompleteHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage = e;
+            AdvCompleteHealPercentage = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
         }
 
         #endregion

@@ -12,6 +12,7 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using System.Reflection;
 
 namespace CombatHandler.Soldier
 {
@@ -31,9 +32,13 @@ namespace CombatHandler.Soldier
         private static double _singleTaunt;
         private static double _ncuUpdateTime;
 
+        private static int SolTauntDelaySingle;
+
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+
+            Config.CharSettings[Game.ClientInst].EnfTauntDelaySingleChangedEvent += SolTauntDelaySingle_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -78,13 +83,14 @@ namespace CombatHandler.Soldier
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AugmentedMirrorShieldMKV);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), BuffExcludeInnerSanctum);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflects);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), Buff);
 
@@ -108,24 +114,12 @@ namespace CombatHandler.Soldier
             //}
 
             PluginDirectory = pluginDir;
+
+            SolTauntDelaySingle = Config.CharSettings[Game.ClientInst].SolTauntDelaySingle;
         }
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
 
-        public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
-        {
-            try
-            {
-                if (Game.IsZoning)
-                    return;
-
-                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
-                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
-            }
-            catch (Exception e)
-            {
-                Chat.WriteLine(e);
-            }
-        }
+        #region Events
 
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
@@ -157,11 +151,25 @@ namespace CombatHandler.Soldier
 
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierTauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView);
+
+                window.FindView("DelaySingleBox", out TextInputView singleInput);
+
+                if (singleInput != null)
+                {
+                    singleInput.Text = $"{SolTauntDelaySingle}";
+                }
             }
             else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView, out var container);
                 _tauntWindow = container;
+
+                container.FindView("DelaySingleBox", out TextInputView singleInput);
+
+                if (singleInput != null)
+                {
+                    singleInput.Text = $"{SolTauntDelaySingle}";
+                }
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -183,9 +191,49 @@ namespace CombatHandler.Soldier
             }
         }
 
+        #endregion
+
+        #region Callbacks
+
+        public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
+        {
+            try
+            {
+                if (Game.IsZoning)
+                    return;
+
+                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
+                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e);
+            }
+        }
+
+        #endregion
+
         protected override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
+
+            var window = SettingsController.FindValidWindow(_windows);
+
+            if (window != null && window.IsValid)
+            {
+                window.FindView("DelaySingleBox", out TextInputView singleInput);
+
+                if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
+                {
+                    if (int.TryParse(singleInput.Text, out int singleValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].SolTauntDelaySingle != singleValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].SolTauntDelaySingle = singleValue;
+                        }
+                    }
+                }
+            }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
@@ -442,6 +490,24 @@ namespace CombatHandler.Soldier
             return true;
         }
 
+        private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ReflectSelection.RubiKa == (ReflectSelection)_settings["ReflectSelection"].AsInt32())
+                return Buff(spell, fightingTarget, ref actionTarget);
+
+            if (ReflectSelection.RubiKaTeam == (ReflectSelection)_settings["ReflectSelection"].AsInt32())
+                return TeamBuff(spell, ref actionTarget);
+
+            return false;
+        }
+
+        private bool SLReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ReflectSelection.Shadowlands != (ReflectSelection)_settings["ReflectSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
         private bool NotumGrenades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("NotumGrenades")) { return false; }
@@ -453,42 +519,30 @@ namespace CombatHandler.Soldier
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (IsSettingEnabled("OSTaunt") && Time.NormalTime > _singleTauntTick + 1)
+            if (SingleTauntsSelection.OS == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.NormalTime > _singleTaunt + SolTauntDelaySingle)
             {
-                List<SimpleChar> mobs = DynelManager.NPCs
+                SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.IsInLineOfSight
                         && !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && !FightingMe(c)
-                        && AttackingTeam(c)
-                        && (c.FightingTarget.Profession != Profession.Enforcer
-                                || c.FightingTarget.Profession != Profession.Soldier
-                                || c.FightingTarget.Profession != Profession.MartialArtist))
-                    .ToList();
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.MaxHealth)
+                    .FirstOrDefault();
 
-                foreach (SimpleChar mob in mobs)
+                if (mob != null)
                 {
-                    if (mob != null)
-                    {
-                        _singleTauntTick = Time.NormalTime;
-                        actionTarget.Target = mob;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.Target = mob;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
                 }
             }
 
-            if (!IsSettingEnabled("SingleTaunt")) { return false; }
-
-            if (DynelManager.LocalPlayer.FightingTarget != null
-                && (DynelManager.LocalPlayer.FightingTarget.Name == "Technomaster Sinuh"
-                || DynelManager.LocalPlayer.FightingTarget.Name == "Collector"))
-            {
-                return true;
-            }
-
-            if (Time.NormalTime > _singleTaunt + 9)
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.NormalTime > _singleTaunt + SolTauntDelaySingle)
             {
                 if (fightingTarget != null)
                 {
@@ -501,6 +555,7 @@ namespace CombatHandler.Soldier
 
             return false;
         }
+
 
         private bool SolDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -562,6 +617,25 @@ namespace CombatHandler.Soldier
 
         #region Misc
 
+        public enum ReflectSelection
+        {
+            RubiKa, RubiKaTeam, Shadowlands
+        }
+
+        public enum ProcType1Selection
+        {
+            FuriousAmmunition, TargetAcquired, Reconditioned, ConcussiveShot, EmergencyBandages, SuccessfulTargeting
+        }
+
+        public enum ProcType2Selection
+        {
+            FuseBodyArmor, OnTheDouble, GrazeJugularVein, GearAssaultAbsorption, DeepSixInitiative, ShootArtery
+        }
+        public enum SingleTauntsSelection
+        {
+            None, Target, OS
+        }
+
         private static class RelevantNanos
         {
             public static readonly int[] SolDrainHeal = { 29241, 301897 };
@@ -577,14 +651,11 @@ namespace CombatHandler.Soldier
             public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
         }
 
-        public enum ProcType1Selection
+        public static void SolTauntDelaySingle_Changed(object s, int e)
         {
-            FuriousAmmunition, TargetAcquired, Reconditioned, ConcussiveShot, EmergencyBandages, SuccessfulTargeting
-        }
-
-        public enum ProcType2Selection
-        {
-            FuseBodyArmor, OnTheDouble, GrazeJugularVein, GearAssaultAbsorption, DeepSixInitiative, ShootArtery
+            Config.CharSettings[Game.ClientInst].SolTauntDelaySingle = e;
+            SolTauntDelaySingle = e;
+            Config.Save();
         }
 
         #endregion

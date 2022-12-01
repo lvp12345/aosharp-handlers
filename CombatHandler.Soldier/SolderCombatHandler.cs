@@ -50,18 +50,9 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("ReflectSelection", (int)ReflectSelection.Shadowlands);
             _settings.AddVariable("AAOSelection", (int)AAOSelection.Self);
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
+            _settings.AddVariable("RiotControlSelection", (int)RiotControlSelection.Self);
             _settings.AddVariable("HeavyCompArtSelection", (int)HeavyCompArtSelection.Self);
-
-            _settings.AddVariable("SingleTaunt", false);
-            _settings.AddVariable("OSTaunt", false);
-
-            _settings.AddVariable("Burst", false);
-            _settings.AddVariable("BurstTeam", false);
-
-            _settings.AddVariable("AAOTeam", false);
-
-            _settings.AddVariable("Init", false);
-            _settings.AddVariable("InitTeam", false);
+            _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
 
             _settings.AddVariable("NotumGrenades", false);
 
@@ -415,7 +406,7 @@ namespace CombatHandler.Soldier
                             && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                             && c.Health > 0
-                            && !c.Buffs.Contains(NanoLine.AAOBuffs) && !c.Buffs.Contains(NanoLine.AdventurerMorphBuff)
+                            && c.SpecialAttacks.Contains(SpecialAttack.Burst)
                             && SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
@@ -633,7 +624,10 @@ namespace CombatHandler.Soldier
         {
             None, Self, Team
         }
-
+        public enum SingleTauntsSelection
+        {
+            None, Target, OS
+        }
 
         public enum ProcType1Selection
         {
@@ -643,10 +637,6 @@ namespace CombatHandler.Soldier
         public enum ProcType2Selection
         {
             FuseBodyArmor, OnTheDouble, GrazeJugularVein, GearAssaultAbsorption, DeepSixInitiative, ShootArtery
-        }
-        public enum SingleTauntsSelection
-        {
-            None, Target, OS
         }
 
         private static class RelevantNanos

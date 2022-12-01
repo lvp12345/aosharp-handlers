@@ -457,15 +457,6 @@ namespace CombatHandler.Bureaucrat
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
-        public bool PetCleanse(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            return DynelManager.LocalPlayer.Pets
-                .Where(c => c.Character == null || c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare)
-                    || c.Character.Buffs.Contains(NanoLine.Mezz)).Any();
-        }
-
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || !IsSettingEnabled("MastersBidding")) { return false; }
@@ -853,7 +844,7 @@ namespace CombatHandler.Bureaucrat
 
             SimpleChar target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
-                        && c.IsMoving
+                        && IsMoving(c)
                         && !c.Buffs.Contains(NanoLine.Root)
                         && (c.Name == "Flaming Vengeance"
                             || c.Name == "Hand of the Colonel"
@@ -1084,6 +1075,33 @@ namespace CombatHandler.Bureaucrat
             None, Target, OS
         }
 
+        public enum ProcType1Selection
+        {
+            PleaseHold, FormsinTriplicate, SocialServices, NextWindowOver, WaitInThatQueue
+        }
+
+        public enum ProcType2Selection
+        {
+            MobilityEmbargo, WrongWindow, TaxAudit, LostPaperwork, Deflation, InflationAdjustment, Papercut
+        }
+
+        public enum BuffingAuraSelection
+        {
+            AAOAAD, Crit, NanoResist
+        }
+        public enum DebuffingAuraSelection
+        {
+            None, NanoResist, Crit, MaxNano
+        }
+        public enum CalmingSelection
+        {
+            SL, RK, AOE
+        }
+        public enum ModeSelection
+        {
+            None, All, Adds
+        }
+
         private static class RelevantNanos
         {
             public const int WorkplaceDepression = 273631;
@@ -1134,33 +1152,6 @@ namespace CombatHandler.Bureaucrat
             public const int IncreaseAggressivenessHigh = 154940;
             public const int DivertEnergyToOffense = 88378;
             public const int PositiveAggressiveDefensive = 88384;
-        }
-
-        public enum ProcType1Selection
-        {
-            PleaseHold, FormsinTriplicate, SocialServices, NextWindowOver, WaitInThatQueue
-        }
-
-        public enum ProcType2Selection
-        {
-            MobilityEmbargo, WrongWindow, TaxAudit, LostPaperwork, Deflation, InflationAdjustment, Papercut
-        }
-
-        public enum BuffingAuraSelection
-        {
-            AAOAAD, Crit, NanoResist
-        }
-        public enum DebuffingAuraSelection
-        {
-            None, NanoResist, Crit, MaxNano
-        }
-        public enum CalmingSelection
-        {
-            SL, RK, AOE
-        }
-        public enum ModeSelection
-        {
-            None, All, Adds
         }
 
         protected bool CanTrim()
@@ -1225,6 +1216,16 @@ namespace CombatHandler.Bureaucrat
             {
                 CancelBuffs(RelevantNanos.NanoResDebuffAuras);
             }
+        }
+
+        private static bool IsMoving(SimpleChar target)
+        {
+            if (Playfield.Identity.Instance == 4021)
+            {
+                return true;
+            }
+
+            return target.IsMoving;
         }
 
         #endregion

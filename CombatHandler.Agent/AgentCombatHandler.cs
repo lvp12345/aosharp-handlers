@@ -48,7 +48,7 @@ namespace CombatHandler.Agent
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("DOTA", false);
+            _settings.AddVariable("AgentDOTA", false);
 
             _settings.AddVariable("CritTeam", false);
 

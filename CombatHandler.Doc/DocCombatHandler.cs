@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using System.Windows.Input;
+using static CombatHandler.Doctor.DocCombatHandler;
 
 namespace CombatHandler.Doctor
 {
@@ -53,7 +54,7 @@ namespace CombatHandler.Doctor
 
             _settings.AddVariable("DOTA", false);
             _settings.AddVariable("DOTB", false);
-            _settings.AddVariable("DotC", false);
+            _settings.AddVariable("DOTC", false);
 
             _settings.AddVariable("Nuking", false);
 
@@ -63,7 +64,7 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("NanoResistTeam", false);
 
             _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
-            _settings.AddVariable("ShortHoTSelection", (int)ShortHoTSelection.None);
+            _settings.AddVariable("ShortHOTSelection", (int)ShortHOTSelection.None);
 
             _settings.AddVariable("CH", true);
 
@@ -411,10 +412,7 @@ namespace CombatHandler.Doctor
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (!IsSettingEnabled("CH") || !CanCast(spell)
-                || DocCompleteHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("CH") || DocCompleteHealPercentage == 0) { return false; }
 
             return FindMemberWithHealthBelow(DocCompleteHealPercentage, spell, ref actionTarget);
         }
@@ -424,9 +422,7 @@ namespace CombatHandler.Doctor
             if (DocHealPercentage == 0) { return false; }
 
             if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
                 return FindMemberWithHealthBelow(DocHealPercentage, spell, ref actionTarget);
-            }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
@@ -468,7 +464,8 @@ namespace CombatHandler.Doctor
 
                 return FindMemberWithHealthBelow(DocHealPercentage, spell, ref actionTarget);
             }
-            else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+
+            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
             {
                 return FindPlayerWithHealthBelow(DocHealPercentage, spell, ref actionTarget);
             }
@@ -482,7 +479,7 @@ namespace CombatHandler.Doctor
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitSelection"].AsInt32())
+            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
@@ -503,7 +500,7 @@ namespace CombatHandler.Doctor
                 }
             }
 
-            if (InitBuffSelection.Self != (InitBuffSelection)_settings["InitSelection"].AsInt32()) { return false; }
+            if (InitBuffSelection.Self != (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
@@ -536,9 +533,9 @@ namespace CombatHandler.Doctor
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ShortHoTSelection.Self == (ShortHoTSelection)_settings["ShortHoTSelection"].AsInt32())
+            if (ShortHOTSelection.Self == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
                 return CombatBuff(spell, fightingTarget, ref actionTarget);
-            if (ShortHoTSelection.Team == (ShortHoTSelection)_settings["ShortHoTSelection"].AsInt32())
+            if (ShortHOTSelection.Team == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
                 return CombatTeamBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -556,7 +553,7 @@ namespace CombatHandler.Doctor
 
         private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ShortHoTSelection.TeamDeathlessBlessing != (ShortHoTSelection)_settings["ShortHoTSelection"].AsInt32()) { return false; }
+            if (ShortHOTSelection.TeamDeathlessBlessing != (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.IndividualShortHoTs))
                 CancelBuffs(RelevantNanos.IndividualShortHoTs);
@@ -586,9 +583,16 @@ namespace CombatHandler.Doctor
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Nuking") || fightingTarget == null) { return false; }
+            return ToggledCombatTargetDebuff("Nuking", spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            return true;
+            //if (!IsSettingEnabled("Nuking") || fightingTarget == null) { return false; }
+
+            //if (spell.IsReady)
+            //{
+            //    spell.Cast();
+            //}
+
+            //return false;
         }
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -637,7 +641,7 @@ namespace CombatHandler.Doctor
         {
             None, Self, Team
         }
-        public enum ShortHoTSelection
+        public enum ShortHOTSelection
         {
             None, Self, Team, TeamDeathlessBlessing
         }

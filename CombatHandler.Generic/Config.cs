@@ -41,6 +41,8 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int EnfCycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay : 1;
         [JsonIgnore]
+        public int SolTauntDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SolTauntDelaySingle : 1;
+        [JsonIgnore]
         public int EngiBioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EngiBioCocoonPercentage : 65;
         [JsonIgnore]
         public int NTNanoAegisPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTNanoAegisPercentage : 70;
@@ -316,6 +318,23 @@ namespace CombatHandler.Generic
                 {
                     _enfCycleAbsorbsDelay = value;
                     EnfCycleAbsorbsDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> SolTauntDelaySingleChangedEvent;
+        private int _solTauntDelaySingle = 1;
+        public int SolTauntDelaySingle
+        {
+            get
+            {
+                return _solTauntDelaySingle;
+            }
+            set
+            {
+                if (_solTauntDelaySingle != value)
+                {
+                    _solTauntDelaySingle = value;
+                    SolTauntDelaySingleChangedEvent?.Invoke(this, value);
                 }
             }
         }

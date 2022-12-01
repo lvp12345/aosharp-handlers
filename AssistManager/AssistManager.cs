@@ -42,6 +42,12 @@ namespace AssistManager
 
             _settings.AddVariable("Toggle", false);
 
+            Chat.RegisterCommand("toggle", (string command, string[] param, ChatWindow chatWindow) =>
+            {
+                _settings["Toggle"] = !_settings["Toggle"].AsBool();
+                Chat.WriteLine($"Toggle : {_settings["Toggle"]}");
+            });
+
             RegisterSettingsWindow("Assist Manager", "AssistManagerSettingWindow.xml");
 
             Chat.WriteLine("AssistManager Loaded!");

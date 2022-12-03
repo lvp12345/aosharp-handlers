@@ -628,6 +628,17 @@ namespace CombatHandler.Generic
         #endregion
 
         #region NanoSkills Buff
+
+        protected bool GenericNanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+
+            if (Team.IsInTeam)
+                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+
+            return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
+        }
+
         protected bool NanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }

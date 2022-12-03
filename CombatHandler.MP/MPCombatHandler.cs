@@ -476,14 +476,7 @@ namespace CombatHandler.Metaphysicist
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("Replenish"))
-            {
-                if (Team.IsInTeam)
-                {
-                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
-                }
-
-                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-            }
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -493,27 +486,7 @@ namespace CombatHandler.Metaphysicist
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("Replenish"))
-            {
-                if (Team.IsInTeam)
-                {
-                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
-                }
-
-                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-            }
-
-            //if (IsSettingEnabled("PyschoModi"))
-            //{
-            //    if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.MPCompositeNano))
-            //        CancelBuffs(RelevantNanos.MPCompositeNano);
-
-            //    if (Team.IsInTeam)
-            //    {
-            //        return TeamBuff(spell, fightingTarget, ref actionTarget);
-            //    }
-
-            //    return GenericBuff(spell, fightingTarget, ref actionTarget);
-            //}
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -523,14 +496,7 @@ namespace CombatHandler.Metaphysicist
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("Replenish"))
-            {
-                if (Team.IsInTeam)
-                {
-                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
-                }
-
-                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-            }
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -540,14 +506,7 @@ namespace CombatHandler.Metaphysicist
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("Replenish"))
-            {
-                if (Team.IsInTeam)
-                {
-                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
-                }
-
-                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-            }
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -557,14 +516,7 @@ namespace CombatHandler.Metaphysicist
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("Replenish"))
-            {
-                if (Team.IsInTeam)
-                {
-                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
-                }
-
-                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-            }
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -574,14 +526,7 @@ namespace CombatHandler.Metaphysicist
             if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
 
             if (IsSettingEnabled("Replenish"))
-            {
-                if (Team.IsInTeam)
-                {
-                    return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
-                }
-
-                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-            }
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }

@@ -391,9 +391,8 @@ namespace CombatHandler.Enf
         {
             if (!IsSettingEnabled("TrollForm")) { return false; }
 
-            return TrollFormPerk(perk, fightingTarget, ref actionTarget);
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
-
 
         #endregion
 

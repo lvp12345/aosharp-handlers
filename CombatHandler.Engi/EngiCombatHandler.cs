@@ -98,7 +98,7 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.LEProcEngineerCongenialEncasement, CongenialEncasement, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEngineerPersonalProtection, PersonalProtection, CombatActionPriority.Low);
 
-            //Leg Shot
+            //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
 
@@ -402,14 +402,14 @@ namespace CombatHandler.Engineer
         {
             if (DynelManager.LocalPlayer.HealthPercent > EngiBioCocoonPercentage) { return false; }
 
-            return true;
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("LegShot")) { return false; }
 
-            return true;
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion

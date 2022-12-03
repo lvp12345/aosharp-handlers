@@ -421,27 +421,23 @@ namespace CombatHandler.Trader
 
         private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("LegShot")) { return false; }
 
-            return true;
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
-
             if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
 
-            return perk.IsAvailable;
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
-
             if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
 
-            return perk.IsAvailable;
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion

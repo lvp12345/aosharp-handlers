@@ -75,7 +75,7 @@ namespace CombatHandler.Soldier
             RegisterPerkProcessor(PerkHash.LEProcSoldierDeepSixInitiative, DeepSixInitiative, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcSoldierShootArtery, ShootArtery, CombatActionPriority.Low);
 
-            //Leg Shot
+            //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             //Spells
@@ -84,6 +84,7 @@ namespace CombatHandler.Soldier
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflects);
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Phalanx, PhalanxBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
@@ -99,7 +100,7 @@ namespace CombatHandler.Soldier
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAOBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), BurstBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RiotControlBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             // Needs work for 2nd tanking Abmouth and Ayjous
@@ -357,9 +358,9 @@ namespace CombatHandler.Soldier
         #region Perks
         private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("LegShot") || fightingTarget == null) { return false; }
+            if (!IsSettingEnabled("LegShot")) { return false; }
 
-            return true;
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -395,7 +396,7 @@ namespace CombatHandler.Soldier
             return Buff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool BurstBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool RiotControlBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (RiotControlSelection.Team == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32())
             {
@@ -419,7 +420,36 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (RiotControlSelection.Self != (RiotControlSelection)_settings["RiotControlSelection"].AsInt32()) { return false; }
+            if (RiotControlSelection.None == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (target != null)
+                    {
+                        actionTarget.Target = target;
+                        actionTarget.ShouldSetTarget = true;
+                        return true;
+                    }
+                }
+            }
+
+            if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
@@ -452,7 +482,7 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (HeavyCompArtSelection.Self != (HeavyCompArtSelection)_settings["HeavyCompArtSelection"].AsInt32()) { return false; }
+            if (HeavyCompArtSelection.None == (HeavyCompArtSelection)_settings["HeavyCompArtSelection"].AsInt32()) { return false; }
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
                                 || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun)
@@ -483,6 +513,13 @@ namespace CombatHandler.Soldier
                 return TeamBuff(spell, ref actionTarget);
 
             return false;
+        }
+
+        private bool PhalanxBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Contains(162357)) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SLReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -563,35 +600,6 @@ namespace CombatHandler.Soldier
             return false;
         }
 
-        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.IsInTeam())
-                {
-                    SimpleChar target = DynelManager.Players
-                        .Where(c => c.IsInLineOfSight
-                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && c.Health > 0
-                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
-
-                    if (target != null)
-                    {
-                        actionTarget.Target = target;
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
-                }
-            }
-
-            if (InitBuffSelection.Self != (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-
         #endregion
 
         #region Misc
@@ -610,7 +618,7 @@ namespace CombatHandler.Soldier
         }
         public enum RiotControlSelection
         {
-            Self, Team
+            None, Self, Team
         }
         public enum AAOSelection
         {
@@ -645,6 +653,7 @@ namespace CombatHandler.Soldier
             public static readonly int[] TauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
             29218, 100205, 100206, 100208, 29228};
             public const int HeavyComp = 269482;
+            public const int Phalanx = 29245;
             public static readonly int[] ArBuffs = { 275027, 203119, 29220, 203121 };
         }
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Input;
 using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
@@ -16,6 +17,7 @@ using SmokeLounge.AOtomation.Messaging.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using static CombatHandler.Generic.PerkCondtionProcessors;
+using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Generic
 {
@@ -336,54 +338,32 @@ namespace CombatHandler.Generic
             }
         }
 
-        public static bool TrollFormPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null)
-                return false;
-
-            return true;
-        }
-
         protected bool CyclePerks(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return true;
+            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return true;
+            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool Limber(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking) { return false; }
-
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            // stop cycling if we haven't fought anything for over 10 minutes
-            if (Time.NormalTime - _lastCombatTime > EvadeCycleTimeoutSeconds) { return false; }
-
-            return true;
+            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool DanceOfFools(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            if (!DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.Limber, out Buff limber) || limber.RemainingTime > 12.5f) { return false; }
-
-            // stop cycling if we haven't fought anything for over 10 minutes
-            if (Time.NormalTime - _lastCombatTime > EvadeCycleTimeoutSeconds) { return false; }
-
-            return true;
+            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion

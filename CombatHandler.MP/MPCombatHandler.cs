@@ -48,6 +48,8 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("WarpPets", false);
 
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
+            _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
+            _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
 
             _settings.AddVariable("Cost", false);
             _settings.AddVariable("CostTeam", false);
@@ -443,39 +445,25 @@ namespace CombatHandler.Metaphysicist
         #region Buffs
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Cost"))
-            {
-                return Buff(spell, fightingTarget, ref actionTarget);
-            }
-
-            if (IsSettingEnabled("CostTeam"))
-            {
+            if (CostBuffSelection.Team == (CostBuffSelection)_settings["CostBuffSelection"].AsInt32())
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
-            }
 
-            return false;
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompositesNanoSkills"))
-            {
-                return Buff(spell, fightingTarget, ref actionTarget);
-            }
-
-            if (IsSettingEnabled("CompositesNanoSkillsTeam"))
-            {
+            if (CompositeNanoSkillsBuffSelection.Team == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
                 return TeamBuff(spell, ref actionTarget);
-            }
 
-            return false;
+            if (CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool MatterCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
-
-            if (IsSettingEnabled("Replenish"))
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -483,9 +471,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool PyschoModiBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
-
-            if (IsSettingEnabled("Replenish"))
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -493,9 +479,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool TimeSpaceBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
-
-            if (IsSettingEnabled("Replenish"))
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -503,9 +487,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool SenseImprovBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
-
-            if (IsSettingEnabled("Replenish"))
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -513,9 +495,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool BioMetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
-
-            if (IsSettingEnabled("Replenish"))
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -523,9 +503,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool MattMetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompositesNanoSkills") || IsSettingEnabled("CompositesNanoSkillsTeam")) { return false; }
-
-            if (IsSettingEnabled("Replenish"))
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
@@ -902,7 +880,14 @@ namespace CombatHandler.Metaphysicist
         {
             None, InducedApathy, MastersBidding
         }
-
+        public enum CompositeNanoSkillsBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum CostBuffSelection
+        {
+            Self, Team
+        }
         public enum ProcType1Selection
         {
             NanobotContingentArrest, AnticipatedEvasion, ThoughtfulMeans, RegainFocus, EconomicNanobotUse

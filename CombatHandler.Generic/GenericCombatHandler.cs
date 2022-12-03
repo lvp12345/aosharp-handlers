@@ -634,9 +634,9 @@ namespace CombatHandler.Generic
             if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             if (Team.IsInTeam)
-                return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+                return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
 
-            return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
+            return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool NanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1236,7 +1236,7 @@ namespace CombatHandler.Generic
 
             if (fightingTarget.Buffs.Find(spell.Nanoline, out Buff buff))
             {
-                if (spell.StackingOrder < buff.StackingOrder || fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget)) { return false; }
+                if (spell.StackingOrder < buff.StackingOrder || (fightingTarget.IsPlayer && !HasNCU(spell, fightingTarget))) { return false; }
 
                 return buff.RemainingTime < 10;
             }

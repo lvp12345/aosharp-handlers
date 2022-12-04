@@ -51,7 +51,7 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("AAOSelection", (int)AAOSelection.Self);
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
             _settings.AddVariable("RiotControlSelection", (int)RiotControlSelection.Self);
-            _settings.AddVariable("HeavyCompArtSelection", (int)HeavyCompArtSelection.Self);
+            _settings.AddVariable("CompHeavyArtSelection", (int)CompHeavyArtSelection.None);
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
 
             _settings.AddVariable("NotumGrenades", false);
@@ -457,7 +457,7 @@ namespace CombatHandler.Soldier
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HeavyCompArtSelection.Team == (HeavyCompArtSelection)_settings["HeavyCompArtSelection"].AsInt32())
+            if (CompHeavyArtSelection.Team == (CompHeavyArtSelection)_settings["CompHeavyArtSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.IsInTeam())
                 {
@@ -483,7 +483,7 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (HeavyCompArtSelection.None == (HeavyCompArtSelection)_settings["HeavyCompArtSelection"].AsInt32()) { return false; }
+            if (CompHeavyArtSelection.None == (CompHeavyArtSelection)_settings["CompHeavyArtSelection"].AsInt32()) { return false; }
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
                                 || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun)
@@ -629,7 +629,7 @@ namespace CombatHandler.Soldier
         {
             None, Self, Team
         }
-        public enum HeavyCompArtSelection
+        public enum CompHeavyArtSelection
         {
             None, Self, Team
         }

@@ -38,7 +38,7 @@ namespace CombatHandler.Soldier
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
 
-            Config.CharSettings[Game.ClientInst].EnfTauntDelaySingleChangedEvent += SolTauntDelaySingle_Changed;
+            Config.CharSettings[Game.ClientInst].SolTauntDelaySingleChangedEvent += SolTauntDelaySingle_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);

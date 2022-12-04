@@ -45,7 +45,7 @@ namespace CombatHandler.Soldier
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
-            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.FuseBodyArmor);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.GrazeJugularVein);
 
             _settings.AddVariable("ReflectSelection", (int)ReflectSelection.Shadowlands);
             _settings.AddVariable("AAOSelection", (int)AAOSelection.Self);

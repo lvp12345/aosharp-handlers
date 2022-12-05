@@ -493,8 +493,8 @@ namespace CombatHandler.Doctor
 
                     if (target != null)
                     {
-                        actionTarget.Target = target;
                         actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
                         return true;
                     }
                 }

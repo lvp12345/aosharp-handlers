@@ -514,8 +514,8 @@ namespace CombatHandler.Shade
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -611,8 +611,8 @@ namespace CombatHandler.Shade
 
                 if (teamMembersLowHp.Count >= 3)
                 {
-                    actionTarget.Target = fightingTarget;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
                     return true;
                 }
             }

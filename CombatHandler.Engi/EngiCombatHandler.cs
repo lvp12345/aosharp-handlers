@@ -503,8 +503,8 @@ namespace CombatHandler.Engineer
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
 
@@ -551,9 +551,8 @@ namespace CombatHandler.Engineer
 
                 if (pet.Character.HealthPercent <= 90)
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }
@@ -571,9 +570,8 @@ namespace CombatHandler.Engineer
 
                 if (pet.Character.HealthPercent <= 90)
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }
@@ -596,9 +594,8 @@ namespace CombatHandler.Engineer
                 if (pet.Type == PetType.Support
                         && CanDivertHpTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     petTrimmedHpDiv[PetType.Support] = true;
                     _lastPetTrimDivertHpTime[PetType.Support] = Time.NormalTime;
                     _lastTrimTime = Time.NormalTime;
@@ -622,9 +619,8 @@ namespace CombatHandler.Engineer
                     if (pet.Type == PetType.Attack
                             && CanDivertOffTrim(pet))
                     {
-                        actionTarget.Target = pet.Character;
-
                         actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = pet.Character;
                         petTrimmedOffDiv[PetType.Attack] = true;
                         _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
                         _lastTrimTime = Time.NormalTime;
@@ -641,9 +637,8 @@ namespace CombatHandler.Engineer
                     if (pet.Type == PetType.Attack
                             && CanDivertOffTrim(pet))
                     {
-                        actionTarget.Target = pet.Character;
-
                         actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = pet.Character;
                         petTrimmedOffDiv[PetType.Attack] = true;
                         _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
                         _lastTrimTime = Time.NormalTime;
@@ -653,9 +648,8 @@ namespace CombatHandler.Engineer
                     if (pet.Type == PetType.Support
                             && CanDivertOffTrim(pet))
                     {
-                        actionTarget.Target = pet.Character;
-
                         actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = pet.Character;
                         petTrimmedOffDiv[PetType.Support] = true;
                         _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
                         _lastTrimTime = Time.NormalTime;
@@ -678,9 +672,8 @@ namespace CombatHandler.Engineer
                 if (pet.Type == PetType.Attack
                         && CanAggDefTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     petTrimmedAggDef[PetType.Attack] = true;
                     _lastTrimTime = Time.NormalTime;
                     return true;
@@ -689,9 +682,8 @@ namespace CombatHandler.Engineer
                 if (pet.Type == PetType.Support
                     && CanAggDefTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     petTrimmedAggDef[PetType.Support] = true;
                     _lastTrimTime = Time.NormalTime;
                     return true;
@@ -712,9 +704,8 @@ namespace CombatHandler.Engineer
                 if (pet.Type == PetType.Attack
                         && CanTauntTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     attackPetTrimmedAggressive = true;
                     _lastTrimTime = Time.NormalTime;
                     return true;
@@ -739,9 +730,8 @@ namespace CombatHandler.Engineer
 
                 if (!pet.Character.Buffs.Contains(RelevantNanos.PerkSiphonBox))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }
@@ -760,9 +750,8 @@ namespace CombatHandler.Engineer
 
                 if (!pet.Character.Buffs.Contains(RelevantNanos.PerkChaoticBox))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }
@@ -781,9 +770,8 @@ namespace CombatHandler.Engineer
 
                 if (!pet.Character.Buffs.Contains(RelevantNanos.PerkTauntBox))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }
@@ -805,9 +793,8 @@ namespace CombatHandler.Engineer
 
                 if (!pet.Character.Buffs.Contains(NanoLine.ShieldoftheObedientServant))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }
@@ -849,9 +836,8 @@ namespace CombatHandler.Engineer
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
                     && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }

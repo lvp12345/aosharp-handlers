@@ -713,8 +713,8 @@ namespace CombatHandler.Generic
                     if (target.Buffs.Contains(NanoLine.FixerSuppressorBuff) &&
                         (spell.Nanoline == NanoLine.FixerSuppressorBuff || spell.Nanoline == NanoLine.AssaultRifleBuffs)) { return false; }
 
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -746,8 +746,8 @@ namespace CombatHandler.Generic
                     if (target.Buffs.Contains(NanoLine.AssaultRifleBuffs) &&
                         (spell.Nanoline == NanoLine.AssaultRifleBuffs || spell.Nanoline == NanoLine.GrenadeBuffs)) { return false; }
 
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -1334,10 +1334,10 @@ namespace CombatHandler.Generic
         {
             if (Team.IsInTeam)
                 return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget?.Name)
-                        || mob.FightingTarget.IsPet;
+                        || (bool)mob.FightingTarget?.IsPet;
 
             return mob.FightingTarget?.Name == DynelManager.LocalPlayer.Name
-                || mob.FightingTarget.IsPet;
+                || (bool)mob.FightingTarget?.IsPet;
         }
 
 

@@ -4,6 +4,7 @@ using AOSharp.Core;
 using System;
 using System.Collections.Generic;
 using AOSharp.Common.GameData.UI;
+using System.Data;
 
 namespace LootManager
 {
@@ -54,29 +55,32 @@ namespace LootManager
                 {
                     try
                     {
-                        settingsWindow = Window.Create(new Rect(50, 50, 390, 630), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
-                            searchList = ItemListViewBase.Create(new Rect(999999, 999999, -999999, -999999), 0x40, 0x0f, 0);
-                            SetupMultiListView(searchList);
-                            for (int i = 1; i <= LootManager._settingsItems["ItemCount_ItemList"].AsInt32(); i++)
-                            {
-                                int lowId = LootManager._settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
-                                int highId = LootManager._settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
-                                int ql = LootManager._settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
-
-                                if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
-                                {
-                                    ItemModel ItemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql };
-
-                                    MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
-                                    LootManager.PreItemList.Add(ItemModel, viewItem);
-                                    searchList.AddItem(searchList.GetFirstFreePos(), viewItem, true);
-                                }
-                            }
                             AppendSettingsTab("Loot Manager", settingsWindow);
 
+                            settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
+                            mlv.DeleteAllChildren();
+                            int iEntry = 0;
+                            foreach (Rule r in LootManager.Rules)
+                            {
+                                View entry = View.CreateFromXml(LootManager.PluginDir + "\\UI\\ItemEntry.xml");
+                                entry.FindChild("ItemName", out TextView tx);
+
+                                //entry.Tag = iEntry;
+                                string scope = "";
+
+                                if (r.Global)
+                                    scope = "G";
+                                else
+                                    scope = "N";
+                                tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
+
+                                mlv.AddChild(entry, false);
+                                iEntry++;
+                            }
                         }
                     }
                     catch (Exception e)
@@ -97,10 +101,6 @@ namespace LootManager
             if (settingsView != null)
             {
                 testWindow.AppendTab(settingsName, settingsView);
-                if (settingsView.FindChild("searchRoot", out View searchRoot))
-                {
-                    searchRoot.AddChild(searchList, true);
-                }
                 testWindow.Show(true);
             }
             else
@@ -108,19 +108,6 @@ namespace LootManager
                 Chat.WriteLine($"{settingsWindows[settingsName]}");
                 Chat.WriteLine("Failed to load settings schema from " + settingsWindowXmlPath);
             }
-        }
-
-        public static void SetupMultiListView(MultiListView multiListView)
-        {
-            multiListView.SetLayoutMode(1);
-            multiListView.AddColumn(0, "", 15);
-            multiListView.AddColumn(1, "Name", 300);
-            //multiListView.AddColumn(4, "Ql", 60);
-            //multiListView.AddColumn(5, "MaxQL", 60);
-            //multiListView.SetLayoutMode(1);
-            //multiListView.AddColumn(0, "Name", 300);
-            //multiListView.AddColumn(1, "MinQL", 50);
-            //multiListView.AddColumn(2, "MaxQL", 50);
         }
     }
 }

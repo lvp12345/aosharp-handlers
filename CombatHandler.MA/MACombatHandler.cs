@@ -489,8 +489,8 @@ namespace CombatHandler.MartialArtist
                 if (mob != null)
                 {
                     //_singleTaunt = Time.NormalTime;
-                    actionTarget.Target = mob;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
                     return true;
                 }
             }
@@ -501,8 +501,8 @@ namespace CombatHandler.MartialArtist
                 if (fightingTarget != null)
                 {
                     //_singleTaunt = Time.NormalTime;
-                    actionTarget.Target = fightingTarget;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
                     return true;
                 }
             }

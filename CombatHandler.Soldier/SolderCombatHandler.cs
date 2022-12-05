@@ -385,8 +385,8 @@ namespace CombatHandler.Soldier
 
                     if (target != null)
                     {
-                        actionTarget.Target = target;
                         actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
                         return true;
                     }
                 }
@@ -414,8 +414,8 @@ namespace CombatHandler.Soldier
 
                     if (target != null)
                     {
-                        actionTarget.Target = target;
                         actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
                         return true;
                     }
                 }
@@ -443,8 +443,8 @@ namespace CombatHandler.Soldier
 
                     if (target != null)
                     {
-                        actionTarget.Target = target;
                         actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
                         return true;
                     }
                 }
@@ -476,8 +476,8 @@ namespace CombatHandler.Soldier
                         if (target.Identity == DynelManager.LocalPlayer.Identity
                             && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
 
-                        actionTarget.Target = target;
                         actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
                         return true;
                     }
                 }
@@ -557,8 +557,8 @@ namespace CombatHandler.Soldier
                 if (mob != null)
                 {
                     _singleTaunt = Time.NormalTime;
-                    actionTarget.Target = mob;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
                     return true;
                 }
             }
@@ -569,8 +569,8 @@ namespace CombatHandler.Soldier
                 if (fightingTarget != null)
                 {
                     _singleTaunt = Time.NormalTime;
-                    actionTarget.Target = fightingTarget;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
                     return true;
                 }
             }

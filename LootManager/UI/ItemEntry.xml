@@ -1,0 +1,9 @@
+﻿﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <View>
+    <View view_layout="horizontal">
+      <TextView name="ItemName" layout_borders="Rect(5,0,0,0)"/>
+      <HLayoutSpacer/>
+    </View>
+  </View>
+</root>

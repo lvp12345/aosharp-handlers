@@ -13,6 +13,10 @@ using AOSharp.Common.Unmanaged.Imports;
 using AOSharp.Common.Helpers;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
+using Newtonsoft.Json;
+using System.Data;
+using System.IO;
+using AOSharp.Core.Movement;
 
 namespace LootManager
 {
@@ -32,6 +36,8 @@ namespace LootManager
         private static int ItemIdValue;
         private static string ItemNameValue;
 
+        public static List<Rule> Rules;
+
         protected Settings _settings;
         public static Settings _settingsItems;
 
@@ -39,6 +45,9 @@ namespace LootManager
         private static bool _internalOpen = false;
         private static bool _weAreDoingThings = false;
         private static bool _currentlyLooting = false;
+
+        private static bool Looting = true;
+        private static bool Bags = false;
 
         private static double _nowTimer = Time.NormalTime;
 
@@ -62,85 +71,12 @@ namespace LootManager
                 Game.OnUpdate += OnUpdate;
                 Inventory.ContainerOpened += OnContainerOpened;
 
-                _settings.AddVariable("Toggle", false);
-                _settings.AddVariable("ApplyRules", false);
-
-                _settings["Toggle"] = false;
-
-                _settingsItems = new Settings("LootManager_Items");
-
-                _settingsItems.AddVariable("ItemCount_ItemList", 0);
-
-                for (int i = 1; i <= _settingsItems["ItemCount_ItemList"].AsInt32(); i++)
-                {
-                    _settingsItems.AddVariable($"Item_LowId_ItemList_{i}", 0);
-                    _settingsItems.AddVariable($"Item_HighId_ItemList_{i}", 0);
-                    _settingsItems.AddVariable($"Item_Ql_ItemList_{i}", 0);
-                    _settingsItems.AddVariable($"Item_MinQl_ItemList_{i}", 0);
-                    _settingsItems.AddVariable($"Item_MaxQl_ItemList_{i}", 0);
-                }
-
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
-                Chat.RegisterCommand("setinv", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                        if (!_invItems.Contains(item))
-                            _invItems.Add(item);
-
-                    Chat.WriteLine("Set inventory list, items will be ignored.");
-                });
-
-                Chat.RegisterCommand("clearinv", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    _invItems.Clear();
-
-                    Chat.WriteLine("Cleared inventory list.");
-                });
-
-                Chat.RegisterCommand("addignore", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    if (param.Length > 1)
-                        if (!_ignores.Contains(param[0]))
-                        _ignores.Add(param[0]);
-
-                    Chat.WriteLine("Removed from ignore list.");
-                });
-
-                Chat.RegisterCommand("removeignore", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    if (param.Length > 1)
-                        if (_ignores.Contains(param[0]))
-                            _ignores.Remove(param[0]);
-
-                    Chat.WriteLine("Added to ignore list.");
-                });
-
-                Chat.RegisterCommand("clearignore", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    _ignores.Clear();
-
-                    Chat.WriteLine("Cleared ignore list.");
-                });
-
+                LoadRules();
 
                 Chat.WriteLine("Loot Manager loaded!");
-                Chat.WriteLine("Currently not working well.");
                 Chat.WriteLine("/lootmanager for settings.");
-
-
-                //Chat.RegisterCommand("add", (string command, string[] param, ChatWindow chatWindow) =>
-                //{
-                //    int lowId = 81901;
-                //    int highId = 81901;
-                //    int ql = 139;
-
-                //    if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
-                //    {
-                //        MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
-                //        SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
-                //    }
-                //});
             }
             catch (Exception e)
             {
@@ -148,176 +84,10 @@ namespace LootManager
             }
         }
 
-        private void ClearConfigItems(MultiListView searchList, Dictionary<ItemModel, MultiListViewItem> dictionary, string listType)
-        {
-            int count = _settingsItems[$"ItemCount_{listType}"].AsInt32();
-
-            foreach (var item in dictionary)
-                searchList.RemoveItem(item.Value);
-
-            for (int i = 1; i <= count; i++)
-            {
-                _settingsItems.DeleteVariable($"Item_LowId_{listType}_{count}");
-                _settingsItems.DeleteVariable($"Item_HighId_{listType}_{count}");
-                _settingsItems.DeleteVariable($"Item_Ql_{listType}_{count}");
-                _settingsItems.DeleteVariable($"Item_MinQl_{listType}_{count}");
-                _settingsItems.DeleteVariable($"Item_MaxQl_{listType}_{count}");
-            }
-
-            dictionary.Clear();
-            _settingsItems[$"ItemCount_{listType}"] = 0;
-            _settingsItems.Save();
-        }
-
-        private void AddItemToConfig(ItemModel ItemModel, MultiListViewItem viewItem, string listType)
-        {
-            if (listType == "ItemList")
-                PreItemList.Add(ItemModel, viewItem);
-
-
-            int count = _settingsItems[$"ItemCount_{listType}"].AsInt32() + 1;
-
-            if (_settingsItems[$"Item_LowId_{listType}_{count}"] == null)
-            {
-                _settingsItems.AddVariable($"Item_LowId_{listType}_{count}", 0);
-                _settingsItems.AddVariable($"Item_HighId_{listType}_{count}", 0);
-                _settingsItems.AddVariable($"Item_Ql_{listType}_{count}", 0);
-                _settingsItems.AddVariable($"Item_MinQl_{listType}_{count}", 0);
-                _settingsItems.AddVariable($"Item_MaxQl_{listType}_{count}", 0);
-            }
-
-            _settingsItems[$"Item_LowId_{listType}_{count}"] = ItemModel.LowId;
-            _settingsItems[$"Item_HighId_{listType}_{count}"] = ItemModel.HighId;
-            _settingsItems[$"Item_Ql_{listType}_{count}"] = ItemModel.Ql;
-            _settingsItems[$"Item_MinQl_{listType}_{count}"] = MinQlValue;
-            _settingsItems[$"Item_MaxQl_{listType}_{count}"] = MaxQlValue;
-            _settingsItems[$"ItemCount_{listType}"] = count;
-
-            //Chat.WriteLine($"{ItemModel.ItemName}");
-            //Chat.WriteLine($"{_settingsItems[$"Item_MinQl_{listType}_{count}"]}");
-            //Chat.WriteLine($"{_settingsItems[$"Item_MaxQl_{listType}_{count}"]}");
-
-            _settingsItems.Save();
-        }
-
-        private void HandleClearViewClick(object s, ButtonBase button)
-        {
-            SettingsViewModel settingsViewModel = (SettingsViewModel)button.Tag;
-            string type = settingsViewModel.Type;
-            MultiListView searchView = settingsViewModel.MultiListView;
-            Dictionary<ItemModel, MultiListViewItem> dictionary = settingsViewModel.Dictionary;
-
-            ClearConfigItems(searchView, dictionary, type);
-        }
-        private void HandleAddItemViewClick(object s, ButtonBase button)
-        {
-            if (DummyItem.CreateDummyItemID(ItemIdValue, ItemIdValue, 69, out Identity item))
-            {
-                try
-                {
-                    MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
-                    ItemModel ItemModel = new ItemModel { LowId = ItemIdValue, HighId = ItemIdValue, Ql = 69 };
-                    if (!SettingsController.searchList.Items.Contains(viewItem))
-                    {
-                        SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
-                        AddItemToConfig(ItemModel, viewItem, "ItemList");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Chat.WriteLine(e.Message);
-                }
-            }
-        }
-
-        private void HandleRemoveItemViewClick(object s, ButtonBase button)
-        {
-            SettingsViewModel settingsViewModel = (SettingsViewModel)button.Tag;
-            string type = settingsViewModel.Type;
-            MultiListView searchView = settingsViewModel.MultiListView;
-            Dictionary<ItemModel, MultiListViewItem> searchDict = settingsViewModel.Dictionary;
-            int count = _settingsItems[$"ItemCount_{type}"].AsInt32();
-            ItemModel itemModel = new ItemModel();
-            if (searchView.GetSelectedItem(out MultiListViewItem selectedItem))
-                foreach (var itemView in searchDict)
-                    if (itemView.Value.Pointer == selectedItem.Pointer)
-                    {
-                        itemModel = itemView.Key;
-                        searchView.RemoveItem(selectedItem);
-                        itemView.Value.Select(false);
-
-                        for (int i = 1; i <= count; i++)
-                        {
-                            if (_settingsItems[$"Item_LowId_{type}_{i}"].AsInt32() == itemView.Key.LowId &&
-                                _settingsItems[$"Item_HighId_{type}_{i}"].AsInt32() == itemView.Key.HighId &&
-                                _settingsItems[$"Item_Ql_{type}_{i}"].AsInt32() == itemView.Key.Ql &&
-                                _settingsItems[$"Item_MinQl_{type}_{i}"].AsInt32() == MinQlValue &&
-                                _settingsItems[$"Item_MaxQl_{type}_{i}"].AsInt32() == MaxQlValue)
-                            {
-                                if (i != count)
-                                {
-                                    _settingsItems[$"Item_LowId_{type}_{i}"] = _settingsItems[$"Item_LowId_{type}_{count}"].AsInt32();
-                                    _settingsItems[$"Item_HighId_{type}_{i}"] = _settingsItems[$"Item_HighId_{type}_{count}"].AsInt32();
-                                    _settingsItems[$"Item_Ql_{type}_{i}"] = _settingsItems[$"Item_Ql_{type}_{count}"].AsInt32();
-                                    _settingsItems[$"Item_MinQl_{type}_{i}"] = _settingsItems[$"Item_MinQl_{type}_{count}"].AsInt32();
-                                    _settingsItems[$"Item_MaxQl_{type}_{i}"] = _settingsItems[$"Item_MaxQl_{type}_{count}"].AsInt32();
-
-                                    _settingsItems.DeleteVariable($"Item_LowId_{type}_{count}");
-                                    _settingsItems.DeleteVariable($"Item_HighId_{type}_{count}");
-                                    _settingsItems.DeleteVariable($"Item_Ql_{type}_{count}");
-                                    _settingsItems.DeleteVariable($"Item_MinQl_{type}_{count}");
-                                    _settingsItems.DeleteVariable($"Item_MaxQl_{type}_{count}");
-                                }
-                                else
-                                {
-                                    _settingsItems.DeleteVariable($"Item_LowId_{type}_{count}");
-                                    _settingsItems.DeleteVariable($"Item_HighId_{type}_{count}");
-                                    _settingsItems.DeleteVariable($"Item_Ql_{type}_{count}");
-                                    _settingsItems.DeleteVariable($"Item_MinQl_{type}_{count}");
-                                    _settingsItems.DeleteVariable($"Item_MaxQl_{type}_{count}");
-                                }
-                                break;
-                            }
-                        }
-                    }
-            if (itemModel != null)
-                searchDict.Remove(itemModel);
-            _settingsItems[$"ItemCount_{type}"] = count - 1;
-            _settingsItems.Save();
-        }
-
-        private void HandleInfoViewClick(object s, ButtonBase button)
-        {
-            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\LootManagerInfoView.xml",
-                windowSize: new Rect(0, 0, 440, 510),
-                windowStyle: WindowStyle.Default,
-                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-            _infoWindow.Show(true);
-        }
         public override void Teardown()
         {
+            SaveRules();
             SettingsController.CleanUp();
-
-        }
-
-        public bool RulesApply(Item item)
-        {
-            int count = _settingsItems[$"ItemCount_ItemList"].AsInt32();
-
-            for (int i = 1; i <= count; i++)
-            {
-                if (_settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.Id ||
-                    _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.HighId ||
-                    _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == item.Id ||
-                    _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == item.HighId ||
-                    _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == item.Id + 1)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private bool ItemExists(Item item)
@@ -346,8 +116,7 @@ namespace LootManager
 
         private void OnContainerOpened(object sender, Container container)
         {
-            if (!_settings["Toggle"].AsBool()
-                || container.Identity.Type != IdentityType.Corpse
+            if (container.Identity.Type != IdentityType.Corpse
                 || !_internalOpen
                 || !_weAreDoingThings) { return; }
 
@@ -357,11 +126,8 @@ namespace LootManager
             {
                 if (Inventory.NumFreeSlots >= 1)
                 {
-                    if (_settings["ApplyRules"].AsBool())
-                    {
-                        if (RulesApply(item))
-                            item.MoveToInventory();
-                    }
+                    if (CheckRules(item))
+                        item.MoveToInventory();
                     else if (!_ignores.Contains(item.Name))
                         item.MoveToInventory();
                 }
@@ -378,11 +144,8 @@ namespace LootManager
                         itemtomove.MoveToContainer(_bag);
                     }
 
-                    if (_settings["ApplyRules"].AsBool())
-                    {
-                        if (RulesApply(item))
-                            item.MoveToInventory();
-                    }
+                    if (CheckRules(item))
+                        item.MoveToInventory();
                     else if (!_ignores.Contains(item.Name))
                         item.MoveToInventory();
                 }
@@ -399,42 +162,7 @@ namespace LootManager
 
         private void OnUpdate(object sender, float deltaTime)
         {
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F6) && !_init)
-            //{
-            //    _init = true;
-
-            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 390, 630), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.None);
-
-            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-            //    {
-            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Loot Manager")))
-            //        {
-            //            SettingsController.searchList = ItemListViewBase.Create(new Rect(999999, 999999, -999999, -999999), 0x40, 0x0f, 0);
-            //            SettingsController.SetupMultiListView(SettingsController.searchList);
-            //            for (int i = 1; i <= _settingsItems["ItemCount_ItemList"].AsInt32(); i++)
-            //            {
-            //                int lowId = _settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32();
-            //                int highId = _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32();
-            //                int ql = _settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32();
-
-            //                if (DummyItem.CreateDummyItemID(lowId, highId, ql, out Identity item))
-            //                {
-            //                    ItemModel itemModel = new ItemModel { LowId = lowId, HighId = highId, Ql = ql };
-
-            //                    MultiListViewItem viewItem = InventoryListViewItem.Create(1, item, true);
-            //                    PreItemList.Add(itemModel, viewItem);
-            //                    SettingsController.searchList.AddItem(SettingsController.searchList.GetFirstFreePos(), viewItem, true);
-            //                }
-            //            }
-
-            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-            //        }
-            //    }
-
-            //    _init = false;
-            //}
-
-            if (_settings["Toggle"].AsBool())
+            if (Looting)
             {
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
                 if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 2f)
@@ -491,124 +219,204 @@ namespace LootManager
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                //SettingsController.settingsWindow.FindView("NameValue", out TextInputView _nameBox);
-                SettingsController.settingsWindow.FindView("ItemIdValue", out TextInputView _itemIdBox);
-                SettingsController.settingsWindow.FindView("MinQlValue", out TextInputView _minQlBox);
-                SettingsController.settingsWindow.FindView("MaxQlValue", out TextInputView _maxQlBox);
-
-                SettingsViewModel settingsViewModel = new SettingsViewModel
+                if (SettingsController.settingsWindow.FindView("chkOnOff", out Checkbox chkOnOff))
                 {
-                    MultiListView = SettingsController.searchList,
-                    Dictionary = PreItemList,
-                    Type = "ItemList"
-                };
+                    chkOnOff.SetValue(Looting);
+                    if (chkOnOff.Toggled == null)
+                        chkOnOff.Toggled += chkOnOff_Toggled;
+                }
 
-                MultiListView searchView = settingsViewModel.MultiListView;
-                int count = _settingsItems[$"ItemCount_ItemList"].AsInt32();
-                Dictionary<ItemModel, MultiListViewItem> searchDict = settingsViewModel.Dictionary;
-                ItemModel itemModel = new ItemModel();
-                if (searchView.GetSelectedItem(out MultiListViewItem selectedItem))
-                    foreach (var itemView in searchDict)
-                        if (itemView.Value.Pointer == selectedItem.Pointer)
-                        {
-                            itemModel = itemView.Key;
-
-                            for (int i = 1; i <= count; i++)
-                            {
-                                if (_settingsItems[$"Item_LowId_ItemList_{i}"].AsInt32() == itemView.Key.LowId &&
-                                    _settingsItems[$"Item_HighId_ItemList_{i}"].AsInt32() == itemView.Key.HighId &&
-                                    _settingsItems[$"Item_Ql_ItemList_{i}"].AsInt32() == itemView.Key.Ql)
-                                {
-                                    if (i != count)
-                                    {
-                                        //if (_nameBox != null && itemView.Key.ItemName != null)
-                                        //    _nameBox.Text = itemView.Key.ItemName;
-                                        if (_itemIdBox != null && itemModel != null)
-                                            _itemIdBox.Text = itemModel.LowId.ToString();
-                                        if (_minQlBox != null && _settingsItems[$"Item_MinQl_ItemList_{i}"] != null)
-                                            _minQlBox.Text = _settingsItems[$"Item_MinQl_ItemList_{i}"].ToString();
-                                        if (_maxQlBox != null && _settingsItems[$"Item_MaxQl_ItemList_{i}"] != null)
-                                            _maxQlBox.Text = _settingsItems[$"Item_MaxQl_ItemList_{i}"].ToString();
-                                    }
-                                    else
-                                    {
-                                        //if (_nameBox != null && itemView.Key.ItemName != null)
-                                        //    _nameBox.Text = itemView.Key.ItemName;
-                                        if (_itemIdBox != null && itemModel != null)
-                                            _itemIdBox.Text = itemModel.LowId.ToString();
-                                        if (_minQlBox != null && _settingsItems[$"Item_MinQl_ItemList_{i}"] != null)
-                                            _minQlBox.Text = _settingsItems[$"Item_MinQl_ItemList_{i}"].AsString();
-                                        if (_maxQlBox != null && _settingsItems[$"Item_MaxQl_ItemList_{i}"] != null)
-                                            _maxQlBox.Text = _settingsItems[$"Item_MaxQl_ItemList_{i}"].AsString();
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-
-                //if (_nameBox != null && !string.IsNullOrEmpty(_nameBox.Text))
+                //if (SettingsController.settingsWindow.FindView("chkBags", out Checkbox chkBags))
                 //{
-                //    if (ItemNameValue != _nameBox.Text)
-                //        ItemNameValue = _nameBox.Text;
+                //    chkBags.SetValue(Bags);
+                //    if (chkBags.Toggled == null)
+                //        chkBags.Toggled += chkBags_Toggled;
                 //}
-                if (_itemIdBox != null && !string.IsNullOrEmpty(_itemIdBox.Text))
+
+                if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
                 {
-                    if (int.TryParse(_itemIdBox.Text, out int itemIdValue))
-                    {
-                        if (ItemIdValue != itemIdValue)
-                            ItemIdValue = itemIdValue;
-                    }
-                }
-                if (_minQlBox != null && !string.IsNullOrEmpty(_minQlBox.Text))
-                {
-                    if (int.TryParse(_minQlBox.Text, out int minQlValue))
-                    {
-                        if (MinQlValue != minQlValue)
-                            MinQlValue = minQlValue;
-                    }
-                }
-                if (_maxQlBox != null && !string.IsNullOrEmpty(_maxQlBox.Text))
-                {
-                    if (int.TryParse(_maxQlBox.Text, out int maxQlValue))
-                    {
-                        if (MaxQlValue != maxQlValue)
-                            MaxQlValue = maxQlValue;
-                    }
+                    if (addbut.Clicked == null)
+                        addbut.Clicked += addButtonClicked;
                 }
 
-                if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
+                if (SettingsController.settingsWindow.FindView("buttonDel", out Button rembut))
                 {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = HandleInfoViewClick;
+                    if (rembut.Clicked == null)
+                        rembut.Clicked += remButtonClicked;
                 }
 
-                if (SettingsController.settingsWindow.FindView("ClearView", out Button clearView))
+                if (SettingsController.settingsWindow.FindView("tivminql", out TextInputView tivminql))
                 {
-                    clearView.Tag = new SettingsViewModel
-                    {
-                        MultiListView = SettingsController.searchList,
-                        Dictionary = PreItemList,
-                        Type = "ItemList"
-                    };
-                    clearView.Clicked = HandleClearViewClick;
+                    tivminql.Text = "1";
+                }
+                if (SettingsController.settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql))
+                {
+                    tivmaxql.Text = "500";
+                }
+            }
+        }
+
+        private void chkBags_Toggled(object sender, bool e)
+        {
+            Checkbox chk = (Checkbox)sender;
+            Bags = e;
+        }
+
+        private void chkOnOff_Toggled(object sender, bool e)
+        {
+            Checkbox chk = (Checkbox)sender;
+            Looting = e;
+        }
+
+        private void addButtonClicked(object sender, ButtonBase e)
+        {
+            SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
+
+            SettingsController.settingsWindow.FindView("tivName", out TextInputView tivname);
+            SettingsController.settingsWindow.FindView("tivminql", out TextInputView tivminql);
+            SettingsController.settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql);
+
+            SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
+
+            if (tivname.Text.Trim() == "")
+            {
+                txErr.Text = "Can't add an empty name";
+                return;
+            }
+
+            int minql = 0;
+            int maxql = 0;
+            try
+            {
+                minql = Convert.ToInt32(tivminql.Text);
+                maxql = Convert.ToInt32(tivmaxql.Text);
+            }
+            catch
+            {
+                txErr.Text = "Quality entries must be numbers!";
+                return;
+            }
+
+            if (minql > maxql)
+            {
+                txErr.Text = "Min Quality must be less or equal than the high quality!";
+                return;
+            }
+            if (minql <= 0)
+            {
+                txErr.Text = "Min Quality must be least 1!";
+                return;
+            }
+            if (maxql > 500)
+            {
+                txErr.Text = "Max Quality must be 500!";
+                return;
+            }
+
+
+            SettingsController.settingsWindow.FindView("chkGlobal", out Checkbox chkGlobal);
+            bool GlobalScope = chkGlobal.IsChecked;
+
+
+            mlv.DeleteAllChildren();
+
+
+
+            Rules.Add(new Rule(tivname.Text, tivminql.Text, tivmaxql.Text, GlobalScope));
+
+            Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
+
+            int iEntry = 0;
+            foreach (Rule r in Rules)
+            {
+                View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
+                entry.FindChild("ItemName", out TextView tx);
+                string globalscope = "";
+                if (r.Global)
+                    globalscope = "G";
+                else
+                    globalscope = "N";
+
+                //entry.Tag = iEntry;
+                tx.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
+
+                mlv.AddChild(entry, false);
+                iEntry++;
+            }
+
+
+            tivname.Text = "";
+            tivminql.Text = "1";
+            tivmaxql.Text = "500";
+            txErr.Text = "";
+
+        }
+
+        private void remButtonClicked(object sender, ButtonBase e)
+        {
+            try
+            {
+                SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
+
+                SettingsController.settingsWindow.FindView("tivindex", out TextInputView txIndex);
+
+                SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
+
+                if (txIndex.Text.Trim() == "")
+                {
+                    txErr.Text = "Cant remove an empty entry";
+                    return;
                 }
 
-                if (SettingsController.settingsWindow.FindView("AddItemView", out Button addItemView))
+                int index = 0;
+
+                try
                 {
-                    addItemView.Tag = SettingsController.settingsWindow;
-                    addItemView.Clicked = HandleAddItemViewClick;
+                    index = Convert.ToInt32(txIndex.Text) - 1;
+                }
+                catch
+                {
+                    txErr.Text = "Entry must be a number!";
+                    return;
                 }
 
-                if (SettingsController.settingsWindow.FindView("RemoveItemView", out Button removeItemView))
+                if (index < 0 || index >= Rules.Count)
                 {
-                    removeItemView.Tag = new SettingsViewModel
-                    {
-                        MultiListView = SettingsController.searchList,
-                        Dictionary = PreItemList,
-                        Type = "ItemList"
-                    };
-                    removeItemView.Clicked = HandleRemoveItemViewClick;
+                    txErr.Text = "Invalid entry!";
+                    return;
                 }
+
+                Rules.RemoveAt(index);
+
+                mlv.DeleteAllChildren();
+                //viewitems.Clear();
+
+                int iEntry = 0;
+                foreach (Rule r in Rules)
+                {
+                    View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
+                    entry.FindChild("ItemName", out TextView tx);
+
+                    //entry.Tag = iEntry;
+
+                    string scope = "";
+                    if (r.Global)
+                        scope = "G";
+                    else
+                        scope = "N";
+                    tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
+
+
+                    mlv.AddChild(entry, false);
+                    iEntry++;
+                }
+
+                txErr.Text = "";
+            }
+            catch (Exception ex)
+            {
+
+                Chat.WriteLine(ex.Message);
             }
         }
 
@@ -616,6 +424,87 @@ namespace LootManager
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
+
+        private void LoadRules()
+        {
+            Rules = new List<Rule>();
+
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager");
+
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager");
+
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}");
+
+            string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\Global.json";
+            if (File.Exists(filename))
+            {
+                string rulesJson = File.ReadAllText(filename);
+                Rules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
+                foreach (Rule r in Rules)
+                    r.Global = true;
+            }
+
+
+            filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
+            if (File.Exists(filename))
+            {
+                List<Rule> scopedRules = new List<Rule>();
+                string rulesJson = File.ReadAllText(filename);
+                scopedRules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
+                foreach (Rule r in scopedRules)
+                {
+                    r.Global = false;
+                    Rules.Add(r);
+                }
+            }
+            Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
+        }
+
+        private void SaveRules()
+        {
+            List<Rule> GlobalRules = new List<Rule>();
+            List<Rule> ScopeRules = new List<Rule>();
+
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager");
+
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager");
+
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}");
+
+            string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\Global.json";
+
+            GlobalRules = Rules.Where(o => o.Global == true).ToList();
+            ScopeRules = Rules.Where(o => o.Global == false).ToList();
+
+            string rulesJson = JsonConvert.SerializeObject(GlobalRules);
+            File.WriteAllText(filename, rulesJson);
+
+            filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
+            rulesJson = JsonConvert.SerializeObject(ScopeRules);
+            File.WriteAllText(filename, rulesJson);
+        }
+
+        public bool CheckRules(Item item)
+        {
+            foreach (Rule rule in Rules)
+            {
+                if (
+                    item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
+                    item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
+                    item.QualityLevel <= Convert.ToInt32(rule.Hql)
+                    )
+                    return true;
+
+            }
+            return false;
+        }
+
     }
 
     [StructLayout(LayoutKind.Explicit, Pack = 0)]

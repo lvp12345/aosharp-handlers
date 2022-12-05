@@ -471,8 +471,8 @@ namespace CombatHandler.Bureaucrat
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -492,8 +492,8 @@ namespace CombatHandler.Bureaucrat
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -520,8 +520,8 @@ namespace CombatHandler.Bureaucrat
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -541,8 +541,8 @@ namespace CombatHandler.Bureaucrat
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -569,8 +569,8 @@ namespace CombatHandler.Bureaucrat
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -590,8 +590,8 @@ namespace CombatHandler.Bureaucrat
 
                 if (target != null)
                 {
-                    actionTarget.Target = target;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
                     return true;
                 }
             }
@@ -723,9 +723,8 @@ namespace CombatHandler.Bureaucrat
 
                 if (CanPerkPuppeteer(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }
@@ -892,9 +891,8 @@ namespace CombatHandler.Bureaucrat
                 if (pet.Type == PetType.Attack
                         && CanDivertOffTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     petTrimmedOffDiv[PetType.Attack] = true;
                     _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
                     _lastTrimTime = Time.NormalTime;
@@ -904,9 +902,8 @@ namespace CombatHandler.Bureaucrat
                 if (pet.Type == PetType.Support
                         && CanDivertOffTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     petTrimmedOffDiv[PetType.Support] = true;
                     _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
                     _lastTrimTime = Time.NormalTime;
@@ -928,9 +925,8 @@ namespace CombatHandler.Bureaucrat
                 if (pet.Type == PetType.Attack
                         && CanAggDefTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     petTrimmedAggDef[PetType.Attack] = true;
                     _lastTrimTime = Time.NormalTime;
                     return true;
@@ -939,9 +935,8 @@ namespace CombatHandler.Bureaucrat
                 if (pet.Type == PetType.Support
                     && CanAggDefTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     petTrimmedAggDef[PetType.Support] = true;
                     _lastTrimTime = Time.NormalTime;
                     return true;
@@ -962,9 +957,8 @@ namespace CombatHandler.Bureaucrat
                 if (pet.Type == PetType.Attack
                         && CanTauntTrim(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     attackPetTrimmedAggressive = true;
                     _lastTrimTime = Time.NormalTime;
                     return true;
@@ -1009,8 +1003,8 @@ namespace CombatHandler.Bureaucrat
 
                 if (RobotNeedsBuff(spell, pet))
                 {
-                    actionTarget.Target = pet.Character;
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }

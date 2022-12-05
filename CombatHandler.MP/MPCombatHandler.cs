@@ -568,9 +568,8 @@ namespace CombatHandler.Metaphysicist
 
                 if (CanPerkChannelRage(pet))
                 {
-                    actionTarget.Target = pet.Character;
-
                     actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
                     return true;
                 }
             }

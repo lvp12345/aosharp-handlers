@@ -7,6 +7,10 @@
       <View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT" >
         <TextView name="tvonoff" value="Enabled" layout_borders="Rect(5,5,5,5)"/>
         <CheckBox name="chkOnOff" label="" layout_borders="Rect(5,5,5,5)"/>
+        <TextView  name="tvdel" value="Delete leftovers" layout_borders="Rect(5,5,5,5)"/>
+        <CheckBox name="chkDel" label="" layout_borders="Rect(5,5,5,5)"/>
+        <HLayoutSpacer/>
+        <Button name="buttonSet" label="Set Inventory" h_alignment="LEFT" layout_borders="Rect(5,5,5,5)"  />
         <!--<TextView  name="tvbags" value="Move to bag(s)" layout_borders="Rect(5,5,5,5)"/>
         <CheckBox name="chkBags" label="" layout_borders="Rect(5,5,5,5)"/>-->
       </View>
@@ -46,7 +50,7 @@
 
     <BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings1" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
       <View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT">
-        <TextView font="SMALL" color="0xFFCCCB"  name="tvErr" value="" layout_borders="Rect(5,5,5,5)" />
+        <TextView  name="tvErr" value="" layout_borders="Rect(5,5,5,5)" />
       </View>
     </BorderView>
 

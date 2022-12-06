@@ -73,10 +73,10 @@ namespace LootManager
                                 string scope = "";
 
                                 if (r.Global)
-                                    scope = "G";
+                                    scope = "Global";
                                 else
-                                    scope = "N";
-                                tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
+                                    scope = "Local";
+                                tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
 
                                 mlv.AddChild(entry, false);
                                 iEntry++;

@@ -46,8 +46,9 @@ namespace LootManager
         private static bool _weAreDoingThings = false;
         private static bool _currentlyLooting = false;
 
-        private static bool Looting = true;
+        private static bool Looting = false;
         private static bool Bags = false;
+        private static bool Delete = false;
 
         private static double _nowTimer = Time.NormalTime;
 
@@ -74,6 +75,16 @@ namespace LootManager
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
                 LoadRules();
+
+                Chat.RegisterCommand("setinv", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                        if (!_invItems.Contains(item))
+                            _invItems.Add(item);
+
+                    Chat.WriteLine("Set inventory list, items will be ignored.");
+                });
+
 
                 Chat.WriteLine("Loot Manager loaded!");
                 Chat.WriteLine("/lootmanager for settings.");
@@ -128,8 +139,10 @@ namespace LootManager
                 {
                     if (CheckRules(item))
                         item.MoveToInventory();
-                    else if (!_ignores.Contains(item.Name))
-                        item.MoveToInventory();
+                    else if (Delete)
+                        item.Delete();
+                    //else if (!_ignores.Contains(item.Name))
+                    //    item.MoveToInventory();
                 }
                 else
                 {
@@ -146,8 +159,8 @@ namespace LootManager
 
                     if (CheckRules(item))
                         item.MoveToInventory();
-                    else if (!_ignores.Contains(item.Name))
-                        item.MoveToInventory();
+                    else if (Delete)
+                        item.Delete();
                 }
             }
 
@@ -226,6 +239,13 @@ namespace LootManager
                         chkOnOff.Toggled += chkOnOff_Toggled;
                 }
 
+                if (SettingsController.settingsWindow.FindView("chkDel", out Checkbox chkDel))
+                {
+                    chkDel.SetValue(Delete);
+                    if (chkDel.Toggled == null)
+                        chkDel.Toggled += chkDel_Toggled;
+                }
+
                 //if (SettingsController.settingsWindow.FindView("chkBags", out Checkbox chkBags))
                 //{
                 //    chkBags.SetValue(Bags);
@@ -245,6 +265,12 @@ namespace LootManager
                         rembut.Clicked += remButtonClicked;
                 }
 
+                if (SettingsController.settingsWindow.FindView("buttonSet", out Button setbut))
+                {
+                    if (setbut.Clicked == null)
+                        setbut.Clicked += setButtonClicked;
+                }
+
                 if (SettingsController.settingsWindow.FindView("tivminql", out TextInputView tivminql))
                 {
                     tivminql.Text = "1";
@@ -262,10 +288,27 @@ namespace LootManager
             Bags = e;
         }
 
+        private void chkDel_Toggled(object sender, bool e)
+        {
+            Checkbox chk = (Checkbox)sender;
+            Delete = e;
+        }
+
         private void chkOnOff_Toggled(object sender, bool e)
         {
             Checkbox chk = (Checkbox)sender;
             Looting = e;
+        }
+
+        private void setButtonClicked(object sender, ButtonBase e)
+        {
+            SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
+
+            txErr.Text = "Inventory set.";
+
+            foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                if (!_invItems.Contains(item))
+                    _invItems.Add(item);
         }
 
         private void addButtonClicked(object sender, ButtonBase e)

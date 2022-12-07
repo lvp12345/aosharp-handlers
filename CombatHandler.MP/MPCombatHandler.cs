@@ -50,14 +50,12 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
             _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
             _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
+            _settings.AddVariable("DamageDebuffSelection", (int)DamageDebuffSelection.None);
 
             _settings.AddVariable("Cost", false);
             _settings.AddVariable("CostTeam", false);
 
             _settings.AddVariable("InterruptChance", false);
-
-            _settings.AddVariable("DamageDebuffs", false);
-            _settings.AddVariable("OSDamageDebuffs", false);
 
             _settings.AddVariable("NanoResistanceDebuff", false);
             _settings.AddVariable("NanoShutdownDebuff", false);
@@ -129,7 +127,6 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(), MPDebuffOthersInCombat);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResistanceDebuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(), NanoShutdownDebuff);
 
@@ -519,12 +516,6 @@ namespace CombatHandler.Metaphysicist
         #endregion
 
         #region Debufs
-        private bool MPDebuffOthersInCombat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("OSDamageDebuffs")) { return false; }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
 
         private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -538,7 +529,18 @@ namespace CombatHandler.Metaphysicist
 
         private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledCombatTargetDebuff("DamageDebuffs", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (DamageDebuffSelection.OS == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32())
+                return OSDebuff(spell, ref actionTarget);
+
+            if (DamageDebuffSelection.Target == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         #endregion
@@ -883,6 +885,11 @@ namespace CombatHandler.Metaphysicist
         {
             None, Self, Team
         }
+        public enum DamageDebuffSelection
+        {
+            None, Target, OS
+        }
+        
         public enum CostBuffSelection
         {
             Self, Team

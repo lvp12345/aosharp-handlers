@@ -381,7 +381,7 @@ namespace LootManager
                     globalscope = "N";
 
                 //entry.Tag = iEntry;
-                tx.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
+                tx.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + " ] - " + r.Name;
 
                 mlv.AddChild(entry, false);
                 iEntry++;

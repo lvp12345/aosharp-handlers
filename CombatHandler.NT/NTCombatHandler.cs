@@ -544,12 +544,13 @@ namespace CombatHandler.NanoTechnician
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
 
-            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + NTCycleAbsorbsDelay)
+            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + NTCycleAbsorbsDelay
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
+                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
                 _absorbs = Time.NormalTime;
                 return true;
             }

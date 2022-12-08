@@ -14,6 +14,8 @@ namespace CombatHandler.Generic
 
         protected string _path;
 
+        #region Json
+
         [JsonIgnore]
         public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
         [JsonIgnore]
@@ -41,6 +43,10 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int EnfCycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay : 1;
         [JsonIgnore]
+        public int EnfCycleChallengerDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleChallengerDelay : 1;
+        [JsonIgnore]
+        public int EnfCycleRageDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleRageDelay : 1;
+        [JsonIgnore]
         public int SolTauntDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SolTauntDelaySingle : 1;
         [JsonIgnore]
         public int EngiBioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EngiBioCocoonPercentage : 65;
@@ -50,6 +56,8 @@ namespace CombatHandler.Generic
         public int NTNullitySpherePercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTNullitySpherePercentage : 35;
         [JsonIgnore]
         public int NTIzgimmersWealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage : 25;
+
+        #endregion
 
         public static Config Load(string path)
         {
@@ -318,6 +326,40 @@ namespace CombatHandler.Generic
                 {
                     _enfCycleAbsorbsDelay = value;
                     EnfCycleAbsorbsDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> EnfCycleChallengerDelayChangedEvent;
+        private int _enfCycleChallengerDelay = 1;
+        public int EnfCycleChallengerDelay
+        {
+            get
+            {
+                return _enfCycleChallengerDelay;
+            }
+            set
+            {
+                if (_enfCycleChallengerDelay != value)
+                {
+                    _enfCycleChallengerDelay = value;
+                    EnfCycleChallengerDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> EnfCycleRageDelayChangedEvent;
+        private int _enfCycleRageDelay = 1;
+        public int EnfCycleRageDelay
+        {
+            get
+            {
+                return _enfCycleRageDelay;
+            }
+            set
+            {
+                if (_enfCycleRageDelay != value)
+                {
+                    _enfCycleRageDelay = value;
+                    EnfCycleRageDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }

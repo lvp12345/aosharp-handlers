@@ -21,11 +21,15 @@ namespace CombatHandler.Enf
         private static View _procView;
 
         private static double _absorbs;
+        private static double _challenger;
+        private static double _rage;
         private static double _areaTaunt;
         private static double _singleTaunt;
 
         private static int EnfTauntDelayArea;
         private static int EnfCycleAbsorbsDelay;
+        private static int EnfCycleRageDelay;
+        private static int EnfCycleChallengerDelay;
         private static int EnfTauntDelaySingle;
 
         private static double _ncuUpdateTime;
@@ -37,6 +41,8 @@ namespace CombatHandler.Enf
             Config.CharSettings[Game.ClientInst].EnfTauntDelaySingleChangedEvent += EnfTauntDelaySingle_Changed;
             Config.CharSettings[Game.ClientInst].EnfTauntDelayAreaChangedEvent += EnfTauntDelayArea_Changed;
             Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelayChangedEvent += EnfCycleAbsorbsDelay_Changed;
+            Config.CharSettings[Game.ClientInst].EnfCycleChallengerDelayChangedEvent += EnfCycleChallengerDelay_Changed;
+            Config.CharSettings[Game.ClientInst].EnfCycleRageDelayChangedEvent += EnfCycleRageDelay_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -48,6 +54,8 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("AreaTaunt", false);
             _settings.AddVariable("CycleAbsorbs", false);
+            _settings.AddVariable("CycleChallenger", false);
+            _settings.AddVariable("CycleRage", false);
             _settings.AddVariable("TauntProc", false);
 
             _settings.AddVariable("TrollForm", false);
@@ -80,6 +88,8 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChangeBuff);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), Buff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), Buff);
@@ -109,6 +119,8 @@ namespace CombatHandler.Enf
             EnfTauntDelayArea = Config.CharSettings[Game.ClientInst].EnfTauntDelayArea;
             EnfTauntDelaySingle = Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle;
             EnfCycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay;
+            EnfCycleChallengerDelay = Config.CharSettings[Game.ClientInst].EnfCycleChallengerDelay;
+            EnfCycleRageDelay = Config.CharSettings[Game.ClientInst].EnfCycleRageDelay;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
@@ -143,10 +155,20 @@ namespace CombatHandler.Enf
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView);
 
                 window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+                window.FindView("DelayChallengerBox", out TextInputView challengerInput);
+                window.FindView("DelayRageBox", out TextInputView rageInput);
 
                 if (absorbsInput != null)
                 {
                     absorbsInput.Text = $"{EnfCycleAbsorbsDelay}";
+                }
+                if (challengerInput != null)
+                {
+                    challengerInput.Text = $"{EnfCycleChallengerDelay}";
+                }
+                if (rageInput != null)
+                {
+                    rageInput.Text = $"{EnfCycleRageDelay}";
                 }
             }
             else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
@@ -155,10 +177,20 @@ namespace CombatHandler.Enf
                 _buffWindow = container;
 
                 container.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+                container.FindView("DelayChallengerBox", out TextInputView challengerInput);
+                container.FindView("DelayRageBox", out TextInputView rageInput);
 
                 if (absorbsInput != null)
                 {
                     absorbsInput.Text = $"{EnfCycleAbsorbsDelay}";
+                }
+                if (challengerInput != null)
+                {
+                    challengerInput.Text = $"{EnfCycleChallengerDelay}";
+                }
+                if (rageInput != null)
+                {
+                    rageInput.Text = $"{EnfCycleRageDelay}";
                 }
             }
         }
@@ -233,6 +265,8 @@ namespace CombatHandler.Enf
                 window.FindView("DelaySingleBox", out TextInputView singleInput);
                 window.FindView("DelayAreaBox", out TextInputView areaInput);
                 window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+                window.FindView("DelayChallengerBox", out TextInputView challengerInput);
+                window.FindView("DelayRageBox", out TextInputView rageInput);
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
                 {
@@ -261,6 +295,26 @@ namespace CombatHandler.Enf
                         if (Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay != absorbsValue)
                         {
                             Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay = absorbsValue;
+                        }
+                    }
+                }
+                if (challengerInput != null && !string.IsNullOrEmpty(challengerInput.Text))
+                {
+                    if (int.TryParse(challengerInput.Text, out int challengerValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].EnfCycleChallengerDelay != challengerValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].EnfCycleChallengerDelay = challengerValue;
+                        }
+                    }
+                }
+                if (rageInput != null && !string.IsNullOrEmpty(rageInput.Text))
+                {
+                    if (int.TryParse(rageInput.Text, out int rageValue))
+                    {
+                        if (Config.CharSettings[Game.ClientInst].EnfCycleRageDelay != rageValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].EnfCycleRageDelay = rageValue;
                         }
                     }
                 }
@@ -476,6 +530,36 @@ namespace CombatHandler.Enf
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.MeleeEnergy);
         }
 
+        private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("CycleChallenger") && Time.NormalTime > _challenger + EnfCycleChallengerDelay
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+            {
+                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+                _challenger = Time.NormalTime;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool CycleRage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("CycleRage") && Time.NormalTime > _rage + EnfCycleRageDelay
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+            {
+                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+                _rage = Time.NormalTime;
+                return true;
+            }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)) { return false; }
+
+            return true;
+        }
+
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
@@ -571,6 +655,20 @@ namespace CombatHandler.Enf
         {
             Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay = e;
             EnfCycleAbsorbsDelay = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void EnfCycleChallengerDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EnfCycleChallengerDelay = e;
+            EnfCycleChallengerDelay = e;
+            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void EnfCycleRageDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].EnfCycleRageDelay = e;
+            EnfCycleRageDelay = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }

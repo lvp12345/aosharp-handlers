@@ -502,13 +502,8 @@ namespace CombatHandler.Enf
         {
             if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("AreaTaunt") || !CanCast(spell)) { return false; }
 
-            if (EnfTauntDelayArea == 0)
-            {
-                return true;
-            }
-
             if (Time.NormalTime > _areaTaunt + EnfTauntDelayArea
-                && fightingTarget != null)
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
                 _areaTaunt = Time.NormalTime;
                 return true;

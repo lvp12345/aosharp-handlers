@@ -480,7 +480,8 @@ namespace CombatHandler.Enf
         {
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
 
-            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + EnfCycleAbsorbsDelay)
+            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + EnfCycleAbsorbsDelay
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
                 if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 

@@ -487,6 +487,7 @@ namespace CombatHandler.Bureaucrat
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
+                        && !AttackingMob(c)
                         && AttackingTeam(c))
                     .FirstOrDefault();
 

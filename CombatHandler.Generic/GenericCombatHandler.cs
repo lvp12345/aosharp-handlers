@@ -1330,6 +1330,14 @@ namespace CombatHandler.Generic
             return DynelManager.LocalPlayer.Buffs.Any(buff => buff.Id == RelevantNanos.InnerSanctumDebuff);
         }
 
+        public bool AttackingMob(SimpleChar mob)
+        {
+            if (Team.IsInTeam)
+                return Team.Members.Any(c => c.Character?.FightingTarget?.Identity == c.Identity);
+
+            return DynelManager.LocalPlayer.FightingTarget?.Identity == mob.Identity;
+        }
+
         public bool AttackingTeam(SimpleChar mob)
         {
             if (Team.IsInTeam)

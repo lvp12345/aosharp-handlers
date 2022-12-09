@@ -775,6 +775,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (InitDebuffSelection.None == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()) { return false; }
+
             if (spell.Nanoline == NanoLine.GeneralRadiationACDebuff || spell.Nanoline == NanoLine.GeneralProjectileACDebuff)
             {
                 if (fightingTarget != null)

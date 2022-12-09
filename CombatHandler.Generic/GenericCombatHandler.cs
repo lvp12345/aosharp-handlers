@@ -970,7 +970,8 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
-                || DynelManager.LocalPlayer.HealthPercent > 75) { return false; }
+                || DynelManager.LocalPlayer.HealthPercent > 75
+                || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return item != null;
         }

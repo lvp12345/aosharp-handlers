@@ -546,12 +546,12 @@ namespace CombatHandler.Adventurer
 
         public enum ProcType1Selection
         {
-            AesirAbsorption, MacheteFlurry, SelfPreservation, SkinProtection, SoothingHerbs, FerociousHits
+            AesirAbsorption, MacheteFlurry, SelfPreservation, SkinProtection, FerociousHits
         }
 
         public enum ProcType2Selection
         {
-            HealingHerbs, Combustion, CharringBlow, RestoreVigor, MacheteSlice, BasicDressing
+            HealingHerbs, SoothingHerbs, Combustion, CharringBlow, RestoreVigor, MacheteSlice, BasicDressing
         }
 
         public static void AdvHealPercentage_Changed(object s, int e)

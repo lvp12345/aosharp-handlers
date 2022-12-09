@@ -7,8 +7,7 @@
       <RadioButton label="Machete Flurry (Self Modify +Damage 75 60s)" value="1"/>
       <RadioButton label="Self Preservation (Self Modify ShieldAC 52, Self Modify AbsorbAC 255 60s)" value="2"/>
       <RadioButton label="Skin Protection (Self Modify ShieldAC 31, Self Modify AbsorbAC 150 60s)" value="3"/>
-      <RadioButton label="Soothing Herbs (Self Hit Health 186 .. 391)" value="4"/>
-      <RadioButton label="Ferocious Hits (Self Modify +Damage 15 30s)" value="5"/>
+      <RadioButton label="Ferocious Hits (Self Modify +Damage 15 30s)" value="4"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
@@ -17,7 +16,8 @@
       <RadioButton label="Charring Blow (Target Hit Health Fire -533 .. -1434)" value="2"/>
       <RadioButton label="Restore Vigor (Team Hit Health 356 .. 746)" value="3"/>
       <RadioButton label="Machete Slice (Target Hit Health Fire -137 .. -350)" value="4"/>
-      <RadioButton label="Basic Dressing (Self Hit Health 15 .. 25)" value="5"/>
+      <RadioButton label="Soothing Herbs (Self Hit Health 186 .. 391)" value="5"/>
+      <RadioButton label="Basic Dressing (Self Hit Health 15 .. 25)" value="6"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

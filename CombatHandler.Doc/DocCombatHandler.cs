@@ -480,27 +480,9 @@ namespace CombatHandler.Doctor
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.IsInTeam())
-                {
-                    SimpleChar target = DynelManager.Players
-                        .Where(c => c.IsInLineOfSight
-                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && c.Health > 0
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
 
-                    if (target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = target;
-                        return true;
-                    }
-                }
-            }
-
-            if (InitBuffSelection.Self != (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
+            if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
 
             return Buff(spell, fightingTarget, ref actionTarget);
         }
@@ -584,15 +566,6 @@ namespace CombatHandler.Doctor
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return ToggledCombatTargetDebuff("Nuking", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-            //if (!IsSettingEnabled("Nuking") || fightingTarget == null) { return false; }
-
-            //if (spell.IsReady)
-            //{
-            //    spell.Cast();
-            //}
-
-            //return false;
         }
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

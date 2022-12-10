@@ -361,7 +361,7 @@ namespace CombatHandler.Adventurer
         }
         private bool SoothingHerbs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.SoothingHerbs != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (ProcType2Selection.SoothingHerbs != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }

@@ -515,22 +515,22 @@ namespace CombatHandler.Doctor
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ShortHOTSelection.Self == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
-                return CombatBuff(spell, fightingTarget, ref actionTarget);
             if (ShortHOTSelection.Team == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
                 return CombatTeamBuff(spell, fightingTarget, ref actionTarget);
 
-            return false;
+            if (ShortHOTSelection.None == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
+
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ShortHpSelection.Self == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
-                return CombatBuff(spell, fightingTarget, ref actionTarget);
             if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
                 return CombatTeamBuff(spell, fightingTarget, ref actionTarget);
 
-            return false;
+            if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
+
+            return CombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -23,7 +24,7 @@ namespace CombatHandler.Generic
 {
     public class GenericCombatHandler : AOSharp.Core.Combat.CombatHandler
     {
-        private const float PostZonePetCheckBuffer = 2;
+        private const float PostZonePetCheckBuffer = 5;
         public int EvadeCycleTimeoutSeconds = 180;
 
         private double _lastPetSyncTime = Time.NormalTime;
@@ -1030,7 +1031,12 @@ namespace CombatHandler.Generic
 
             if (!petData.ContainsKey(spell.Id)) { return false; }
 
-            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) { shell.Use(); }
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) 
+            {
+                if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
+
+                shell.Use();
+            }
 
             return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
         }

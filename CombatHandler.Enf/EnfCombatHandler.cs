@@ -443,7 +443,7 @@ namespace CombatHandler.Enf
 
         private bool TrollForm(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TrollForm")) { return false; }
+            if (!IsSettingEnabled("TrollForm") || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }

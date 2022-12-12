@@ -57,7 +57,7 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("Pierce", false);
             _settings.AddVariable("FlimFocus", false);
 
-            _settings.AddVariable("NanoHoTTeam", false);
+            _settings.AddVariable("NanoHOTTeam", false);
             _settings.AddVariable("CostTeam", false);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ThermalReprieve);
@@ -99,7 +99,7 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), Buff);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHoT);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHOT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
 
             //if (Spell.Find(RelevantNanos.SuperiorFleetingImmunity, out Spell immunity))
@@ -121,7 +121,7 @@ namespace CombatHandler.NanoTechnician
 
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
-            RegisterSpellProcessor(RelevantNanos.AoeBlinds, AOEBlind);
+            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind);
 
             PluginDirectory = pluginDir;
 
@@ -510,9 +510,9 @@ namespace CombatHandler.NanoTechnician
 
         #region Buffs
 
-        private bool NanoHoT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool NanoHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NanoHoTTeam"))
+            if (IsSettingEnabled("NanoHOTTeam"))
                 if (Team.IsInTeam)
                     return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
@@ -633,7 +633,7 @@ namespace CombatHandler.NanoTechnician
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };
             public const int SuperiorFleetingImmunity = 273386;
             public static readonly Spell[] AbsortAcTargetBuffs = Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder().Where(spell => spell.Id != SuperiorFleetingImmunity).ToArray();
-            public static readonly int[] AoeBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
+            public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
             public static readonly int[] SingleTargetNukes = { 218168, 218164, 218162, 218160, 218158, 218156, 218154, 218152, 218150, 
                 218148, 218146, 218144, 218142, 218140, 218138, 218136, 269473, 218134, 201935, 202262, 201933, 218132, 28618, 218124, 218130, 
                 218122, 218120, 218128, 218118, 218126, 45226, 45192, 28619, 45230, 28623, 28604, 28616, 218116, 28597, 45210, 45236, 45197, 

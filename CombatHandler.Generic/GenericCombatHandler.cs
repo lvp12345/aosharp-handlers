@@ -179,6 +179,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.AssaultClassTank, RelevantItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
             RegisterItemProcessor(RelevantItems.MeteoriteSpikes, RelevantItems.MeteoriteSpikes, TargetedDamageItem);
+            RegisterItemProcessor(RelevantItems.TearOfOedipus, RelevantItems.TearOfOedipus, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.LavaCapsule, RelevantItems.LavaCapsule, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.HSRLow, RelevantItems.HSRHigh, TargetedDamageItem);
             RegisterItemProcessor(RelevantItems.KizzermoleGumboil, RelevantItems.KizzermoleGumboil, TargetedDamageItem);
@@ -1568,6 +1569,7 @@ namespace CombatHandler.Generic
                 case RelevantItems.MeteoriteSpikes:
                 case RelevantItems.LavaCapsule:
                 case RelevantItems.KizzermoleGumboil:
+                case RelevantItems.TearOfOedipus:
                     return Stat.SharpObject;
                 case RelevantItems.SteamingHotCupOfEnhancedCoffee:
                     return Stat.RunSpeed;
@@ -1620,6 +1622,7 @@ namespace CombatHandler.Generic
             public const int HSRLow = 164780;
             public const int HSRHigh = 164781;
             public const int KizzermoleGumboil = 245323;
+            public const int TearOfOedipus = 244216;
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
             public const int DreadlochEnduranceBooster = 267168;
             public const int DreadlochEnduranceBoosterNanomageEdition = 267167;

@@ -12,7 +12,7 @@
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Flim Focus" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__FlimFocus" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionCheckBox label="Nano HoT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoHoTTeam" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Nano HOT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoHOTTeam" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Cost (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CostTeam" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <TextView value="*Delay calculated as seconds." layout_borders="Rect(5,5,5,5)"/>

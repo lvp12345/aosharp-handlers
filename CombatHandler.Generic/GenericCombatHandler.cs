@@ -1041,19 +1041,6 @@ namespace CombatHandler.Generic
             return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
         }
 
-        protected virtual bool PetSpawnerItem(Dictionary<int, PetSpellData> petData, Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Game.IsZoning) { return false; }
-
-            if (!IsSettingEnabled("SpawnPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            if (!petData.Values.Any(x => (x.ShellId == item.Id || x.ShellId == item.HighId)
-                    && !DynelManager.LocalPlayer.Pets.Any(p => p.Type == x.PetType))) { return false; }
-
-            actionTarget.ShouldSetTarget = false;
-            return true;
-        }
-
         protected bool CanSpawnPets(PetType petType)
         {
             if (!IsSettingEnabled("SpawnPets") || !CanLookupPetsAfterZone() || PetAlreadySpawned(petType)) { return false; }

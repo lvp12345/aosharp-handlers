@@ -592,7 +592,7 @@ namespace CombatHandler.Enf
             {
                 _areaTaunt = Time.NormalTime;
                 return DynelManager.NPCs.Any(c => c.Health > 0
-                    && !c.FightingTarget.IsPet
+                    && c.FightingTarget?.IsPet == false
                     && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f);
             }
 

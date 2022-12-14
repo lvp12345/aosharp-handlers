@@ -52,7 +52,7 @@ namespace CombatHandler.NanoTechnician
 
             _settings.AddVariable("CycleAbsorbs", false);
 
-            _settings.AddVariable("AIDot", true);
+            _settings.AddVariable("AIDot", false);
 
             _settings.AddVariable("Pierce", false);
             _settings.AddVariable("FlimFocus", false);

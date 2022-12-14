@@ -466,13 +466,11 @@ namespace CombatHandler.Engineer
 
             if (DebuffingAuraSelection.Blind != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
-            return DynelManager.NPCs.Where(c => c.IsAlive
-                && c.FightingTarget != null
+            return DynelManager.NPCs.Any(c => c.Health > 0
                 && !c.FightingTarget.Buffs.Contains(202732) && !c.FightingTarget.Buffs.Contains(214879)
                 && !c.FightingTarget.Buffs.Contains(284620) && !c.FightingTarget.Buffs.Contains(216382)
                 && !c.FightingTarget.IsPet
-                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f)
-                .Any();
+                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f);
         }
         #endregion
 

@@ -477,14 +477,19 @@ namespace CombatHandler.Doctor
 
         #region Buffs
 
+        private bool MaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, NanoLine.DoctorHPBuffs, fightingTarget, ref actionTarget);
+        }
+
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return TeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
             if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -494,43 +499,42 @@ namespace CombatHandler.Doctor
             if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
                 return FindMemberWithHealthBelow(DocHealPercentage, spell, ref actionTarget);
 
-            if (HasBuffNanoLine(NanoLine.DoctorShortHPBuffs, DynelManager.LocalPlayer)) { return false; }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, NanoLine.DoctorShortHPBuffs, fightingTarget, ref actionTarget);
         }
 
+        //Add raido options
         private bool NanoResistance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("NanoResistTeam")) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool MaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HasBuffNanoLine(NanoLine.DoctorHPBuffs, DynelManager.LocalPlayer)) { return false; }
-
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-
+        // Template for all
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            //We use this logic because it has radio options
+            //If not we use GenericCombatBuff as the processor condition
+
             if (ShortHOTSelection.Team == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
-                return CombatTeamBuff(spell, fightingTarget, ref actionTarget);
+                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
             if (ShortHOTSelection.None == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            //We allow here for our own input of NanoLine in ref to Supazooted
+            //NanoLine.TraderTeamSkillWranglerBuff
+            //Different to the spell.NanoLine
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
-                return CombatTeamBuff(spell, fightingTarget, ref actionTarget);
+                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
             if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -540,7 +544,7 @@ namespace CombatHandler.Doctor
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.IndividualShortHoTs))
                 CancelBuffs(RelevantNanos.IndividualShortHoTs);
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -557,7 +561,7 @@ namespace CombatHandler.Doctor
             {
                 if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
-                return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -565,22 +569,22 @@ namespace CombatHandler.Doctor
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledCombatTargetDebuff("Nuking", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("Nuking", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledCombatTargetDebuff("DOTA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("DOTA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DOTBDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledCombatTargetDebuff("DOTB", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("DOTB", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DOTCDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledCombatTargetDebuff("DOTC", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("DOTC", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion

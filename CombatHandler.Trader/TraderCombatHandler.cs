@@ -52,6 +52,8 @@ namespace CombatHandler.Trader
             _settings.AddVariable("DamageDrain", true);
             _settings.AddVariable("HealthDrain", false);
 
+            _settings.AddVariable("EvadesSelection", (int)EvadesSelection.None);
+
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DebtCollection);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.UnopenedLetter);
@@ -66,7 +68,6 @@ namespace CombatHandler.Trader
             _settings.AddVariable("GTH", true);
 
             _settings.AddVariable("NanoHealTeam", false);
-            _settings.AddVariable("EvadesTeam", false);
 
             _settings.AddVariable("LegShot", false);
             _settings.AddVariable("PerkSelection", (int)PerkSelection.Sacrifice);
@@ -107,9 +108,9 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
 
             //Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, Buff);
-            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, Buff);
-            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, Buff);
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericBuff);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
@@ -494,23 +495,30 @@ namespace CombatHandler.Trader
         {
             if (!IsSettingEnabled("NanoHealTeam")) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion
 
         #region Buffs
 
+        //protected bool UmbralWrangle(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("UmbralWrangle")) { return false; }
+
+        //    return Buff(spell, NanoLine.TraderTeamSkillWranglerBuff, fightingTarget, ref actionTarget);
+        //}
+
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum()) { return false; }
+            if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
 
-            if (IsSettingEnabled("EvadesTeam"))
+            if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
                 return GenericBuff(spell, fightingTarget, ref actionTarget);
 
-            if (fightingTarget != null) { return false; }
+            if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -522,7 +530,7 @@ namespace CombatHandler.Trader
             if (NanoDrainSelection.Shadowlands != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()
                 || fightingTarget?.MaxHealth < 1000000) { return false; }
 
-            return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -530,27 +538,27 @@ namespace CombatHandler.Trader
             if (NanoDrainSelection.RubiKa != (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32()
                 || fightingTarget?.MaxHealth < 1000000) { return false; }
 
-            return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-            return ToggledCombatTargetDebuff("MyEnemy", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("MyEnemy", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-            return ToggledCombatTargetDebuff("GTH", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("GTH", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (RansackSelection.Target == (RansackSelection)_settings["RansackSelection"].AsInt32())
-                return CombatTargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
 
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
 
@@ -585,7 +593,7 @@ namespace CombatHandler.Trader
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DepriveSelection.Target == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-                return CombatTargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
 
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
 
@@ -621,28 +629,28 @@ namespace CombatHandler.Trader
         {
             if (fightingTarget == null) { return false; }
 
-            return ToggledCombatTargetDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
 
-            return ToggledCombatTargetDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
         }
 
         private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
 
-            return ToggledCombatTargetDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
         }
 
         private bool ACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
 
-            return ToggledCombatTargetDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -695,6 +703,11 @@ namespace CombatHandler.Trader
         public enum ProcType1Selection
         {
             DebtCollection, AccumulatedInterest, ExchangeProduct, UnforgivenDebts, UnexpectedBonus, Rebate
+        }
+
+        public enum EvadesSelection
+        {
+            None, Self, Team
         }
 
         public enum ProcType2Selection

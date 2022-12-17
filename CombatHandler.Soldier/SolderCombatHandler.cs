@@ -85,11 +85,11 @@ namespace CombatHandler.Soldier
             RegisterSpellProcessor(RelevantNanos.SolDrainHeal, SolDrainHeal);
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.Phalanx, PhalanxBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), Buff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), ShotgunBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HeavyWeaponsBuffs).OrderByStackingOrder(), HeavyWeaponBuff);
@@ -97,7 +97,7 @@ namespace CombatHandler.Soldier
 
             RegisterSpellProcessor(RelevantNanos.ArBuffs, ARBuff);
             RegisterSpellProcessor(RelevantNanos.HeavyComp, HeavyCompBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAOBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
@@ -394,7 +394,7 @@ namespace CombatHandler.Soldier
 
             if (AAOSelection.Self != (AAOSelection)_settings["AAOSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool RiotControlBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -423,21 +423,32 @@ namespace CombatHandler.Soldier
 
             if (RiotControlSelection.None == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool Inits(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
+
+            if (!GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)
+                || DynelManager.LocalPlayer.Profession == Profession.Doctor || DynelManager.LocalPlayer.Profession == Profession.NanoTechnician) { return false; }
+
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.IsInTeam())
+                if (Team.IsInTeam)
                 {
                     SimpleChar target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
                             && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                             && c.Health > 0
-                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
+                            && c.Profession != Profession.NanoTechnician
                             && SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
@@ -452,14 +463,14 @@ namespace CombatHandler.Soldier
 
             if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (CompHeavyArtSelection.Team == (CompHeavyArtSelection)_settings["CompHeavyArtSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.IsInTeam())
+                if (Team.IsInTeam)
                 {
                     SimpleChar target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
@@ -508,10 +519,10 @@ namespace CombatHandler.Soldier
         private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ReflectSelection.RubiKa == (ReflectSelection)_settings["ReflectSelection"].AsInt32())
-                return Buff(spell, fightingTarget, ref actionTarget);
+                return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
             if (ReflectSelection.RubiKaTeam == (ReflectSelection)_settings["ReflectSelection"].AsInt32())
-                return TeamBuff(spell, ref actionTarget);
+                return GenericBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -520,21 +531,21 @@ namespace CombatHandler.Soldier
         {
             if (DynelManager.LocalPlayer.Buffs.Contains(162357)) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool SLReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ReflectSelection.Shadowlands != (ReflectSelection)_settings["ReflectSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool NotumGrenades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("NotumGrenades")) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -594,7 +605,7 @@ namespace CombatHandler.Soldier
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
+            if (fightingtarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
 

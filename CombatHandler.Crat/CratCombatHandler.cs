@@ -105,12 +105,12 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
             RegisterSpellProcessor(RelevantNanos.PistolBuffs, Pistol);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), Crit);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), GenericBuff);
 
             //Buff Aura
             RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
@@ -631,21 +631,21 @@ namespace CombatHandler.Bureaucrat
         {
             if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -653,7 +653,7 @@ namespace CombatHandler.Bureaucrat
             if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
                 || fightingTarget == null) { return false; }
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -661,7 +661,7 @@ namespace CombatHandler.Bureaucrat
             if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
                 || fightingTarget == null) { return false; }
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -669,7 +669,7 @@ namespace CombatHandler.Bureaucrat
             if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
                 || fightingTarget == null) { return false; }
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -681,18 +681,10 @@ namespace CombatHandler.Bureaucrat
 
         private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Team.IsInTeam)
-                if (IsSettingEnabled("NanoDeltaTeam"))
+            if (IsSettingEnabled("NanoDeltaTeam"))
                     return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, fightingTarget, ref actionTarget);
-        }
-        private bool Crit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-                return TeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -764,14 +756,14 @@ namespace CombatHandler.Bureaucrat
         {
             if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-            return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-            return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -781,7 +773,7 @@ namespace CombatHandler.Bureaucrat
             if (spell.Nanoline == NanoLine.GeneralRadiationACDebuff || spell.Nanoline == NanoLine.GeneralProjectileACDebuff)
             {
                 if (fightingTarget != null)
-                    return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
                 return false;
             }
@@ -794,7 +786,7 @@ namespace CombatHandler.Bureaucrat
             {
                 if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
-                return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
             return false;

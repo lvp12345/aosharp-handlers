@@ -67,12 +67,12 @@ namespace CombatHandler.Fixer
             RegisterPerkProcessor(PerkHash.LEProcFixerContaminatedBullets, ContaminatedBullets, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcFixerUndergroundSutures, UndergroundSutures, CombatActionPriority.Low);
             
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), Buff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), Buff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), GenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.NCU, NCU);
-            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, Buff);
+            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
             RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);
@@ -291,23 +291,23 @@ namespace CombatHandler.Fixer
         {
             if (HasBuffNanoLine(NanoLine.FixerNCUBuff, DynelManager.LocalPlayer)) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool LongHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamLongHOT"))
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return GenericCombatBuff(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamShortHOT"))
-                return CombatGenericBuff(spell, fightingTarget, ref actionTarget);
+                return GenericCombatBuff(spell, fightingTarget, ref actionTarget);
             if (IsSettingEnabled("ShortHOT"))
-                return CombatBuff(spell, fightingTarget, ref actionTarget);
+                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -316,7 +316,7 @@ namespace CombatHandler.Fixer
         {
             if (IsInsideInnerSanctum() || RunspeedSelection.Shadowlands != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
 
-            return CombatBuff(spell, fightingTarget, ref actionTarget);
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RKRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -328,7 +328,7 @@ namespace CombatHandler.Fixer
                 CancelBuffs(RelevantNanos.ShadowlandsRunspeed);
             }
 
-            return CombatGenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericCombatBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -352,7 +352,7 @@ namespace CombatHandler.Fixer
         #region Debuffs
         private bool EvasionDecrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledCombatTargetDebuff("Evasion", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("Evasion", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion

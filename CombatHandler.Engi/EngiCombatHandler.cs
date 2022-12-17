@@ -70,6 +70,8 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("TauntTrimmer", true);
             _settings.AddVariable("AggDefTrimmer", true);
 
+            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
+
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
             _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
 
@@ -105,12 +107,12 @@ namespace CombatHandler.Engineer
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), Grenade);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), Buff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), Buff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), Buff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.BoostedTendons, Buff);
+            RegisterSpellProcessor(RelevantNanos.BoostedTendons, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
@@ -121,7 +123,7 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.ShieldAura, ShieldAura);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
             //RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), Inits);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             //Pet Spawners
             RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Attack).Select(c => c.Key).ToArray(), PetSpawner);
@@ -421,28 +423,28 @@ namespace CombatHandler.Engineer
         {
             if (BuffingAuraSelection.Armor != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DamageAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.Damage != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ReflectAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShieldAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.Shield != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, fightingTarget, ref actionTarget);
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool SnareAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -481,8 +483,8 @@ namespace CombatHandler.Engineer
         protected bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
-                return TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
-                        || TeamBuffNoNTWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
+                        || TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
 
             if (DynelManager.LocalPlayer.Buffs.Contains(269482)) { return false; }
 
@@ -490,40 +492,35 @@ namespace CombatHandler.Engineer
                     || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
-        protected bool Inits(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.IsInTeam())
+            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
-                        && SpellChecksOther(spell, spell.Nanoline, c)
-                        && GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged))
-                    .FirstOrDefault();
-
-                if (target != null)
+                if (Team.IsInTeam)
                 {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
+                            && GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged)
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
+                        return true;
+                    }
                 }
-
-                return false;
             }
 
-            if (!GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)
-                || DynelManager.LocalPlayer.Profession == Profession.Doctor || DynelManager.LocalPlayer.Profession == Profession.NanoTechnician) { return false; }
+            if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()
+                || !GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)) { return false; }
 
-            if (SpellChecksPlayer(spell))
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
-            return false;
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -1019,7 +1016,10 @@ namespace CombatHandler.Engineer
         {
             ReactiveArmor, DestructiveTheorem, EnergyTransfer, EndureBarrage, DestructiveSignal, SplinterPreservation, CushionBlows
         }
-
+        public enum InitBuffSelection
+        {
+            None, Self, Team
+        }
         public enum ProcType2Selection
         {
             AssaultForceRelief, DroneMissiles, DroneExplosives, CongenialEncasement, PersonalProtection

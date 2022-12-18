@@ -52,6 +52,7 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
             _settings.AddVariable("SingleTauntSelection", (int)SingleTauntSelection.None);
+            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
             _settings.AddVariable("EvadesSelection", (int)EvadesSelection.Self);
 
             _settings.AddVariable("Zazen", false);
@@ -91,7 +92,7 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), Evades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), RunSpeed);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GenericBuff);
@@ -508,7 +509,34 @@ namespace CombatHandler.MartialArtist
 
             return false;
         }
+        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
+            {
+                if (Team.IsInTeam)
+                {
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && c.Profession != Profession.NanoTechnician
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
 
+                    if (target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
+                        return true;
+                    }
+                }
+            }
+
+            if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
@@ -615,6 +643,10 @@ namespace CombatHandler.MartialArtist
             Melee, Fire, Energy, Chemical
         }
         public enum EvadesSelection
+        {
+            None, Self, Team
+        }
+        public enum InitBuffSelection
         {
             None, Self, Team
         }

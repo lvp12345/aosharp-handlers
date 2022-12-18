@@ -442,7 +442,7 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("Composites") || IsInsideInnerSanctum()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
         #endregion
 
@@ -496,8 +496,13 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Non Combat
-
         protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool GenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget != null || RelevantNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
@@ -543,7 +548,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool GenericBuffExclusion(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool GenericTeamBuffExclusion(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 

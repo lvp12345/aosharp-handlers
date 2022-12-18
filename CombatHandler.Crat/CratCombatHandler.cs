@@ -105,12 +105,12 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GenericTeamBuff);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
             RegisterSpellProcessor(RelevantNanos.PistolBuffs, Pistol);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), GenericTeamBuff);
 
             //Buff Aura
             RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
@@ -631,21 +631,21 @@ namespace CombatHandler.Bureaucrat
         {
             if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -684,7 +684,7 @@ namespace CombatHandler.Bureaucrat
             if (IsSettingEnabled("NanoDeltaTeam"))
                     return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

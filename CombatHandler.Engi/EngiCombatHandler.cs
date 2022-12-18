@@ -107,14 +107,14 @@ namespace CombatHandler.Engineer
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), Grenade);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflect);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), SpecAttackAbsorb);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), EngSpecAttackAbsorb);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.BoostedTendons, BoostedTendons);
-            RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.BoostedTendons, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GenericTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GenericTeamBuff);
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
             RegisterSpellProcessor(RelevantNanos.ShieldRippers, ShieldRipperAura);
             RegisterSpellProcessor(RelevantNanos.ArmorAura, ArmorAura);
@@ -423,28 +423,28 @@ namespace CombatHandler.Engineer
         {
             if (BuffingAuraSelection.Armor != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool DamageAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.Damage != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ReflectAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.Reflect != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShieldAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (BuffingAuraSelection.Shield != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
         private bool SnareAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -480,22 +480,6 @@ namespace CombatHandler.Engineer
         }
         #endregion
 
-        protected bool SLReflect(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool BoostedTendons(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool SpecAttackAbsorb(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool EngSpecAttackAbsorb(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
 
         protected bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

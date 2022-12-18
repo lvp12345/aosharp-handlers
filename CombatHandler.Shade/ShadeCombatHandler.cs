@@ -92,22 +92,22 @@ namespace CombatHandler.Shade
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaressNano, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaress, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealthDrain).OrderByStackingOrder(), HealthDrain);
             RegisterSpellProcessor(RelevantNanos.SpiritDrain, SpiritSiphon);
 
             //Items
             RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), Agility);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), Concealment);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), FastAttack);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), MultiWield);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), MartialArts);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(), Piercing);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(), SneakAttack);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(), WeaponEffect);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(), AAD);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(), GenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.ShadeDmgProc, DamageProc);
             RegisterSpellProcessor(RelevantNanos.ShadeStunProc, StunProc);
@@ -523,7 +523,7 @@ namespace CombatHandler.Shade
                     CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
                 }
 
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -549,44 +549,7 @@ namespace CombatHandler.Shade
 
             if (fightingTarget == null) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool Agility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool Concealment(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool FastAttack(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool SneakAttack(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool MartialArts(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool WeaponEffect(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool AAD(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool Piercing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool MultiWield(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -630,7 +593,7 @@ namespace CombatHandler.Shade
 
         #region Debuffs
 
-        private bool ShadesCaressNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ShadesCaress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 

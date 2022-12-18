@@ -67,12 +67,12 @@ namespace CombatHandler.Fixer
             RegisterPerkProcessor(PerkHash.LEProcFixerContaminatedBullets, ContaminatedBullets, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcFixerUndergroundSutures, UndergroundSutures, CombatActionPriority.Low);
             
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), GenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.NCU, NCU);
-            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GenericTeamBuff);
             RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
             RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);
@@ -291,7 +291,7 @@ namespace CombatHandler.Fixer
         {
             if (HasBuffNanoLine(NanoLine.FixerNCUBuff, DynelManager.LocalPlayer)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool LongHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -299,7 +299,7 @@ namespace CombatHandler.Fixer
             if (IsSettingEnabled("TeamLongHOT"))
                 return GenericCombatBuff(spell, fightingTarget, ref actionTarget);
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

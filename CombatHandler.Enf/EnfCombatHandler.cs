@@ -86,7 +86,7 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), AreaTaunt, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChangeBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
@@ -102,9 +102,9 @@ namespace CombatHandler.Enf
 
             //Team buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), Melee);
-            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, GenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, GenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GenericTeamBuff);
 
             RegisterItemProcessor(244655, 244655, TauntTool);
 
@@ -452,11 +452,11 @@ namespace CombatHandler.Enf
 
         #region Buffs
 
-        private bool DamageChangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (HasBuffNanoLine(NanoLine.DamageChangeBuffs, DynelManager.LocalPlayer)) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -573,14 +573,14 @@ namespace CombatHandler.Enf
                 return true;
             }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("TauntProc")) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool AreaTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

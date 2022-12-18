@@ -112,9 +112,9 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
 
             //Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, GenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericTeamBuff);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
@@ -503,7 +503,7 @@ namespace CombatHandler.Trader
         {
             if (!IsSettingEnabled("NanoHealTeam")) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -522,7 +522,7 @@ namespace CombatHandler.Trader
             if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
 
             if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return GenericBuffExclusion(spell, fightingTarget, ref actionTarget);
+                return GenericTeamBuffExclusion(spell, fightingTarget, ref actionTarget);
 
             if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 

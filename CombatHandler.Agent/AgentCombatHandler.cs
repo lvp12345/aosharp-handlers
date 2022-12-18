@@ -115,7 +115,7 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(RelevantNanos.FalseProfTrader, FalseProfTrader);
 
             //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericTeamBuff);
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, CritIncrease);
 
             //Debuffs
@@ -568,7 +568,7 @@ namespace CombatHandler.Agent
         private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("CritTeam"))
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -580,7 +580,7 @@ namespace CombatHandler.Agent
 
             if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage"))) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         //TODO:
@@ -590,7 +590,7 @@ namespace CombatHandler.Agent
 
             if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage"))) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion

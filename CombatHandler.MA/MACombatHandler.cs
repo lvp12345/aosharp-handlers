@@ -76,8 +76,8 @@ namespace CombatHandler.MartialArtist
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, MedicinalRemedy, CombatActionPriority.Low);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.ReduceInertia, GenericBuffExclusion);
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCritBuff);
+            RegisterSpellProcessor(RelevantNanos.ReduceInertia, GenericTeamBuffExclusion);
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, GenericTeamBuff);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
@@ -88,16 +88,16 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(RelevantNanos.Taunts, SingleTargetTaunt, CombatActionPriority.High);
 
             //Buffs
-            RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), Evades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), Brawl);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), ControlledRage);
+            RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), RunSpeed);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), Strength);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), MartialArts);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).Where(s => s.Id != 28879).OrderByStackingOrder(), Armor);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), Riposte);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).Where(s => s.Id != 28879).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistZazenStance).OrderByStackingOrder(), ZazenStance);
 
             RegisterSpellProcessor(RelevantNanos.DamageTypeMelee, DamageTypeMelee);
@@ -105,10 +105,10 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(RelevantNanos.DamageTypeEnergy, DamageTypeEnergy);
             RegisterSpellProcessor(RelevantNanos.DamageTypeChemical, DamageTypeChemical);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistBuff).OrderByStackingOrder(), NanoResist);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff)
-                .Where(c => !RelevantNanos.TeamCritBuffs.Contains(c.Id)).OrderByStackingOrder(), Crit);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), FastAttack);
+                .Where(c => !RelevantNanos.TeamCritBuffs.Contains(c.Id)).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
 
 
             //Items
@@ -543,7 +543,7 @@ namespace CombatHandler.MartialArtist
             if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
 
             if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return GenericBuffExclusion(spell, fightingTarget, ref actionTarget);
+                return GenericTeamBuffExclusion(spell, fightingTarget, ref actionTarget);
 
             if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
@@ -554,42 +554,7 @@ namespace CombatHandler.MartialArtist
         {
             return Buff(spell, NanoLine.MajorEvasionBuffs, fightingTarget, ref actionTarget);
         }
-        protected bool MartialArts(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool Armor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool Brawl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool FastAttack(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool Crit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool Strength(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool ControlledRage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool Riposte(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
+
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null || DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
@@ -604,11 +569,6 @@ namespace CombatHandler.MartialArtist
                 || DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
-        }
-
-        protected bool TeamCritBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool FistsOfTheWinterFlameNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

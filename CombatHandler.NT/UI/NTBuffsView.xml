@@ -9,6 +9,15 @@
     <View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
       <OptionCheckBox label="Cycle Absorbs*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CycleAbsorbs" layout_borders="Rect(10,1,5,1)"/>
       <TextInputView name="DelayAbsorbsBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+      <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+      <TextView value="Nano Aegis %" layout_borders="Rect(5,5,5,5)"/>
+      <TextInputView name="NTNanoAegisPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+      <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+      <TextView value="Nullity Sphere %" layout_borders="Rect(5,5,5,5)"/>
+      <TextInputView name="NTNullitySpherePercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+      <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+      <TextView value="Izgimmers Wealth %" layout_borders="Rect(5,5,5,5)"/>
+      <TextInputView name="NTIzgimmersWealthPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     </View>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Nano HOT (Team)" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoHOTTeam" layout_borders="Rect(10,1,5,1)"/>

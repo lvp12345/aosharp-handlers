@@ -4,30 +4,44 @@
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Theft Humidity" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GTH" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="My Enemy" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MyEnemy" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="AAO Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AAODrain" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="AAD Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AADDrain" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Damage Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageDrain" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="AC Drain" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ACDrains" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+      <OptionRadioButtonGroup label="AAO Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AAODrainSelection">
+        <RadioButton label="None" value="0"/>
+        <RadioButton label="Target" value="1"/>
+        <RadioButton label="OS" value="2"/>
+      </OptionRadioButtonGroup>
+      <OptionRadioButtonGroup label="AAD Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AADDrainSelection">
+        <RadioButton label="None" value="0"/>
+        <RadioButton label="Target" value="1"/>
+        <RadioButton label="OS" value="2"/>
+      </OptionRadioButtonGroup>
+      <OptionRadioButtonGroup label="Damage Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DamageDrainSelection">
+        <RadioButton label="None" value="0"/>
+        <RadioButton label="Target" value="1"/>
+        <RadioButton label="OS" value="2"/>
+      </OptionRadioButtonGroup>
+      <OptionRadioButtonGroup label="AC Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ACDrainSelection">
+        <RadioButton label="None" value="0"/>
+        <RadioButton label="Target" value="1"/>
+        <RadioButton label="OS" value="2"/>
+      </OptionRadioButtonGroup>
       <OptionRadioButtonGroup label="Nano Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoDrainSelection">
         <RadioButton label="None" value="0"/>
         <RadioButton label="Rubi-Ka" value="1"/>
         <RadioButton label="Shadowlands" value="2"/>
       </OptionRadioButtonGroup>
       <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionRadioButtonGroup label="Drains (Ransack)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RansackSelection">
-      <RadioButton label="None" value="0"/>
-      <RadioButton label="Target (Ransack)" value="1"/>
-      <RadioButton label="OS (Ransack)" value="2"/>
-    </OptionRadioButtonGroup>
-    <OptionRadioButtonGroup label="Drains (Deprive)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DepriveSelection">
-      <RadioButton label="None" value="0"/>
-      <RadioButton label="Target (Deprive)" value="1"/>
-      <RadioButton label="OS (Deprive)" value="2"/>
-    </OptionRadioButtonGroup>
+      <OptionRadioButtonGroup label="Drains (Ransack)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RansackSelection">
+        <RadioButton label="None" value="0"/>
+        <RadioButton label="Target (Ransack)" value="1"/>
+        <RadioButton label="OS (Ransack)" value="2"/>
+      </OptionRadioButtonGroup>
+      <OptionRadioButtonGroup label="Drains (Deprive)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DepriveSelection">
+        <RadioButton label="None" value="0"/>
+        <RadioButton label="Target (Deprive)" value="1"/>
+        <RadioButton label="OS (Deprive)" value="2"/>
+      </OptionRadioButtonGroup>
     </View>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

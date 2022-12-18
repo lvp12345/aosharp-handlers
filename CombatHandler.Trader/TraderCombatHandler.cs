@@ -75,6 +75,10 @@ namespace CombatHandler.Trader
             _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
             _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
             _settings.AddVariable("NanoDrainSelection", (int)NanoDrainSelection.None);
+            _settings.AddVariable("ACDrainSelection", (int)ACDrainSelection.None);
+            _settings.AddVariable("DamageDrainSelection", (int)DamageDrainSelection.None);
+            _settings.AddVariable("AADDrainSelection", (int)AADDrainSelection.None);
+            _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
@@ -293,7 +297,11 @@ namespace CombatHandler.Trader
             }
 
             if ((RansackSelection.OS == (RansackSelection)_settings["RansackSelection"].AsInt32()
-                || DepriveSelection.OS == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
+                || DepriveSelection.OS == (DepriveSelection)_settings["DepriveSelection"].AsInt32()
+                || DamageDrainSelection.OS == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32()
+                || ACDrainSelection.OS == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32()
+                || AAODrainSelection.OS == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32()
+                || AADDrainSelection.OS == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
                 && Time.NormalTime > _drainTick + 1)
             {
                 _drainTarget = DynelManager.NPCs
@@ -514,11 +522,11 @@ namespace CombatHandler.Trader
             if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
 
             if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return GenericBuff(spell, fightingTarget, ref actionTarget);
+                return GenericBuffExclusion(spell, fightingTarget, ref actionTarget);
 
             if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return BuffExclusion(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -627,30 +635,142 @@ namespace CombatHandler.Trader
 
         private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (DamageDrainSelection.Target == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32())
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            return ToggledTargetDebuff("DamageDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+            if (DamageDrainSelection.OS == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+                {
+                    if (spell.StackingOrder <= buff.StackingOrder)
+                    {
+                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
+                        if (buff.RemainingTime > 40) { return false; }
+
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = _drainTarget;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (AAODrainSelection.Target == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32())
+                return TargetDebuff(spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
 
-            return ToggledTargetDebuff("AAODrain", spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+            if (AAODrainSelection.OS == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderNanoTheft1, out Buff buff))
+                {
+                    if (spell.StackingOrder <= buff.StackingOrder)
+                    {
+                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
+                        if (buff.RemainingTime > 40) { return false; }
+
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = _drainTarget;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
         }
 
         private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (AADDrainSelection.Target == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
+                return TargetDebuff(spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
 
-            return ToggledTargetDebuff("AADDrain", spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+            if (AADDrainSelection.OS == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderNanoTheft2, out Buff buff))
+                {
+                    if (spell.StackingOrder <= buff.StackingOrder)
+                    {
+                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
+                        if (buff.RemainingTime > 40) { return false; }
+
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = _drainTarget;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
         }
 
         private bool ACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (ACDrainSelection.Target == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            return ToggledTargetDebuff("ACDrains", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+            if (ACDrainSelection.OS == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+                {
+                    if (spell.StackingOrder <= buff.StackingOrder)
+                    {
+                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
+                        if (buff.RemainingTime > 40) { return false; }
+
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = _drainTarget;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
         }
 
         #endregion
@@ -691,6 +811,22 @@ namespace CombatHandler.Trader
         {
             None, RubiKa, Shadowlands
         }
+        public enum AADDrainSelection
+        {
+            None, Target, OS
+        }
+        public enum AAODrainSelection
+        {
+            None, Target, OS
+        }
+        public enum ACDrainSelection
+        {
+            None, Target, OS
+        }
+        public enum DamageDrainSelection
+        {
+            None, Target, OS
+        }
         public enum RansackSelection
         {
             None, Target, OS
@@ -718,14 +854,12 @@ namespace CombatHandler.Trader
         {
             Config.CharSettings[Game.ClientInst].TraderHealPercentage = e;
             TraderHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void TraderHealthDrainPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage = e;
             TraderHealthDrainPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 

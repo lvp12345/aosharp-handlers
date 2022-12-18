@@ -11,7 +11,7 @@
     <TextView value="Proc Auras" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Init Debuff Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitDebuffProc" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Damage Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageProc" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="DoT Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DoTProc" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="DOT Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DOTProc" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Stun Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__StunProc" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

@@ -107,6 +107,8 @@ namespace CombatHandler.Generic
 
     public class CharacterSettings
     {
+        #region Breaking out Auto-Properties
+
         public event EventHandler<int> IPCChannelChangedEvent;
         private int _ipcChannel = 0;
 
@@ -465,6 +467,8 @@ namespace CombatHandler.Generic
                 }
             }
         }
+
+        #endregion
     }
 }
 

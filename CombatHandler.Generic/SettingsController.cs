@@ -94,20 +94,11 @@ namespace CombatHandler.Generic
 
                                 settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
                                 settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView engiBioCocoonInput);
-                                settingsWindow.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
-                                settingsWindow.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
-                                settingsWindow.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                                 if (channelInput != null)
                                     channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
                                 if (engiBioCocoonInput != null)
                                     engiBioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage}";
-                                if (nanoAegisInput != null)
-                                    nanoAegisInput.Text = $"{Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage}";
-                                if (nullSphereInput != null)
-                                    nullSphereInput.Text = $"{Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage}";
-                                if (izWealthInput != null)
-                                    izWealthInput.Text = $"{Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage}";
                             }
                         }
                     }

@@ -62,7 +62,7 @@ namespace CombatHandler.Shade
 
             _settings.AddVariable("InitDebuffProc", false);
             _settings.AddVariable("DamageProc", false);
-            _settings.AddVariable("DoTProc", false);
+            _settings.AddVariable("DOTProc", false);
             _settings.AddVariable("StunProc", false);
 
             _settings.AddVariable("HealthDrain", false);
@@ -99,20 +99,20 @@ namespace CombatHandler.Shade
             //Items
             RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), Agility);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), Concealment);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), FastAttack);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), MultiWield);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), MartialArts);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(), Piercing);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(), SneakAttack);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(), WeaponEffect);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(), AAD);
 
             RegisterSpellProcessor(RelevantNanos.ShadeDmgProc, DamageProc);
             RegisterSpellProcessor(RelevantNanos.ShadeStunProc, StunProc);
             RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc, InitDebuffProc);
-            RegisterSpellProcessor(RelevantNanos.ShadeDotProc, DoTProc);
+            RegisterSpellProcessor(RelevantNanos.ShadeDOTProc, DOTProc);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
 
@@ -243,10 +243,10 @@ namespace CombatHandler.Shade
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
-            if (_settings["InitDebuffProc"].AsBool() && _settings["DoTProc"].AsBool())
+            if (_settings["InitDebuffProc"].AsBool() && _settings["DOTProc"].AsBool())
             {
                 _settings["InitDebuffProc"] = false;
-                _settings["DoTProc"] = false;
+                _settings["DOTProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
@@ -264,17 +264,17 @@ namespace CombatHandler.Shade
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
-            if (_settings["DamageProc"].AsBool() && _settings["DoTProc"].AsBool())
+            if (_settings["DamageProc"].AsBool() && _settings["DOTProc"].AsBool())
             {
                 _settings["DamageProc"] = false;
-                _settings["DoTProc"] = false;
+                _settings["DOTProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
-            if (_settings["StunProc"].AsBool() && _settings["DoTProc"].AsBool())
+            if (_settings["StunProc"].AsBool() && _settings["DOTProc"].AsBool())
             {
                 _settings["StunProc"] = false;
-                _settings["DoTProc"] = false;
+                _settings["DOTProc"] = false;
 
                 Chat.WriteLine("Only activate one Proc option.");
             }
@@ -291,9 +291,9 @@ namespace CombatHandler.Shade
             {
                 CancelBuffs(RelevantNanos.ShadeDmgProc);
             }
-            if (!IsSettingEnabled("DoTProc"))
+            if (!IsSettingEnabled("DOTProc"))
             {
-                CancelBuffs(RelevantNanos.ShadeDotProc);
+                CancelBuffs(RelevantNanos.ShadeDOTProc);
             }
             if (!IsSettingEnabled("StunProc"))
             {
@@ -476,54 +476,31 @@ namespace CombatHandler.Shade
         {
             if (!IsSettingEnabled("InitDebuffProc")) { return false; }
 
-            return GenericBuff(spell, fightingtarget, ref actiontarget);
+            return Buff(spell, spell.Nanoline, fightingtarget, ref actiontarget);
         }
 
         private bool DamageProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (!IsSettingEnabled("DamageProc")) { return false; }
 
-            return GenericBuff(spell, fightingtarget, ref actiontarget);
+            return Buff(spell, spell.Nanoline, fightingtarget, ref actiontarget);
         }
-        private bool DoTProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool DOTProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("DoTProc")) { return false; }
+            if (!IsSettingEnabled("DOTProc")) { return false; }
 
-            return GenericBuff(spell, fightingtarget, ref actiontarget);
+            return Buff(spell, spell.Nanoline, fightingtarget, ref actiontarget);
         }
         private bool StunProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (!IsSettingEnabled("StunProc")) { return false; }
 
-            return GenericBuff(spell, fightingtarget, ref actiontarget);
+            return Buff(spell, spell.Nanoline, fightingtarget, ref actiontarget);
         }
 
         #endregion
 
         //TODO: Delete other FTYS and rename... maybe this works
-        protected bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar target = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        & SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            if (fightingTarget == null) { return false; }
-
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
-        }
 
         private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -550,6 +527,66 @@ namespace CombatHandler.Shade
             }
 
             return false;
+        }
+        protected bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+            {
+                SimpleChar target = DynelManager.Players
+                    .Where(c => c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0
+                        & SpellChecksOther(spell, spell.Nanoline, c))
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (fightingTarget == null) { return false; }
+
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool Agility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool Concealment(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool FastAttack(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool SneakAttack(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool MartialArts(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool WeaponEffect(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool AAD(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool Piercing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool MultiWield(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -662,7 +699,7 @@ namespace CombatHandler.Shade
             public static readonly int[] ShadeDmgProc = { 224167, 224165, 224163, 210371, 210369, 210367, 210365, 210363, 210361, 210359, 210357, 210355, 210353 };
             public static readonly int[] ShadeStunProc = { 224171, 224169, 210380, 210378, 210376 };
             public static readonly int[] ShadeInitDebuffProc = { 224177, 210407, 210401 };
-            public static readonly int[] ShadeDotProc = { 224161, 224159, 210395, 210393, 210391, 210389, 210387 };
+            public static readonly int[] ShadeDOTProc = { 224161, 224159, 210395, 210393, 210391, 210389, 210387 };
         }
 
         private class RelevantPerks

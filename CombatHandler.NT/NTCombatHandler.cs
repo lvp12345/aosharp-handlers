@@ -96,7 +96,7 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDamageMultiplierBuffs).OrderByStackingOrder(), NanoDamage);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), MatCrea);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExcludeInnerSanctum);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuffExclusion);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), Fortify);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHOT);
@@ -201,10 +201,25 @@ namespace CombatHandler.NanoTechnician
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "NTBuffsView" }, _buffView);
 
                 window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+                window.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                window.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
+                window.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                 if (absorbsInput != null)
                 {
                     absorbsInput.Text = $"{NTCycleAbsorbsDelay}";
+                }
+                if (nanoAegisInput != null)
+                {
+                    nanoAegisInput.Text = $"{NTNanoAegisPercentage}";
+                }
+                if (nullSphereInput != null)
+                {
+                    nullSphereInput.Text = $"{NTNullitySpherePercentage}";
+                }
+                if (izWealthInput != null)
+                {
+                    izWealthInput.Text = $"{NTIzgimmersWealthPercentage}";
                 }
             }
             else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
@@ -213,10 +228,25 @@ namespace CombatHandler.NanoTechnician
                 _buffWindow = container;
 
                 container.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+                container.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                container.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
+                container.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                 if (absorbsInput != null)
                 {
                     absorbsInput.Text = $"{NTCycleAbsorbsDelay}";
+                }
+                if (nanoAegisInput != null)
+                {
+                    nanoAegisInput.Text = $"{NTNanoAegisPercentage}";
+                }
+                if (nullSphereInput != null)
+                {
+                    nullSphereInput.Text = $"{NTNullitySpherePercentage}";
+                }
+                if (izWealthInput != null)
+                {
+                    izWealthInput.Text = $"{NTIzgimmersWealthPercentage}";
                 }
             }
         }
@@ -262,6 +292,9 @@ namespace CombatHandler.NanoTechnician
             if (window != null && window.IsValid)
             {
                 window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
+                window.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                window.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
+                window.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                 if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
                 {
@@ -273,14 +306,6 @@ namespace CombatHandler.NanoTechnician
                         }
                     }
                 }
-            }
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
-            {
-                SettingsController.settingsWindow.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
-                SettingsController.settingsWindow.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
-                SettingsController.settingsWindow.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
-
                 if (nanoAegisInput != null && !string.IsNullOrEmpty(nanoAegisInput.Text))
                 {
                     if (int.TryParse(nanoAegisInput.Text, out int nanoAegisValue))
@@ -311,6 +336,44 @@ namespace CombatHandler.NanoTechnician
                         }
                     }
                 }
+            }
+
+            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            {
+                //SettingsController.settingsWindow.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                //SettingsController.settingsWindow.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
+                //SettingsController.settingsWindow.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
+
+                //if (nanoAegisInput != null && !string.IsNullOrEmpty(nanoAegisInput.Text))
+                //{
+                //    if (int.TryParse(nanoAegisInput.Text, out int nanoAegisValue))
+                //    {
+                //        if (Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage != nanoAegisValue)
+                //        {
+                //            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = nanoAegisValue;
+                //        }
+                //    }
+                //}
+                //if (nullSphereInput != null && !string.IsNullOrEmpty(nullSphereInput.Text))
+                //{
+                //    if (int.TryParse(nullSphereInput.Text, out int nullSphereValue))
+                //    {
+                //        if (Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage != nullSphereValue)
+                //        {
+                //            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = nullSphereValue;
+                //        }
+                //    }
+                //}
+                //if (izWealthInput != null && !string.IsNullOrEmpty(izWealthInput.Text))
+                //{
+                //    if (int.TryParse(izWealthInput.Text, out int izWealthValue))
+                //    {
+                //        if (Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage != izWealthValue)
+                //        {
+                //            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = izWealthValue;
+                //        }
+                //    }
+                //}
 
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
@@ -534,8 +597,7 @@ namespace CombatHandler.NanoTechnician
         private bool NanoHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("NanoHOTTeam"))
-                if (Team.IsInTeam)
-                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
             return GenericBuff(spell, fightingTarget, ref actionTarget);
         }

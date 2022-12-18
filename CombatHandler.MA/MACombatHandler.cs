@@ -52,8 +52,7 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
             _settings.AddVariable("SingleTauntSelection", (int)SingleTauntSelection.None);
-
-            _settings.AddVariable("EvadesTeam", false);
+            _settings.AddVariable("EvadesSelection", (int)EvadesSelection.Self);
 
             _settings.AddVariable("Zazen", false);
 
@@ -76,7 +75,7 @@ namespace CombatHandler.MartialArtist
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, MedicinalRemedy, CombatActionPriority.Low);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.ReduceInertia, GenericBuffExcludeInnerSanctum);
+            RegisterSpellProcessor(RelevantNanos.ReduceInertia, GenericBuffExclusion);
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCritBuff);
 
             //Spells
@@ -89,7 +88,7 @@ namespace CombatHandler.MartialArtist
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), EvadesTeam);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), Evades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), GenericBuff);
@@ -438,32 +437,32 @@ namespace CombatHandler.MartialArtist
         {
             if (fightingTarget != null || !CanCast(spell) || !IsSettingEnabled("Zazen")) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DamageTypeEnergy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DamageTypeSelection.Energy != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
         private bool DamageTypeFire(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DamageTypeSelection.Fire != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
         private bool DamageTypeMelee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DamageTypeSelection.Melee != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
         private bool DamageTypeChemical(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DamageTypeSelection.Chemical != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -510,112 +509,49 @@ namespace CombatHandler.MartialArtist
             return false;
         }
 
-        protected bool EvadesTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") 
-                || !CanCast(spell) || IsInsideInnerSanctum()) { return false; }
+            if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
 
-            if (IsSettingEnabled("EvadesTeam"))
-            {
-                if (DynelManager.LocalPlayer.IsInTeam())
-                {
-                    if (DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && !c.Buffs.Contains(NanoLine.MajorEvasionBuffs)
-                                && SpellChecksOther(spell, spell.Nanoline, c))
-                        .Any())
-                    {
-                        actionTarget.Target = DynelManager.Characters
-                            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && !c.Buffs.Contains(NanoLine.MajorEvasionBuffs)
-                                && SpellChecksOther(spell, spell.Nanoline, c))
-                            .FirstOrDefault();
+            if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
+                return GenericBuffExclusion(spell, fightingTarget, ref actionTarget);
 
-                        if (actionTarget.Target != null)
-                        {
-                            actionTarget.ShouldSetTarget = true;
-                            return true;
-                        }
-                    }
-                }
-            }
+            if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
-
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return BuffExclusion(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
-
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, NanoLine.MajorEvasionBuffs, fightingTarget, ref actionTarget);
         }
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")
-                || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (fightingTarget == null || DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ControlledDestructionBuff)) { return false; }
-
-            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
-
-            return true;
+            return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
         }
 
         private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (fightingTarget == null || !IsSettingEnabled("ShortDamage")
+                || DynelManager.LocalPlayer.NanoPercent < 30 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 1
+                || DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
 
-            if (!IsSettingEnabled("ShortDamage")) { return false; }
-
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ControlledDestructionBuff)) { return false; }
-
-            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
-
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 1) { return false; }
-
-            return true;
+            return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
         }
 
         protected bool TeamCritBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                if (DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.Identity != DynelManager.LocalPlayer.Identity
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                    .Any())
-                {
-                    actionTarget.Target = DynelManager.Characters
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.Identity != DynelManager.LocalPlayer.Identity
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
-
-                    if (actionTarget.Target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            return GenericBuff(spell, fightingTarget, ref actionTarget);
         }
 
-        private bool FistsOfTheWinterFlameNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool FistsOfTheWinterFlameNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            actiontarget.ShouldSetTarget = false;
-            return fightingtarget != null && fightingtarget.HealthPercent > 50;
+            if (fightingTarget == null || fightingTarget?.HealthPercent <= 50) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -678,6 +614,11 @@ namespace CombatHandler.MartialArtist
         {
             Melee, Fire, Energy, Chemical
         }
+        public enum EvadesSelection
+        {
+            None, Self, Team
+        }
+
         #endregion
     }
 }

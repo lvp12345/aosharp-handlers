@@ -112,7 +112,7 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), EngSpecAttackAbsorb);
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.BoostedTendons, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.BoostedTendons, BoostedTendons);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
@@ -481,6 +481,10 @@ namespace CombatHandler.Engineer
         #endregion
 
         protected bool SLReflect(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool BoostedTendons(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }

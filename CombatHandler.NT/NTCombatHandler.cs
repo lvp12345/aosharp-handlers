@@ -656,7 +656,6 @@ namespace CombatHandler.NanoTechnician
         {
             Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = e;
             NTNanoAegisPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 
@@ -664,7 +663,6 @@ namespace CombatHandler.NanoTechnician
         {
             Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = e;
             NTNullitySpherePercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 
@@ -672,7 +670,6 @@ namespace CombatHandler.NanoTechnician
         {
             Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = e;
             NTIzgimmersWealthPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 
@@ -680,7 +677,6 @@ namespace CombatHandler.NanoTechnician
         {
             Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = e;
             NTCycleAbsorbsDelay = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 

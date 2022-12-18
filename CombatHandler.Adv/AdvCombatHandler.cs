@@ -88,7 +88,7 @@ namespace CombatHandler.Adventurer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.ArmorBuffs, ArmorBuff);
+            RegisterSpellProcessor(RelevantNanos.ArmorBuffs, Armor);
 
             //Morphs
             RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
@@ -506,7 +506,7 @@ namespace CombatHandler.Adventurer
 
         #region Buffs
 
-        private bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Armor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 

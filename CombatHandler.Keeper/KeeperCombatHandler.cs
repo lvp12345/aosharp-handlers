@@ -280,63 +280,63 @@ namespace CombatHandler.Keeper
         {
             if (IsSettingEnabled("RecastAntiFear")) { return true; }
 
-            return GenericBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool ReaperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet4Selection.Reaper != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool SanctifierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet4Selection.Sanc != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool VengeanceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet2Selection.Damage != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool EnervateAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet2Selection.DeRoot != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool ImminenceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet3Selection.AAO != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool BarrierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet3Selection.Reflect != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool HpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool NpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet1Selection.Nano != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion

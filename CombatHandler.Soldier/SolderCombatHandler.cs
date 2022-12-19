@@ -394,7 +394,7 @@ namespace CombatHandler.Soldier
 
             if (AAOSelection.Self != (AAOSelection)_settings["AAOSelection"].AsInt32()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -422,17 +422,6 @@ namespace CombatHandler.Soldier
             }
 
             if (RiotControlSelection.None == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32()) { return false; }
-
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool Inits(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
-
-            if (!GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)
-                || DynelManager.LocalPlayer.Profession == Profession.Doctor || DynelManager.LocalPlayer.Profession == Profession.NanoTechnician) { return false; }
 
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }

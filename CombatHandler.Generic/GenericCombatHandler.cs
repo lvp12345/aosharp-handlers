@@ -1171,7 +1171,7 @@ namespace CombatHandler.Generic
                 }
             }
 
-            return false;
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget); ;
         }
 
         protected bool FindMemberWithHealthBelow(int healthPercentTreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

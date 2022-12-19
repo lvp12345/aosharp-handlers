@@ -289,17 +289,15 @@ namespace CombatHandler.Fixer
 
         private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HasBuffNanoLine(NanoLine.FixerNCUBuff, DynelManager.LocalPlayer)) { return false; }
-
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, NanoLine.FixerNCUBuff, fightingTarget, ref actionTarget);
         }
 
         private bool LongHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamLongHOT"))
-                return GenericCombatBuff(spell, fightingTarget, ref actionTarget);
+                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

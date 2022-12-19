@@ -578,7 +578,7 @@ namespace CombatHandler.NanoTechnician
             if (IsSettingEnabled("NanoHOTTeam"))
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -587,7 +587,7 @@ namespace CombatHandler.NanoTechnician
                 if (Team.IsInTeam)
                     return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

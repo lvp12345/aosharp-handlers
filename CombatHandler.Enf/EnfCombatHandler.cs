@@ -573,14 +573,14 @@ namespace CombatHandler.Enf
                 return true;
             }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("TauntProc")) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool AreaTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

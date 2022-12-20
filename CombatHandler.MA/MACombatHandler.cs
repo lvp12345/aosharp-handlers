@@ -46,7 +46,7 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("Composites", true);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AbsoluteFist);
-            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.SelfReconstruction);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DebilitatingStrike);
 
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 

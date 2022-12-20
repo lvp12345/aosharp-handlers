@@ -112,7 +112,7 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
 
             //Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
             RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericBuff);
 
@@ -525,6 +525,12 @@ namespace CombatHandler.Trader
                 return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
 
             if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        protected bool ImprovedQuantumUncertanity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
 
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }

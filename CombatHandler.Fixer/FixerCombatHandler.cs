@@ -72,7 +72,7 @@ namespace CombatHandler.Fixer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), GenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.NCU, NCU);
-            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GenericBuff);
             RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
             RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);

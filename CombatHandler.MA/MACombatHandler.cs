@@ -470,8 +470,7 @@ namespace CombatHandler.MartialArtist
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (SingleTauntSelection.OS == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32()
-/*                && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle*/)
+            if (SingleTauntSelection.OS == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
             {
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
@@ -479,28 +478,23 @@ namespace CombatHandler.MartialArtist
                         && !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && !FightingMe(c)
+                        && c.Name != "Alien Heavy Patroller"
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
-                    //&& (c.FightingTarget.Profession != Profession.Enforcer
-                    //        && c.FightingTarget.Profession != Profession.Soldier
-                    //        && c.FightingTarget.Profession != Profession.MartialArtist))
                     .FirstOrDefault();
 
                 if (mob != null)
                 {
-                    //_singleTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = mob;
                     return true;
                 }
             }
 
-            if (SingleTauntSelection.Target == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32()
-/*                && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle*/)
+            if (SingleTauntSelection.Target == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
             {
                 if (fightingTarget != null)
                 {
-                    //_singleTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;

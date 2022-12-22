@@ -472,6 +472,7 @@ namespace CombatHandler.Enf
                         && !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && !FightingMe(c)
+                        && c.Name != "Alien Heavy Patroller"
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
@@ -586,6 +587,10 @@ namespace CombatHandler.Enf
         private bool AreaTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("AreaTaunt") || !CanCast(spell)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => c.Health > 0
+                    && c.Name == "Alien Heavy Patroller"
+                    && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
 
             if (Time.NormalTime > _areaTaunt + EnfTauntDelayArea
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))

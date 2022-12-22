@@ -550,6 +550,7 @@ namespace CombatHandler.Soldier
                         && !debuffOSTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && !FightingMe(c)
+                        && c.Name != "Alien Heavy Patroller"
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();

@@ -504,7 +504,7 @@ namespace CombatHandler.Doctor
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.IsInTeam())
+                if (Team.IsInTeam)
                 {
                     List<SimpleChar> dyingTeamMember = DynelManager.Characters
                         .Where(c => Team.Members

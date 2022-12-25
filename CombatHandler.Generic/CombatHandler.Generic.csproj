@@ -61,6 +61,7 @@
     <Compile Include="PerkTypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />
+    <Compile Include="Utilz.cs" />
     <Compile Include="TauntTools.cs" />
   </ItemGroup>
   <ItemGroup>

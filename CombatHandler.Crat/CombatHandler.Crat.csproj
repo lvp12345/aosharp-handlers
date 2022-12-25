@@ -63,6 +63,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\BureaucratPerksView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\BureaucratProcsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

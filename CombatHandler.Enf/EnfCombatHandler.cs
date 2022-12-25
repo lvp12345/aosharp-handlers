@@ -642,7 +642,6 @@ namespace CombatHandler.Enf
         {
             Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle = e;
             EnfTauntDelaySingle = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 
@@ -650,28 +649,24 @@ namespace CombatHandler.Enf
         {
             Config.CharSettings[Game.ClientInst].EnfTauntDelayArea = e;
             EnfTauntDelayArea = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void EnfCycleAbsorbsDelay_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay = e;
             EnfCycleAbsorbsDelay = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void EnfCycleChallengerDelay_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].EnfCycleChallengerDelay = e;
             EnfCycleChallengerDelay = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void EnfCycleRageDelay_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].EnfCycleRageDelay = e;
             EnfCycleRageDelay = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 

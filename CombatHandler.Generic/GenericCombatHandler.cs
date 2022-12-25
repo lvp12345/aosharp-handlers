@@ -620,6 +620,7 @@ namespace CombatHandler.Generic
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && SpellChecksOther(spell, spell.Nanoline, c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
             if (target != null)
@@ -645,6 +646,7 @@ namespace CombatHandler.Generic
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && SpellChecksOther(spell, spell.Nanoline, c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
             if (target != null)

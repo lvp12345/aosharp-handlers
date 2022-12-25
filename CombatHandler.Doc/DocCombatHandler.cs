@@ -433,8 +433,8 @@ namespace CombatHandler.Doctor
                     List<SimpleChar> dyingTeamMember = DynelManager.Characters
                         .Where(c => Team.Members
                             .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                && c.HealthPercent <= 85 && c.HealthPercent >= 50)
                         .ToList();
 
                     if (dyingTeamMember.Count >= 4) 
@@ -458,8 +458,8 @@ namespace CombatHandler.Doctor
                     List<SimpleChar> dyingTeamMember = DynelManager.Characters
                         .Where(c => Team.Members
                             .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                             && c.HealthPercent <= 85 && c.HealthPercent >= 50)
                         .ToList();
 
                     if (dyingTeamMember.Count >= 4) { return false; }
@@ -509,8 +509,8 @@ namespace CombatHandler.Doctor
                     List<SimpleChar> dyingTeamMember = DynelManager.Characters
                         .Where(c => Team.Members
                             .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                        .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                             && c.HealthPercent <= 85 && c.HealthPercent >= 50)
                         .ToList();
 
                     if (dyingTeamMember.Count >= 4) 

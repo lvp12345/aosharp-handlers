@@ -426,7 +426,9 @@ namespace CombatHandler.Doctor
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.IsInTeam())
+                if (Spell.List.Any(c => c.Id == 275011)) { return false; }
+
+                if (Team.IsInTeam)
                 {
                     List<SimpleChar> dyingTeamMember = DynelManager.Characters
                         .Where(c => Team.Members
@@ -435,10 +437,11 @@ namespace CombatHandler.Doctor
                         .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
                         .ToList();
 
-                    if (dyingTeamMember.Count < 4) { return false; }
+                    if (dyingTeamMember.Count >= 4) 
+                    { 
+                        return true;
+                    }
                 }
-
-                return FindMemberWithHealthBelow(DocHealPercentage, spell, ref actionTarget);
             }
 
             return false;
@@ -450,7 +453,7 @@ namespace CombatHandler.Doctor
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.IsInTeam())
+                if (Team.IsInTeam)
                 {
                     List<SimpleChar> dyingTeamMember = DynelManager.Characters
                         .Where(c => Team.Members
@@ -498,6 +501,24 @@ namespace CombatHandler.Doctor
 
             if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
                 return FindMemberWithHealthBelow(DocHealPercentage, spell, ref actionTarget);
+
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.IsInTeam())
+                {
+                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                        .Where(c => Team.Members
+                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                        .Where(c => c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                        .ToList();
+
+                    if (dyingTeamMember.Count >= 4) 
+                    {
+                        return true;
+                    }
+                }
+            }
 
             return Buff(spell, NanoLine.DoctorShortHPBuffs, fightingTarget, ref actionTarget);
         }

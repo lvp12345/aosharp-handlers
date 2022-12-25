@@ -47,6 +47,12 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int EnfCycleRageDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleRageDelay : 1;
         [JsonIgnore]
+        public int CratCycleLeadershipDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CratCycleLeadershipDelay : 1;
+        [JsonIgnore]
+        public int CratCycleGovernanceDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CratCycleGovernanceDelay : 1;
+        [JsonIgnore]
+        public int CratCycleTheDirectorDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CratCycleTheDirectorDelay : 1;
+        [JsonIgnore]
         public int SolTauntDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SolTauntDelaySingle : 1;
         [JsonIgnore]
         public int EngiBioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EngiBioCocoonPercentage : 65;
@@ -362,6 +368,57 @@ namespace CombatHandler.Generic
                 {
                     _enfCycleRageDelay = value;
                     EnfCycleRageDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> CratCycleLeadershipDelayChangedEvent;
+        private int _cratCycleLeadershipDelay = 1;
+        public int CratCycleLeadershipDelay
+        {
+            get
+            {
+                return _cratCycleLeadershipDelay;
+            }
+            set
+            {
+                if (_cratCycleLeadershipDelay != value)
+                {
+                    _cratCycleLeadershipDelay = value;
+                    CratCycleLeadershipDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> CratCycleGovernanceDelayChangedEvent;
+        private int _cratCycleGovernanceDelay = 1;
+        public int CratCycleGovernanceDelay
+        {
+            get
+            {
+                return _cratCycleGovernanceDelay;
+            }
+            set
+            {
+                if (_cratCycleGovernanceDelay != value)
+                {
+                    _cratCycleGovernanceDelay = value;
+                    CratCycleGovernanceDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> CratCycleTheDirectorDelayChangedEvent;
+        private int _cratCycleTheDirector = 1;
+        public int CratCycleTheDirectorDelay
+        {
+            get
+            {
+                return _cratCycleTheDirector;
+            }
+            set
+            {
+                if (_cratCycleTheDirector != value)
+                {
+                    _cratCycleTheDirector = value;
+                    CratCycleTheDirectorDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }

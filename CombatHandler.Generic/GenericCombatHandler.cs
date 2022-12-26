@@ -344,6 +344,9 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
+            if (perk.Name == "Sacrifice" || perk.Name == "Purple Heart")
+                return VolunteerPerk(perk, fightingTarget, ref actionTarget);
+
             return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 

@@ -1,15 +1,19 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.Unmanaged.Imports;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CombatHandler.Generic
 {
     public class PerkCondtionProcessors
     {
+        private static double _timer = 0f;
+
         public static GenericPerkConditionProcessor GetPerkConditionProcessor(PerkAction perkAction)
         {
             PerkHash perkHash = perkAction.Hash;
@@ -306,6 +310,23 @@ namespace CombatHandler.Generic
             return true;
         }
 
+        public static bool VolunteerPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perkAction.IsAvailable) { return false; }
+
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            {
+                if (buff.Name == perkAction.Name) { return false; }
+            }
+
+            if (Time.NormalTime < _timer + 333f) { return false; }
+
+            _timer = Time.NormalTime;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+
         public static bool SelfBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perkAction.IsAvailable) { return false; }
@@ -319,8 +340,7 @@ namespace CombatHandler.Generic
                 (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox" 
                 || perkAction.Name == "Dodge the Blame" || perkAction.Name == "Devotional Armor")
                 || perkAction.Name == "Limber" || perkAction.Name == "Dance of Fools"
-                || perkAction.Name == "Leg Shot" || perkAction.Name == "Sacrifice"
-                || perkAction.Name == "Purple Heart") { return false; }
+                || perkAction.Name == "Leg Shot") { return false; }
 
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;

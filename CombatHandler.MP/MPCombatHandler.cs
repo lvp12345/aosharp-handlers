@@ -50,12 +50,11 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
             _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
             _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
+            _settings.AddVariable("InterruptSelection", (int)InterruptSelection.None);
             _settings.AddVariable("DamageDebuffSelection", (int)DamageDebuffSelection.None);
 
             _settings.AddVariable("Cost", false);
             _settings.AddVariable("CostTeam", false);
-
-            _settings.AddVariable("InterruptChance", false);
 
             _settings.AddVariable("NanoResistanceDebuff", false);
             _settings.AddVariable("NanoShutdownDebuff", false);
@@ -508,9 +507,12 @@ namespace CombatHandler.Metaphysicist
 
         private bool InterruptModifier(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("InterruptChance")) { return false; }
+            if (InterruptSelection.Team == (InterruptSelection)_settings["InterruptSelection"].AsInt32())
+                return TeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            if (InterruptSelection.None == (InterruptSelection)_settings["InterruptSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -889,7 +891,10 @@ namespace CombatHandler.Metaphysicist
         {
             None, Target, OS
         }
-        
+        public enum InterruptSelection
+        {
+            None, Self, Team
+        }
         public enum CostBuffSelection
         {
             Self, Team

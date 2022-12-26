@@ -319,7 +319,7 @@ namespace CombatHandler.Generic
                 if (buff.Name == perkAction.Name) { return false; }
             }
 
-            if (Time.NormalTime < _timer + 333f) { return false; }
+            if (Time.NormalTime < _timer + 363f) { return false; }
 
             _timer = Time.NormalTime;
             actionTarget.Target = DynelManager.LocalPlayer;

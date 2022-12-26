@@ -1305,6 +1305,8 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
 
+            if (spell.Id == 28662 && DynelManager.LocalPlayer.Buffs.Contains(95687)) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Find(nanoline, out Buff buff))
             {
                 if (spell.StackingOrder < buff.StackingOrder || DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }

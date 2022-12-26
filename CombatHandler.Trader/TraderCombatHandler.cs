@@ -439,7 +439,7 @@ namespace CombatHandler.Trader
         {
             if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
 
-            //if (fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
@@ -448,7 +448,7 @@ namespace CombatHandler.Trader
         {
             if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()) { return false; }
 
-            //if (fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }

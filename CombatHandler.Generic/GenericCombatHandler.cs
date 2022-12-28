@@ -208,6 +208,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantItems.AmmoBoxBullets, RelevantItems.AmmoBoxBullets, AmmoBoxBullets);
             RegisterItemProcessor(RelevantItems.AmmoBoxEnergy, RelevantItems.AmmoBoxEnergy, AmmoBoxEnergy);
             RegisterItemProcessor(RelevantItems.AmmoBoxShotgun, RelevantItems.AmmoBoxShotgun, AmmoBoxShotgun);
+            RegisterItemProcessor(RelevantItems.AmmoBoxGrenade, RelevantItems.AmmoBoxGrenade, AmmoBoxGrenade);
 
             RegisterSpellProcessor(RelevantNanos.CompositeNano, CompositeBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeAttribute, CompositeBuff);
@@ -944,6 +945,14 @@ namespace CombatHandler.Generic
 
             return !Inventory.Items
                 .Where(c => c.Name == "Ammo: Box of Shotgun Shells")
+                .Any();
+        }
+        private bool AmmoBoxGrenade(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
+
+            return !Inventory.Items
+                .Where(c => c.Name == "Ammo: Box of Launcher Grenades")
                 .Any();
         }
 
@@ -1691,6 +1700,7 @@ namespace CombatHandler.Generic
             public const int AmmoBoxEnergy = 303138;
             public const int AmmoBoxShotgun = 303141;
             public const int AmmoBoxBullets = 303137;
+            public const int AmmoBoxGrenade = 303140;
             public const int AmmoBoxArrows = 303136;
             public const int DaTaunterLow = 158045;
             public const int DaTaunterHigh = 158046;

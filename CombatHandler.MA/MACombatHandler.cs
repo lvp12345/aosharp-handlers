@@ -88,7 +88,7 @@ namespace CombatHandler.MartialArtist
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericTeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).Where(c => c.Id != RelevantNanos.ReduceInertia).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), GenericBuff);

@@ -2,8 +2,8 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionCheckBox label="Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Buffing" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="(Local) Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Buffing" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="(Local) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Taunt Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TauntProc" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>

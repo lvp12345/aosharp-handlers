@@ -48,6 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EngiCombatHandler.cs" />
+    <Compile Include="IPCMessages\GlobalBuffingMessage.cs" />
+    <Compile Include="IPCMessages\GlobalDebuffingMessage.cs" />
+    <Compile Include="IPCMessages\GloballCompositesMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\RemaingNCUMessage.cs" />
     <Compile Include="Main.cs" />

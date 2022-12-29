@@ -57,6 +57,10 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
+            _settings.AddVariable("GlobalBuffing", true);
+            _settings.AddVariable("GlobalComposites", true);
+            //_settings.AddVariable("GlobalDebuffs", true);
+
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("SyncPets", true);
@@ -172,19 +176,38 @@ namespace CombatHandler.Engineer
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            try
-            {
-                if (Game.IsZoning)
-                    return;
+            if (Game.IsZoning)
+                return;
 
-                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
-                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
-            }
-            catch (Exception e)
-            {
-                Chat.WriteLine(e);
-            }
+            RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
+            SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }
+        private void OnGlobalBuffingMessage(int sender, IPCMessage msg)
+        {
+            GlobalBuffingMessage buffMsg = (GlobalBuffingMessage)msg;
+
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
+
+            _settings[$"Buffing"] = buffMsg.Switch;
+            _settings[$"GlobalBuffing"] = buffMsg.Switch;
+        }
+        private void OnGlobalCompositesMessage(int sender, IPCMessage msg)
+        {
+            GlobalCompositesMessage compMsg = (GlobalCompositesMessage)msg;
+
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
+
+            _settings[$"Composites"] = compMsg.Switch;
+            _settings[$"GlobalComposites"] = compMsg.Switch;
+        }
+
+        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
+        //{
+        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+
+        //    _settings[$"Debuffing"] = debuffMsg.Switch;
+        //    _settings[$"Debuffing"] = debuffMsg.Switch;
+        //}
 
         #endregion
 
@@ -242,6 +265,9 @@ namespace CombatHandler.Engineer
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning)
+                return;
+
             base.OnUpdate(deltaTime);
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

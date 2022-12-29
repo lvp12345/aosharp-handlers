@@ -62,8 +62,8 @@ namespace CombatHandler.Agent
             _settings.AddVariable("EvasionDebuff", false);
 
             _settings.AddVariable("CH", false);
-            _settings.AddVariable("Damage", false);
-            _settings.AddVariable("Detaunt", false);
+
+            _settings.AddVariable("ProcSelection", (int)ProcSelection.Damage);
 
             _settings.AddVariable("Concentration", false);
 
@@ -351,11 +351,11 @@ namespace CombatHandler.Agent
                 AssignTargetToHealPet();
             }
 
-            if (IsSettingEnabled("Damage") && !IsSettingEnabled("Detaunt"))
+            if (ProcSelection.Damage == (ProcSelection)_settings["ProcSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.DetauntProcs);
             }
-            if (IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage"))
+            if (ProcSelection.DeTaunt == (ProcSelection)_settings["ProcSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.DOTProcs);
             }
@@ -573,24 +573,18 @@ namespace CombatHandler.Agent
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        //TODO:
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Detaunt")) { return false; }
+            if (ProcSelection.DeTaunt != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
 
-            if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage"))) { return false; }
-
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        //TODO:
         private bool DamageProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Damage")) { return false; }
+            if (ProcSelection.Damage != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
 
-            if (!IsSettingEnabled("Detaunt") && !IsSettingEnabled("Damage") || (IsSettingEnabled("Detaunt") && IsSettingEnabled("Damage"))) { return false; }
-
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -721,6 +715,10 @@ namespace CombatHandler.Agent
         public enum ProcType2Selection
         {
             NotumChargedRounds, LaserAim, NanoEnhancedTargeting, PlasteelPiercingRounds, CellKiller, ImprovedFocus, BrokenAnkle
+        }
+        public enum ProcSelection
+        {
+            None, Damage, DeTaunt
         }
         public static void AgentHealPercentage_Changed(object s, int e)
         {

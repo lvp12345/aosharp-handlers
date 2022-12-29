@@ -63,19 +63,21 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("MyEnemy", true);
 
-            _settings.AddVariable("ACDrains", true);
-
             _settings.AddVariable("GTH", true);
 
             _settings.AddVariable("NanoHealTeam", false);
 
             _settings.AddVariable("LegShot", false);
+
             _settings.AddVariable("PerkSelection", (int)PerkSelection.Sacrifice);
+
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
+
             _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
             _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
             _settings.AddVariable("NanoDrainSelection", (int)NanoDrainSelection.None);
             _settings.AddVariable("ACDrainSelection", (int)ACDrainSelection.None);
+            _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
             _settings.AddVariable("DamageDrainSelection", (int)DamageDrainSelection.None);
             _settings.AddVariable("AADDrainSelection", (int)AADDrainSelection.None);
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
@@ -300,6 +302,7 @@ namespace CombatHandler.Trader
                 || DepriveSelection.OS == (DepriveSelection)_settings["DepriveSelection"].AsInt32()
                 || DamageDrainSelection.OS == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32()
                 || ACDrainSelection.OS == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32()
+                || NanoResistSelection.OS == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()
                 || AAODrainSelection.OS == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32()
                 || AADDrainSelection.OS == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
                 && Time.NormalTime > _drainTick + 1)
@@ -745,7 +748,40 @@ namespace CombatHandler.Trader
 
             return false;
         }
+        private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+            if (NanoResistSelection.OS == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+                {
+                    if (spell.StackingOrder <= buff.StackingOrder)
+                    {
+                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
+                        if (buff.RemainingTime > 40) { return false; }
+
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = _drainTarget;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
+        }
         private bool ACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ACDrainSelection.Target == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
@@ -828,6 +864,10 @@ namespace CombatHandler.Trader
             None, Target, OS
         }
         public enum ACDrainSelection
+        {
+            None, Target, OS
+        }
+        public enum NanoResistSelection
         {
             None, Target, OS
         }

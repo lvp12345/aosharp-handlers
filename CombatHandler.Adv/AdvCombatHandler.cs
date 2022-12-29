@@ -123,25 +123,19 @@ namespace CombatHandler.Adventurer
 
         }
 
-        public Window[] _windows => new Window[] { _morphWindow, _healingWindow, _procWindow };
+        public Window[] _windows => new Window[] { _morphWindow, _healingWindow, _procWindow, _buffWindow };
 
         #region Callbacks
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            try
-            {
-                if (Game.IsZoning)
-                    return;
+            if (Game.IsZoning)
+                return;
 
-                RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
-                SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
-            }
-            catch (Exception e)
-            {
-                Chat.WriteLine(e);
-            }
+            RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
+            SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }
+
         private void OnGlobalBuffingMessage(int sender, IPCMessage msg)
         {
             GlobalBuffingMessage buffMsg =  (GlobalBuffingMessage)msg;
@@ -277,6 +271,9 @@ namespace CombatHandler.Adventurer
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning)
+                return;
+
             base.OnUpdate(deltaTime);
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

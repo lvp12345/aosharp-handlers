@@ -9,7 +9,7 @@ using AOSharp.Core.IPC;
 using SmokeLounge.AOtomation.Messaging.Serialization;
 using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
 
-namespace CombatHandler.Adventurer
+namespace CombatHandler.Agent
 {
     [AoContract((int)IPCOpcode.GlobalComposites)]
     public class GlobalCompositesMessage : IPCMessage

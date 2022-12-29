@@ -22,6 +22,10 @@ namespace CombatHandler.Agent
         private static int AgentHealPercentage;
         private static int AgentCompleteHealPercentage;
 
+        private static bool ToggleBuffing = false;
+        private static bool ToggleComposites = false;
+        private static bool ToggleDebuffing = false;
+
         private double _lastSwitchedHealTime = 0;
 
         private static Window _buffWindow;
@@ -41,6 +45,9 @@ namespace CombatHandler.Agent
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
+            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
             Config.CharSettings[Game.ClientInst].AgentHealPercentageChangedEvent += AgentHealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentageChangedEvent += AgentCompleteHealPercentage_Changed;

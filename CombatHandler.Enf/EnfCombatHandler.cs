@@ -12,6 +12,16 @@ namespace CombatHandler.Enf
     { 
         private static string PluginDirectory;
 
+        private static int EnfTauntDelayArea;
+        private static int EnfCycleAbsorbsDelay;
+        private static int EnfCycleRageDelay;
+        private static int EnfCycleChallengerDelay;
+        private static int EnfTauntDelaySingle;
+
+        private static bool ToggleBuffing = false;
+        private static bool ToggleComposites = false;
+        private static bool ToggleDebuffing = false;
+
         private static Window _buffWindow;
         private static Window _tauntWindow;
         private static Window _procWindow;
@@ -26,17 +36,14 @@ namespace CombatHandler.Enf
         private static double _areaTaunt;
         private static double _singleTaunt;
 
-        private static int EnfTauntDelayArea;
-        private static int EnfCycleAbsorbsDelay;
-        private static int EnfCycleRageDelay;
-        private static int EnfCycleChallengerDelay;
-        private static int EnfTauntDelaySingle;
-
         private static double _ncuUpdateTime;
 
         public EnfCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
+            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
             Config.CharSettings[Game.ClientInst].EnfTauntDelaySingleChangedEvent += EnfTauntDelaySingle_Changed;
             Config.CharSettings[Game.ClientInst].EnfTauntDelayAreaChangedEvent += EnfTauntDelayArea_Changed;
@@ -376,6 +383,88 @@ namespace CombatHandler.Enf
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
+
+
+                #region GlobalBuffing
+
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
+
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
+
+                #endregion
+
+                #region Composites
+
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
+
+                #endregion
+
+                #region Debuffing
+
+                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
+                //{
+                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
+                //    {
+
+                //        Switch = false
+                //    });
+
+                //    ToggleDebuffing = false;
+                //    _settings["GlobalDebuffing"] = false;
+                //}
+                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
+                //{
+                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
+                //    {
+                //        Switch = true
+                //    });
+
+                //    ToggleDebuffing = true;
+                //    _settings["GlobalDebuffing"] = true;
+                //}
+
+                #endregion
             }
         }
 

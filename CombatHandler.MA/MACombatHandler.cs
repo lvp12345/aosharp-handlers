@@ -76,7 +76,10 @@ namespace CombatHandler.MartialArtist
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).Where(c => c.Id != RelevantNanos.ReduceInertia).OrderByStackingOrder(), GenericBuff);
+
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, GenericTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GenericBuff);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
@@ -88,7 +91,6 @@ namespace CombatHandler.MartialArtist
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.LimboMastery, GenericTeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).Where(c => c.Id != RelevantNanos.ReduceInertia).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), GenericBuff);
@@ -105,8 +107,6 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(RelevantNanos.DamageTypeChemical, DamageTypeChemical);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff)
-                .Where(c => !RelevantNanos.TeamCritBuffs.Contains(c.Id)).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GenericBuff);
 
 

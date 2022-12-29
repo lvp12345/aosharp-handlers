@@ -450,8 +450,11 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || !SnareMobExists()) { return false; }
+            if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
+
+            if (SnareMobExists())
+                if (CanCast(spell))
+                    return spell.IsReady;
 
             return PetTargetBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -479,7 +482,6 @@ namespace CombatHandler.Engineer
                 && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f);
         }
         #endregion
-
 
         protected bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

@@ -14,6 +14,10 @@ namespace CombatHandler.Engineer
     {
         private static string PluginDirectory;
 
+        private static bool ToggleBuffing = false;
+        private static bool ToggleComposites = false;
+        private static bool ToggleDebuffing = false;
+
         private static int EngiBioCocoonPercentage;
 
         private const float DelayBetweenTrims = 1;
@@ -51,6 +55,9 @@ namespace CombatHandler.Engineer
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
+            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
             Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentageChangedEvent += EngiBioCocoonPercentage_Changed;
 
@@ -330,6 +337,87 @@ namespace CombatHandler.Engineer
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
+
+                #region GlobalBuffing
+
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
+
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
+
+                #endregion
+
+                #region Composites
+
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
+
+                #endregion
+
+                #region Debuffing
+
+                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
+                //{
+                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
+                //    {
+
+                //        Switch = false
+                //    });
+
+                //    ToggleDebuffing = false;
+                //    _settings["GlobalDebuffing"] = false;
+                //}
+                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
+                //{
+                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
+                //    {
+                //        Switch = true
+                //    });
+
+                //    ToggleDebuffing = true;
+                //    _settings["GlobalDebuffing"] = true;
+                //}
+
+                #endregion
 
                 CancelBuffs();
             }

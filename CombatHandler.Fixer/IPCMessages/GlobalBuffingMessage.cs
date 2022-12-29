@@ -9,7 +9,7 @@ using AOSharp.Core.IPC;
 using SmokeLounge.AOtomation.Messaging.Serialization;
 using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
 
-namespace CombatHandler.Adventurer
+namespace CombatHandler.Fixer
 {
     [AoContract((int)IPCOpcode.GlobalBuffing)]
     public class GlobalBuffingMessage : IPCMessage

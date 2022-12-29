@@ -24,6 +24,10 @@ namespace CombatHandler.Adventurer
         private static int AdvHealPercentage;
         private static int AdvCompleteHealPercentage;
 
+        private static bool ToggleBuffing = false;
+        private static bool ToggleComposites = false;
+        private static bool ToggleDebuffing = false;
+
         private static Window _morphWindow;
         private static Window _healingWindow;
         private static Window _buffWindow;
@@ -33,10 +37,6 @@ namespace CombatHandler.Adventurer
         private static View _healingView;
         private static View _buffView;
         private static View _procView;
-
-        private static bool ToggleBuffing = true;
-        private static bool ToggleComposites = true;
-        private static bool ToggleDebuffing = true;
 
         private static double _ncuUpdateTime;
 

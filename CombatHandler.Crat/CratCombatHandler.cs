@@ -66,8 +66,6 @@ namespace CombatHandler.Bureaucrat
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
             Config.CharSettings[Game.ClientInst].CratCycleLeadershipDelayChangedEvent += CratCycleXpPerksDelay_Changed;
-            Config.CharSettings[Game.ClientInst].CratCycleGovernanceDelayChangedEvent += CratCycleGovernanceDelay_Changed;
-            Config.CharSettings[Game.ClientInst].CratCycleTheDirectorDelayChangedEvent += CratCycleTheDirectorDelay_Changed;
 
             Game.TeleportEnded += OnZoned;
 
@@ -104,10 +102,6 @@ namespace CombatHandler.Bureaucrat
 
             _settings.AddVariable("Nuking", false);
             _settings.AddVariable("Root", false);
-
-            _settings.AddVariable("CycleLeadership", false);
-            _settings.AddVariable("CycleGovernance", false);
-            _settings.AddVariable("CycleTheDirector", false);
 
             _settings.AddVariable("Calm12Man", false);
             //_settings.AddVariable("CalmSector7", false);
@@ -205,8 +199,6 @@ namespace CombatHandler.Bureaucrat
             PluginDirectory = pluginDir;
 
             CratCycleXpPerksDelay = Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay;
-            CratCycleGovernanceDelay = Config.CharSettings[Game.ClientInst].CratCycleGovernanceDelay;
-            CratCycleTheDirectorDelay = Config.CharSettings[Game.ClientInst].CratCycleTheDirectorDelay;
         }
 
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _perkWindow };
@@ -296,21 +288,11 @@ namespace CombatHandler.Bureaucrat
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _buffView);
 
-                window.FindView("DelayLeadershipBox", out TextInputView leadershipInput);
-                window.FindView("DelayGovernanceBox", out TextInputView governanceInput);
-                window.FindView("DelayTheDirectorBox", out TextInputView theDirectorInput);
+                window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
 
-                if (leadershipInput != null)
+                if (xpPerksInput != null)
                 {
-                    leadershipInput.Text = $"{CratCycleXpPerksDelay}";
-                }
-                if (governanceInput != null)
-                {
-                    governanceInput.Text = $"{CratCycleGovernanceDelay}";
-                }
-                if (theDirectorInput != null)
-                {
-                    theDirectorInput.Text = $"{CratCycleTheDirectorDelay}";
+                    xpPerksInput.Text = $"{CratCycleXpPerksDelay}";
                 }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
@@ -318,21 +300,11 @@ namespace CombatHandler.Bureaucrat
                 SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _perkView, out var container);
                 _perkWindow = container;
 
-                container.FindView("DelayLeadershipBox", out TextInputView leadershipInput);
-                container.FindView("DelayGovernanceBox", out TextInputView governanceInput);
-                container.FindView("DelayTheDirectorBox", out TextInputView theDirectorInput);
+                container.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
 
-                if (leadershipInput != null)
+                if (xpPerksInput != null)
                 {
-                    leadershipInput.Text = $"{CratCycleXpPerksDelay}";
-                }
-                if (governanceInput != null)
-                {
-                    governanceInput.Text = $"{CratCycleGovernanceDelay}";
-                }
-                if (theDirectorInput != null)
-                {
-                    theDirectorInput.Text = $"{CratCycleTheDirectorDelay}";
+                    xpPerksInput.Text = $"{CratCycleXpPerksDelay}";
                 }
             }
         }
@@ -398,37 +370,15 @@ namespace CombatHandler.Bureaucrat
 
             if (window != null && window.IsValid)
             {
-                window.FindView("DelayLeadershipBox", out TextInputView leadershipInput);
-                window.FindView("DelayGovernanceBox", out TextInputView governanceInput);
-                window.FindView("DelayTheDirectorBox", out TextInputView theDirectorInput);
+                window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
 
-                if (leadershipInput != null)
+                if (xpPerksInput != null)
                 {
-                    if (int.TryParse(leadershipInput.Text, out int leadershipValue))
+                    if (int.TryParse(xpPerksInput.Text, out int xpPerksValue))
                     {
-                        if (Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay != leadershipValue)
+                        if (Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay != xpPerksValue)
                         {
-                            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay = leadershipValue;
-                        }
-                    }
-                }
-                if (governanceInput != null)
-                {
-                    if (int.TryParse(governanceInput.Text, out int governanceValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].CratCycleGovernanceDelay != governanceValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].CratCycleGovernanceDelay = governanceValue;
-                        }
-                    }
-                }
-                if (theDirectorInput != null)
-                {
-                    if (int.TryParse(theDirectorInput.Text, out int theDirectorValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].CratCycleTheDirectorDelay != theDirectorValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].CratCycleTheDirectorDelay = theDirectorValue;
+                            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay = xpPerksValue;
                         }
                     }
                 }
@@ -515,7 +465,7 @@ namespace CombatHandler.Bureaucrat
 
                 #endregion
 
-                #region Composites
+                #region Global Composites
 
                 if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
                 {
@@ -542,7 +492,7 @@ namespace CombatHandler.Bureaucrat
 
                 #endregion
 
-                #region Debuffing
+                #region Global Debuffing
 
                 //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
                 //{
@@ -661,45 +611,19 @@ namespace CombatHandler.Bureaucrat
 
         private bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (!IsSettingEnabled("CycleLeadership") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-            //if (Time.NormalTime > _cycleXpLeadership + CratCycleLeadershipDelay)
-            //{
-            //    _cycleXpLeadership = Time.NormalTime;
-
-            //    if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-            //        return CyclePerks(perk, fightingTarget, ref actionTarget);
-            //}
-
-            //return false;
-
             if (Time.NormalTime > _cycleXpPerks + CratCycleXpPerksDelay)
             {
                 _cycleXpPerks = Time.NormalTime;
 
+                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+                //Maybe add something here for KHBuddy
                 if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
                     return CyclePerks(perk, fightingTarget, ref actionTarget);
             }
-
-            //if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-            //if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-            //    return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
         private bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (!IsSettingEnabled("CycleGovernance") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-            //if (Time.NormalTime > _cycleXpGovernance + CratCycleGovernanceDelay)
-            //{
-            //    _cycleXpGovernance = Time.NormalTime;
-
-            //    if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-            //        return CyclePerks(perk, fightingTarget, ref actionTarget);
-            //}
-
-            //return false;
-
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
             if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
@@ -707,18 +631,6 @@ namespace CombatHandler.Bureaucrat
         }
         private bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (!IsSettingEnabled("CycleTheDirector") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-            //if (Time.NormalTime > _cycleXpTheDirector + CratCycleTheDirectorDelay)
-            //{
-            //    _cycleXpTheDirector = Time.NormalTime;
-
-            //    if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-            //        return CyclePerks(perk, fightingTarget, ref actionTarget);
-            //}
-
-            //return false;
-
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
             if (DynelManager.NPCs.Any(c => AttackingTeam(c)))

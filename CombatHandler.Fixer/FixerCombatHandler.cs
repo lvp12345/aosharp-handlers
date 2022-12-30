@@ -260,7 +260,7 @@ namespace CombatHandler.Fixer
 
                 #endregion
 
-                #region Composites
+                #region Global Composites
 
                 if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
                 {
@@ -287,7 +287,7 @@ namespace CombatHandler.Fixer
 
                 #endregion
 
-                #region Debuffing
+                #region Global Debuffing
 
                 //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
                 //{

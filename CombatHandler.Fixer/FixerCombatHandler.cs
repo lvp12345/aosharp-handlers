@@ -12,6 +12,7 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using static CombatHandler.Fixer.FixerCombatHandler;
 
 namespace CombatHandler.Fixer
 {
@@ -49,9 +50,8 @@ namespace CombatHandler.Fixer
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
-            _settings.AddVariable("ShortHOT", false);
-            _settings.AddVariable("TeamShortHOT", false);
-            _settings.AddVariable("TeamLongHOT", false);
+            _settings.AddVariable("ShortHOTSelection", (int)ShortHOTSelection.None);
+            _settings.AddVariable("LongHOTSelection", (int)LongHOTSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.BootlegRemedies);
@@ -407,22 +407,24 @@ namespace CombatHandler.Fixer
             return Buff(spell, NanoLine.FixerNCUBuff, fightingTarget, ref actionTarget);
         }
 
-        private bool LongHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("TeamLongHOT"))
-                return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("TeamShortHOT"))
+            if (ShortHOTSelection.Team == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
                 return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
-            if (IsSettingEnabled("ShortHOT"))
-                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            return false;
+            if (ShortHOTSelection.None == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        private bool LongHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (LongHOTSelection.Team == (LongHOTSelection)_settings["LongHOTSelection"].AsInt32())
+                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
+
+            if (LongHOTSelection.None == (LongHOTSelection)_settings["LongHOTSelection"].AsInt32()) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool SLRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -536,6 +538,14 @@ namespace CombatHandler.Fixer
         public enum RunspeedSelection
         {
             None, RubiKa, Shadowlands
+        }
+        public enum ShortHOTSelection
+        {
+            None, Self, Team
+        }
+        public enum LongHOTSelection
+        {
+            None, Self, Team
         }
 
         #endregion

@@ -621,6 +621,8 @@ namespace CombatHandler.Bureaucrat
                 if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
                     return CyclePerks(perk, fightingTarget, ref actionTarget);
             }
+
+            return false;
         }
         private bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -628,6 +630,8 @@ namespace CombatHandler.Bureaucrat
 
             if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
                 return CyclePerks(perk, fightingTarget, ref actionTarget);
+
+            return false;
         }
         private bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -635,6 +639,8 @@ namespace CombatHandler.Bureaucrat
 
             if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
                 return CyclePerks(perk, fightingTarget, ref actionTarget);
+
+            return false;
         }
 
         #endregion

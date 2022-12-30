@@ -1306,8 +1306,8 @@ namespace CombatHandler.Generic
                 if (spell.NanoSchool != NanoSchool.Combat && spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 20f) { return false; }
 
                 //Add here exceptions
-                if ((spell.NanoSchool == NanoSchool.Combat || spell.Nanoline == NanoLine.EvasionDebuffs_Agent)
-                    && spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 8f) { return false; }
+                //if ((spell.NanoSchool == NanoSchool.Combat || spell.Nanoline == NanoLine.EvasionDebuffs_Agent)
+                //    && spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 8f) { return false; }
 
                 return true;
             }

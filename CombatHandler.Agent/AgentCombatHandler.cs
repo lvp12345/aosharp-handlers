@@ -60,7 +60,8 @@ namespace CombatHandler.Agent
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
-            _settings.AddVariable("AgentDOTA", false);
+            _settings.AddVariable("DOTA", false);
+            _settings.AddVariable("EvasionDebuff", false);
 
             _settings.AddVariable("CritTeam", false);
 
@@ -70,8 +71,6 @@ namespace CombatHandler.Agent
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.LaserAim);
 
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
-
-            _settings.AddVariable("EvasionDebuff", false);
 
             _settings.AddVariable("CH", false);
 

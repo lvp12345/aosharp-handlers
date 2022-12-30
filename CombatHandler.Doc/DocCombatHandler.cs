@@ -602,7 +602,7 @@ namespace CombatHandler.Doctor
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
 
             if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
 
@@ -652,7 +652,7 @@ namespace CombatHandler.Doctor
             //If not we use GenericCombatBuff as the processor condition
 
             if (ShortHOTSelection.Team == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
-                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
 
             if (ShortHOTSelection.None == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
 
@@ -665,7 +665,7 @@ namespace CombatHandler.Doctor
         private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
-                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
 
             if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
 

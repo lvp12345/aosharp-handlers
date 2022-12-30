@@ -461,7 +461,7 @@ namespace CombatHandler.Generic
 
         #region Combat
 
-        protected bool GenericCombatBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool GenericCombatTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam)
                 return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);

@@ -410,7 +410,7 @@ namespace CombatHandler.Fixer
         private bool LongHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamLongHOT"))
-                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -418,7 +418,7 @@ namespace CombatHandler.Fixer
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamShortHOT"))
-                return GenericCombatBuff(spell, fightingTarget, ref actionTarget);
+                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
             if (IsSettingEnabled("ShortHOT"))
                 return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
@@ -429,7 +429,7 @@ namespace CombatHandler.Fixer
         {
             if (IsInsideInnerSanctum() || RunspeedSelection.Shadowlands != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
 
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool RKRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -441,7 +441,7 @@ namespace CombatHandler.Fixer
                 CancelBuffs(RelevantNanos.ShadowlandsRunspeed);
             }
 
-            return GenericCombatBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -21,7 +21,7 @@ namespace CombatHandler.Bureaucrat
         private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
 
-        private double _cycleXpLeadership = 0;
+        private double _cycleXpPerks = 0;
         private double _cycleXpGovernance = 0;
         private double _cycleXpTheDirector = 0;
 
@@ -45,9 +45,7 @@ namespace CombatHandler.Bureaucrat
         private static View _procView;
         private static View _perkView;
 
-        private static int CratCycleLeadershipDelay;
-        private static int CratCycleGovernanceDelay;
-        private static int CratCycleTheDirectorDelay;
+        private static int CratCycleXpPerksDelay;
 
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
@@ -67,7 +65,7 @@ namespace CombatHandler.Bureaucrat
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].CratCycleLeadershipDelayChangedEvent += CratCycleLeadershipDelay_Changed;
+            Config.CharSettings[Game.ClientInst].CratCycleLeadershipDelayChangedEvent += CratCycleXpPerksDelay_Changed;
             Config.CharSettings[Game.ClientInst].CratCycleGovernanceDelayChangedEvent += CratCycleGovernanceDelay_Changed;
             Config.CharSettings[Game.ClientInst].CratCycleTheDirectorDelayChangedEvent += CratCycleTheDirectorDelay_Changed;
 
@@ -206,7 +204,7 @@ namespace CombatHandler.Bureaucrat
 
             PluginDirectory = pluginDir;
 
-            CratCycleLeadershipDelay = Config.CharSettings[Game.ClientInst].CratCycleLeadershipDelay;
+            CratCycleXpPerksDelay = Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay;
             CratCycleGovernanceDelay = Config.CharSettings[Game.ClientInst].CratCycleGovernanceDelay;
             CratCycleTheDirectorDelay = Config.CharSettings[Game.ClientInst].CratCycleTheDirectorDelay;
         }
@@ -304,7 +302,7 @@ namespace CombatHandler.Bureaucrat
 
                 if (leadershipInput != null)
                 {
-                    leadershipInput.Text = $"{CratCycleLeadershipDelay}";
+                    leadershipInput.Text = $"{CratCycleXpPerksDelay}";
                 }
                 if (governanceInput != null)
                 {
@@ -326,7 +324,7 @@ namespace CombatHandler.Bureaucrat
 
                 if (leadershipInput != null)
                 {
-                    leadershipInput.Text = $"{CratCycleLeadershipDelay}";
+                    leadershipInput.Text = $"{CratCycleXpPerksDelay}";
                 }
                 if (governanceInput != null)
                 {
@@ -408,9 +406,9 @@ namespace CombatHandler.Bureaucrat
                 {
                     if (int.TryParse(leadershipInput.Text, out int leadershipValue))
                     {
-                        if (Config.CharSettings[Game.ClientInst].CratCycleLeadershipDelay != leadershipValue)
+                        if (Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay != leadershipValue)
                         {
-                            Config.CharSettings[Game.ClientInst].CratCycleLeadershipDelay = leadershipValue;
+                            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay = leadershipValue;
                         }
                     }
                 }
@@ -663,45 +661,68 @@ namespace CombatHandler.Bureaucrat
 
         private bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CycleLeadership") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+            //if (!IsSettingEnabled("CycleLeadership") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
-            if (Time.NormalTime > _cycleXpLeadership + CratCycleLeadershipDelay)
+            //if (Time.NormalTime > _cycleXpLeadership + CratCycleLeadershipDelay)
+            //{
+            //    _cycleXpLeadership = Time.NormalTime;
+
+            //    if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+            //        return CyclePerks(perk, fightingTarget, ref actionTarget);
+            //}
+
+            //return false;
+
+            if (Time.NormalTime > _cycleXpPerks + CratCycleXpPerksDelay)
             {
-                _cycleXpLeadership = Time.NormalTime;
+                _cycleXpPerks = Time.NormalTime;
 
                 if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
                     return CyclePerks(perk, fightingTarget, ref actionTarget);
             }
 
-            return false;
+            //if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            //if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+            //    return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
         private bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CycleGovernance") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+            //if (!IsSettingEnabled("CycleGovernance") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
-            if (Time.NormalTime > _cycleXpGovernance + CratCycleGovernanceDelay)
-            {
-                _cycleXpGovernance = Time.NormalTime;
+            //if (Time.NormalTime > _cycleXpGovernance + CratCycleGovernanceDelay)
+            //{
+            //    _cycleXpGovernance = Time.NormalTime;
 
-                if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                    return CyclePerks(perk, fightingTarget, ref actionTarget);
-            }
+            //    if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+            //        return CyclePerks(perk, fightingTarget, ref actionTarget);
+            //}
 
-            return false;
+            //return false;
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+                return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
         private bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CycleTheDirector") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+            //if (!IsSettingEnabled("CycleTheDirector") || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
-            if (Time.NormalTime > _cycleXpTheDirector + CratCycleTheDirectorDelay)
-            {
-                _cycleXpTheDirector = Time.NormalTime;
+            //if (Time.NormalTime > _cycleXpTheDirector + CratCycleTheDirectorDelay)
+            //{
+            //    _cycleXpTheDirector = Time.NormalTime;
 
-                if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                    return CyclePerks(perk, fightingTarget, ref actionTarget);
-            }
+            //    if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+            //        return CyclePerks(perk, fightingTarget, ref actionTarget);
+            //}
 
-            return false;
+            //return false;
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+                return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -1512,23 +1533,10 @@ namespace CombatHandler.Bureaucrat
             None, All, Adds
         }
 
-        public static void CratCycleLeadershipDelay_Changed(object s, int e)
+        public static void CratCycleXpPerksDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CratCycleLeadershipDelay = e;
-            CratCycleLeadershipDelay = e;
-            Config.Save();
-        }
-
-        public static void CratCycleGovernanceDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].CratCycleGovernanceDelay = e;
-            CratCycleGovernanceDelay = e;
-            Config.Save();
-        }
-        public static void CratCycleTheDirectorDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].CratCycleTheDirectorDelay = e;
-            CratCycleTheDirectorDelay = e;
+            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay = e;
+            CratCycleXpPerksDelay = e;
             Config.Save();
         }
 

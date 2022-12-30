@@ -5,6 +5,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using static System.Collections.Specialized.BitVector32;
 
@@ -134,21 +135,12 @@ namespace CombatHandler.Generic
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
-                {
-                    PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
-
-                    if (_bgHeal1Team?.IsAvailable == true) { return true; }
-                }
+                    return perkAction.IsAvailable;
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self))
-            {
-                if (_bgHeal1Self?.IsAvailable == true) { return true; }
-            }
-
-            return false;
+            return perkAction.IsAvailable;
         }
 
         public static bool BattleGroupHealPerk2(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -165,7 +157,8 @@ namespace CombatHandler.Generic
                     PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
                     PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
 
-                    if (!_bgHeal1Team?.IsAvailable == true && _bgHeal2Team?.IsAvailable == true) { return true; }
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal2Team?.IsAvailable == false) 
+                        return perkAction.IsAvailable;
                 }
             }
 
@@ -173,11 +166,12 @@ namespace CombatHandler.Generic
 
             if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self))
             {
-                if (!_bgHeal1Self?.IsAvailable == true)
+                if (_bgHeal1Self?.IsAvailable == false)
                 {
                     PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Self);
 
-                    if (_bgHeal2Self?.IsAvailable == true) { return true; }
+                    if (_bgHeal2Self?.IsAvailable == false) 
+                        return perkAction.IsAvailable;
                 }
             }
 
@@ -197,10 +191,9 @@ namespace CombatHandler.Generic
                 {
                     PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
                     PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
-                    PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Team);
 
-                    if (!_bgHeal1Team?.IsAvailable == true && !_bgHeal2Team?.IsAvailable == true
-                        && _bgHeal3Team?.IsAvailable == true) { return true; }
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal2Team?.IsAvailable == false)
+                        return perkAction.IsAvailable;
                 }
             }
 
@@ -208,12 +201,8 @@ namespace CombatHandler.Generic
 
             if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self) && PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Self))
             {
-                if (!_bgHeal1Self?.IsAvailable == true && !_bgHeal2Self?.IsAvailable == true)
-                {
-                    PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Self);
-
-                    if (_bgHeal3Self?.IsAvailable == true) { return true; }
-                }
+                if (_bgHeal1Self?.IsAvailable == false && _bgHeal2Self?.IsAvailable == false)
+                    return perkAction.IsAvailable;
             }
 
             return false;
@@ -233,10 +222,10 @@ namespace CombatHandler.Generic
                     PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
                     PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
                     PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Team);
-                    PerkAction.Find("Battlegroup Heal 4", out PerkAction _bgHeal4Team);
 
-                    if (!_bgHeal1Team?.IsAvailable == true && !_bgHeal2Team?.IsAvailable == true
-                        && !_bgHeal3Team?.IsAvailable == true && _bgHeal4Team?.IsAvailable == true) { return true; }
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal2Team?.IsAvailable == false
+                        && _bgHeal3Team?.IsAvailable == false)
+                        return perkAction.IsAvailable;
                 }
             }
 
@@ -245,13 +234,9 @@ namespace CombatHandler.Generic
             if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self) && PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Self)
                 && PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Self))
             {
-                if (!_bgHeal1Self?.IsAvailable == true && !_bgHeal2Self?.IsAvailable == true
-                    && !_bgHeal3Self?.IsAvailable == true)
-                {
-                    PerkAction.Find("Battlegroup Heal 4", out PerkAction _bgHeal4Self);
-
-                    if (_bgHeal4Self?.IsAvailable == true) { return true; }
-                }
+                if (_bgHeal1Self?.IsAvailable == false && !_bgHeal2Self?.IsAvailable == false
+                    && _bgHeal3Self?.IsAvailable == false)
+                return perkAction.IsAvailable;
             }
 
             return false;
@@ -308,6 +293,52 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.HealthPercent >= 70) { return false; }
 
             return true;
+        }
+
+        public static bool LeadershipPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perkAction.IsAvailable) { return false; }
+
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            {
+                if (buff.Name == perkAction.Name) { return false; }
+            }
+
+            return perkAction.IsAvailable;
+        }
+        public static bool GovernancePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perkAction.IsAvailable) { return false; }
+
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            {
+                if (buff.Name == perkAction.Name) { return false; }
+            }
+
+            if (PerkAction.Find("Leadership", out PerkAction _leadership))
+            {
+                if (_leadership?.IsAvailable == false)
+                    return perkAction.IsAvailable;
+            }
+
+            return false;
+        }
+        public static bool TheDirectorPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perkAction.IsAvailable) { return false; }
+
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            {
+                if (buff.Name == perkAction.Name) { return false; }
+            }
+
+            if (PerkAction.Find("Leadership", out PerkAction _leadership) && PerkAction.Find("Governance", out PerkAction _governance))
+            {
+                if (_leadership?.IsAvailable == false && _governance?.IsAvailable == false)
+                    return perkAction.IsAvailable;
+            }
+
+            return false;
         }
 
         public static bool VolunteerPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -386,7 +386,7 @@ namespace CombatHandler.Adventurer
 
                 #endregion
 
-                #region Composites
+                #region Global Composites
 
                 if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
                 {
@@ -413,13 +413,13 @@ namespace CombatHandler.Adventurer
 
                 #endregion
 
-                #region Debuffing
+                #region Global Debuffing
 
                 //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
                 //{
                 //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
                 //    {
-    
+
                 //        Switch = false
                 //    });
 

@@ -155,9 +155,8 @@ namespace CombatHandler.Generic
                 if (dyingTeamMember.Count >= 1)
                 {
                     PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
-                    PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
 
-                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal2Team?.IsAvailable == false) 
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false) 
                         return perkAction.IsAvailable;
                 }
             }
@@ -166,13 +165,8 @@ namespace CombatHandler.Generic
 
             if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self))
             {
-                if (_bgHeal1Self?.IsAvailable == false)
-                {
-                    PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Self);
-
-                    if (_bgHeal2Self?.IsAvailable == false) 
-                        return perkAction.IsAvailable;
-                }
+                if (_bgHeal1Self?.IsAvailable == false && _bgHeal1Self?.IsExecuting == false)
+                    return perkAction.IsAvailable;
             }
 
             return false;
@@ -192,7 +186,7 @@ namespace CombatHandler.Generic
                     PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
                     PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
 
-                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal2Team?.IsAvailable == false)
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false && _bgHeal2Team?.IsAvailable == false && _bgHeal2Team?.IsExecuting == false)
                         return perkAction.IsAvailable;
                 }
             }
@@ -201,7 +195,7 @@ namespace CombatHandler.Generic
 
             if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self) && PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Self))
             {
-                if (_bgHeal1Self?.IsAvailable == false && _bgHeal2Self?.IsAvailable == false)
+                if (_bgHeal1Self?.IsAvailable == false && _bgHeal1Self?.IsExecuting == false && _bgHeal2Self?.IsAvailable == false && _bgHeal2Self?.IsExecuting == false)
                     return perkAction.IsAvailable;
             }
 
@@ -223,8 +217,8 @@ namespace CombatHandler.Generic
                     PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
                     PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Team);
 
-                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal2Team?.IsAvailable == false
-                        && _bgHeal3Team?.IsAvailable == false)
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false && _bgHeal2Team?.IsAvailable == false && _bgHeal2Team?.IsExecuting == false
+                        && _bgHeal3Team?.IsAvailable == false && _bgHeal3Team?.IsExecuting == false)
                         return perkAction.IsAvailable;
                 }
             }
@@ -234,8 +228,8 @@ namespace CombatHandler.Generic
             if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self) && PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Self)
                 && PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Self))
             {
-                if (_bgHeal1Self?.IsAvailable == false && !_bgHeal2Self?.IsAvailable == false
-                    && _bgHeal3Self?.IsAvailable == false)
+                if (_bgHeal1Self?.IsAvailable == false && _bgHeal1Self?.IsExecuting == false && _bgHeal2Self?.IsAvailable == false && _bgHeal2Self?.IsExecuting == false
+                    && _bgHeal3Self?.IsAvailable == false && _bgHeal3Self?.IsExecuting == false)
                 return perkAction.IsAvailable;
             }
 
@@ -317,7 +311,7 @@ namespace CombatHandler.Generic
 
             if (PerkAction.Find("Leadership", out PerkAction _leadership))
             {
-                if (_leadership?.IsAvailable == false)
+                if (_leadership?.IsAvailable == false && _leadership?.IsExecuting == false)
                     return perkAction.IsAvailable;
             }
 
@@ -334,7 +328,7 @@ namespace CombatHandler.Generic
 
             if (PerkAction.Find("Leadership", out PerkAction _leadership) && PerkAction.Find("Governance", out PerkAction _governance))
             {
-                if (_leadership?.IsAvailable == false && _governance?.IsAvailable == false)
+                if (_leadership?.IsAvailable == false && _leadership?.IsExecuting == false && _governance?.IsAvailable == false && _governance?.IsExecuting == false)
                     return perkAction.IsAvailable;
             }
 

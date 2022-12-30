@@ -326,7 +326,7 @@ namespace CombatHandler.Soldier
 
                 #endregion
 
-                #region Composites
+                #region Global Composites
 
                 if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
                 {
@@ -353,7 +353,7 @@ namespace CombatHandler.Soldier
 
                 #endregion
 
-                #region Debuffing
+                #region Global Debuffing
 
                 //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
                 //{

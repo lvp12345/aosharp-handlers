@@ -699,8 +699,7 @@ namespace CombatHandler.NanoTechnician
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("CostTeam"))
-                if (Team.IsInTeam)
-                    return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }

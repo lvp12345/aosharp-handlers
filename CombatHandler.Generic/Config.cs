@@ -367,20 +367,20 @@ namespace CombatHandler.Generic
                 }
             }
         }
-        public event EventHandler<int> CratCycleLeadershipDelayChangedEvent;
-        private int _cratCycleLeadershipDelay = 1;
+        public event EventHandler<int> CratCycleXpPerksDelayChangedEvent;
+        private int _cratCycleXpPerksDelay = 1;
         public int CratCycleXpPerksDelay
         {
             get
             {
-                return _cratCycleLeadershipDelay;
+                return _cratCycleXpPerksDelay;
             }
             set
             {
-                if (_cratCycleLeadershipDelay != value)
+                if (_cratCycleXpPerksDelay != value)
                 {
-                    _cratCycleLeadershipDelay = value;
-                    CratCycleLeadershipDelayChangedEvent?.Invoke(this, value);
+                    _cratCycleXpPerksDelay = value;
+                    CratCycleXpPerksDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }

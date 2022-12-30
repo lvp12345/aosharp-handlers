@@ -487,7 +487,7 @@ namespace CombatHandler.Soldier
         {
             if (AAOSelection.Team == (AAOSelection)_settings["AAOSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.IsInTeam())
+                if (Team.IsInTeam)
                 {
                     SimpleChar target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
@@ -507,7 +507,7 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (AAOSelection.Self != (AAOSelection)_settings["AAOSelection"].AsInt32()) { return false; }
+            if (AAOSelection.None == (AAOSelection)_settings["AAOSelection"].AsInt32()) { return false; }
 
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -516,7 +516,7 @@ namespace CombatHandler.Soldier
         {
             if (RiotControlSelection.Team == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.IsInTeam())
+                if (Team.IsInTeam)
                 {
                     SimpleChar target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
@@ -739,7 +739,7 @@ namespace CombatHandler.Soldier
         }
         public enum AAOSelection
         {
-            Self, Team
+            None, Self, Team
         }
         public enum InitBuffSelection
         {

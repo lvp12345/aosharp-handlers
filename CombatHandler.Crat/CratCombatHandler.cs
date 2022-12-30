@@ -65,7 +65,7 @@ namespace CombatHandler.Bureaucrat
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].CratCycleLeadershipDelayChangedEvent += CratCycleXpPerksDelay_Changed;
+            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelayChangedEvent += CratCycleXpPerksDelay_Changed;
 
             Game.TeleportEnded += OnZoned;
 

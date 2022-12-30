@@ -683,9 +683,11 @@ namespace CombatHandler.Metaphysicist
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null) continue;
+                if (pet.Character == null
+                    || pet.Character.Health == 0
+                    || pet.Type != PetType.Attack) continue;
 
-                if (CanPerkChannelRage(pet))
+                if (!pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.ChannelRage))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
@@ -721,9 +723,9 @@ namespace CombatHandler.Metaphysicist
 
         private bool EvasionPet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget) ||
-                PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Heal, spell, fightingTarget, ref actionTarget) ||
-                PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Support, spell, fightingTarget, ref actionTarget);
+            return PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget) 
+                || PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Heal, spell, fightingTarget, ref actionTarget) 
+                || PetTargetBuff(NanoLine.MajorEvasionBuffs, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         private bool Chant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -738,9 +740,9 @@ namespace CombatHandler.Metaphysicist
 
         private bool HealDeltaPet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetTargetBuff(NanoLine.PetHealDelta843, PetType.Attack, spell, fightingTarget, ref actionTarget) ||
-                PetTargetBuff(NanoLine.PetHealDelta843, PetType.Heal, spell, fightingTarget, ref actionTarget) ||
-                PetTargetBuff(NanoLine.PetHealDelta843, PetType.Support, spell, fightingTarget, ref actionTarget);
+            return PetTargetBuff(NanoLine.PetHealDelta843, PetType.Attack, spell, fightingTarget, ref actionTarget) 
+                || PetTargetBuff(NanoLine.PetHealDelta843, PetType.Heal, spell, fightingTarget, ref actionTarget) 
+                || PetTargetBuff(NanoLine.PetHealDelta843, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         private bool DefensivePet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -750,9 +752,9 @@ namespace CombatHandler.Metaphysicist
 
         private bool NanoResistancePet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetTargetBuff(NanoLine.PetDamageOverTimeResistNanos, PetType.Attack, spell, fightingTarget, ref actionTarget) ||
-                PetTargetBuff(NanoLine.PetDamageOverTimeResistNanos, PetType.Heal, spell, fightingTarget, ref actionTarget) ||
-                PetTargetBuff(NanoLine.PetDamageOverTimeResistNanos, PetType.Support, spell, fightingTarget, ref actionTarget);
+            return PetTargetBuff(NanoLine.PetDamageOverTimeResistNanos, PetType.Attack, spell, fightingTarget, ref actionTarget) 
+                || PetTargetBuff(NanoLine.PetDamageOverTimeResistNanos, PetType.Heal, spell, fightingTarget, ref actionTarget) 
+                || PetTargetBuff(NanoLine.PetDamageOverTimeResistNanos, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         private bool ShortTermDamagePet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -762,8 +764,8 @@ namespace CombatHandler.Metaphysicist
 
         private bool CostPet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetTargetBuff(NanoLine.NPCostBuff, PetType.Heal, spell, fightingTarget, ref actionTarget) ||
-                PetTargetBuff(NanoLine.NPCostBuff, PetType.Support, spell, fightingTarget, ref actionTarget);
+            return PetTargetBuff(NanoLine.NPCostBuff, PetType.Heal, spell, fightingTarget, ref actionTarget) 
+                || PetTargetBuff(NanoLine.NPCostBuff, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         protected bool InducedApathy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -774,10 +776,10 @@ namespace CombatHandler.Metaphysicist
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null) continue;
+                if (pet.Character == null
+                    || pet.Type != PetType.Attack) continue;
 
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && pet.Type == PetType.Attack)
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683))
                 {
                     if (spell.IsReady)
                         spell.Cast(pet.Character, true);
@@ -802,10 +804,10 @@ namespace CombatHandler.Metaphysicist
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null) continue;
+                if (pet.Character == null
+                    || pet.Type != PetType.Attack) continue;
 
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && pet.Type == PetType.Attack)
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683))
                 {
                     if (spell.IsReady)
                         spell.Cast(pet.Character, true);
@@ -845,15 +847,6 @@ namespace CombatHandler.Metaphysicist
             return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
         }
 
-        private bool CanPerkChannelRage(Pet pet)
-        {
-            if (!pet.Character.IsAlive) { return false; }
-
-            if (pet.Type != PetType.Attack) { return false; }
-
-            return !pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.ChannelRage);
-        }
-
         private Spell[] GetAttackPetsWithSLPetsFirst()
         {
             List<Spell> attackPetsWithoutSL = Spell.GetSpellsForNanoline(NanoLine.AttackPets).Where(spell => !RelevantNanos.SLAttackPets.Contains(spell.Id)).OrderByStackingOrder().ToList();
@@ -871,6 +864,7 @@ namespace CombatHandler.Metaphysicist
             return null;
         }
 
+        //Ewww
         private SimpleChar GetTargetToHeal()
         {
            if (DynelManager.LocalPlayer.HealthPercent < 90)
@@ -946,6 +940,7 @@ namespace CombatHandler.Metaphysicist
 
         private void AssignTargetToMezzPet()
         {
+            //Should be attacking anyone in our team not just if we are attacking
             if (DynelManager.LocalPlayer.IsAttacking && Time.NormalTime - _lastSwitchedMezzTime > 9)
             {
                 SimpleChar targetToMezz = GetTargetToMezz();

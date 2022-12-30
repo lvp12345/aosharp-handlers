@@ -348,6 +348,13 @@ namespace CombatHandler.Generic
             if (perk.Name == "Sacrifice" || perk.Name == "Purple Heart")
                 return VolunteerPerk(perk, fightingTarget, ref actionTarget);
 
+            if (perk.Name == "Leadership")
+                return LeadershipPerk(perk, fightingTarget, ref actionTarget);
+            if (perk.Name == "Governance")
+                return GovernancePerk(perk, fightingTarget, ref actionTarget);
+            if (perk.Name == "The Director")
+                return TheDirectorPerk(perk, fightingTarget, ref actionTarget);
+
             return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 

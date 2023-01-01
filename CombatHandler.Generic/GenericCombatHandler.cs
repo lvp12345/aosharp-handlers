@@ -64,7 +64,7 @@ namespace CombatHandler.Generic
                     "Pandemonium Idol"
         };
 
-        protected static HashSet<string> debuffOSTargetsToIgnore = new HashSet<string>
+        protected static HashSet<string> debuffAreaTargetsToIgnore = new HashSet<string>
         {
                     "Immortal Guardian",
                     "Mature Abyss Orchid",
@@ -618,12 +618,12 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool OSDebuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool AreaDebuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
                         && c.Health > 0
                         && !c.Buffs.Contains(301844)
@@ -649,7 +649,7 @@ namespace CombatHandler.Generic
             if (!IsSettingEnabled(toggleName) || !CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
                         && c.Health > 0
                         && !c.Buffs.Contains(301844)

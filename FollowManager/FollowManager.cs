@@ -91,29 +91,24 @@ namespace FollowManager
         public static void IPCChannel_Changed(object s, int e)
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
-
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void FollowPlayer_Changed(object s, string e)
         {
             Config.CharSettings[Game.ClientInst].FollowPlayer = e;
             FollowPlayer = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void NavFollowIdentity_Changed(object s, string e)
         {
             Config.CharSettings[Game.ClientInst].NavFollowIdentity = e;
             NavFollowIdentity = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void NavFollowDistance_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].NavFollowDistance = e;
             NavFollowDistance = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 
@@ -237,7 +232,7 @@ namespace FollowManager
                 }
             }
 
-            if (_settings["Toggle"].AsBool() && FollowSelection.OSFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
+            if (_settings["Toggle"].AsBool() && FollowSelection.NamedFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
@@ -249,13 +244,13 @@ namespace FollowManager
                 if (identity != null)
                 {
                     if (identity.Identity != DynelManager.LocalPlayer.Identity)
-                        OSFollow(identity);
+                        NamedFollow(identity);
 
                     _followTimer = Time.NormalTime;
                 }
             }
         }
-        private void OSFollow(Dynel dynel)
+        private void NamedFollow(Dynel dynel)
         {
             FollowTargetMessage n3Msg = new FollowTargetMessage()
             {
@@ -292,7 +287,7 @@ namespace FollowManager
 
         public enum FollowSelection
         {
-            None, LeadFollow, OSFollow, NavFollow
+            None, LeadFollow, NamedFollow, NavFollow
         }
     }
 }

@@ -495,7 +495,7 @@ namespace CombatHandler.MartialArtist
             {
                 return FindMemberWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
             }
-            else if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+            else if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
             {
                 return FindPlayerWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
             }
@@ -585,12 +585,12 @@ namespace CombatHandler.MartialArtist
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (SingleTauntSelection.OS == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
+            if (SingleTauntSelection.Area == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
             {
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.IsInLineOfSight
-                        && !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && !FightingMe(c)
                         && c.Name != "Alien Heavy Patroller"
@@ -699,11 +699,11 @@ namespace CombatHandler.MartialArtist
 
         public enum HealSelection
         {
-            None, SingleTeam, SingleOS
+            None, SingleTeam, SingleArea
         }
         public enum SingleTauntSelection
         {
-            None, Target, OS
+            None, Target, Area
         }
 
         public enum ProcType1Selection

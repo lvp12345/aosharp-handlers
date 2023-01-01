@@ -542,7 +542,7 @@ namespace CombatHandler.Adventurer
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
                 return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
-            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
                 return FindPlayerWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
 
             return false;
@@ -654,7 +654,7 @@ namespace CombatHandler.Adventurer
 
         public enum HealSelection
         {
-            None, SingleTeam, SingleOS
+            None, SingleTeam, SingleArea
         }
         public enum MorphSelection
         {

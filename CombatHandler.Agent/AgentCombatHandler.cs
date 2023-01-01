@@ -573,7 +573,7 @@ namespace CombatHandler.Agent
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
                 return FindMemberWithHealthBelow(AgentHealPercentage, spell, ref actionTarget);
 
-            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
                 return FindPlayerWithHealthBelow(AgentHealPercentage, spell, ref actionTarget);
 
             return false;
@@ -714,8 +714,8 @@ namespace CombatHandler.Agent
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return OSDebuff(spell, ref actionTarget);
+            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
 
             if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
                 && fightingTarget != null)
@@ -836,11 +836,11 @@ namespace CombatHandler.Agent
         }
         public enum HealSelection
         {
-            None, SingleTeam, SingleOS
+            None, SingleTeam, SingleArea
         }
         public enum InitDebuffSelection
         {
-            None, Target, OS
+            None, Target, Area
         }
         public enum ProcType1Selection
         {

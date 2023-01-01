@@ -582,7 +582,7 @@ namespace CombatHandler.Doctor
                 return FindMemberWithHealthBelow(DocHealPercentage, spell, ref actionTarget);
             }
 
-            if (HealSelection.SingleOS == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
             {
                 return FindPlayerWithHealthBelow(DocHealPercentage, spell, ref actionTarget);
             }
@@ -688,8 +688,8 @@ namespace CombatHandler.Doctor
 
         private bool InitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return OSDebuff(spell, ref actionTarget);
+            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
 
             if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
                 && fightingTarget != null)
@@ -743,11 +743,11 @@ namespace CombatHandler.Doctor
         }
         public enum HealSelection
         {
-            None, SingleTeam, SingleOS, Team, ImprovedLifeChanneler
+            None, SingleTeam, SingleArea, Team, ImprovedLifeChanneler
         }
         public enum InitDebuffSelection
         {
-            None, Target, OS
+            None, Target, Area
         }
         public enum ShortHpSelection
         {

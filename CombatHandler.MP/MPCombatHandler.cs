@@ -646,8 +646,8 @@ namespace CombatHandler.Metaphysicist
 
         private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DamageDebuffSelection.OS == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32())
-                return OSDebuff(spell, ref actionTarget);
+            if (DamageDebuffSelection.Area == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
 
             if (DamageDebuffSelection.Target == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32()
                 && fightingTarget != null)
@@ -908,7 +908,7 @@ namespace CombatHandler.Metaphysicist
         {
             //Ewww
             return DynelManager.Characters
-                .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
                 .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
                 .Where(c => DynelManager.LocalPlayer.FightingTarget.Identity != c.Identity)
                 .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player of a pet
@@ -1001,7 +1001,7 @@ namespace CombatHandler.Metaphysicist
         }
         public enum DamageDebuffSelection
         {
-            None, Target, OS
+            None, Target, Area
         }
         public enum InterruptSelection
         {

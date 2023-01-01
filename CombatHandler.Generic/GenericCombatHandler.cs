@@ -251,9 +251,9 @@ namespace CombatHandler.Generic
 
             SettingsController.CleanUp();
 
-            Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
+            //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
 
-            Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
+            //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
 
             //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1) && !_init
             //    && IsActiveWindow)

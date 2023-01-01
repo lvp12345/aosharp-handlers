@@ -684,7 +684,7 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -703,7 +703,7 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -734,7 +734,7 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -753,7 +753,7 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -783,7 +783,7 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -802,7 +802,7 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -1001,8 +1001,8 @@ namespace CombatHandler.Bureaucrat
                 return false;
             }
 
-            if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return OSDebuff(spell, ref actionTarget);
+            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
 
             if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
                 && fightingTarget != null)
@@ -1013,38 +1013,6 @@ namespace CombatHandler.Bureaucrat
             }
 
             return false;
-
-            //if (InitDebuffSelection.OS == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-            //{
-            //    //This is optimal USE THIS
-            //    foreach (SimpleChar _mob in DynelManager.NPCs)
-            //    {
-            //        if (debuffOSTargetsToIgnore.Contains(_mob.Name)
-            //            || _mob.FightingTarget == null || _mob.Buffs.Contains(301844) || !_mob.IsInLineOfSight
-            //            || _mob.Buffs.Contains(NanoLine.Mezz) || _mob.Buffs.Contains(NanoLine.AOEMezz)
-            //            || _mob.DistanceFrom(DynelManager.LocalPlayer) >= 30f) 
-            //                continue;
-
-            //        if (SpellChecksOther(spell, spell.Nanoline, _mob))
-            //        {
-            //            actionTarget.Target = _mob;
-            //            actionTarget.ShouldSetTarget = true;
-            //            return true;
-            //        }
-            //    }
-
-            //    return false;
-            //}
-
-            //if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-            //    && fightingTarget != null)
-            //{
-            //    if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-            //    return CombatTargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            //}
-
-            //return false;
         }
 
         private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1421,7 +1389,7 @@ namespace CombatHandler.Bureaucrat
 
         public enum InitDebuffSelection
         {
-            None, Target, OS
+            None, Target, Area
         }
 
         public enum ProcType1Selection

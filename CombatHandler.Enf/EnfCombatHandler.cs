@@ -576,13 +576,13 @@ namespace CombatHandler.Enf
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (SingleTauntsSelection.OS == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 
+            if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 
                 && Time.NormalTime > _singleTaunt + EnfTauntDelaySingle)
             {
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.IsInLineOfSight
-                        && !debuffOSTargetsToIgnore.Contains(c.Name)
+                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && !FightingMe(c)
                         && c.Name != "Alien Heavy Patroller"
@@ -753,7 +753,7 @@ namespace CombatHandler.Enf
         }
         public enum SingleTauntsSelection
         {
-            None, Target, OS
+            None, Target, Area
         }
 
         public static void EnfTauntDelaySingle_Changed(object s, int e)

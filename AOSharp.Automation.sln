@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.MA", "CombatHandler.MA\CombatHandler.MA.csproj", "{9DE96028-B6AB-4E50-8B2D-DA8E547A8724}"
 EndProject
@@ -26,6 +26,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Trader", "CombatHandler.Trader\CombatHandler.Trader.csproj", "{CC47644B-AD9F-4E9F-A80F-37F218E3E808}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.Fixer", "CombatHandler.Fixer\CombatHandler.Fixer.csproj", "{7F784C8F-8146-429A-9AFD-B7172D359CAD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8CB8419F-3914-49C1-ABA3-78C5D26E8E48} = {8CB8419F-3914-49C1-ABA3-78C5D26E8E48}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatHandler.MP", "CombatHandler.MP\CombatHandler.MP.csproj", "{5A634F35-42FC-493E-8320-29877D9F508D}"
 EndProject

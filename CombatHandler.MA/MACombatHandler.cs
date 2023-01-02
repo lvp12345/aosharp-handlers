@@ -179,7 +179,7 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //if (window.Views.Contains(_procView)) { return; }
+                if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "MAProcsView" }, _procView);
@@ -197,7 +197,7 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //if (window.Views.Contains(_buffView)) { return; }
+                if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "MABuffsView" }, _buffView);
@@ -215,7 +215,7 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //if (window.Views.Contains(_healingView)) { return; }
+                if (window.Views.Contains(_healingView)) { return; }
 
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "MAHealingView" }, _healingView);
@@ -247,7 +247,7 @@ namespace CombatHandler.MartialArtist
             if (window != null)
             {
                 //Cannot re-use the view, as crashes client. I don't know why.
-                //if (window.Views.Contains(_tauntView)) { return; }
+                if (window.Views.Contains(_tauntView)) { return; }
 
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "MATauntsView" }, _tauntView);
@@ -489,25 +489,20 @@ namespace CombatHandler.MartialArtist
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (MAHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
                 return FindMemberWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
-            }
-            else if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindPlayerWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
-            }
 
-            return false;
+            if (HealSelection.SingleArea != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+
+            return FindPlayerWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
         }
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()
+                || MAHealPercentage == 0) { return false; }
 
             return FindMemberWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
         }
@@ -551,8 +546,6 @@ namespace CombatHandler.MartialArtist
 
         private bool ZazenStance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || !CanCast(spell) || !IsSettingEnabled("Zazen")) { return false; }
-
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
@@ -583,7 +576,7 @@ namespace CombatHandler.MartialArtist
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (SingleTauntSelection.Area == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
             {
@@ -621,7 +614,7 @@ namespace CombatHandler.MartialArtist
 
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
                 return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
@@ -638,7 +631,7 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+            if (fightingTarget == null) { return false; }
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
         }
@@ -646,7 +639,6 @@ namespace CombatHandler.MartialArtist
         private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null || !IsSettingEnabled("ShortDamage")
-                || DynelManager.LocalPlayer.NanoPercent < 30 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 1
                 || DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
@@ -693,7 +685,6 @@ namespace CombatHandler.MartialArtist
         {
             Config.CharSettings[Game.ClientInst].MAHealPercentage = e;
             MAHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 

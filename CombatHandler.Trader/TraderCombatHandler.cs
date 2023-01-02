@@ -639,7 +639,7 @@ namespace CombatHandler.Trader
 
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
                 return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
@@ -650,7 +650,7 @@ namespace CombatHandler.Trader
         }
         protected bool ImprovedQuantumUncertanity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }

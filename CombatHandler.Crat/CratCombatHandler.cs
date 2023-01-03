@@ -1091,17 +1091,6 @@ namespace CombatHandler.Bureaucrat
                     _lastTrimTime = Time.NormalTime;
                     return true;
                 }
-
-                if (pet.Type == PetType.Support
-                        && CanDivertOffTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedOffDiv[PetType.Support] = true;
-                    _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
             }
 
             return false;
@@ -1121,16 +1110,6 @@ namespace CombatHandler.Bureaucrat
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
                     petTrimmedAggDef[PetType.Attack] = true;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
-
-                if (pet.Type == PetType.Support
-                    && CanAggDefTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedAggDef[PetType.Support] = true;
                     _lastTrimTime = Time.NormalTime;
                     return true;
                 }
@@ -1287,9 +1266,7 @@ namespace CombatHandler.Bureaucrat
         {
             attackPetTrimmedAggressive = false;
             petTrimmedOffDiv[PetType.Attack] = false;
-            petTrimmedOffDiv[PetType.Support] = false;
             petTrimmedAggDef[PetType.Attack] = false;
-            petTrimmedAggDef[PetType.Support] = false;
         }
 
         private void HandleCancelBuffAuras()

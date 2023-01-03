@@ -623,6 +623,8 @@ namespace CombatHandler.Trader
         {
             if (!IsSettingEnabled("NanoHeal") || fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
+
+            //TODO: Better way of doing this?
             if (DynelManager.NPCs.Any(c => c.Health > 0
                 && c.FightingTarget?.IsPet == false
                 && Team.Members.Select(x => x.Identity).Contains(c.FightingTarget.Identity)

@@ -25,10 +25,12 @@ namespace CombatHandler.Enf
         private static Window _buffWindow;
         private static Window _tauntWindow;
         private static Window _procWindow;
+        private static Window _itemWindow;
 
         private static View _buffView;
         private static View _tauntView;
         private static View _procView;
+        private static View _itemView;     
 
         private static double _absorbs;
         private static double _challenger;
@@ -137,7 +139,7 @@ namespace CombatHandler.Enf
             EnfCycleRageDelay = Config.CharSettings[Game.ClientInst].EnfCycleRageDelay;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow };
 
         #region Callbacks
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
@@ -266,6 +268,23 @@ namespace CombatHandler.Enf
                 }
             }
         }
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
+
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "EnforcerItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "EnforcerItemsView" }, _itemView, out var container);
+                _itemWindow = container;
+            }
+        }
 
         private void HandleProcViewClick(object s, ButtonBase button)
         {
@@ -387,6 +406,11 @@ namespace CombatHandler.Enf
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
 
                 #region GlobalBuffing
 

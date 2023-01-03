@@ -896,6 +896,8 @@ namespace CombatHandler.Generic
 
         private bool SitKit(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Kits")) { return false; }
+
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
                 || (DynelManager.LocalPlayer.HealthPercent >= 66 && DynelManager.LocalPlayer.NanoPercent >= 66)) { return false; }
 
@@ -906,6 +908,8 @@ namespace CombatHandler.Generic
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
+            if (!IsSettingEnabled("Stims")) { return false; }
+
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
                 || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)

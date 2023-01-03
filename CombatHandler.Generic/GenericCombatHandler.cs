@@ -1398,12 +1398,6 @@ namespace CombatHandler.Generic
                 || (bool)mob.FightingTarget?.IsPet;
         }
 
-
-        public bool FightingMe(SimpleChar target)
-        {
-            return target.IsAttacking && target.FightingTarget.Identity == DynelManager.LocalPlayer.Identity;
-        }
-
         public static CharacterWieldedWeapon GetWieldedWeapons(SimpleChar local) => (CharacterWieldedWeapon)local.GetStat(Stat.EquippedWeapons);
 
         #endregion

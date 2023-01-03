@@ -189,9 +189,15 @@ namespace CombatHandler.Bureaucrat
 
             //Pet Trimmers
             ResetTrimmers();
+
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
-            RegisterItemProcessor(RelevantTrimmers.IncreaseAggressivenessHigh, RelevantTrimmers.IncreaseAggressivenessHigh, PetAggressiveTrimmer);
-            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
+            RegisterItemProcessor(new int[] { RelevantTrimmers.IncreaseAggressivenessLow, RelevantTrimmers.IncreaseAggressivenessHigh }, PetAggressiveTrimmer);
+            RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToOffenseLow, RelevantTrimmers.DivertEnergyToOffenseHigh }, PetDivertOffTrimmer);
+
+
+            //RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
+            //RegisterItemProcessor(RelevantTrimmers.IncreaseAggressivenessHigh, RelevantTrimmers.IncreaseAggressivenessHigh, PetAggressiveTrimmer);
+            //RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
 
             //Pet Perks
             RegisterPerkProcessor(PerkHash.Puppeteer, Puppeteer);
@@ -1066,6 +1072,7 @@ namespace CombatHandler.Bureaucrat
         #region Pets
 
         #region Trimmers
+
         protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
@@ -1383,8 +1390,11 @@ namespace CombatHandler.Bureaucrat
         {
             public const int IncreaseAggressivenessLow = 154940;
             public const int IncreaseAggressivenessHigh = 154940;
-            public const int DivertEnergyToOffense = 88378;
+            public const int DivertEnergyToOffenseLow = 88377;
+            public const int DivertEnergyToOffenseHigh = 88378;
             public const int PositiveAggressiveDefensive = 88384;
+            public const int DivertEnergyToHitpointsLow = 88381;
+            public const int DivertEnergyToHitpointsHigh = 88382;
         }
 
         public enum InitDebuffSelection

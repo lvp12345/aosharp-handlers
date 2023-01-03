@@ -54,6 +54,9 @@ namespace CombatHandler.Enf
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
+
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);

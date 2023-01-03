@@ -76,7 +76,7 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("GTH", true);
 
-            _settings.AddVariable("NanoHealTeam", false);
+            _settings.AddVariable("NanoHeal", false);
 
             _settings.AddVariable("LegShot", false);
 
@@ -621,9 +621,15 @@ namespace CombatHandler.Trader
         }
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NanoHealTeam")) { return false; }
+            if (!IsSettingEnabled("NanoHeal") || fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (DynelManager.NPCs.Any(c => c.Health > 0
+                && c.FightingTarget?.IsPet == false
+                && Team.Members.Select(x => x.Identity).Contains(c.FightingTarget.Identity)
+                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f))
+                return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+            return false;
         }
 
         #endregion

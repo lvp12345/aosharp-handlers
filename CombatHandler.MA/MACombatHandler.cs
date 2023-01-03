@@ -546,6 +546,8 @@ namespace CombatHandler.MartialArtist
 
         private bool ZazenStance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("Zazen")) { return false; }
+
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
@@ -582,10 +584,13 @@ namespace CombatHandler.MartialArtist
             {
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
+                        && c.FightingTarget?.Profession != Profession.Soldier
+                        && c.FightingTarget?.Profession != Profession.Enforcer
+                        && c.FightingTarget?.Profession != Profession.MartialArtist
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && !FightingMe(c)
+                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.Name != "Alien Heavy Patroller"
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)

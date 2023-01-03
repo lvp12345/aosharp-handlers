@@ -270,15 +270,6 @@ namespace LootManager
                     if (setbut.Clicked == null)
                         setbut.Clicked += setButtonClicked;
                 }
-
-                if (SettingsController.settingsWindow.FindView("tivminql", out TextInputView tivminql))
-                {
-                    tivminql.Text = "1";
-                }
-                if (SettingsController.settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql))
-                {
-                    tivmaxql.Text = "500";
-                }
             }
         }
 

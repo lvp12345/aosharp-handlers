@@ -1325,7 +1325,7 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
 
-            if (spell.Id == 28662 && DynelManager.LocalPlayer.Buffs.Contains(95687)) { return false; }
+            if (RelevantNanos.HpBuffs.Contains(spell.Id) && DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DoctorHPBuffs)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(nanoline, out Buff buff))
             {
@@ -1714,6 +1714,7 @@ namespace CombatHandler.Generic
 
         public static class RelevantNanos
         {
+            public static int[] HpBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
             public const int FountainOfLife = 302907;
             public const int DanceOfFools = 210159;
             public const int Limber = 210158;

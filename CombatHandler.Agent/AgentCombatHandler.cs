@@ -32,12 +32,14 @@ namespace CombatHandler.Agent
         private static Window _buffWindow;
         private static Window _debuffWindow;
         private static Window _procWindow;
+        private static Window _itemWindow;
         private static Window _falseProfWindow;
         private static Window _healingWindow;
 
         private static View _buffView;
         private static View _debuffView;
         private static View _procView;
+        private static View _itemView;
         private static View _falseProfView;
         private static View _healingView;
 
@@ -59,6 +61,9 @@ namespace CombatHandler.Agent
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
+
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("DOTA", false);
             _settings.AddVariable("EvasionDebuff", false);
@@ -145,7 +150,7 @@ namespace CombatHandler.Agent
             AgentCompleteHealPercentage = Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow };
 
         #region Callbacks
 
@@ -187,6 +192,23 @@ namespace CombatHandler.Agent
         #endregion
 
         #region Handles
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
+
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "AgentItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "AgentItemsView" }, _itemView, out var container);
+                _itemWindow = container;
+            }
+        }
 
         private void HandleProcViewClick(object s, ButtonBase button)
         {

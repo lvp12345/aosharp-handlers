@@ -32,10 +32,12 @@ namespace CombatHandler.NanoTechnician
 
         private static Window _buffWindow;
         private static Window _procWindow;
+        private static Window _itemWindow;
         private static Window _debuffWindow;
         private static Window _nukeWindow;
 
         private static View _procView;
+        private static View _itemView;
         private static View _buffView;
         private static View _debuffView;
         private static View _nukeView;
@@ -60,6 +62,9 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
+
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("CycleAbsorbs", false);
 
@@ -141,7 +146,7 @@ namespace CombatHandler.NanoTechnician
             NTIzgimmersWealthPercentage = Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage;
             NTCycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _procWindow, _debuffWindow, _nukeWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow };
 
         #region Callbacks
 
@@ -280,7 +285,23 @@ namespace CombatHandler.NanoTechnician
                 }
             }
         }
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
 
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\NTItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "NTItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "NTItemsView" }, _itemView, out var container);
+                _itemWindow = container;
+            }
+        }
         private void HandleProcViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -290,12 +311,12 @@ namespace CombatHandler.NanoTechnician
 
                 if (window.Views.Contains(_procView)) { return; }
 
-                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\NtProcsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "NtProcsView" }, _procView);
+                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\NTProcsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "NTProcsView" }, _procView);
             }
             else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
             {
-                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "NtProcsView" }, _procView, out var container);
+                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "NTProcsView" }, _procView, out var container);
                 _procWindow = container;
             }
         }
@@ -418,6 +439,12 @@ namespace CombatHandler.NanoTechnician
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))

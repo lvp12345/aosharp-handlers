@@ -63,6 +63,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\NTItemsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\NTNukesView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

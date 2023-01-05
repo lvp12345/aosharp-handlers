@@ -27,10 +27,12 @@ namespace CombatHandler.Soldier
         private static Window _buffWindow;
         private static Window _tauntWindow;
         private static Window _procWindow;
+        private static Window _itemWindow;
 
         private static View _buffView;
         private static View _tauntView;
         private static View _procView;
+        private static View _itemView;
 
         private static double _singleTauntTick;
         private static double _singleTaunt;
@@ -53,6 +55,9 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
+
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
@@ -126,7 +131,7 @@ namespace CombatHandler.Soldier
 
             SolTauntDelaySingle = Config.CharSettings[Game.ClientInst].SolTauntDelaySingle;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow };
 
         #region Callbacks
 
@@ -220,6 +225,23 @@ namespace CombatHandler.Soldier
                 }
             }
         }
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
+
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "SoldierItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "SoldierItemsView" }, _itemView, out var container);
+                _itemWindow = container;
+            }
+        }
         private void HandleProcViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -289,6 +311,12 @@ namespace CombatHandler.Soldier
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))

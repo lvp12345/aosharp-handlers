@@ -61,6 +61,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\TraderItemsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\TraderProcsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

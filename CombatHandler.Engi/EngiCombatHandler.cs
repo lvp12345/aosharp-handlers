@@ -181,6 +181,8 @@ namespace CombatHandler.Engineer
             //RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpointsHigh, RelevantTrimmers.DivertEnergyToHitpointsHigh, PetDivertHpTrimmer);
 
             PluginDirectory = pluginDir;
+
+            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
         }
 
         public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow, _itemWindow, _perkWindow };

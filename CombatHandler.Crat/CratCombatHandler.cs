@@ -47,8 +47,6 @@ namespace CombatHandler.Bureaucrat
         private static View _itemView;
         private static View _perkView;
 
-        private static int CratCycleXpPerksDelay;
-
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
 
@@ -67,7 +65,7 @@ namespace CombatHandler.Bureaucrat
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelayChangedEvent += CratCycleXpPerksDelay_Changed;
+            Config.CharSettings[Game.ClientInst].CycleXpPerksDelayChangedEvent += CycleXpPerksDelay_Changed;
 
             Game.TeleportEnded += OnZoned;
 
@@ -125,10 +123,6 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, InflationAdjustment, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, Papercut, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.Leadership, Leadership);
-            RegisterPerkProcessor(PerkHash.Governance, Governance);
-            RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
-
             //Buffs
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
@@ -166,6 +160,11 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.RkCalms, RKCalm, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
             //RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
+
+            //Perks
+            RegisterPerkProcessor(PerkHash.Leadership, Leadership);
+            RegisterPerkProcessor(PerkHash.Governance, Governance);
+            RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
 
             //Pet Buffs
             if (Spell.Find(RelevantNanos.CorporateStrategy, out Spell spell))
@@ -205,8 +204,6 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.Puppeteer, Puppeteer);
 
             PluginDirectory = pluginDir;
-
-            CratCycleXpPerksDelay = Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay;
         }
 
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };
@@ -299,9 +296,7 @@ namespace CombatHandler.Bureaucrat
                 window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
 
                 if (xpPerksInput != null)
-                {
-                    xpPerksInput.Text = $"{CratCycleXpPerksDelay}";
-                }
+                    xpPerksInput.Text = $"{Config.CharSettings[Game.ClientInst].CycleXpPerksDelay}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -311,9 +306,7 @@ namespace CombatHandler.Bureaucrat
                 container.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
 
                 if (xpPerksInput != null)
-                {
-                    xpPerksInput.Text = $"{CratCycleXpPerksDelay}";
-                }
+                    xpPerksInput.Text = $"{Config.CharSettings[Game.ClientInst].CycleXpPerksDelay}";
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -397,15 +390,9 @@ namespace CombatHandler.Bureaucrat
                 window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
 
                 if (xpPerksInput != null)
-                {
                     if (int.TryParse(xpPerksInput.Text, out int xpPerksValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay != xpPerksValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay = xpPerksValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].CycleXpPerksDelay != xpPerksValue)
+                            Config.CharSettings[Game.ClientInst].CycleXpPerksDelay = xpPerksValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
@@ -424,16 +411,17 @@ namespace CombatHandler.Bureaucrat
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
+
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
                 {
-                    calmView.Tag = SettingsController.settingsWindow;
-                    calmView.Clicked = HandleCalmingViewClick;
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
                 {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
@@ -454,17 +442,18 @@ namespace CombatHandler.Bureaucrat
                     debuffView.Clicked = HandleDebuffViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
                 {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
+                    calmView.Tag = SettingsController.settingsWindow;
+                    calmView.Clicked = HandleCalmingViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
                 {
-                    perkView.Tag = SettingsController.settingsWindow;
-                    perkView.Clicked = HandlePerkViewClick;
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
                 }
+
 
                 #region GlobalBuffing
 
@@ -640,7 +629,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Time.NormalTime > _cycleXpPerks + CratCycleXpPerksDelay)
+            if (Time.NormalTime > _cycleXpPerks + CycleXpPerksDelay)
             {
                 _cycleXpPerks = Time.NormalTime;
 
@@ -1427,13 +1416,6 @@ namespace CombatHandler.Bureaucrat
         public enum ModeSelection
         {
             None, All, Adds
-        }
-
-        public static void CratCycleXpPerksDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay = e;
-            CratCycleXpPerksDelay = e;
-            Config.Save();
         }
 
         #endregion

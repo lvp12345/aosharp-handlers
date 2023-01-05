@@ -51,7 +51,7 @@ namespace CombatHandler.Soldier
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
             Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].SolTauntDelaySingleChangedEvent += SolTauntDelaySingle_Changed;
+            Config.CharSettings[Game.ClientInst].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -134,7 +134,8 @@ namespace CombatHandler.Soldier
 
             PluginDirectory = pluginDir;
 
-            SolTauntDelaySingle = Config.CharSettings[Game.ClientInst].SolTauntDelaySingle;
+            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
+            SingleTauntDelay = Config.CharSettings[Game.ClientInst].SingleTauntDelay;
         }
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
 
@@ -210,9 +211,7 @@ namespace CombatHandler.Soldier
                 SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
-                {
-                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
-                }
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -222,9 +221,7 @@ namespace CombatHandler.Soldier
                 container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
-                {
-                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
-                }
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
             }
         }
         private void HandleTauntViewClick(object s, ButtonBase button)
@@ -242,9 +239,7 @@ namespace CombatHandler.Soldier
                 window.FindView("DelaySingleBox", out TextInputView singleInput);
 
                 if (singleInput != null)
-                {
-                    singleInput.Text = $"{SolTauntDelaySingle}";
-                }
+                    singleInput.Text = $"{SingleTauntDelay}";
             }
             else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
             {
@@ -254,9 +249,7 @@ namespace CombatHandler.Soldier
                 container.FindView("DelaySingleBox", out TextInputView singleInput);
 
                 if (singleInput != null)
-                {
-                    singleInput.Text = $"{SolTauntDelaySingle}";
-                }
+                    singleInput.Text = $"{SingleTauntDelay}";
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -308,7 +301,7 @@ namespace CombatHandler.Soldier
 
             if (window != null && window.IsValid)
             {
-                window.FindView("DelaySingleBox", out TextInputView singleInput);
+                window.FindView("SingleDelayBox", out TextInputView singleInput);
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
@@ -318,8 +311,8 @@ namespace CombatHandler.Soldier
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
                     if (int.TryParse(singleInput.Text, out int singleValue))
-                        if (Config.CharSettings[Game.ClientInst].SolTauntDelaySingle != singleValue)
-                            Config.CharSettings[Game.ClientInst].SolTauntDelaySingle = singleValue;
+                        if (Config.CharSettings[Game.ClientInst].SingleTauntDelay != singleValue)
+                            Config.CharSettings[Game.ClientInst].SingleTauntDelay = singleValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
@@ -335,18 +328,6 @@ namespace CombatHandler.Soldier
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HandleBuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
-                }
-
                 if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
                 {
                     itemView.Tag = SettingsController.settingsWindow;
@@ -359,12 +340,23 @@ namespace CombatHandler.Soldier
                     perkView.Clicked = HandlePerkViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = HandleBuffViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
                 {
                     tauntView.Tag = SettingsController.settingsWindow;
                     tauntView.Clicked = HandleTauntViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
 
                 #region GlobalBuffing
 
@@ -839,13 +831,6 @@ namespace CombatHandler.Soldier
         {
             public const int DreadlochEnduranceBooster = 267168;
             public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
-        }
-
-        public static void SolTauntDelaySingle_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].SolTauntDelaySingle = e;
-            SolTauntDelaySingle = e;
-            Config.Save();
         }
 
         #endregion

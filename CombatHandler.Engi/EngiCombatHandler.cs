@@ -251,9 +251,7 @@ namespace CombatHandler.Engineer
                 SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
-                {
                     bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
-                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -263,9 +261,7 @@ namespace CombatHandler.Engineer
                 container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
-                {
                     bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
-                }
             }
         }
         private void HandleBuffViewClick(object s, ButtonBase button)
@@ -356,6 +352,18 @@ namespace CombatHandler.Engineer
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                 {
                     petView.Tag = SettingsController.settingsWindow;
@@ -372,18 +380,6 @@ namespace CombatHandler.Engineer
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
-                {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
-                {
-                    perkView.Tag = SettingsController.settingsWindow;
-                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 #region GlobalBuffing

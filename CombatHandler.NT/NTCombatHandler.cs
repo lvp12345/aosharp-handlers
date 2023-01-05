@@ -19,11 +19,6 @@ namespace CombatHandler.NanoTechnician
     {
         private static string PluginDirectory;
 
-        private static int NTNanoAegisPercentage;
-        private static int NTNullitySpherePercentage;
-        private static int NTIzgimmersWealthPercentage;
-        private static int NTCycleAbsorbsDelay;
-
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
         private static bool ToggleDebuffing = false;
@@ -53,10 +48,10 @@ namespace CombatHandler.NanoTechnician
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentageChangedEvent += NTNanoAegisPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentageChangedEvent += NTNullitySpherePercentage_Changed;
-            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentageChangedEvent += NTIzgimmersWealthPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelayChangedEvent += NTCycleAbsorbsDelay_Changed;
+            Config.CharSettings[Game.ClientInst].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
+            Config.CharSettings[Game.ClientInst].NanoAegisPercentageChangedEvent += NanoAegisPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].NullitySpherePercentageChangedEvent += NullitySpherePercentage_Changed;
+            Config.CharSettings[Game.ClientInst].IzgimmersWealthPercentageChangedEvent += IzgimmersWealthPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -143,10 +138,10 @@ namespace CombatHandler.NanoTechnician
 
             PluginDirectory = pluginDir;
 
-            NTNanoAegisPercentage = Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage;
-            NTNullitySpherePercentage = Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage;
-            NTIzgimmersWealthPercentage = Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage;
-            NTCycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay;
+            CycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay;
+            NanoAegisPercentage = Config.CharSettings[Game.ClientInst].NanoAegisPercentage;
+            NullitySpherePercentage = Config.CharSettings[Game.ClientInst].NullitySpherePercentage;
+            IzgimmersWealthPercentage = Config.CharSettings[Game.ClientInst].IzgimmersWealthPercentage;
         }
         public Window[] _windows => new Window[] { _buffWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow, _perkWindow };
 
@@ -258,21 +253,16 @@ namespace CombatHandler.NanoTechnician
                 window.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                 if (absorbsInput != null)
-                {
-                    absorbsInput.Text = $"{NTCycleAbsorbsDelay}";
-                }
+                    absorbsInput.Text = $"{CycleAbsorbsDelay}";
+
                 if (nanoAegisInput != null)
-                {
-                    nanoAegisInput.Text = $"{NTNanoAegisPercentage}";
-                }
+                    nanoAegisInput.Text = $"{NanoAegisPercentage}";
+
                 if (nullSphereInput != null)
-                {
-                    nullSphereInput.Text = $"{NTNullitySpherePercentage}";
-                }
+                    nullSphereInput.Text = $"{NullitySpherePercentage}";
+
                 if (izWealthInput != null)
-                {
-                    izWealthInput.Text = $"{NTIzgimmersWealthPercentage}";
-                }
+                    izWealthInput.Text = $"{IzgimmersWealthPercentage}";
             }
             else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
@@ -285,21 +275,16 @@ namespace CombatHandler.NanoTechnician
                 container.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                 if (absorbsInput != null)
-                {
-                    absorbsInput.Text = $"{NTCycleAbsorbsDelay}";
-                }
+                    absorbsInput.Text = $"{CycleAbsorbsDelay}";
+
                 if (nanoAegisInput != null)
-                {
-                    nanoAegisInput.Text = $"{NTNanoAegisPercentage}";
-                }
+                    nanoAegisInput.Text = $"{NanoAegisPercentage}";
+
                 if (nullSphereInput != null)
-                {
-                    nullSphereInput.Text = $"{NTNullitySpherePercentage}";
-                }
+                    nullSphereInput.Text = $"{NullitySpherePercentage}";
+
                 if (izWealthInput != null)
-                {
-                    izWealthInput.Text = $"{NTIzgimmersWealthPercentage}";
-                }
+                    izWealthInput.Text = $"{IzgimmersWealthPercentage}";
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -362,101 +347,34 @@ namespace CombatHandler.NanoTechnician
 
             if (window != null && window.IsValid)
             {
-                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
-                window.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
-                window.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
-                window.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
+                window.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
+                window.FindView("NanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                window.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
+                window.FindView("IzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                 if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
-                {
                     if (int.TryParse(absorbsInput.Text, out int absorbsValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay != absorbsValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = absorbsValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay != absorbsValue)
+                            Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay = absorbsValue;
+
                 if (nanoAegisInput != null && !string.IsNullOrEmpty(nanoAegisInput.Text))
-                {
                     if (int.TryParse(nanoAegisInput.Text, out int nanoAegisValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage != nanoAegisValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = nanoAegisValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].NanoAegisPercentage != nanoAegisValue)
+                            Config.CharSettings[Game.ClientInst].NanoAegisPercentage = nanoAegisValue;
+
                 if (nullSphereInput != null && !string.IsNullOrEmpty(nullSphereInput.Text))
-                {
                     if (int.TryParse(nullSphereInput.Text, out int nullSphereValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage != nullSphereValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = nullSphereValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].NullitySpherePercentage != nullSphereValue)
+                            Config.CharSettings[Game.ClientInst].NullitySpherePercentage = nullSphereValue;
+
                 if (izWealthInput != null && !string.IsNullOrEmpty(izWealthInput.Text))
-                {
                     if (int.TryParse(izWealthInput.Text, out int izWealthValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage != izWealthValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = izWealthValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].IzgimmersWealthPercentage != izWealthValue)
+                            Config.CharSettings[Game.ClientInst].IzgimmersWealthPercentage = izWealthValue;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                //SettingsController.settingsWindow.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
-                //SettingsController.settingsWindow.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
-                //SettingsController.settingsWindow.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
-
-                //if (nanoAegisInput != null && !string.IsNullOrEmpty(nanoAegisInput.Text))
-                //{
-                //    if (int.TryParse(nanoAegisInput.Text, out int nanoAegisValue))
-                //    {
-                //        if (Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage != nanoAegisValue)
-                //        {
-                //            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = nanoAegisValue;
-                //        }
-                //    }
-                //}
-                //if (nullSphereInput != null && !string.IsNullOrEmpty(nullSphereInput.Text))
-                //{
-                //    if (int.TryParse(nullSphereInput.Text, out int nullSphereValue))
-                //    {
-                //        if (Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage != nullSphereValue)
-                //        {
-                //            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = nullSphereValue;
-                //        }
-                //    }
-                //}
-                //if (izWealthInput != null && !string.IsNullOrEmpty(izWealthInput.Text))
-                //{
-                //    if (int.TryParse(izWealthInput.Text, out int izWealthValue))
-                //    {
-                //        if (Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage != izWealthValue)
-                //        {
-                //            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = izWealthValue;
-                //        }
-                //    }
-                //}
-
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HandleBuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
-                }
 
                 if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
                 {
@@ -470,16 +388,28 @@ namespace CombatHandler.NanoTechnician
                     perkView.Clicked = HandlePerkViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("NukesView", out Button nukeView))
+                {
+                    nukeView.Tag = SettingsController.settingsWindow;
+                    nukeView.Clicked = HandleNukesViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = HandleBuffViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
                 {
                     debuffView.Tag = SettingsController.settingsWindow;
                     debuffView.Clicked = HandleDebuffsViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("NukesView", out Button nukeView))
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
                 {
-                    nukeView.Tag = SettingsController.settingsWindow;
-                    nukeView.Clicked = HandleNukesViewClick;
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
                 }
 
 
@@ -758,21 +688,21 @@ namespace CombatHandler.NanoTechnician
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-            return DynelManager.LocalPlayer.HealthPercent <= NTNanoAegisPercentage && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
+            return DynelManager.LocalPlayer.HealthPercent <= NanoAegisPercentage && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-            return DynelManager.LocalPlayer.HealthPercent <= NTNullitySpherePercentage && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
+            return DynelManager.LocalPlayer.HealthPercent <= NullitySpherePercentage && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
         }
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
 
-            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + NTCycleAbsorbsDelay
+            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + CycleAbsorbsDelay
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
                 if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
@@ -788,40 +718,12 @@ namespace CombatHandler.NanoTechnician
         {
             if (!IsSettingEnabled("Buffing") || fightingTarget == null || !CanCast(spell)) { return false; }
 
-            return DynelManager.LocalPlayer.NanoPercent <= NTIzgimmersWealthPercentage;
+            return DynelManager.LocalPlayer.NanoPercent <= IzgimmersWealthPercentage;
         }
 
         #endregion
 
         #region Misc
-
-        public static void NTNanoAegisPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NTNanoAegisPercentage = e;
-            NTNanoAegisPercentage = e;
-            Config.Save();
-        }
-
-        public static void NTNullitySpherePercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NTNullitySpherePercentage = e;
-            NTNullitySpherePercentage = e;
-            Config.Save();
-        }
-
-        public static void NTIzgimmersWealthPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage = e;
-            NTIzgimmersWealthPercentage = e;
-            Config.Save();
-        }
-
-        public static void NTCycleAbsorbsDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].NTCycleAbsorbsDelay = e;
-            NTCycleAbsorbsDelay = e;
-            Config.Save();
-        }
 
         public enum ProcType1Selection
         {

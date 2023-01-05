@@ -19,45 +19,31 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
         [JsonIgnore]
-        public int DocHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].DocHealPercentage : 90;
+        public int HealthDrainPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].HealthDrainPercentage : 90;
         [JsonIgnore]
-        public int DocCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].DocCompleteHealPercentage : 20;
+        public int HealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].HealPercentage : 90;
         [JsonIgnore]
-        public int TraderHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].TraderHealPercentage : 90;
+        public int CompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CompleteHealPercentage : 20;
         [JsonIgnore]
-        public int TraderHealthDrainPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].TraderHealthDrainPercentage : 90;
+        public int SingleTauntDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SingleTauntDelay : 1;
         [JsonIgnore]
-        public int AgentHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AgentHealPercentage : 90;
+        public int MongoTauntDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].MongoTauntDelay : 1;
         [JsonIgnore]
-        public int AgentCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AgentCompleteHealPercentage : 20;
+        public int CycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleAbsorbsDelay : 1;
         [JsonIgnore]
-        public int MAHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].MAHealPercentage : 90;
+        public int CycleChallengerDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleChallengerDelay : 1;
         [JsonIgnore]
-        public int AdvHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AdvHealPercentage : 90;
+        public int CycleRageDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleRageDelay : 1;
         [JsonIgnore]
-        public int AdvCompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].AdvCompleteHealPercentage : 20;
+        public int CycleXpPerksDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleXpPerksDelay : 1;
         [JsonIgnore]
-        public int EnfTauntDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfTauntDelaySingle : 1;
+        public int BioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BioCocoonPercentage : 65;
         [JsonIgnore]
-        public int EnfTauntDelayArea => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfTauntDelayArea : 1;
+        public int NTNanoAegisPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NanoAegisPercentage : 70;
         [JsonIgnore]
-        public int EnfCycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay : 1;
+        public int NTNullitySpherePercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NullitySpherePercentage : 35;
         [JsonIgnore]
-        public int EnfCycleChallengerDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleChallengerDelay : 1;
-        [JsonIgnore]
-        public int EnfCycleRageDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EnfCycleRageDelay : 1;
-        [JsonIgnore]
-        public int CratCycleXpPerksDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CratCycleXpPerksDelay : 1;
-        [JsonIgnore]
-        public int SolTauntDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SolTauntDelaySingle : 1;
-        [JsonIgnore]
-        public int EngiBioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BioCocoonPercentage : 65;
-        [JsonIgnore]
-        public int NTNanoAegisPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTNanoAegisPercentage : 70;
-        [JsonIgnore]
-        public int NTNullitySpherePercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTNullitySpherePercentage : 35;
-        [JsonIgnore]
-        public int NTIzgimmersWealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTIzgimmersWealthPercentage : 25;
+        public int NTIzgimmersWealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IzgimmersWealthPercentage : 25;
 
         #endregion
 
@@ -114,7 +100,6 @@ namespace CombatHandler.Generic
         public event EventHandler<int> IPCChannelChangedEvent;
         private int _ipcChannel = 0;
 
-        //Breaking out auto-property
         public int IPCChannel {
             get
             {
@@ -129,275 +114,158 @@ namespace CombatHandler.Generic
                 }
             }
         }
-        public event EventHandler<int> TraderHealPercentageChangedEvent;
-        private int _traderHealPercentage = 90;
-        public int TraderHealPercentage
+
+        public event EventHandler<int> HealthDrainPercentageChangedEvent;
+        private int _healthDrainPercentage = 90;
+        public int HealthDrainPercentage
         {
             get
             {
-                return _traderHealPercentage;
+                return _healthDrainPercentage;
             }
             set
             {
-                if (_traderHealPercentage != value)
+                if (_healthDrainPercentage != value)
                 {
-                    _traderHealPercentage = value;
-                    TraderHealPercentageChangedEvent?.Invoke(this, value);
+                    _healthDrainPercentage = value;
+                    HealthDrainPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> TraderHealthDrainPercentageChangedEvent;
-        private int _traderHealthDrainPercentage = 90;
-        public int TraderHealthDrainPercentage
+        public event EventHandler<int> HealPercentageChangedEvent;
+        private int _healPercentage = 90;
+        public int HealPercentage
         {
             get
             {
-                return _traderHealthDrainPercentage;
+                return _healPercentage;
             }
             set
             {
-                if (_traderHealthDrainPercentage != value)
+                if (_healPercentage != value)
                 {
-                    _traderHealthDrainPercentage = value;
-                    TraderHealthDrainPercentageChangedEvent?.Invoke(this, value);
+                    _healPercentage = value;
+                    HealPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> MAHealPercentageChangedEvent;
-        private int _maHealPercentage = 90;
-        public int MAHealPercentage
+        public event EventHandler<int> CompleteHealPercentageChangedEvent;
+        private int _completeHealPercentage = 20;
+        public int CompleteHealPercentage
         {
             get
             {
-                return _maHealPercentage;
+                return _completeHealPercentage;
             }
             set
             {
-                if (_maHealPercentage != value)
+                if (_completeHealPercentage != value)
                 {
-                    _maHealPercentage = value;
-                    MAHealPercentageChangedEvent?.Invoke(this, value);
+                    _completeHealPercentage = value;
+                    CompleteHealPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> DocHealPercentageChangedEvent;
-        private int _docHealPercentage = 90;
-        public int DocHealPercentage
+
+        public event EventHandler<int> MongoTauntDelayChangedEvent;
+        private int _mongoTauntDelay = 1;
+        public int MongoTauntDelay
         {
             get
             {
-                return _docHealPercentage;
+                return _mongoTauntDelay;
             }
             set
             {
-                if (_docHealPercentage != value)
+                if (_mongoTauntDelay != value)
                 {
-                    _docHealPercentage = value;
-                    DocHealPercentageChangedEvent?.Invoke(this, value);
+                    _mongoTauntDelay = value;
+                    MongoTauntDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> DocCompleteHealPercentageChangedEvent;
-        private int _docCompleteHealPercentage = 20;
-        public int DocCompleteHealPercentage
+        public event EventHandler<int> SingleTauntDelayChangedEvent;
+        private int _SingleTauntDelay = 1;
+        public int SingleTauntDelay
         {
             get
             {
-                return _docCompleteHealPercentage;
+                return _SingleTauntDelay;
             }
             set
             {
-                if (_docCompleteHealPercentage != value)
+                if (_SingleTauntDelay != value)
                 {
-                    _docCompleteHealPercentage = value;
-                    DocCompleteHealPercentageChangedEvent?.Invoke(this, value);
+                    _SingleTauntDelay = value;
+                    SingleTauntDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> AgentHealPercentageChangedEvent;
-        private int _agentHealPercentage = 90;
-        public int AgentHealPercentage
+        public event EventHandler<int> CycleAbsorbsDelayChangedEvent;
+        private int _cycleAbsorbsDelay = 1;
+        public int CycleAbsorbsDelay
         {
             get
             {
-                return _agentHealPercentage;
+                return _cycleAbsorbsDelay;
             }
             set
             {
-                if (_agentHealPercentage != value)
+                if (_cycleAbsorbsDelay != value)
                 {
-                    _agentHealPercentage = value;
-                    AgentHealPercentageChangedEvent?.Invoke(this, value);
+                    _cycleAbsorbsDelay = value;
+                    CycleAbsorbsDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> AgentCompleteHealPercentageChangedEvent;
-        private int _agentCompleteHealPercentage = 20;
-        public int AgentCompleteHealPercentage
+        public event EventHandler<int> CycleChallengerDelayChangedEvent;
+        private int _cycleChallengerDelay = 1;
+        public int CycleChallengerDelay
         {
             get
             {
-                return _agentCompleteHealPercentage;
+                return _cycleChallengerDelay;
             }
             set
             {
-                if (_agentCompleteHealPercentage != value)
+                if (_cycleChallengerDelay != value)
                 {
-                    _agentCompleteHealPercentage = value;
-                    AgentCompleteHealPercentageChangedEvent?.Invoke(this, value);
+                    _cycleChallengerDelay = value;
+                    CycleChallengerDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> AdvHealPercentageChangedEvent;
-        private int _advHealPercentage = 90;
-        public int AdvHealPercentage
+        public event EventHandler<int> CycleRageDelayChangedEvent;
+        private int _cycleRageDelay = 1;
+        public int CycleRageDelay
         {
             get
             {
-                return _advHealPercentage;
+                return _cycleRageDelay;
             }
             set
             {
-                if (_advHealPercentage != value)
+                if (_cycleRageDelay != value)
                 {
-                    _advHealPercentage = value;
-                    AdvHealPercentageChangedEvent?.Invoke(this, value);
+                    _cycleRageDelay = value;
+                    CycleRageDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> AdvCompleteHealPercentageChangedEvent;
-        private int _advCompleteHealPercentage = 20;
-        public int AdvCompleteHealPercentage
+        public event EventHandler<int> CycleXpPerksDelayChangedEvent;
+        private int _cycleXpPerksDelay = 1;
+        public int CycleXpPerksDelay
         {
             get
             {
-                return _advCompleteHealPercentage;
+                return _cycleXpPerksDelay;
             }
             set
             {
-                if (_advCompleteHealPercentage != value)
+                if (_cycleXpPerksDelay != value)
                 {
-                    _advCompleteHealPercentage = value;
-                    AdvCompleteHealPercentageChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> EnfTauntDelayAreaChangedEvent;
-        private int _enfTauntDelayArea = 1;
-        public int EnfTauntDelayArea
-        {
-            get
-            {
-                return _enfTauntDelayArea;
-            }
-            set
-            {
-                if (_enfTauntDelayArea != value)
-                {
-                    _enfTauntDelayArea = value;
-                    EnfTauntDelayAreaChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> EnfTauntDelaySingleChangedEvent;
-        private int _enfTauntDelaySingle = 1;
-        public int EnfTauntDelaySingle
-        {
-            get
-            {
-                return _enfTauntDelaySingle;
-            }
-            set
-            {
-                if (_enfTauntDelaySingle != value)
-                {
-                    _enfTauntDelaySingle = value;
-                    EnfTauntDelaySingleChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> EnfCycleAbsorbsDelayChangedEvent;
-        private int _enfCycleAbsorbsDelay = 1;
-        public int EnfCycleAbsorbsDelay
-        {
-            get
-            {
-                return _enfCycleAbsorbsDelay;
-            }
-            set
-            {
-                if (_enfCycleAbsorbsDelay != value)
-                {
-                    _enfCycleAbsorbsDelay = value;
-                    EnfCycleAbsorbsDelayChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> EnfCycleChallengerDelayChangedEvent;
-        private int _enfCycleChallengerDelay = 1;
-        public int EnfCycleChallengerDelay
-        {
-            get
-            {
-                return _enfCycleChallengerDelay;
-            }
-            set
-            {
-                if (_enfCycleChallengerDelay != value)
-                {
-                    _enfCycleChallengerDelay = value;
-                    EnfCycleChallengerDelayChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> EnfCycleRageDelayChangedEvent;
-        private int _enfCycleRageDelay = 1;
-        public int EnfCycleRageDelay
-        {
-            get
-            {
-                return _enfCycleRageDelay;
-            }
-            set
-            {
-                if (_enfCycleRageDelay != value)
-                {
-                    _enfCycleRageDelay = value;
-                    EnfCycleRageDelayChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> CratCycleXpPerksDelayChangedEvent;
-        private int _cratCycleXpPerksDelay = 1;
-        public int CratCycleXpPerksDelay
-        {
-            get
-            {
-                return _cratCycleXpPerksDelay;
-            }
-            set
-            {
-                if (_cratCycleXpPerksDelay != value)
-                {
-                    _cratCycleXpPerksDelay = value;
-                    CratCycleXpPerksDelayChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> SolTauntDelaySingleChangedEvent;
-        private int _solTauntDelaySingle = 1;
-        public int SolTauntDelaySingle
-        {
-            get
-            {
-                return _solTauntDelaySingle;
-            }
-            set
-            {
-                if (_solTauntDelaySingle != value)
-                {
-                    _solTauntDelaySingle = value;
-                    SolTauntDelaySingleChangedEvent?.Invoke(this, value);
+                    _cycleXpPerksDelay = value;
+                    CycleXpPerksDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }
@@ -418,71 +286,54 @@ namespace CombatHandler.Generic
                 }
             }
         }
-        public event EventHandler<int> NTNanoAegisPercentageChangedEvent;
-        private int _ntNanoAegisPercentage = 70;
-        public int NTNanoAegisPercentage
+        public event EventHandler<int> NanoAegisPercentageChangedEvent;
+        private int _nanoAegisPercentage = 70;
+        public int NanoAegisPercentage
         {
             get
             {
-                return _ntNanoAegisPercentage;
+                return _nanoAegisPercentage;
             }
             set
             {
-                if (_ntNanoAegisPercentage != value)
+                if (_nanoAegisPercentage != value)
                 {
-                    _ntNanoAegisPercentage = value;
-                    NTNanoAegisPercentageChangedEvent?.Invoke(this, value);
+                    _nanoAegisPercentage = value;
+                    NanoAegisPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> NTNullitySpherePercentageChangedEvent;
-        private int _ntNullitySpherePercentage = 35;
-        public int NTNullitySpherePercentage
+        public event EventHandler<int> NullitySpherePercentageChangedEvent;
+        private int _nullitySpherePercentage = 35;
+        public int NullitySpherePercentage
         {
             get
             {
-                return _ntNullitySpherePercentage;
+                return _nullitySpherePercentage;
             }
             set
             {
-                if (_ntNullitySpherePercentage != value)
+                if (_nullitySpherePercentage != value)
                 {
-                    _ntNullitySpherePercentage = value;
-                    NTNullitySpherePercentageChangedEvent?.Invoke(this, value);
+                    _nullitySpherePercentage = value;
+                    NullitySpherePercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }
-        public event EventHandler<int> NTIzgimmersWealthPercentageChangedEvent;
-        private int _ntIzgimmersWealthPercentage = 35;
-        public int NTIzgimmersWealthPercentage
+        public event EventHandler<int> IzgimmersWealthPercentageChangedEvent;
+        private int _izgimmersWealthPercentage = 35;
+        public int IzgimmersWealthPercentage
         {
             get
             {
-                return _ntIzgimmersWealthPercentage;
+                return _izgimmersWealthPercentage;
             }
             set
             {
-                if (_ntIzgimmersWealthPercentage != value)
+                if (_izgimmersWealthPercentage != value)
                 {
-                    _ntIzgimmersWealthPercentage = value;
-                    NTIzgimmersWealthPercentageChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> NTCycleAbsorbsDelayChangedEvent;
-        private int _ntCycleAbsorbsDelay = 15;
-        public int NTCycleAbsorbsDelay
-        {
-            get
-            {
-                return _ntCycleAbsorbsDelay;
-            }
-            set
-            {
-                if (_ntCycleAbsorbsDelay != value)
-                {
-                    _ntCycleAbsorbsDelay = value;
-                    NTCycleAbsorbsDelayChangedEvent?.Invoke(this, value);
+                    _izgimmersWealthPercentage = value;
+                    IzgimmersWealthPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

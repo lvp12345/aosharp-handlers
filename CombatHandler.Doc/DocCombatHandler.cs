@@ -33,12 +33,14 @@ namespace CombatHandler.Doctor
         private static Window _healingWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _debuffView;
         private static View _healingView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private static bool _asyncToggle = false;
 
@@ -141,7 +143,7 @@ namespace CombatHandler.Doctor
             DocCompleteHealPercentage = Config.CharSettings[Game.ClientInst].DocCompleteHealPercentage;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -201,7 +203,22 @@ namespace CombatHandler.Doctor
                 _buffWindow = container;
             }
         }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
 
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\DocPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "DocPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "DocPerksView" }, _perkView, out var container);
+                _perkWindow = container;
+            }
+        }
         private void HandleHealingViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -373,6 +390,12 @@ namespace CombatHandler.Doctor
                 {
                     itemView.Tag = SettingsController.settingsWindow;
                     itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))

@@ -33,12 +33,14 @@ namespace CombatHandler.Adventurer
         private static Window _buffWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _morphView;
         private static View _healingView;
         private static View _buffView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private static double _ncuUpdateTime;
 
@@ -128,7 +130,7 @@ namespace CombatHandler.Adventurer
 
         }
 
-        public Window[] _windows => new Window[] { _morphWindow, _healingWindow, _procWindow, _buffWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _morphWindow, _healingWindow, _procWindow, _buffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -232,6 +234,22 @@ namespace CombatHandler.Adventurer
                 {
                     completeHealInput.Text = $"{AdvCompleteHealPercentage}";
                 }
+            }
+        }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
+
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "AdvPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "AdvPerksView" }, _perkView, out var container);
+                _perkWindow = container;
             }
         }
 
@@ -385,6 +403,12 @@ namespace CombatHandler.Adventurer
                 {
                     itemView.Tag = SettingsController.settingsWindow;
                     itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 #region GlobalBuffing

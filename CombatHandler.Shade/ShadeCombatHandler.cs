@@ -31,11 +31,13 @@ namespace CombatHandler.Shade
         private static Window _debuffWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _debuffView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private static double _ncuUpdateTime;
 
@@ -137,7 +139,7 @@ namespace CombatHandler.Shade
             PluginDirectory = pluginDir;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _procWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -211,6 +213,22 @@ namespace CombatHandler.Shade
             {
                 SettingsController.CreateSettingsTab(_debuffWindow, PluginDir, new WindowOptions() { Name = "Debuffs", XmlViewName = "ShadeDebuffsView" }, _debuffView, out var container);
                 _debuffWindow = container;
+            }
+        }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
+
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\ShadePerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "ShadePerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "ShadePerksView" }, _perkView, out var container);
+                _perkWindow = container;
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -293,6 +311,12 @@ namespace CombatHandler.Shade
                 {
                     itemView.Tag = SettingsController.settingsWindow;
                     itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 #region GlobalBuffing

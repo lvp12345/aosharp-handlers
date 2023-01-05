@@ -207,6 +207,8 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.Puppeteer, Puppeteer);
 
             PluginDirectory = pluginDir;
+
+            CycleXpPerksDelay = Config.CharSettings[Game.ClientInst].CycleXpPerksDelay;
         }
 
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };

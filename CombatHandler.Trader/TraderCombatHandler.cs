@@ -19,9 +19,6 @@ namespace CombatHandler.Trader
     {
         private static string PluginDirectory;
 
-        private static int TraderHealPercentage;
-        private static int TraderHealthDrainPercentage;
-
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
         private static bool ToggleDebuffing = false;
@@ -140,7 +137,7 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
 
             //Team Nano heal (Rouse Outfit nanoline)
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.GrandThefts, GrandTheftHumidity, CombatActionPriority.High);
@@ -256,13 +253,10 @@ namespace CombatHandler.Trader
                 window.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
 
                 if (healInput != null)
-                {
-                    healInput.Text = $"{TraderHealPercentage}";
-                }
+                    healInput.Text = $"{HealPercentage}";
+
                 if (healthDrainInput != null)
-                {
-                    healthDrainInput.Text = $"{TraderHealthDrainPercentage}";
-                }
+                    healthDrainInput.Text = $"{HealthDrainPercentage}";
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
             {
@@ -273,13 +267,10 @@ namespace CombatHandler.Trader
                 container.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
 
                 if (healInput != null)
-                {
-                    healInput.Text = $"{TraderHealPercentage}";
-                }
+                    healInput.Text = $"{HealPercentage}";
+
                 if (healthDrainInput != null)
-                {
-                    healthDrainInput.Text = $"{TraderHealthDrainPercentage}";
-                }
+                    healthDrainInput.Text = $"{HealthDrainPercentage}";
             }
         }
         private void HandlePerkViewClick(object s, ButtonBase button)
@@ -625,13 +616,13 @@ namespace CombatHandler.Trader
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (TraderHealPercentage == 0) { return false; }
+            if (HealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(TraderHealPercentage, spell, ref actionTarget);
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
             if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindPlayerWithHealthBelow(TraderHealPercentage, spell, ref actionTarget);
+                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
             if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
             {
@@ -647,12 +638,12 @@ namespace CombatHandler.Trader
                     if (dyingTeamMember.Count >= 4) { return false; }
                 }
 
-                return FindMemberWithHealthBelow(TraderHealPercentage, spell, ref actionTarget);
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
 
-            if (fightingTarget == null || TraderHealthDrainPercentage == 0 || !IsSettingEnabled("HealthDrain")) { return false; }
+            if (fightingTarget == null || HealthDrainPercentage == 0 || !IsSettingEnabled("HealthDrain")) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= TraderHealthDrainPercentage)
+            if (DynelManager.LocalPlayer.HealthPercent <= HealthDrainPercentage)
             {
                 if (SpellChecksOther(spell, spell.Nanoline, fightingTarget))
                 {
@@ -668,11 +659,8 @@ namespace CombatHandler.Trader
         {
             if (!IsSettingEnabled("NanoHeal") || fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
-
-            //TODO: Better way of doing this?
             if (DynelManager.NPCs.Any(c => c.Health > 0
-                && c.FightingTarget?.IsPet == false
-                && Team.Members.Select(x => x.Identity).Contains(c.FightingTarget.Identity)
+                && AttackingTeam(c)
                 && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f))
                 return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 

@@ -392,7 +392,7 @@ namespace CombatHandler.Bureaucrat
 
             if (window != null && window.IsValid)
             {
-                window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
+                window.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
 
                 if (xpPerksInput != null)
                     if (int.TryParse(xpPerksInput.Text, out int xpPerksValue))

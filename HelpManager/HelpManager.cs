@@ -181,14 +181,11 @@ namespace HelpManager
         public static void IPCChannel_Changed(object s, int e)
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
-
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         public static void SitPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].SitPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
 

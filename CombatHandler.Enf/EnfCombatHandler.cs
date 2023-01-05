@@ -56,12 +56,12 @@ namespace CombatHandler.Enf
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
-
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
+
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RagingBlow);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.ViolationBuffer);

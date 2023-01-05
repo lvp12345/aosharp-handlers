@@ -30,11 +30,13 @@ namespace CombatHandler.Trader
         private static Window _debuffWindow;
         private static Window _healingWindow;
         private static Window _procWindow;
+        private static Window _itemWindow;
 
-        private View _buffView;
-        private View _debuffView;
-        private View _healingView;
-        private View _procView;
+        private static View _buffView;
+        private static View _debuffView;
+        private static View _healingView;
+        private static View _procView;
+        private static View _itemView;
 
         private static SimpleChar _drainTarget;
 
@@ -59,6 +61,9 @@ namespace CombatHandler.Trader
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
+
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("DamageDrain", true);
             _settings.AddVariable("HealthDrain", false);
@@ -154,7 +159,7 @@ namespace CombatHandler.Trader
             TraderHealPercentage = Config.CharSettings[Game.ClientInst].TraderHealPercentage;
             TraderHealthDrainPercentage = Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage;
         }
-        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _debuffWindow, _procWindow };
+        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _debuffWindow, _procWindow, _itemWindow };
 
         #region Callbacks
 
@@ -275,6 +280,23 @@ namespace CombatHandler.Trader
                 }
             }
         }
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
+
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "TraderItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "TraderItemsView" }, _itemView, out var container);
+                _itemWindow = container;
+            }
+        }
         private void HandleProcViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -375,6 +397,12 @@ namespace CombatHandler.Trader
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
                 }
 
 

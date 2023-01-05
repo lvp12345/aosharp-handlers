@@ -933,7 +933,7 @@ namespace CombatHandler.Engineer
                 if (pet.Character == null) continue;
 
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && pet.Type == PetType.Attack)
+                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
                 {
                     if (spell.IsReady)
                         spell.Cast(pet.Character, true);

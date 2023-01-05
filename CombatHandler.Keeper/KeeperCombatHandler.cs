@@ -87,6 +87,9 @@ namespace CombatHandler.Keeper
             //Anti-Fear
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), RecastAntiFear);
 
+            //Perks
+            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
+
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder().OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._2HEdgedBuff).OrderByStackingOrder(), GenericBuff);
@@ -174,8 +177,6 @@ namespace CombatHandler.Keeper
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperProcsView.xml");
@@ -196,11 +197,25 @@ namespace CombatHandler.Keeper
 
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "KeeperPerksView" }, _perkView);
+
+                SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                {
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "KeeperPerksView" }, _perkView, out var container);
                 _perkWindow = container;
+
+                container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                {
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
             }
         }
 
@@ -209,8 +224,8 @@ namespace CombatHandler.Keeper
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                if (window.Views.Contains(_buffView)) { return; }
+
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "KeeperBuffsView" }, _buffView);
             }
@@ -229,6 +244,18 @@ namespace CombatHandler.Keeper
                 return;
 
             base.OnUpdate(deltaTime);
+
+            var window = SettingsController.FindValidWindow(_windows);
+
+            if (window != null && window.IsValid)
+            {
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
+            }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {

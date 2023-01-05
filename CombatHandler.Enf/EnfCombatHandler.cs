@@ -99,6 +99,7 @@ namespace CombatHandler.Enf
 
             //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
+            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
@@ -314,11 +315,25 @@ namespace CombatHandler.Enf
 
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "EnforcerPerksView" }, _perkView);
+
+                SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                {
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "EnforcerPerksView" }, _perkView, out var container);
                 _perkWindow = container;
+
+                container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                {
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
             }
         }
 
@@ -340,6 +355,12 @@ namespace CombatHandler.Enf
                 window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
                 window.FindView("DelayChallengerBox", out TextInputView challengerInput);
                 window.FindView("DelayRageBox", out TextInputView rageInput);
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
                 {

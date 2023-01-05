@@ -35,6 +35,7 @@ namespace CombatHandler.Agent
         private static Window _itemWindow;
         private static Window _falseProfWindow;
         private static Window _healingWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -42,6 +43,7 @@ namespace CombatHandler.Agent
         private static View _itemView;
         private static View _falseProfView;
         private static View _healingView;
+        private static View _perkView;
 
         private static double _ncuUpdateTime;
 
@@ -150,7 +152,7 @@ namespace CombatHandler.Agent
             AgentCompleteHealPercentage = Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -207,6 +209,23 @@ namespace CombatHandler.Agent
             {
                 SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "AgentItemsView" }, _itemView, out var container);
                 _itemWindow = container;
+            }
+        }
+
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
+
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "AgentPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "AgentPerksView" }, _perkView, out var container);
+                _perkWindow = container;
             }
         }
 
@@ -402,6 +421,18 @@ namespace CombatHandler.Agent
                 {
                     falseProfView.Tag = SettingsController.settingsWindow;
                     falseProfView.Clicked = HandleFalseProfViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 #region GlobalBuffing

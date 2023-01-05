@@ -43,10 +43,14 @@ namespace CombatHandler.Engineer
         private static Window _petWindow;
         private static Window _buffWindow;
         private static Window _procWindow;
+        private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _petView;
         private static View _procView;
+        private static View _itemView;
+        private static View _perkView;
 
         private double _lastTrimTime = 0;
 
@@ -181,7 +185,7 @@ namespace CombatHandler.Engineer
             EngiBioCocoonPercentage = Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage;
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow };
+        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -239,7 +243,22 @@ namespace CombatHandler.Engineer
                 _petWindow = container;
             }
         }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
 
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "EngineerPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "EngineerPerksView" }, _perkView, out var container);
+                _perkWindow = container;
+            }
+        }
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -254,6 +273,24 @@ namespace CombatHandler.Engineer
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "EngineerBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+            }
+        }
+
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
+
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "EngineerItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "EngineerItemsView" }, _itemView, out var container);
+                _itemWindow = container;
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -340,6 +377,18 @@ namespace CombatHandler.Engineer
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 #region GlobalBuffing

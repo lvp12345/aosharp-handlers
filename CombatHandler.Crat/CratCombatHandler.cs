@@ -36,6 +36,7 @@ namespace CombatHandler.Bureaucrat
         private static Window _petWindow;
         private static Window _calmingWindow;
         private static Window _procWindow;
+        private static Window _itemWindow;
         private static Window _perkWindow;
 
         private static View _buffView;
@@ -43,6 +44,7 @@ namespace CombatHandler.Bureaucrat
         private static View _calmView;
         private static View _petView;
         private static View _procView;
+        private static View _itemView;
         private static View _perkView;
 
         private static int CratCycleXpPerksDelay;
@@ -207,7 +209,7 @@ namespace CombatHandler.Bureaucrat
             CratCycleXpPerksDelay = Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay;
         }
 
-        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -292,7 +294,7 @@ namespace CombatHandler.Bureaucrat
                 if (window.Views.Contains(_perkView)) { return; }
 
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPerksView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _buffView);
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _perkView);
 
                 window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
 
@@ -314,7 +316,23 @@ namespace CombatHandler.Bureaucrat
                 }
             }
         }
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
 
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "BureaucratItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "BureaucratItemsView" }, _itemView, out var container);
+                _itemWindow = container;
+            }
+        }
         private void HandleProcViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -436,12 +454,17 @@ namespace CombatHandler.Bureaucrat
                     debuffView.Clicked = HandleDebuffViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
                 {
                     perkView.Tag = SettingsController.settingsWindow;
                     perkView.Clicked = HandlePerkViewClick;
                 }
-
 
                 #region GlobalBuffing
 

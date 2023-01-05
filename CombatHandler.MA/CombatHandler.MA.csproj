@@ -63,6 +63,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\MAPerksView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\MAItemsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

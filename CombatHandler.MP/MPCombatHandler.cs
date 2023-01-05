@@ -28,12 +28,14 @@ namespace CombatHandler.Metaphysicist
         private static Window _petWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _debuffView;
         private static View _petView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private double _lastSwitchedHealTime = 0;
         private double _lastSwitchedMezzTime = 0;
@@ -173,7 +175,7 @@ namespace CombatHandler.Metaphysicist
             PluginDirectory = pluginDir;
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _debuffWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _debuffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -233,7 +235,22 @@ namespace CombatHandler.Metaphysicist
                 _petWindow = container;
             }
         }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
 
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\MPPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "MPPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "MPPerksView" }, _perkView, out var container);
+                _perkWindow = container;
+            }
+        }
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -374,6 +391,12 @@ namespace CombatHandler.Metaphysicist
                 {
                     itemView.Tag = SettingsController.settingsWindow;
                     itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
 

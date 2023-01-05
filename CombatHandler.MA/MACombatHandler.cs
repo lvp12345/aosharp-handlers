@@ -30,12 +30,14 @@ namespace CombatHandler.MartialArtist
         private static Window _healingWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _tauntView;
         private static View _healingView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private static double _singleTauntTick;
         private static double _singleTaunt;
@@ -136,7 +138,7 @@ namespace CombatHandler.MartialArtist
             MAHealPercentage = Config.CharSettings[Game.ClientInst].MAHealPercentage;
         }
 
-        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _tauntWindow, _procWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -194,6 +196,22 @@ namespace CombatHandler.MartialArtist
             {
                 SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "MAItemsView" }, _itemView, out var container);
                 _itemWindow = container;
+            }
+        }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
+
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\MAPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "MAPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "MAPerksView" }, _perkView, out var container);
+                _perkWindow = container;
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -350,6 +368,12 @@ namespace CombatHandler.MartialArtist
                 {
                     itemView.Tag = SettingsController.settingsWindow;
                     itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
 

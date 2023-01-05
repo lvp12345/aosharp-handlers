@@ -596,7 +596,7 @@ namespace CombatHandler.Doctor
 
         private bool MaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return Buff(spell, NanoLine.DoctorHPBuffs, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

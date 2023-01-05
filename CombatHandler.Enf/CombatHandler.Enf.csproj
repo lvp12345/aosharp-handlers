@@ -80,7 +80,7 @@
     <Content Include="UI\EnforcerProcsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\EngineerPerksView.xml">
+    <Content Include="UI\EnforcerPerksView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

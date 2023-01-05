@@ -7,7 +7,7 @@
       <RadioButton label="Target" value="1"/>
       <RadioButton label="Area" value="2"/>
     </OptionRadioButtonGroup>
-    <TextInputView name="DelaySingleBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextInputView name="SingleDelayBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="*Delay calculated as seconds." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

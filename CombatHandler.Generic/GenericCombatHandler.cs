@@ -31,6 +31,20 @@ namespace CombatHandler.Generic
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
 
+        public static int BioCocoonPercentage = 0;
+        public static int SingleTauntDelay = 0;
+        public static int MongoTauntDelay = 0;
+        public static int CycleXpPerksDelay = 0;
+        public static int CycleChallengerDelay = 0;
+        public static int CycleRageDelay = 0;
+        public static int CycleAbsorbsDelay = 0;
+        public static int HealPercentage = 0;
+        public static int CompleteHealPercentage = 0;
+        public static int HealthDrainPercentage = 0;
+        public static int NanoAegisPercentage = 0;
+        public static int NullitySpherePercentage = 0;
+        public static int IzgimmersWealthPercentage = 0;
+
         private static double _updateTick;
 
         private static Window _perkWindow;
@@ -353,7 +367,7 @@ namespace CombatHandler.Generic
 
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.HealthPercent > Config.CharSettings[Game.ClientInst].BioCocoonPercentage) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > BioCocoonPercentage) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
@@ -1775,6 +1789,81 @@ namespace CombatHandler.Generic
         public static void BioCocoonPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].BioCocoonPercentage = e;
+            BioCocoonPercentage = e;
+            Config.Save();
+        }
+
+        public static void SingleTauntDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].SingleTauntDelay = e;
+            SingleTauntDelay = e;
+            Config.Save();
+        }
+
+        public static void MongoTauntDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].MongoTauntDelay = e;
+            MongoTauntDelay = e;
+            Config.Save();
+        }
+        public static void CycleAbsorbsDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay = e;
+            CycleAbsorbsDelay = e;
+            Config.Save();
+        }
+        public static void CycleChallengerDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].CycleChallengerDelay = e;
+            CycleChallengerDelay = e;
+            Config.Save();
+        }
+        public static void CycleRageDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].CycleRageDelay = e;
+            CycleRageDelay = e;
+            Config.Save();
+        }
+        public static void CycleXpPerksDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].CycleXpPerksDelay = e;
+            CycleXpPerksDelay = e;
+            Config.Save();
+        }
+        public static void HealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].HealPercentage = e;
+            HealPercentage = e;
+            Config.Save();
+        }
+        public static void CompleteHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].CompleteHealPercentage = e;
+            CompleteHealPercentage = e;
+            Config.Save();
+        }
+        public static void HealthDrainPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].HealthDrainPercentage = e;
+            HealthDrainPercentage = e;
+            Config.Save();
+        }
+        public static void NanoAegisPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NanoAegisPercentage = e;
+            NanoAegisPercentage = e;
+            Config.Save();
+        }
+        public static void NullitySpherePercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].NullitySpherePercentage = e;
+            NullitySpherePercentage = e;
+            Config.Save();
+        }
+        public static void IzgimmersWealthPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].IzgimmersWealthPercentage = e;
+            IzgimmersWealthPercentage = e;
             Config.Save();
         }
 

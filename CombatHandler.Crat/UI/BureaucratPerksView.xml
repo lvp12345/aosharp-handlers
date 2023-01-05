@@ -3,7 +3,7 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Cycle xp perks*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CycleXpPerks" layout_borders="Rect(10,1,5,1)"/>
-    <TextInputView name="DelayXpPerksBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextInputView name="XpPerksDelayBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <TextView value="*Delay calculated as seconds." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

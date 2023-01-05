@@ -8,13 +8,13 @@
     <OptionCheckBox label="Taunt Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TauntProc" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Cycle Absorbs*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CycleAbsorbs" layout_borders="Rect(10,1,5,1)"/>
-    <TextInputView name="DelayAbsorbsBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextInputView name="AbsorbsDelayBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Cycle rage*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CycleRage" layout_borders="Rect(10,1,5,1)"/>
-    <TextInputView name="DelayRageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextInputView name="RageDelayBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Cycle challenger*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CycleChallenger" layout_borders="Rect(10,1,5,1)"/>
-    <TextInputView name="DelayChallengerBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextInputView name="ChallengerDelayBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <TextView value="*Delay calculated as seconds." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

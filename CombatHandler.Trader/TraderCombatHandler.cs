@@ -54,8 +54,8 @@ namespace CombatHandler.Trader
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].TraderHealPercentageChangedEvent += TraderHealPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentageChangedEvent += TraderHealthDrainPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].HealthDrainPercentageChangedEvent += HealthDrainPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -158,8 +158,8 @@ namespace CombatHandler.Trader
 
             PluginDirectory = pluginDir;
 
-            TraderHealPercentage = Config.CharSettings[Game.ClientInst].TraderHealPercentage;
-            TraderHealthDrainPercentage = Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage;
+            HealPercentage = Config.CharSettings[Game.ClientInst].HealPercentage;
+            HealthDrainPercentage = Config.CharSettings[Game.ClientInst].HealthDrainPercentage;
         }
         public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };
 
@@ -363,13 +363,13 @@ namespace CombatHandler.Trader
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                     if (int.TryParse(healInput.Text, out int healValue))
-                        if (Config.CharSettings[Game.ClientInst].TraderHealPercentage != healValue)
-                            Config.CharSettings[Game.ClientInst].TraderHealPercentage = healValue;
+                        if (Config.CharSettings[Game.ClientInst].HealPercentage != healValue)
+                            Config.CharSettings[Game.ClientInst].HealPercentage = healValue;
 
                 if (healthDrainInput != null && !string.IsNullOrEmpty(healthDrainInput.Text))
                     if (int.TryParse(healthDrainInput.Text, out int heallthDrainValue))
-                        if (Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage != heallthDrainValue)
-                            Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage = heallthDrainValue;
+                        if (Config.CharSettings[Game.ClientInst].HealthDrainPercentage != heallthDrainValue)
+                            Config.CharSettings[Game.ClientInst].HealthDrainPercentage = heallthDrainValue;
             }
 
             if ((RansackSelection.Area == (RansackSelection)_settings["RansackSelection"].AsInt32()
@@ -1065,18 +1065,6 @@ namespace CombatHandler.Trader
         public enum ProcType2Selection
         {
             UnopenedLetter, RigidLiquidation, DepleteAssets, Escrow, RefinanceLoans, PaymentPlan
-        }
-        public static void TraderHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].TraderHealPercentage = e;
-            TraderHealPercentage = e;
-            Config.Save();
-        }
-        public static void TraderHealthDrainPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].TraderHealthDrainPercentage = e;
-            TraderHealthDrainPercentage = e;
-            Config.Save();
         }
 
         #endregion

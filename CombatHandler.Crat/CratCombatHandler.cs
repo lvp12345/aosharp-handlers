@@ -76,6 +76,9 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
+
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.AAOAAD);
             _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
 

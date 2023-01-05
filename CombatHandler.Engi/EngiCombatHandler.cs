@@ -71,6 +71,9 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
+
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
             _settings.AddVariable("BuffPets", true);

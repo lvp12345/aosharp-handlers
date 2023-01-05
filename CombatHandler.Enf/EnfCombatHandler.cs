@@ -49,6 +49,8 @@ namespace CombatHandler.Enf
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
+
             Config.CharSettings[Game.ClientInst].EnfTauntDelaySingleChangedEvent += EnfTauntDelaySingle_Changed;
             Config.CharSettings[Game.ClientInst].EnfTauntDelayAreaChangedEvent += EnfTauntDelayArea_Changed;
             Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelayChangedEvent += EnfCycleAbsorbsDelay_Changed;
@@ -320,7 +322,7 @@ namespace CombatHandler.Enf
 
                 if (bioCocoonInput != null)
                 {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                 }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
@@ -332,7 +334,7 @@ namespace CombatHandler.Enf
 
                 if (bioCocoonInput != null)
                 {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                 }
             }
         }
@@ -363,55 +365,29 @@ namespace CombatHandler.Enf
                             Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
-                {
                     if (int.TryParse(singleInput.Text, out int singleValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle != singleValue)
-                        {
                             Config.CharSettings[Game.ClientInst].EnfTauntDelaySingle = singleValue;
-                        }
-                    }
-                }
+
                 if (areaInput != null && !string.IsNullOrEmpty(areaInput.Text))
-                {
                     if (int.TryParse(areaInput.Text, out int aoeValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].EnfTauntDelayArea != aoeValue)
-                        {
                             Config.CharSettings[Game.ClientInst].EnfTauntDelayArea = aoeValue;
-                        }
-                    }
-                }
+
                 if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
-                {
                     if (int.TryParse(absorbsInput.Text, out int absorbsValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay != absorbsValue)
-                        {
                             Config.CharSettings[Game.ClientInst].EnfCycleAbsorbsDelay = absorbsValue;
-                        }
-                    }
-                }
+
                 if (challengerInput != null && !string.IsNullOrEmpty(challengerInput.Text))
-                {
                     if (int.TryParse(challengerInput.Text, out int challengerValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].EnfCycleChallengerDelay != challengerValue)
-                        {
                             Config.CharSettings[Game.ClientInst].EnfCycleChallengerDelay = challengerValue;
-                        }
-                    }
-                }
+
                 if (rageInput != null && !string.IsNullOrEmpty(rageInput.Text))
-                {
                     if (int.TryParse(rageInput.Text, out int rageValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].EnfCycleRageDelay != rageValue)
-                        {
                             Config.CharSettings[Game.ClientInst].EnfCycleRageDelay = rageValue;
-                        }
-                    }
-                }
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

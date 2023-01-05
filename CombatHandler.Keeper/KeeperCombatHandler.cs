@@ -114,6 +114,8 @@ namespace CombatHandler.Keeper
             RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, GenericTeamBuff);
 
             PluginDirectory = pluginDir;
+
+            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
         }
         public Window[] _windows => new Window[] { _buffWindow, _procWindow, _itemWindow, _perkWindow };
 
@@ -200,12 +202,10 @@ namespace CombatHandler.Keeper
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "KeeperPerksView" }, _perkView);
 
-                SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
-                {
-                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
-                }
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -215,9 +215,7 @@ namespace CombatHandler.Keeper
                 container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
-                {
-                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
-                }
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
             }
         }
 
@@ -247,17 +245,17 @@ namespace CombatHandler.Keeper
 
             base.OnUpdate(deltaTime);
 
-            //var window = SettingsController.FindValidWindow(_windows);
+            var window = SettingsController.FindValidWindow(_windows);
 
-            //if (window != null && window.IsValid)
-            //{
-            //    window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+            if (window != null && window.IsValid)
+            {
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
-            //    if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
-            //        if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
-            //            if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
-            //                Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
-            //}
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
+            }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
@@ -272,18 +270,6 @@ namespace CombatHandler.Keeper
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HandleBuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
-                }
-
                 if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
                 {
                     itemView.Tag = SettingsController.settingsWindow;
@@ -294,6 +280,18 @@ namespace CombatHandler.Keeper
                 {
                     perkView.Tag = SettingsController.settingsWindow;
                     perkView.Clicked = HandlePerkViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = HandleBuffViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
                 }
 
                 #region GlobalBuffing

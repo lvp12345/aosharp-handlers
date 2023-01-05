@@ -208,7 +208,7 @@ namespace CombatHandler.Soldier
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "SoldierPerksView" }, _perkView);
 
-                SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
                     bioCocoonInput.Text = $"{BioCocoonPercentage}";
@@ -236,7 +236,7 @@ namespace CombatHandler.Soldier
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierTauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView);
 
-                window.FindView("DelaySingleBox", out TextInputView singleInput);
+                window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
 
                 if (singleInput != null)
                     singleInput.Text = $"{SingleTauntDelay}";
@@ -246,7 +246,7 @@ namespace CombatHandler.Soldier
                 SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView, out var container);
                 _tauntWindow = container;
 
-                container.FindView("DelaySingleBox", out TextInputView singleInput);
+                container.FindView("SingleTauntDelayBox", out TextInputView singleInput);
 
                 if (singleInput != null)
                     singleInput.Text = $"{SingleTauntDelay}";

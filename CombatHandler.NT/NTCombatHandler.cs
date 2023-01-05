@@ -247,10 +247,10 @@ namespace CombatHandler.NanoTechnician
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\NTBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "NTBuffsView" }, _buffView);
 
-                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
-                window.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
-                window.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
-                window.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
+                window.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
+                window.FindView("NanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                window.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
+                window.FindView("IzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                 if (absorbsInput != null)
                     absorbsInput.Text = $"{CycleAbsorbsDelay}";
@@ -269,10 +269,10 @@ namespace CombatHandler.NanoTechnician
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "NTBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
 
-                container.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
-                container.FindView("NTNanoAegisPercentageBox", out TextInputView nanoAegisInput);
-                container.FindView("NTNullitySpherePercentageBox", out TextInputView nullSphereInput);
-                container.FindView("NTIzgimmersWealthPercentageBox", out TextInputView izWealthInput);
+                container.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
+                container.FindView("NanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                container.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
+                container.FindView("IzgimmersWealthPercentageBox", out TextInputView izWealthInput);
 
                 if (absorbsInput != null)
                     absorbsInput.Text = $"{CycleAbsorbsDelay}";

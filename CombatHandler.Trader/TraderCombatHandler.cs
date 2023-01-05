@@ -598,13 +598,6 @@ namespace CombatHandler.Trader
 
         #region Perks
 
-        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LegShot")) { return false; }
-
-            return CyclePerks(perk, fightingTarget, ref actionTarget);
-        }
-
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()

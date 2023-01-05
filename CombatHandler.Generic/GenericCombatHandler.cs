@@ -35,6 +35,8 @@ namespace CombatHandler.Generic
 
         protected readonly string PluginDir;
 
+        public static int BioCocoonPercentage;
+
         protected Settings _settings;
 
         [DllImport("user32.dll")]
@@ -237,12 +239,15 @@ namespace CombatHandler.Generic
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
             //Network.N3MessageSent += Network_N3MessageSent;
 
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
             Chat.RegisterCommand("convert", RaidCommand);
+
+            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -339,6 +344,19 @@ namespace CombatHandler.Generic
             {
                 RegisterPerkProcessor(perkAction.Hash, ToPerkConditionProcessor(perkConditionProcessor));
             }
+        }
+        protected bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("LegShot")) { return false; }
+
+            return DamagePerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.HealthPercent > BioCocoonPercentage) { return false; }
+
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool CyclePerks(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1753,8 +1771,12 @@ namespace CombatHandler.Generic
         public static void IPCChannel_Changed(object s, int e)
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
-
-            ////TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
+            Config.Save();
+        }
+        public static void BioCocoonPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = e;
+            BioCocoonPercentage = e;
             Config.Save();
         }
 

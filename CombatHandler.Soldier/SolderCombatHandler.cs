@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using System.Reflection;
+using System.ComponentModel;
 
 namespace CombatHandler.Soldier
 {
@@ -95,6 +96,7 @@ namespace CombatHandler.Soldier
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
@@ -203,11 +205,25 @@ namespace CombatHandler.Soldier
 
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "SoldierPerksView" }, _perkView);
+
+                SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                {
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "SoldierPerksView" }, _perkView, out var container);
                 _perkWindow = container;
+
+                container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                {
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
             }
         }
         private void HandleTauntViewClick(object s, ButtonBase button)
@@ -292,6 +308,12 @@ namespace CombatHandler.Soldier
             if (window != null && window.IsValid)
             {
                 window.FindView("DelaySingleBox", out TextInputView singleInput);
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
                 {
@@ -518,16 +540,6 @@ namespace CombatHandler.Soldier
             if (ProcType2Selection.ShootArtery != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
-        #region Perks
-        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LegShot")) { return false; }
-
-            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion

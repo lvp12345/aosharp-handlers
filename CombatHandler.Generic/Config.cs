@@ -51,7 +51,7 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int SolTauntDelaySingle => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SolTauntDelaySingle : 1;
         [JsonIgnore]
-        public int EngiBioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].EngiBioCocoonPercentage : 65;
+        public int EngiBioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BioCocoonPercentage : 65;
         [JsonIgnore]
         public int NTNanoAegisPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NTNanoAegisPercentage : 70;
         [JsonIgnore]
@@ -401,20 +401,20 @@ namespace CombatHandler.Generic
                 }
             }
         }
-        public event EventHandler<int> EngiBioCocoonPercentageChangedEvent;
-        private int _engiBioCocoonPercentage = 65;
-        public int EngiBioCocoonPercentage
+        public event EventHandler<int> BioCocoonPercentageChangedEvent;
+        private int _bioCocoonPercentage = 65;
+        public int BioCocoonPercentage
         {
             get
             {
-                return _engiBioCocoonPercentage;
+                return _bioCocoonPercentage;
             }
             set
             {
-                if (_engiBioCocoonPercentage != value)
+                if (_bioCocoonPercentage != value)
                 {
-                    _engiBioCocoonPercentage = value;
-                    EngiBioCocoonPercentageChangedEvent?.Invoke(this, value);
+                    _bioCocoonPercentage = value;
+                    BioCocoonPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

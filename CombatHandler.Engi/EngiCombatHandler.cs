@@ -18,8 +18,6 @@ namespace CombatHandler.Engineer
         private static bool ToggleComposites = false;
         private static bool ToggleDebuffing = false;
 
-        private static int EngiBioCocoonPercentage;
-
         private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
 
@@ -62,8 +60,6 @@ namespace CombatHandler.Engineer
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
-
-            Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentageChangedEvent += EngiBioCocoonPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -181,8 +177,6 @@ namespace CombatHandler.Engineer
             //RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpointsHigh, RelevantTrimmers.DivertEnergyToHitpointsHigh, PetDivertHpTrimmer);
 
             PluginDirectory = pluginDir;
-
-            EngiBioCocoonPercentage = Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage;
         }
 
         public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow, _itemWindow, _perkWindow };
@@ -252,11 +246,25 @@ namespace CombatHandler.Engineer
 
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "EngineerPerksView" }, _perkView);
+
+                SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                {
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "EngineerPerksView" }, _perkView, out var container);
                 _perkWindow = container;
+
+                container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                {
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
             }
         }
         private void HandleBuffViewClick(object s, ButtonBase button)
@@ -318,6 +326,18 @@ namespace CombatHandler.Engineer
 
             base.OnUpdate(deltaTime);
 
+            var window = SettingsController.FindValidWindow(_windows);
+
+            if (window != null && window.IsValid)
+            {
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
+            }
+
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -332,35 +352,9 @@ namespace CombatHandler.Engineer
             if (IsSettingEnabled("SyncPets"))
                 SynchronizePetCombatStateWithOwner();
 
-            //var window = SettingsController.FindValidWindow(_windows);
-
-            //if (window != null && window.IsValid)
-            //{
-            //    window.FindView("EngiBioCocoonPercentageBox", out TextInputView bioCocoonInput);
-
-            //    if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
-            //    {
-            //        if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
-            //        {
-            //            if (Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage != bioCocoonValue)
-            //            {
-            //                Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = bioCocoonValue;
-            //                EngiBioCocoonPercentage = bioCocoonValue;
-            //                Config.Save();
-            //            }
-            //        }
-            //    }
-            //}
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                SettingsController.settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView bioCocoonInput);
-
-                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
-                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
-                        if (Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage != bioCocoonValue)
-                            Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = bioCocoonValue;
-
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
                 {
                     petView.Tag = SettingsController.settingsWindow;
@@ -561,24 +555,6 @@ namespace CombatHandler.Engineer
             if (ProcType2Selection.PersonalProtection != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
-        #region Perks
-
-        private bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.HealthPercent > EngiBioCocoonPercentage) { return false; }
-
-            return CyclePerks(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LegShot")) { return false; }
-
-            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -1193,13 +1169,6 @@ namespace CombatHandler.Engineer
         public enum ProcType2Selection
         {
             AssaultForceRelief, DroneMissiles, DroneExplosives, CongenialEncasement, PersonalProtection
-        }
-
-        public static void EngiBioCocoonPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage = e;
-            EngiBioCocoonPercentage = e;
-            Config.Save();
         }
 
         #endregion

@@ -22,8 +22,6 @@ namespace CombatHandler.Bureaucrat
         private const float DelayBetweenDiverTrims = 305;
 
         private double _cycleXpPerks = 0;
-        private double _cycleXpGovernance = 0;
-        private double _cycleXpTheDirector = 0;
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;

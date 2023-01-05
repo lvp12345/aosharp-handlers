@@ -188,9 +188,9 @@ namespace CombatHandler.Enf
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView);
 
-                window.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
-                window.FindView("DelayChallengerBox", out TextInputView challengerInput);
-                window.FindView("DelayRageBox", out TextInputView rageInput);
+                window.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
+                window.FindView("ChallengerDelayBox", out TextInputView challengerInput);
+                window.FindView("RageDelayBox", out TextInputView rageInput);
 
                 if (absorbsInput != null)
                     absorbsInput.Text = $"{CycleAbsorbsDelay}";
@@ -204,9 +204,9 @@ namespace CombatHandler.Enf
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "EnforcerBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
 
-                container.FindView("DelayAbsorbsBox", out TextInputView absorbsInput);
-                container.FindView("DelayChallengerBox", out TextInputView challengerInput);
-                container.FindView("DelayRageBox", out TextInputView rageInput);
+                container.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
+                container.FindView("ChallengerDelayBox", out TextInputView challengerInput);
+                container.FindView("RageDelayBox", out TextInputView rageInput);
 
                 if (absorbsInput != null)
                     absorbsInput.Text = $"{CycleAbsorbsDelay}";
@@ -225,8 +225,8 @@ namespace CombatHandler.Enf
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerTauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView);
 
-                window.FindView("DelaySingleBox", out TextInputView singleInput);
-                window.FindView("DelayAreaBox", out TextInputView mongoInput);
+                window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+                window.FindView("MongoDelayBox", out TextInputView mongoInput);
 
                 if (singleInput != null)
                     singleInput.Text = $"{SingleTauntDelay}";
@@ -238,8 +238,8 @@ namespace CombatHandler.Enf
                 SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "EnforcerTauntsView" }, _tauntView, out var container);
                 _tauntWindow = container;
 
-                container.FindView("DelaySingleBox", out TextInputView singleInput);
-                container.FindView("DelayAreaBox", out TextInputView mongoInput);
+                container.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+                container.FindView("MongoDelayBox", out TextInputView mongoInput);
 
                 if (singleInput != null)
                     singleInput.Text = $"{SingleTauntDelay}";
@@ -292,7 +292,7 @@ namespace CombatHandler.Enf
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "EnforcerPerksView" }, _perkView);
 
-                SettingsController.settingsWindow.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
                     bioCocoonInput.Text = $"{BioCocoonPercentage}";
@@ -322,7 +322,7 @@ namespace CombatHandler.Enf
 
             if (window != null && window.IsValid)
             {
-                window.FindView("SinglDelayBox", out TextInputView singleInput);
+                window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
                 window.FindView("MongoDelayBox", out TextInputView mongoInput);
                 window.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
                 window.FindView("ChallengerDelayBox", out TextInputView challengerInput);

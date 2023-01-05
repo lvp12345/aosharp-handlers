@@ -61,14 +61,15 @@ namespace CombatHandler.Engineer
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
+            Game.TeleportEnded += OnZoned;
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
+
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
-
-            Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
@@ -251,7 +252,7 @@ namespace CombatHandler.Engineer
 
                 if (bioCocoonInput != null)
                 {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                 }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
@@ -263,7 +264,7 @@ namespace CombatHandler.Engineer
 
                 if (bioCocoonInput != null)
                 {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                 }
             }
         }

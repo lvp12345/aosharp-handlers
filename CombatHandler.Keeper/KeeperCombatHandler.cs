@@ -42,6 +42,8 @@ namespace CombatHandler.Keeper
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
+
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
@@ -202,7 +204,7 @@ namespace CombatHandler.Keeper
 
                 if (bioCocoonInput != null)
                 {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                 }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
@@ -214,7 +216,7 @@ namespace CombatHandler.Keeper
 
                 if (bioCocoonInput != null)
                 {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                 }
             }
         }
@@ -245,17 +247,17 @@ namespace CombatHandler.Keeper
 
             base.OnUpdate(deltaTime);
 
-            var window = SettingsController.FindValidWindow(_windows);
+            //var window = SettingsController.FindValidWindow(_windows);
 
-            if (window != null && window.IsValid)
-            {
-                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+            //if (window != null && window.IsValid)
+            //{
+            //    window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
-                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
-                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
-                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
-                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
-            }
+            //    if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+            //        if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+            //            if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+            //                Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
+            //}
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {

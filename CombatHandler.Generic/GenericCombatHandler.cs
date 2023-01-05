@@ -33,9 +33,9 @@ namespace CombatHandler.Generic
 
         private static double _updateTick;
 
-        protected readonly string PluginDir;
+        private static Window _perkWindow;
 
-        public static int BioCocoonPercentage;
+        protected readonly string PluginDir;
 
         protected Settings _settings;
 
@@ -239,16 +239,15 @@ namespace CombatHandler.Generic
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
-            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
             //Network.N3MessageSent += Network_N3MessageSent;
 
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
             Chat.RegisterCommand("convert", RaidCommand);
-
-            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
         }
+
+        public static Window[] _window => new Window[] { _perkWindow };
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -354,7 +353,7 @@ namespace CombatHandler.Generic
 
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.HealthPercent > BioCocoonPercentage) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > Config.CharSettings[Game.ClientInst].BioCocoonPercentage) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
@@ -1776,7 +1775,6 @@ namespace CombatHandler.Generic
         public static void BioCocoonPercentage_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].BioCocoonPercentage = e;
-            BioCocoonPercentage = e;
             Config.Save();
         }
 

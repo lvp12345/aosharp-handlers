@@ -50,6 +50,7 @@ namespace CombatHandler.Soldier
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
             Config.CharSettings[Game.ClientInst].SolTauntDelaySingleChangedEvent += SolTauntDelaySingle_Changed;
 
             _settings.AddVariable("Buffing", true);
@@ -210,7 +211,7 @@ namespace CombatHandler.Soldier
 
                 if (bioCocoonInput != null)
                 {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                 }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
@@ -222,7 +223,7 @@ namespace CombatHandler.Soldier
 
                 if (bioCocoonInput != null)
                 {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                 }
             }
         }
@@ -316,15 +317,9 @@ namespace CombatHandler.Soldier
                             Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
-                {
                     if (int.TryParse(singleInput.Text, out int singleValue))
-                    {
                         if (Config.CharSettings[Game.ClientInst].SolTauntDelaySingle != singleValue)
-                        {
                             Config.CharSettings[Game.ClientInst].SolTauntDelaySingle = singleValue;
-                        }
-                    }
-                }
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

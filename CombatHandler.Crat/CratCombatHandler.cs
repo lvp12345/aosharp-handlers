@@ -106,6 +106,8 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("Nuking", false);
             _settings.AddVariable("Root", false);
 
+            _settings.AddVariable("CycleXpPerks", true);
+
             _settings.AddVariable("Calm12Man", false);
             //_settings.AddVariable("CalmSector7", false);
 
@@ -298,20 +300,20 @@ namespace CombatHandler.Bureaucrat
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _perkView);
 
-                window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
+                window.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
 
                 if (xpPerksInput != null)
-                    xpPerksInput.Text = $"{Config.CharSettings[Game.ClientInst].CycleXpPerksDelay}";
+                    xpPerksInput.Text = $"{CycleXpPerksDelay}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _perkView, out var container);
                 _perkWindow = container;
 
-                container.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
+                container.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
 
                 if (xpPerksInput != null)
-                    xpPerksInput.Text = $"{Config.CharSettings[Game.ClientInst].CycleXpPerksDelay}";
+                    xpPerksInput.Text = $"{CycleXpPerksDelay}";
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -394,7 +396,7 @@ namespace CombatHandler.Bureaucrat
             {
                 window.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
 
-                if (xpPerksInput != null)
+                if (xpPerksInput != null && !string.IsNullOrEmpty(xpPerksInput.Text))
                     if (int.TryParse(xpPerksInput.Text, out int xpPerksValue))
                         if (Config.CharSettings[Game.ClientInst].CycleXpPerksDelay != xpPerksValue)
                             Config.CharSettings[Game.ClientInst].CycleXpPerksDelay = xpPerksValue;

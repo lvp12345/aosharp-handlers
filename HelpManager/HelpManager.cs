@@ -566,7 +566,7 @@ namespace HelpManager
         {
             healpet = DynelManager.LocalPlayer.Pets.Where(x => x.Type == PetType.Heal).FirstOrDefault();
 
-            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.LowId)).FirstOrDefault();
+            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.Id)).FirstOrDefault();
 
             if (healpet == null || kit == null) { return; }
 
@@ -600,7 +600,7 @@ namespace HelpManager
         {
             Spell spell = Spell.List.FirstOrDefault(x => x.IsReady);
 
-            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.LowId)).FirstOrDefault();
+            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.Id)).FirstOrDefault();
 
             if (kit == null) { return; }
 
@@ -674,7 +674,7 @@ namespace HelpManager
 
         private bool CanUseSitKit()
         {
-            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.LowId != 297274).ToList();
+            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.Id != 297274).ToList();
 
             if (Inventory.Find(297274, out Item premSitKit))
             {

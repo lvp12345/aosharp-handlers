@@ -98,7 +98,7 @@ namespace CombatHandler.Generic
                                 if (channelInput != null)
                                     channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
                                 if (engiBioCocoonInput != null)
-                                    engiBioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage}";
+                                    engiBioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                             }
                         }
                     }

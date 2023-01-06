@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using System.Reflection;
+using System.ComponentModel;
 
 namespace CombatHandler.Soldier
 {
@@ -28,11 +29,13 @@ namespace CombatHandler.Soldier
         private static Window _tauntWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _tauntView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private static double _singleTauntTick;
         private static double _singleTaunt;
@@ -47,7 +50,8 @@ namespace CombatHandler.Soldier
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].SolTauntDelaySingleChangedEvent += SolTauntDelaySingle_Changed;
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -93,6 +97,7 @@ namespace CombatHandler.Soldier
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
@@ -129,9 +134,10 @@ namespace CombatHandler.Soldier
 
             PluginDirectory = pluginDir;
 
-            SolTauntDelaySingle = Config.CharSettings[Game.ClientInst].SolTauntDelaySingle;
+            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
+            SingleTauntDelay = Config.CharSettings[Game.ClientInst].SingleTauntDelay;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -192,7 +198,32 @@ namespace CombatHandler.Soldier
                 _buffWindow = container;
             }
         }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
 
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "SoldierPerksView" }, _perkView);
+
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "SoldierPerksView" }, _perkView, out var container);
+                _perkWindow = container;
+
+                container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+            }
+        }
         private void HandleTauntViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -205,24 +236,20 @@ namespace CombatHandler.Soldier
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierTauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView);
 
-                window.FindView("DelaySingleBox", out TextInputView singleInput);
+                window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
 
                 if (singleInput != null)
-                {
-                    singleInput.Text = $"{SolTauntDelaySingle}";
-                }
+                    singleInput.Text = $"{SingleTauntDelay}";
             }
             else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView, out var container);
                 _tauntWindow = container;
 
-                container.FindView("DelaySingleBox", out TextInputView singleInput);
+                container.FindView("SingleTauntDelayBox", out TextInputView singleInput);
 
                 if (singleInput != null)
-                {
-                    singleInput.Text = $"{SolTauntDelaySingle}";
-                }
+                    singleInput.Text = $"{SingleTauntDelay}";
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -274,18 +301,18 @@ namespace CombatHandler.Soldier
 
             if (window != null && window.IsValid)
             {
-                window.FindView("DelaySingleBox", out TextInputView singleInput);
+                window.FindView("SingleDelayBox", out TextInputView singleInput);
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
-                {
                     if (int.TryParse(singleInput.Text, out int singleValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].SolTauntDelaySingle != singleValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].SolTauntDelaySingle = singleValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].SingleTauntDelay != singleValue)
+                            Config.CharSettings[Game.ClientInst].SingleTauntDelay = singleValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
@@ -301,22 +328,22 @@ namespace CombatHandler.Soldier
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HandleBuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
-                }
-
                 if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
                 {
                     itemView.Tag = SettingsController.settingsWindow;
                     itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = HandleBuffViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
@@ -325,6 +352,11 @@ namespace CombatHandler.Soldier
                     tauntView.Clicked = HandleTauntViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
+                }
 
                 #region GlobalBuffing
 
@@ -495,16 +527,6 @@ namespace CombatHandler.Soldier
             if (ProcType2Selection.ShootArtery != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
-        #region Perks
-        private bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("LegShot")) { return false; }
-
-            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -809,13 +831,6 @@ namespace CombatHandler.Soldier
         {
             public const int DreadlochEnduranceBooster = 267168;
             public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
-        }
-
-        public static void SolTauntDelaySingle_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].SolTauntDelaySingle = e;
-            SolTauntDelaySingle = e;
-            Config.Save();
         }
 
         #endregion

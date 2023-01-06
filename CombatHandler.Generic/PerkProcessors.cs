@@ -51,6 +51,8 @@ namespace CombatHandler.Generic
             }
         }
 
+
+        //TODO: these should be in generic like legshot
         private static Dictionary<PerkHash, GenericPerkConditionProcessor> CUSTOM_PROCESSORS = new Dictionary<PerkHash, GenericPerkConditionProcessor>()
         {
             {PerkHash.Moonmist, Moonmist },

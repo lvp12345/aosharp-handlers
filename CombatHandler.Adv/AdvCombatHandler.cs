@@ -21,9 +21,6 @@ namespace CombatHandler.Adventurer
     {
         private static string PluginDirectory;
 
-        private static int AdvHealPercentage;
-        private static int AdvCompleteHealPercentage;
-
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
         private static bool ToggleDebuffing = false;
@@ -33,12 +30,14 @@ namespace CombatHandler.Adventurer
         private static Window _buffWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _morphView;
         private static View _healingView;
         private static View _buffView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private static double _ncuUpdateTime;
 
@@ -49,8 +48,8 @@ namespace CombatHandler.Adventurer
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].AdvHealPercentageChangedEvent += AdvHealPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentageChangedEvent += AdvCompleteHealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -121,14 +120,15 @@ namespace CombatHandler.Adventurer
 
             PluginDirectory = pluginDir;
 
-            AdvHealPercentage = Config.CharSettings[Game.ClientInst].AdvHealPercentage;
-            AdvCompleteHealPercentage = Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage;
+            HealPercentage = Config.CharSettings[Game.ClientInst].HealPercentage;
+            CompleteHealPercentage = Config.CharSettings[Game.ClientInst].CompleteHealPercentage;
+
             //Items
             //RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
 
         }
 
-        public Window[] _windows => new Window[] { _morphWindow, _healingWindow, _procWindow, _buffWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _morphWindow, _healingWindow, _procWindow, _buffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -206,14 +206,10 @@ namespace CombatHandler.Adventurer
                 window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
                 if (healInput != null)
-                {
-                    healInput.Text = $"{AdvHealPercentage}";
-                }
+                    healInput.Text = $"{HealPercentage}";
 
                 if (completeHealInput != null)
-                {
-                    completeHealInput.Text = $"{AdvCompleteHealPercentage}";
-                }
+                    completeHealInput.Text = $"{CompleteHealPercentage}";
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
             {
@@ -224,14 +220,26 @@ namespace CombatHandler.Adventurer
                 container.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
                 if (healInput != null)
-                {
-                    healInput.Text = $"{AdvHealPercentage}";
-                }
+                    healInput.Text = $"{HealPercentage}";
 
                 if (completeHealInput != null)
-                {
-                    completeHealInput.Text = $"{AdvCompleteHealPercentage}";
-                }
+                    completeHealInput.Text = $"{CompleteHealPercentage}";
+            }
+        }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
+
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "AdvPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "AdvPerksView" }, _perkView, out var container);
+                _perkWindow = container;
             }
         }
 
@@ -318,25 +326,14 @@ namespace CombatHandler.Adventurer
                 window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
-                {
                     if (int.TryParse(healInput.Text, out int healValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AdvHealPercentage != healValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AdvHealPercentage = healValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].HealPercentage != healValue)
+                            Config.CharSettings[Game.ClientInst].HealPercentage = healValue;
+
                 if (completeHealInput != null && !string.IsNullOrEmpty(completeHealInput.Text))
-                {
                     if (int.TryParse(completeHealInput.Text, out int completeHealValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage != completeHealValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage = completeHealValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].CompleteHealPercentage != completeHealValue)
+                            Config.CharSettings[Game.ClientInst].CompleteHealPercentage = completeHealValue;
             }
 
             if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32())
@@ -358,16 +355,28 @@ namespace CombatHandler.Adventurer
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
                 {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HandleBuffViewClick;
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
                     healingView.Tag = SettingsController.settingsWindow;
                     healingView.Clicked = HandleHealingViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                {
+                    buffView.Tag = SettingsController.settingsWindow;
+                    buffView.Clicked = HandleBuffViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("MorphView", out Button morphView))
@@ -379,12 +388,6 @@ namespace CombatHandler.Adventurer
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
-                {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
                 }
 
                 #region GlobalBuffing
@@ -558,32 +561,32 @@ namespace CombatHandler.Adventurer
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
-            return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
+            return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
             if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindPlayerWithHealthBelow(AdvHealPercentage, spell, ref actionTarget);
+                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
             return false;
         }
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AdvCompleteHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || CompleteHealPercentage == 0) { return false; }
 
             if (!IsSettingEnabled("CH")) { return false; }
 
-            return FindMemberWithHealthBelow(AdvCompleteHealPercentage, spell, ref actionTarget);
+            return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
         }
 
         #endregion
@@ -698,22 +701,6 @@ namespace CombatHandler.Adventurer
         public enum ProcType2Selection
         {
             HealingHerbs, SoothingHerbs, Combustion, CharringBlow, RestoreVigor, MacheteSlice, BasicDressing
-        }
-
-        public static void AdvHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].AdvHealPercentage = e;
-            AdvHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
-        }
-
-        public static void AdvCompleteHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].AdvCompleteHealPercentage = e;
-            AdvCompleteHealPercentage = e;
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
-            Config.Save();
         }
 
         #endregion

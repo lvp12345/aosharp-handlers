@@ -660,8 +660,7 @@ namespace CombatHandler.Trader
             if (!IsSettingEnabled("NanoHeal")) { return false; }
 
             if (DynelManager.NPCs.Any(c => c.Health > 0
-                && AttackingTeam(c)
-                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f))
+                && AttackingTeam(c)))
                 return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
             return false;

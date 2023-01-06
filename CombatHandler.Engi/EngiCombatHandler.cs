@@ -74,6 +74,8 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("Kits", true);
             _settings.AddVariable("Stims", true);
 
+            Game.TeleportEnded += OnZoned;
+
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
             _settings.AddVariable("BuffPets", true);

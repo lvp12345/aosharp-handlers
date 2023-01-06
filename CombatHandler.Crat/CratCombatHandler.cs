@@ -331,23 +331,6 @@ namespace CombatHandler.Bureaucrat
                 _itemWindow = container;
             }
         }
-        private void HandleItemViewClick(object s, ButtonBase button)
-        {
-            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
-            {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                if (window.Views.Contains(_itemView)) { return; }
-
-                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratItemsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "BureaucratItemsView" }, _itemView);
-            }
-            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "BureaucratItemsView" }, _itemView, out var container);
-                _itemWindow = container;
-            }
-        }
         private void HandleProcViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -444,12 +427,6 @@ namespace CombatHandler.Bureaucrat
                 {
                     perkView.Tag = SettingsController.settingsWindow;
                     perkView.Clicked = HandlePerkViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
-                {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))

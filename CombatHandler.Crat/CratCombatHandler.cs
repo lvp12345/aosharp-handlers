@@ -22,8 +22,6 @@ namespace CombatHandler.Bureaucrat
         private const float DelayBetweenDiverTrims = 305;
 
         private double _cycleXpPerks = 0;
-        private double _cycleXpGovernance = 0;
-        private double _cycleXpTheDirector = 0;
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
@@ -47,8 +45,6 @@ namespace CombatHandler.Bureaucrat
         private static View _itemView;
         private static View _perkView;
 
-        private static int CratCycleXpPerksDelay;
-
         private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
 
@@ -67,7 +63,7 @@ namespace CombatHandler.Bureaucrat
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelayChangedEvent += CratCycleXpPerksDelay_Changed;
+            Config.CharSettings[Game.ClientInst].CycleXpPerksDelayChangedEvent += CycleXpPerksDelay_Changed;
 
             Game.TeleportEnded += OnZoned;
 
@@ -108,6 +104,8 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("Nuking", false);
             _settings.AddVariable("Root", false);
 
+            _settings.AddVariable("CycleXpPerks", true);
+
             _settings.AddVariable("Calm12Man", false);
             //_settings.AddVariable("CalmSector7", false);
 
@@ -127,10 +125,6 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.LEProcBureaucratDeflation, Deflation, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, InflationAdjustment, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, Papercut, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.Leadership, Leadership);
-            RegisterPerkProcessor(PerkHash.Governance, Governance);
-            RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
@@ -169,6 +163,11 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.RkCalms, RKCalm, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
             //RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
+
+            //Perks
+            RegisterPerkProcessor(PerkHash.Leadership, Leadership);
+            RegisterPerkProcessor(PerkHash.Governance, Governance);
+            RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
 
             //Pet Buffs
             if (Spell.Find(RelevantNanos.CorporateStrategy, out Spell spell))
@@ -209,10 +208,10 @@ namespace CombatHandler.Bureaucrat
 
             PluginDirectory = pluginDir;
 
-            CratCycleXpPerksDelay = Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay;
+            CycleXpPerksDelay = Config.CharSettings[Game.ClientInst].CycleXpPerksDelay;
         }
 
-        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _perkWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -297,26 +296,39 @@ namespace CombatHandler.Bureaucrat
                 if (window.Views.Contains(_perkView)) { return; }
 
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPerksView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _buffView);
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _perkView);
 
-                window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
+                window.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
 
                 if (xpPerksInput != null)
-                {
-                    xpPerksInput.Text = $"{CratCycleXpPerksDelay}";
-                }
+                    xpPerksInput.Text = $"{CycleXpPerksDelay}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "BureaucratPerksView" }, _perkView, out var container);
                 _perkWindow = container;
 
-                container.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
+                container.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
 
                 if (xpPerksInput != null)
-                {
-                    xpPerksInput.Text = $"{CratCycleXpPerksDelay}";
-                }
+                    xpPerksInput.Text = $"{CycleXpPerksDelay}";
+            }
+        }
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
+
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "BureaucratItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "BureaucratItemsView" }, _itemView, out var container);
+                _itemWindow = container;
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -397,18 +409,12 @@ namespace CombatHandler.Bureaucrat
 
             if (window != null && window.IsValid)
             {
-                window.FindView("DelayXpPerksBox", out TextInputView xpPerksInput);
+                window.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
 
-                if (xpPerksInput != null)
-                {
+                if (xpPerksInput != null && !string.IsNullOrEmpty(xpPerksInput.Text))
                     if (int.TryParse(xpPerksInput.Text, out int xpPerksValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay != xpPerksValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay = xpPerksValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].CycleXpPerksDelay != xpPerksValue)
+                            Config.CharSettings[Game.ClientInst].CycleXpPerksDelay = xpPerksValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
@@ -427,16 +433,17 @@ namespace CombatHandler.Bureaucrat
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
-                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
+
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
                 {
-                    calmView.Tag = SettingsController.settingsWindow;
-                    calmView.Clicked = HandleCalmingViewClick;
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
                 {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
                 }
 
                 if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
@@ -463,10 +470,16 @@ namespace CombatHandler.Bureaucrat
                     debuffView.Clicked = HandleDebuffViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
                 {
-                    perkView.Tag = SettingsController.settingsWindow;
-                    perkView.Clicked = HandlePerkViewClick;
+                    calmView.Tag = SettingsController.settingsWindow;
+                    calmView.Clicked = HandleCalmingViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                {
+                    procView.Tag = SettingsController.settingsWindow;
+                    procView.Clicked = HandleProcViewClick;
                 }
 
 
@@ -644,7 +657,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Time.NormalTime > _cycleXpPerks + CratCycleXpPerksDelay)
+            if (Time.NormalTime > _cycleXpPerks + CycleXpPerksDelay)
             {
                 _cycleXpPerks = Time.NormalTime;
 
@@ -1431,13 +1444,6 @@ namespace CombatHandler.Bureaucrat
         public enum ModeSelection
         {
             None, All, Adds
-        }
-
-        public static void CratCycleXpPerksDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].CratCycleXpPerksDelay = e;
-            CratCycleXpPerksDelay = e;
-            Config.Save();
         }
 
         #endregion

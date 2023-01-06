@@ -19,8 +19,6 @@ namespace CombatHandler.MartialArtist
     {
         private static string PluginDirectory;
 
-        private static int MAHealPercentage;
-
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
         private static bool ToggleDebuffing = false;
@@ -30,12 +28,14 @@ namespace CombatHandler.MartialArtist
         private static Window _healingWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _tauntView;
         private static View _healingView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private static double _singleTauntTick;
         private static double _singleTaunt;
@@ -49,7 +49,7 @@ namespace CombatHandler.MartialArtist
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].MAHealPercentageChangedEvent += MAHealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -133,10 +133,10 @@ namespace CombatHandler.MartialArtist
 
             PluginDirectory = pluginDir;
 
-            MAHealPercentage = Config.CharSettings[Game.ClientInst].MAHealPercentage;
+            HealPercentage = Config.CharSettings[Game.ClientInst].HealPercentage;
         }
 
-        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _tauntWindow, _procWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -196,6 +196,22 @@ namespace CombatHandler.MartialArtist
                 _itemWindow = container;
             }
         }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
+
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\MAPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "MAPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "MAPerksView" }, _perkView, out var container);
+                _perkWindow = container;
+            }
+        }
         private void HandleProcViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -246,9 +262,7 @@ namespace CombatHandler.MartialArtist
                 window.FindView("HealPercentageBox", out TextInputView healInput);
 
                 if (healInput != null)
-                {
-                    healInput.Text = $"{MAHealPercentage}";
-                }
+                    healInput.Text = $"{HealPercentage}";
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
             {
@@ -258,9 +272,7 @@ namespace CombatHandler.MartialArtist
                 container.FindView("HealPercentageBox", out TextInputView healInput);
 
                 if (healInput != null)
-                {
-                    healInput.Text = $"{MAHealPercentage}";
-                }
+                    healInput.Text = $"{HealPercentage}";
             }
         }
 
@@ -298,15 +310,9 @@ namespace CombatHandler.MartialArtist
                 window.FindView("HealPercentageBox", out TextInputView healInput);
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
-                {
                     if (int.TryParse(healInput.Text, out int healValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].MAHealPercentage != healValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].MAHealPercentage = healValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].HealPercentage != healValue)
+                            Config.CharSettings[Game.ClientInst].HealPercentage = healValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
@@ -322,6 +328,18 @@ namespace CombatHandler.MartialArtist
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
                     healingView.Tag = SettingsController.settingsWindow;
@@ -344,12 +362,6 @@ namespace CombatHandler.MartialArtist
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
-                {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
                 }
 
 
@@ -518,22 +530,22 @@ namespace CombatHandler.MartialArtist
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (MAHealPercentage == 0) { return false; }
+            if (HealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
             if (HealSelection.SingleArea != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
-            return FindPlayerWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
+            return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
         }
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()
-                || MAHealPercentage == 0) { return false; }
+                || HealPercentage == 0) { return false; }
 
-            return FindMemberWithHealthBelow(MAHealPercentage, spell, ref actionTarget);
+            return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
         }
 
         #endregion
@@ -689,10 +701,6 @@ namespace CombatHandler.MartialArtist
 
         #region Misc
 
-        protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
-        {
-            return specialAttack != SpecialAttack.Dimach;
-        }
 
         private static class RelevantNanos
         {
@@ -713,13 +721,6 @@ namespace CombatHandler.MartialArtist
             public const int TouchOfSaiFung = 275018;
             public const int Sappo = 267525;
             public const int TreeOfEnlightenment = 204607;
-        }
-
-        public static void MAHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].MAHealPercentage = e;
-            MAHealPercentage = e;
-            Config.Save();
         }
 
         public enum HealSelection

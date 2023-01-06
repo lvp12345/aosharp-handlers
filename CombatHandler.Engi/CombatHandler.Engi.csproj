@@ -64,6 +64,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\EngineerPerksView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\EngineerItemsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

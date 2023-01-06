@@ -26,10 +26,12 @@ namespace CombatHandler.Keeper
         private static Window _buffWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _procView;
         private static View _itemView;
+        private static View _perkView;
 
         private static double _ncuUpdateTime;
 
@@ -39,6 +41,8 @@ namespace CombatHandler.Keeper
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -85,6 +89,9 @@ namespace CombatHandler.Keeper
             //Anti-Fear
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), RecastAntiFear);
 
+            //Perks
+            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
+
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder().OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._2HEdgedBuff).OrderByStackingOrder(), GenericBuff);
@@ -107,8 +114,10 @@ namespace CombatHandler.Keeper
             RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, GenericTeamBuff);
 
             PluginDirectory = pluginDir;
+
+            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _procWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -172,8 +181,6 @@ namespace CombatHandler.Keeper
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperProcsView.xml");
@@ -185,15 +192,40 @@ namespace CombatHandler.Keeper
                 _procWindow = container;
             }
         }
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
 
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "KeeperPerksView" }, _perkView);
+
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "KeeperPerksView" }, _perkView, out var container);
+                _perkWindow = container;
+
+                container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
+            }
+        }
 
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                if (window.Views.Contains(_buffView)) { return; }
+
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "KeeperBuffsView" }, _buffView);
             }
@@ -213,6 +245,18 @@ namespace CombatHandler.Keeper
 
             base.OnUpdate(deltaTime);
 
+            var window = SettingsController.FindValidWindow(_windows);
+
+            if (window != null && window.IsValid)
+            {
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
+            }
+
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -226,6 +270,18 @@ namespace CombatHandler.Keeper
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
@@ -236,12 +292,6 @@ namespace CombatHandler.Keeper
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
-                {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
                 }
 
                 #region GlobalBuffing

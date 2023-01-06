@@ -61,6 +61,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\MPPerksView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\MPItemsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

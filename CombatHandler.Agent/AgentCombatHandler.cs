@@ -20,9 +20,6 @@ namespace CombatHandler.Agent
     {
         private static string PluginDirectory;
 
-        private static int AgentHealPercentage;
-        private static int AgentCompleteHealPercentage;
-
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
         private static bool ToggleDebuffing = false;
@@ -35,6 +32,7 @@ namespace CombatHandler.Agent
         private static Window _itemWindow;
         private static Window _falseProfWindow;
         private static Window _healingWindow;
+        private static Window _perkWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -42,6 +40,7 @@ namespace CombatHandler.Agent
         private static View _itemView;
         private static View _falseProfView;
         private static View _healingView;
+        private static View _perkView;
 
         private static double _ncuUpdateTime;
 
@@ -52,8 +51,8 @@ namespace CombatHandler.Agent
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Config.CharSettings[Game.ClientInst].AgentHealPercentageChangedEvent += AgentHealPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentageChangedEvent += AgentCompleteHealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -146,11 +145,11 @@ namespace CombatHandler.Agent
 
             PluginDirectory = pluginDir;
 
-            AgentHealPercentage = Config.CharSettings[Game.ClientInst].AgentHealPercentage;
-            AgentCompleteHealPercentage = Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage;
+            HealPercentage = Config.CharSettings[Game.ClientInst].HealPercentage;
+            CompleteHealPercentage = Config.CharSettings[Game.ClientInst].CompleteHealPercentage;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -207,6 +206,23 @@ namespace CombatHandler.Agent
             {
                 SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "AgentItemsView" }, _itemView, out var container);
                 _itemWindow = container;
+            }
+        }
+
+        private void HandlePerkViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_perkView)) { return; }
+
+                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentPerksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "AgentPerksView" }, _perkView);
+            }
+            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "AgentPerksView" }, _perkView, out var container);
+                _perkWindow = container;
             }
         }
 
@@ -294,14 +310,10 @@ namespace CombatHandler.Agent
                 window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
                 if (healInput != null)
-                {
-                    healInput.Text = $"{AgentHealPercentage}";
-                }
+                    healInput.Text = $"{HealPercentage}";
 
                 if (completeHealInput != null)
-                {
-                    completeHealInput.Text = $"{AgentCompleteHealPercentage}";
-                }
+                    completeHealInput.Text = $"{CompleteHealPercentage}";
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
             {
@@ -312,14 +324,10 @@ namespace CombatHandler.Agent
                 container.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
                 if (healInput != null)
-                {
-                    healInput.Text = $"{AgentHealPercentage}";
-                }
+                    healInput.Text = $"{HealPercentage}";
 
                 if (completeHealInput != null)
-                {
-                    completeHealInput.Text = $"{AgentCompleteHealPercentage}";
-                }
+                    completeHealInput.Text = $"{CompleteHealPercentage}";
             }
         }
 
@@ -351,29 +359,30 @@ namespace CombatHandler.Agent
                 window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
-                {
                     if (int.TryParse(healInput.Text, out int healValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentHealPercentage != healValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentHealPercentage = healValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].HealPercentage != healValue)
+                            Config.CharSettings[Game.ClientInst].HealPercentage = healValue;
+
                 if (completeHealInput != null && !string.IsNullOrEmpty(completeHealInput.Text))
-                {
                     if (int.TryParse(completeHealInput.Text, out int completeHealValue))
-                    {
-                        if (Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage != completeHealValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = completeHealValue;
-                        }
-                    }
-                }
+                        if (Config.CharSettings[Game.ClientInst].CompleteHealPercentage != completeHealValue)
+                            Config.CharSettings[Game.ClientInst].CompleteHealPercentage = completeHealValue;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                {
+                    perkView.Tag = SettingsController.settingsWindow;
+                    perkView.Clicked = HandlePerkViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
                 {
                     healingView.Tag = SettingsController.settingsWindow;
@@ -392,17 +401,18 @@ namespace CombatHandler.Agent
                     debuffView.Clicked = HandleDebuffViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("FalseProfsView", out Button falseProfView))
+                {
+                    falseProfView.Tag = SettingsController.settingsWindow;
+                    falseProfView.Clicked = HandleFalseProfViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("ProcView", out Button procView))
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
 
-                if (SettingsController.settingsWindow.FindView("FalseProfsView", out Button falseProfView))
-                {
-                    falseProfView.Tag = SettingsController.settingsWindow;
-                    falseProfView.Clicked = HandleFalseProfViewClick;
-                }
 
                 #region GlobalBuffing
 
@@ -590,22 +600,22 @@ namespace CombatHandler.Agent
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || AgentHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(AgentHealPercentage, spell, ref actionTarget);
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
             if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindPlayerWithHealthBelow(AgentHealPercentage, spell, ref actionTarget);
+                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
             return false;
         }
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("CH") || AgentCompleteHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
 
-            return FindMemberWithHealthBelow(AgentCompleteHealPercentage, spell, ref actionTarget);
+            return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
         }
 
         #endregion
@@ -876,19 +886,6 @@ namespace CombatHandler.Agent
         public enum ProcSelection
         {
             None, Damage, DeTaunt
-        }
-        public static void AgentHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].AgentHealPercentage = e;
-            AgentHealPercentage = e;
-            Config.Save();
-        }
-
-        public static void AgentCompleteHealPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].AgentCompleteHealPercentage = e;
-            AgentCompleteHealPercentage = e;
-            Config.Save();
         }
 
         #endregion

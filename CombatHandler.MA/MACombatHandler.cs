@@ -701,10 +701,6 @@ namespace CombatHandler.MartialArtist
 
         #region Misc
 
-        protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
-        {
-            return specialAttack != SpecialAttack.Dimach;
-        }
 
         private static class RelevantNanos
         {

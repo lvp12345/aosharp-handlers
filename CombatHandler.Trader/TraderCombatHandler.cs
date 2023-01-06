@@ -657,7 +657,7 @@ namespace CombatHandler.Trader
         }
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NanoHeal") || fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+            if (!IsSettingEnabled("NanoHeal")) { return false; }
 
             if (DynelManager.NPCs.Any(c => c.Health > 0
                 && AttackingTeam(c)

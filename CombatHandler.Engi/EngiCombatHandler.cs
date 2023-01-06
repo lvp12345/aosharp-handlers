@@ -43,10 +43,12 @@ namespace CombatHandler.Engineer
         private static Window _petWindow;
         private static Window _buffWindow;
         private static Window _procWindow;
+        private static Window _itemWindow;
 
         private static View _buffView;
         private static View _petView;
         private static View _procView;
+        private static View _itemView;
 
         private double _lastTrimTime = 0;
 
@@ -67,6 +69,9 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
+
+            _settings.AddVariable("Kits", true);
+            _settings.AddVariable("Stims", true);
 
             Game.TeleportEnded += OnZoned;
 
@@ -181,7 +186,7 @@ namespace CombatHandler.Engineer
             EngiBioCocoonPercentage = Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage;
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow };
+        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow, _itemWindow };
 
         #region Callbacks
 
@@ -254,6 +259,24 @@ namespace CombatHandler.Engineer
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "EngineerBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+            }
+        }
+
+        private void HandleItemViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                if (window.Views.Contains(_itemView)) { return; }
+
+                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerItemsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "EngineerItemsView" }, _itemView);
+            }
+            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "EngineerItemsView" }, _itemView, out var container);
+                _itemWindow = container;
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -340,6 +363,12 @@ namespace CombatHandler.Engineer
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                {
+                    itemView.Tag = SettingsController.settingsWindow;
+                    itemView.Clicked = HandleItemViewClick;
                 }
 
                 #region GlobalBuffing

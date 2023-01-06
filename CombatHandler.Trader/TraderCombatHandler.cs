@@ -122,7 +122,7 @@ namespace CombatHandler.Trader
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing);
             RegisterSpellProcessor(RelevantNanos.TeamHeal, Healing);
-            RegisterSpellProcessor(RelevantNanos.HealthDrain, Healing);
+            RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEHeal);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
@@ -641,6 +641,11 @@ namespace CombatHandler.Trader
                 return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
 
+            return false;
+        }
+
+        private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
             if (fightingTarget == null || HealthDrainPercentage == 0 || !IsSettingEnabled("HealthDrain")) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= HealthDrainPercentage)
@@ -655,6 +660,7 @@ namespace CombatHandler.Trader
 
             return false;
         }
+
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("NanoHeal")) { return false; }

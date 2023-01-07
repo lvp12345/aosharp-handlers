@@ -579,7 +579,7 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.HealthPercent >= 75) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
         }
 
         protected bool Moonmist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -341,25 +341,75 @@ namespace CombatHandler.Generic
 
         #region Perks
 
-        private PerkConditionProcessor ToPerkConditionProcessor(GenericPerkConditionProcessor genericPerkConditionProcessor)
+        public static bool SelfHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => genericPerkConditionProcessor(perkAction, fightingTarget, ref actionTarget);
+            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+
+            //if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
+            //    return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 75)
+                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+
+            return false;
         }
 
-        protected void RegisterPerkProcessors()
+        public static bool SelfNano(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            PerkAction.List.ForEach(perkAction => RegisterPerkAction(perkAction));
+            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+
+            //if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
+            //    return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+
+            if (DynelManager.LocalPlayer.NanoPercent <= 75)
+                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+
+            return false;
         }
 
-        private void RegisterPerkAction(PerkAction perkAction)
-        {
-            GenericPerkConditionProcessor perkConditionProcessor = PerkCondtionProcessors.GetPerkConditionProcessor(perkAction);
+        //public static bool TargetHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
-            if (perkConditionProcessor != null)
-            {
-                RegisterPerkProcessor(perkAction.Hash, ToPerkConditionProcessor(perkConditionProcessor));
-            }
-        }
+        //    if (Team.IsInTeam)
+        //    {
+        //        SimpleChar _person = DynelManager.Players
+        //            .Where(c => c.Health > 0
+        //                && c.Name == _targetHealPerkName
+        //                && c.HealthPercent <= TargetHealPerkPercentage)
+        //            .FirstOrDefault();
+
+        //        if (_person != null)
+        //            return GenericPerk(perk, _person, ref actionTarget);
+        //    }
+
+        //    if (DynelManager.LocalPlayer.HealthPercent <= TargetHealPerkPercentage)
+        //        return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+
+        //    return false;
+        //}
+        //public static bool TargetNano(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+
+        //    if (Team.IsInTeam)
+        //    {
+        //        SimpleChar _person = DynelManager.Players
+        //            .Where(c => c.Health > 0
+        //                && c.Name == _targetNanoPerkName
+        //                && c.NanoPercent <= TargetNanoPerkPercentage)
+        //            .FirstOrDefault();
+
+        //        if (_person != null)
+        //            return GenericPerk(perk, _person, ref actionTarget);
+        //    }
+
+        //    if (DynelManager.LocalPlayer.NanoPercent <= TargetNanoPerkPercentage)
+        //        return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+
+        //    return false;
+        //}
+
         protected bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("LegShot")) { return false; }
@@ -367,11 +417,42 @@ namespace CombatHandler.Generic
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
+        //protected bool WitOfAtrox(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (Time.NormalTime > CycleWitOfAtroxPerk + CycleWitOfAtroxPerkDelay)
+        //    {
+        //        CycleWitOfAtroxPerk = Time.NormalTime;
+
+        //        if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+        //        return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
+        //    }
+
+        //    return false;
+        //}
+
+        //protected bool Sphere(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (Time.NormalTime > CycleSpherePerk + CycleSpherePerkDelay)
+        //    {
+        //        CycleSpherePerk = Time.NormalTime;
+
+        //        if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+        //        return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
+        //    }
+
+        //    return false;
+        //}
+
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.HealthPercent > BioCocoonPercentage) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > BioCocoonPercentage
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
-            return CyclePerks(perk, fightingTarget, ref actionTarget);
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
         }
 
         protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -420,31 +501,28 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            //if (perk.Name == "Sacrifice" || perk.Name == "Purple Heart")
-            //    return VolunteerPerk(perk, fightingTarget, ref actionTarget);
-
-            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -1471,6 +1549,26 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Misc
+
+        private PerkConditionProcessor ToPerkConditionProcessor(GenericPerkConditionProcessor genericPerkConditionProcessor)
+        {
+            return (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => genericPerkConditionProcessor(perkAction, fightingTarget, ref actionTarget);
+        }
+
+        protected void RegisterPerkProcessors()
+        {
+            PerkAction.List.ForEach(perkAction => RegisterPerkAction(perkAction));
+        }
+
+        private void RegisterPerkAction(PerkAction perkAction)
+        {
+            GenericPerkConditionProcessor perkConditionProcessor = PerkCondtionProcessors.GetPerkConditionProcessor(perkAction);
+
+            if (perkConditionProcessor != null)
+            {
+                RegisterPerkProcessor(perkAction.Hash, ToPerkConditionProcessor(perkConditionProcessor));
+            }
+        }
 
         //public static void Network_N3MessageSent(object s, N3Message n3Msg)
         //{

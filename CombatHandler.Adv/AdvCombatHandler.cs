@@ -14,6 +14,7 @@ using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization.Formatters;
+using System.Timers;
 
 namespace CombatHandler.Adventurer
 {
@@ -50,6 +51,7 @@ namespace CombatHandler.Adventurer
 
             Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -93,6 +95,11 @@ namespace CombatHandler.Adventurer
             RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteSlice, MacheteSlice, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcAdventurerBasicDressing, BasicDressing, CombatActionPriority.Low);
 
+            //Perks
+            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
+            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
+
             //Spells
             RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
@@ -122,6 +129,7 @@ namespace CombatHandler.Adventurer
 
             HealPercentage = Config.CharSettings[Game.ClientInst].HealPercentage;
             CompleteHealPercentage = Config.CharSettings[Game.ClientInst].CompleteHealPercentage;
+            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
 
             //Items
             //RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
@@ -235,11 +243,21 @@ namespace CombatHandler.Adventurer
 
                 _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvPerksView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "AdvPerksView" }, _perkView);
+
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "AdvPerksView" }, _perkView, out var container);
                 _perkWindow = container;
+
+                container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+
+                if (bioCocoonInput != null)
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
             }
         }
 
@@ -307,23 +325,13 @@ namespace CombatHandler.Adventurer
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
-            {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
-
-                IPCChannel.Broadcast(ncuMessage);
-
-                OnRemainingNCUMessage(0, ncuMessage);
-
-                _ncuUpdateTime = Time.NormalTime;
-            }
-
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
             {
                 window.FindView("HealPercentageBox", out TextInputView healInput);
                 window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
+                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                     if (int.TryParse(healInput.Text, out int healValue))
@@ -334,6 +342,22 @@ namespace CombatHandler.Adventurer
                     if (int.TryParse(completeHealInput.Text, out int completeHealValue))
                         if (Config.CharSettings[Game.ClientInst].CompleteHealPercentage != completeHealValue)
                             Config.CharSettings[Game.ClientInst].CompleteHealPercentage = completeHealValue;
+
+                if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
+                    if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
+            }
+
+            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            {
+                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+                IPCChannel.Broadcast(ncuMessage);
+
+                OnRemainingNCUMessage(0, ncuMessage);
+
+                _ncuUpdateTime = Time.NormalTime;
             }
 
             if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32())

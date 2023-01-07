@@ -62,6 +62,8 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
+            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+
             _settings.AddVariable("Kits", true);
             _settings.AddVariable("Stims", true);
 

@@ -62,6 +62,8 @@ namespace CombatHandler.Enf
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
+            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+
             _settings.AddVariable("Kits", true);
             _settings.AddVariable("Stims", true);
 
@@ -69,8 +71,6 @@ namespace CombatHandler.Enf
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.ViolationBuffer);
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
-
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("MongoTaunt", false);
             _settings.AddVariable("CycleAbsorbs", false);

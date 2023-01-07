@@ -12,6 +12,7 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using static CombatHandler.Fixer.FixerCombatHandler;
 
 namespace CombatHandler.Fixer
 {

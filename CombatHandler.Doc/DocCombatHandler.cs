@@ -101,6 +101,12 @@ namespace CombatHandler.Doctor
             RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, Astringent, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcDoctorInflammation, Inflammation, CombatActionPriority.Low);
 
+            //Perks
+            RegisterPerkProcessor(PerkHash.BattlegroupHeal1, BattlegroupHeal1);
+            RegisterPerkProcessor(PerkHash.BattlegroupHeal2, BattlegroupHeal2);
+            RegisterPerkProcessor(PerkHash.BattlegroupHeal3, BattlegroupHeal3);
+            RegisterPerkProcessor(PerkHash.BattlegroupHeal4, BattlegroupHeal4);
+
             //Healing
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
 
@@ -546,6 +552,121 @@ namespace CombatHandler.Doctor
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
+
+        #endregion
+
+        #region Perks
+
+        public static bool BattleGroupHeal1(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= 40)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 1)
+                    return perkAction.IsAvailable;
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+
+            return perkAction.IsAvailable;
+        }
+
+        public static bool BattleGroupHeal2(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= 40)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 1)
+                {
+                    PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
+
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false)
+                        return perkAction.IsAvailable;
+                }
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+
+            if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self))
+            {
+                if (_bgHeal1Self?.IsAvailable == false && _bgHeal1Self?.IsExecuting == false)
+                    return perkAction.IsAvailable;
+            }
+
+            return false;
+        }
+
+        public static bool BattleGroupHeal3(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= 40)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 1)
+                {
+                    PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
+                    PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
+
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false && _bgHeal2Team?.IsAvailable == false && _bgHeal2Team?.IsExecuting == false)
+                        return perkAction.IsAvailable;
+                }
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+
+            if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self) && PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Self))
+            {
+                if (_bgHeal1Self?.IsAvailable == false && _bgHeal1Self?.IsExecuting == false && _bgHeal2Self?.IsAvailable == false && _bgHeal2Self?.IsExecuting == false)
+                    return perkAction.IsAvailable;
+            }
+
+            return false;
+        }
+
+        public static bool BattleGroupHeal4(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam)
+            {
+                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= 40)
+                    .ToList();
+
+                if (dyingTeamMember.Count >= 1)
+                {
+                    PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
+                    PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
+                    PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Team);
+
+                    if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false && _bgHeal2Team?.IsAvailable == false && _bgHeal2Team?.IsExecuting == false
+                        && _bgHeal3Team?.IsAvailable == false && _bgHeal3Team?.IsExecuting == false)
+                        return perkAction.IsAvailable;
+                }
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+
+            if (PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Self) && PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Self)
+                && PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Self))
+            {
+                if (_bgHeal1Self?.IsAvailable == false && _bgHeal1Self?.IsExecuting == false && _bgHeal2Self?.IsAvailable == false && _bgHeal2Self?.IsExecuting == false
+                    && _bgHeal3Self?.IsAvailable == false && _bgHeal3Self?.IsExecuting == false)
+                    return perkAction.IsAvailable;
+            }
+
+            return false;
+        }
 
         #endregion
 

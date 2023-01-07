@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static CombatHandler.Generic.GenericCombatHandler;
 using static System.Collections.Specialized.BitVector32;
 
 namespace CombatHandler.Generic
@@ -22,38 +23,40 @@ namespace CombatHandler.Generic
 
             switch (perkType)
             {
-                case PerkType.CUSTOM:
-                    if (!CUSTOM_PROCESSORS.ContainsKey(perkHash))
-                    {
-                        Chat.WriteLine("Attempt to register custom perk processor without defintion. Perk name: " + perkAction.Name);
-                        return null;
-                    }
-                    return CUSTOM_PROCESSORS[perkHash];
-                case PerkType.TARGETED_DAMAGE:
+                //Chat.WriteLine("Attempt to register custom perk processor without defintion. Perk name: " + perkAction.Name);
+                case PerkType.Custom:
+                    if (!CustomProcessor.ContainsKey(perkHash)) { return null; }
+                    return CustomProcessor[perkHash];
+                case PerkType.SelfBuff:
+                    return BuffPerk;
+                case PerkType.SelfHeal:
+                    return SelfHeal;
+                case PerkType.SelfNano:
+                    return SelfNano;
+                //case PerkType.TargetHeal:
+                //    return TargetHeal;
+                //case PerkType.TargetNano:
+                //    return TargetNano;
+                case PerkType.TargetDamage:
                     return TargetedDamagePerk;
-                case PerkType.HEAL:
-                    return HealPerk;
-                case PerkType.NANO_HEAL:
-                    return NanoPerk;
-                case PerkType.SELF_BUFF:
-                    return SelfBuffPerk;
-                case PerkType.DAMAGE_BUFF:
+                case PerkType.DamageBuff:
                     return DamageBuffPerk;
-                case PerkType.CLEANSE:
-                case PerkType.PET_BUFF:
-                case PerkType.PET_HEAL:
-                case PerkType.DISABLED:
-                case PerkType.LE_PROC:
+                case PerkType.PetBuff:
+                case PerkType.PetHeal:
+                case PerkType.LEProc:
+                case PerkType.Clease:
+                case PerkType.Disabled:
+                case PerkType.Unknown:
                     return null;
                 default:
-                    Chat.WriteLine("Attempt to register unknown perk type for perk name: " + perkAction.Name);
+                    //Chat.WriteLine("Attempt to register unknown perk type for perk name: " + perkAction.Name);
                     return null;
             }
         }
 
 
         //TODO: these should be in generic like legshot
-        private static Dictionary<PerkHash, GenericPerkConditionProcessor> CUSTOM_PROCESSORS = new Dictionary<PerkHash, GenericPerkConditionProcessor>()
+        private static Dictionary<PerkHash, GenericPerkConditionProcessor> CustomProcessor = new Dictionary<PerkHash, GenericPerkConditionProcessor>()
         {
             {PerkHash.Moonmist, Moonmist },
             {PerkHash.DazzleWithLights, StarfallPerk },
@@ -64,7 +67,6 @@ namespace CombatHandler.Generic
             {PerkHash.BattlegroupHeal2, BattleGroupHealPerk2 },
             {PerkHash.BattlegroupHeal3, BattleGroupHealPerk3 },
             {PerkHash.BattlegroupHeal4, BattleGroupHealPerk4 },
-            {PerkHash.WitOfTheAtrox, SelfBuffPerk },
             {PerkHash.EvasiveStance, EvasiveStance }
         };
 
@@ -72,7 +74,7 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.HealthPercent >= 75) { return false; }
 
-            return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private static bool QuickShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -354,9 +356,9 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        public static bool SelfBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perkAction.IsAvailable) { return false; }
+            if (!perkAction.IsAvailable || fightingTarget == null) { return false; }
 
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
@@ -369,65 +371,9 @@ namespace CombatHandler.Generic
                 || perkAction.Name == "Limber" || perkAction.Name == "Dance of Fools"
                 || perkAction.Name == "Leg Shot") { return false; }
 
-            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.Target = fightingTarget;
             actionTarget.ShouldSetTarget = true;
             return true;
-        }
-
-        public static bool HealPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.Health > 0
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= 75)
-                    .FirstOrDefault();
-
-                if (dyingTeamMember != null)
-                {
-                    actionTarget.Target = dyingTeamMember;
-                    return true;
-                }
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 70)
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool NanoPerk(PerkAction perkAction, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                SimpleChar dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.Health > 0
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.NanoPercent <= 75)
-                    .FirstOrDefault();
-
-                if (dyingTeamMember != null)
-                {
-                    actionTarget.Target = dyingTeamMember;
-                    return true;
-                }
-            }
-
-            if (DynelManager.LocalPlayer.NanoPercent <= 70)
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            return false;
         }
 
         public static bool TargetedDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -12,6 +12,7 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using System.Timers;
 
 namespace CombatHandler.MartialArtist
 {
@@ -76,19 +77,25 @@ namespace CombatHandler.MartialArtist
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
-            //LE Procs Type 1
+            //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, AbsoluteFist, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenKi, StrengthenKi, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistDisruptKi, DisruptKi, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistSmashingFist, SmashingFist, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenSpirit, StrengthenSpirit, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistStingingFist, StingingFist, CombatActionPriority.Low);
-            //LE Procs Type 2
+
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistSelfReconstruction, SelfReconstruction, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, DebilitatingStrike, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistHealingMeditation, HealingMeditation, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistAttackLigaments, AttackLigaments, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, MedicinalRemedy, CombatActionPriority.Low);
+
+            //Perks
+            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.Moonmist, Moonmist, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);

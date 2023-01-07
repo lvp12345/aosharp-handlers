@@ -258,7 +258,7 @@ namespace CombatHandler.Engineer
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
-                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -268,7 +268,7 @@ namespace CombatHandler.Engineer
                 container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
 
                 if (bioCocoonInput != null)
-                    bioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
+                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
             }
         }
         private void HandleBuffViewClick(object s, ButtonBase button)

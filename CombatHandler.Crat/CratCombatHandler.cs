@@ -166,6 +166,7 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.Leadership, Leadership);
             RegisterPerkProcessor(PerkHash.Governance, Governance);
             RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
+            RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
             //Pet Buffs
             if (Spell.Find(RelevantNanos.CorporateStrategy, out Spell spell))

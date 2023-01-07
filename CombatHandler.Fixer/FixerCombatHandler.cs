@@ -12,6 +12,7 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using System.Timers;
 
 namespace CombatHandler.Fixer
 {
@@ -83,7 +84,12 @@ namespace CombatHandler.Fixer
             RegisterPerkProcessor(PerkHash.LEProcFixerFightingChance, FightingChance, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcFixerContaminatedBullets, ContaminatedBullets, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcFixerUndergroundSutures, UndergroundSutures, CombatActionPriority.Low);
-            
+
+            //Perks
+            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GenericTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), GenericBuff);

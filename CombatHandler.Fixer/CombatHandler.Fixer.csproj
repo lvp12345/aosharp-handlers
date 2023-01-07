@@ -60,7 +60,7 @@
     </Reference>
     <Reference Include="CombatHandler.Generic, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Debug\CombatHandler.Generic.dll</HintPath>
+      <HintPath>..\bin\Release\CombatHandler.Generic.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

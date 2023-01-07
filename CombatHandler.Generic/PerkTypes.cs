@@ -95,7 +95,7 @@ namespace CombatHandler.Generic
             {PerkHash.Cure2 , PerkType.SelfHeal},
             {PerkHash.CuringTouch , PerkType.SelfHeal},
             {PerkHash.DanceOfFools , PerkType.Disabled},
-            {PerkHash.DazzleWithLights , PerkType.TargetDamage},
+            {PerkHash.DazzleWithLights , PerkType.Disabled},
             {PerkHash.Deadeye , PerkType.TargetDamage},
             {PerkHash.DeathStrike , PerkType.TargetDamage},
             {PerkHash.Deconstruction , PerkType.TargetDamage},
@@ -507,6 +507,6 @@ namespace CombatHandler.Generic
 
     enum PerkType
     {
-        SelfBuff, SelfHeal, SelfNano, TargetDamage, DamageBuff, Generic, LEProc, Custom, PetBuff, Disabled, Clease, PetHeal, Unknown
+        Generic, SelfBuff, SelfHeal, SelfNano, TargetHeal, TargetNano, TargetDamage, DamageBuff, PetBuff, PetHeal, LEProc, Clease, Custom, Disabled, Unknown
     }
 }

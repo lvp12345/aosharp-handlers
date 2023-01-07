@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using System.Windows.Input;
-using static CombatHandler.Doctor.DocCombatHandler;
 
 namespace CombatHandler.Doctor
 {

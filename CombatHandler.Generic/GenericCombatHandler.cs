@@ -45,6 +45,12 @@ namespace CombatHandler.Generic
         public static int NullitySpherePercentage = 0;
         public static int IzgimmersWealthPercentage = 0;
 
+        public static int StimHealthPercentage = 0;
+        public static int StimNanoPercentage = 0;
+        public static int KitHealthPercentage = 0;
+        public static int KitNanoPercentage = 0;
+        public static string StimTargetName = string.Empty;
+
         private double CycleXpPerks = 0;
 
         private static double _updateTick;
@@ -1147,35 +1153,55 @@ namespace CombatHandler.Generic
 
         private bool SitKit(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Profession == Profession.Enforcer && !IsSettingEnabled("Kits")) { return false; }
+            if (!IsSettingEnabled("Kits")) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
-                || (DynelManager.LocalPlayer.HealthPercent >= 66 && DynelManager.LocalPlayer.NanoPercent >= 66)) { return false; }
+                || (DynelManager.LocalPlayer.HealthPercent >= KitHealthPercentage && DynelManager.LocalPlayer.NanoPercent >= KitNanoPercentage)) { return false; }
 
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;
             return true;
         }
 
-        private bool HealthAndNanoStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Profession == Profession.Enforcer && !IsSettingEnabled("Stims")) { return false; }
+            if (!IsSettingEnabled("Stims")) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
                 || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
                 || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
+            if (StimTargetSelection.Target == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
+            {
+                SimpleChar player = DynelManager.Players
+                    .Where(c => c.IsInLineOfSight
+                        && (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage)
+                        && c.Name == StimTargetName
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
+                        && c.Health > 0)
+                    .FirstOrDefault();
+
+                if (player != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = player;
+                    return true;
+                }
+            }
+
+            if (StimTargetSelection.None == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
+
             int targetHealing = item.UseModifiers
-                .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
-                .Cast<SpellData.Healing>()
-                .Sum(x => x.Average);
+                    .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
+                    .Cast<SpellData.Healing>()
+                    .Sum(x => x.Average);
 
             if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 595f) == null
                 && (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing))
             {
-                actiontarget.ShouldSetTarget = true;
-                actiontarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
 
                 return true;
             }
@@ -1450,7 +1476,7 @@ namespace CombatHandler.Generic
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget); ;
         }
 
-        protected bool FindMemberWithHealthBelow(int healthPercentTreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool FindMemberWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
@@ -1458,7 +1484,7 @@ namespace CombatHandler.Generic
             {
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= healthPercentTreshold && c.IsInLineOfSight
+                        && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
                     .OrderBy(c => c)
@@ -1479,7 +1505,7 @@ namespace CombatHandler.Generic
             }
 
 
-            if (DynelManager.LocalPlayer.HealthPercent <= healthPercentTreshold)
+            if (DynelManager.LocalPlayer.HealthPercent <= healthPercentThreshold)
             {
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
@@ -1489,12 +1515,12 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool FindPlayerWithHealthBelow(int healthPercentTreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             SimpleChar player = DynelManager.Players
-                .Where(c => c.HealthPercent <= healthPercentTreshold 
+                .Where(c => c.HealthPercent <= healthPercentThreshold 
                     && c.IsInLineOfSight
                     && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                     && c.Health > 0)
@@ -2016,6 +2042,11 @@ namespace CombatHandler.Generic
                 PetType = petType;
             }
         }
+        public enum StimTargetSelection
+        {
+            None, Self, Target
+        }
+
         public static void IPCChannel_Changed(object s, int e)
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
@@ -2057,6 +2088,36 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[Game.ClientInst].CycleRageDelay = e;
             CycleRageDelay = e;
+            Config.Save();
+        }
+        public static void StimTargetName_Changed(object s, string e)
+        {
+            Config.CharSettings[Game.ClientInst].StimTargetName = e;
+            StimTargetName = e;
+            Config.Save();
+        }
+        public static void StimHealthPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].StimHealthPercentage = e;
+            StimHealthPercentage = e;
+            Config.Save();
+        }
+        public static void StimNanoPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].StimNanoPercentage = e;
+            StimNanoPercentage = e;
+            Config.Save();
+        }
+        public static void KitHealthPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].KitHealthPercentage = e;
+            KitHealthPercentage = e;
+            Config.Save();
+        }
+        public static void KitNanoPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].KitNanoPercentage = e;
+            KitNanoPercentage = e;
             Config.Save();
         }
         public static void CycleXpPerksDelay_Changed(object s, int e)

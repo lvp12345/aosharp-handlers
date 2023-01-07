@@ -43,6 +43,11 @@ namespace CombatHandler.Keeper
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
             Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
+            Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -116,6 +121,11 @@ namespace CombatHandler.Keeper
             PluginDirectory = pluginDir;
 
             BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
+            StimTargetName = Config.CharSettings[Game.ClientInst].StimTargetName;
+            StimHealthPercentage = Config.CharSettings[Game.ClientInst].StimHealthPercentage;
+            StimNanoPercentage = Config.CharSettings[Game.ClientInst].StimNanoPercentage;
+            KitHealthPercentage = Config.CharSettings[Game.ClientInst].KitHealthPercentage;
+            KitNanoPercentage = Config.CharSettings[Game.ClientInst].KitNanoPercentage;
         }
         public Window[] _windows => new Window[] { _buffWindow, _procWindow, _itemWindow, _perkWindow };
 
@@ -169,11 +179,45 @@ namespace CombatHandler.Keeper
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\KeeperItemsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "KeeperItemsView" }, _itemView);
+
+                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+
+                if (stimTargetInput != null)
+                    stimTargetInput.Text = $"{StimTargetName}";
+                if (stimHealthInput != null)
+                    stimHealthInput.Text = $"{StimHealthPercentage}";
+                if (stimNanoInput != null)
+                    stimNanoInput.Text = $"{StimNanoPercentage}";
+                if (kitHealthInput != null)
+                    kitHealthInput.Text = $"{KitHealthPercentage}";
+                if (kitNanoInput != null)
+                    kitNanoInput.Text = $"{KitNanoPercentage}";
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "KeeperItemsView" }, _itemView, out var container);
                 _itemWindow = container;
+
+                container.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                container.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                container.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                container.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                container.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+
+                if (stimTargetInput != null)
+                    stimTargetInput.Text = $"{StimTargetName}";
+                if (stimHealthInput != null)
+                    stimHealthInput.Text = $"{StimHealthPercentage}";
+                if (stimNanoInput != null)
+                    stimNanoInput.Text = $"{StimNanoPercentage}";
+                if (kitHealthInput != null)
+                    kitHealthInput.Text = $"{KitHealthPercentage}";
+                if (kitNanoInput != null)
+                    kitNanoInput.Text = $"{KitNanoPercentage}";
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -250,11 +294,40 @@ namespace CombatHandler.Keeper
             if (window != null && window.IsValid)
             {
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
 
                 if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
                     if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
                         if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
                             Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
+
+                if (stimTargetInput != null)
+                    if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
+                        Config.CharSettings[Game.ClientInst].StimTargetName = stimTargetInput.Text;
+
+                if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
+                    if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
+                        if (Config.CharSettings[Game.ClientInst].StimHealthPercentage != stimHealthValue)
+                            Config.CharSettings[Game.ClientInst].StimHealthPercentage = stimHealthValue;
+
+                if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
+                    if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
+                        if (Config.CharSettings[Game.ClientInst].StimNanoPercentage != stimNanoValue)
+                            Config.CharSettings[Game.ClientInst].StimNanoPercentage = stimNanoValue;
+
+                if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                    if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                        if (Config.CharSettings[Game.ClientInst].KitHealthPercentage != kitHealthValue)
+                            Config.CharSettings[Game.ClientInst].KitHealthPercentage = kitHealthValue;
+
+                if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                    if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                        if (Config.CharSettings[Game.ClientInst].KitNanoPercentage != kitNanoValue)
+                            Config.CharSettings[Game.ClientInst].KitNanoPercentage = kitNanoValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

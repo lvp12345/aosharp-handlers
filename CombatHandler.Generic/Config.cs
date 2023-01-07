@@ -19,6 +19,8 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
         [JsonIgnore]
+        public string StimTargetName => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].StimTargetName : string.Empty;
+        [JsonIgnore]
         public int HealthDrainPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].HealthDrainPercentage : 90;
         [JsonIgnore]
         public int HealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].HealPercentage : 90;
@@ -39,11 +41,11 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int BioCocoonPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BioCocoonPercentage : 65;
         [JsonIgnore]
-        public int NTNanoAegisPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NanoAegisPercentage : 70;
+        public int NanoAegisPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NanoAegisPercentage : 70;
         [JsonIgnore]
-        public int NTNullitySpherePercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NullitySpherePercentage : 35;
+        public int NullitySpherePercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NullitySpherePercentage : 35;
         [JsonIgnore]
-        public int NTIzgimmersWealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IzgimmersWealthPercentage : 25;
+        public int IzgimmersWealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IzgimmersWealthPercentage : 25;
 
         #endregion
 
@@ -114,7 +116,91 @@ namespace CombatHandler.Generic
                 }
             }
         }
-
+        public event EventHandler<string> StimTargetNameChangedEvent;
+        private string _stimTargetName = string.Empty;
+        public string StimTargetName
+        {
+            get
+            {
+                return _stimTargetName;
+            }
+            set
+            {
+                if (_stimTargetName != value)
+                {
+                    _stimTargetName = value;
+                    StimTargetNameChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> StimHealthPercentageChangedEvent;
+        private int _stimHealthPercentage = 66;
+        public int StimHealthPercentage
+        {
+            get
+            {
+                return _stimHealthPercentage;
+            }
+            set
+            {
+                if (_stimHealthPercentage != value)
+                {
+                    _stimHealthPercentage = value;
+                    StimHealthPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> StimNanoPercentageChangedEvent;
+        private int _stimNanoPercentage = 66;
+        public int StimNanoPercentage
+        {
+            get
+            {
+                return _stimNanoPercentage;
+            }
+            set
+            {
+                if (_stimNanoPercentage != value)
+                {
+                    _stimNanoPercentage = value;
+                    StimNanoPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> KitHealthPercentageChangedEvent;
+        private int _kitHealthPercentage = 66;
+        public int KitHealthPercentage
+        {
+            get
+            {
+                return _kitHealthPercentage;
+            }
+            set
+            {
+                if (_kitHealthPercentage != value)
+                {
+                    _kitHealthPercentage = value;
+                    KitHealthPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> KitNanoPercentageChangedEvent;
+        private int _kitNanoPercentage = 66;
+        public int KitNanoPercentage
+        {
+            get
+            {
+                return _kitNanoPercentage;
+            }
+            set
+            {
+                if (_kitNanoPercentage != value)
+                {
+                    _kitNanoPercentage = value;
+                    KitNanoPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> HealthDrainPercentageChangedEvent;
         private int _healthDrainPercentage = 90;
         public int HealthDrainPercentage

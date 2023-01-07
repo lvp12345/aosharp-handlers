@@ -49,6 +49,11 @@ namespace CombatHandler.Enf
             Config.CharSettings[Game.ClientInst].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
             Config.CharSettings[Game.ClientInst].CycleChallengerDelayChangedEvent += CycleChallengerDelay_Changed;
             Config.CharSettings[Game.ClientInst].CycleRageDelayChangedEvent += CycleRageDelay_Changed;
+            Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
+            Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -64,6 +69,8 @@ namespace CombatHandler.Enf
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.ViolationBuffer);
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
+
+            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("MongoTaunt", false);
             _settings.AddVariable("CycleAbsorbs", false);
@@ -136,6 +143,11 @@ namespace CombatHandler.Enf
             CycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay;
             CycleChallengerDelay = Config.CharSettings[Game.ClientInst].CycleChallengerDelay;
             CycleRageDelay = Config.CharSettings[Game.ClientInst].CycleRageDelay;
+            StimTargetName = Config.CharSettings[Game.ClientInst].StimTargetName;
+            StimHealthPercentage = Config.CharSettings[Game.ClientInst].StimHealthPercentage;
+            StimNanoPercentage = Config.CharSettings[Game.ClientInst].StimNanoPercentage;
+            KitHealthPercentage = Config.CharSettings[Game.ClientInst].KitHealthPercentage;
+            KitNanoPercentage = Config.CharSettings[Game.ClientInst].KitNanoPercentage;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
@@ -257,11 +269,45 @@ namespace CombatHandler.Enf
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerItemsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "EnforcerItemsView" }, _itemView);
+
+                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+
+                if (stimTargetInput != null)
+                    stimTargetInput.Text = $"{StimTargetName}";
+                if (stimHealthInput != null)
+                    stimHealthInput.Text = $"{StimHealthPercentage}";
+                if (stimNanoInput != null)
+                    stimNanoInput.Text = $"{StimNanoPercentage}";
+                if (kitHealthInput != null)
+                    kitHealthInput.Text = $"{KitHealthPercentage}";
+                if (kitNanoInput != null)
+                    kitNanoInput.Text = $"{KitNanoPercentage}";
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "EnforcerItemsView" }, _itemView, out var container);
                 _itemWindow = container;
+
+                container.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                container.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                container.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                container.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                container.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+
+                if (stimTargetInput != null)
+                    stimTargetInput.Text = $"{StimTargetName}";
+                if (stimHealthInput != null)
+                    stimHealthInput.Text = $"{StimHealthPercentage}";
+                if (stimNanoInput != null)
+                    stimNanoInput.Text = $"{StimNanoPercentage}";
+                if (kitHealthInput != null)
+                    kitHealthInput.Text = $"{KitHealthPercentage}";
+                if (kitNanoInput != null)
+                    kitNanoInput.Text = $"{KitNanoPercentage}";
             }
         }
 
@@ -328,6 +374,11 @@ namespace CombatHandler.Enf
                 window.FindView("ChallengerDelayBox", out TextInputView challengerInput);
                 window.FindView("RageDelayBox", out TextInputView rageInput);
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
 
                 if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
                     if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
@@ -358,6 +409,30 @@ namespace CombatHandler.Enf
                     if (int.TryParse(rageInput.Text, out int rageValue))
                         if (Config.CharSettings[Game.ClientInst].CycleRageDelay != rageValue)
                             Config.CharSettings[Game.ClientInst].CycleRageDelay = rageValue;
+
+                if (stimTargetInput != null)
+                        if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
+                            Config.CharSettings[Game.ClientInst].StimTargetName = stimTargetInput.Text;
+
+                if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
+                    if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
+                        if (Config.CharSettings[Game.ClientInst].StimHealthPercentage != stimHealthValue)
+                            Config.CharSettings[Game.ClientInst].StimHealthPercentage = stimHealthValue;
+
+                if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
+                    if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
+                        if (Config.CharSettings[Game.ClientInst].StimNanoPercentage != stimNanoValue)
+                            Config.CharSettings[Game.ClientInst].StimNanoPercentage = stimNanoValue;
+
+                if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                    if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                        if (Config.CharSettings[Game.ClientInst].KitHealthPercentage != kitHealthValue)
+                            Config.CharSettings[Game.ClientInst].KitHealthPercentage = kitHealthValue;
+
+                if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                    if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                        if (Config.CharSettings[Game.ClientInst].KitNanoPercentage != kitNanoValue)
+                            Config.CharSettings[Game.ClientInst].KitNanoPercentage = kitNanoValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

@@ -45,6 +45,8 @@ namespace CombatHandler.Generic
         public static int NullitySpherePercentage = 0;
         public static int IzgimmersWealthPercentage = 0;
 
+        private double CycleXpPerks = 0;
+
         private static double _updateTick;
 
         private static Window _perkWindow;
@@ -372,19 +374,54 @@ namespace CombatHandler.Generic
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
+        protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Time.NormalTime > CycleXpPerks + CycleXpPerksDelay)
+            {
+                CycleXpPerks = Time.NormalTime;
+
+                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+                //Maybe add something here for KHBuddy
+                if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+                    return LeadershipPerk(perk, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
+
+        protected bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+                return GovernancePerk(perk, fightingTarget, ref actionTarget);
+
+            return false;
+        }
+        protected bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
+                return TheDirectorPerk(perk, fightingTarget, ref actionTarget);
+
+            return false;
+        }
+
+        protected bool Volunteer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+            return VolunteerPerk(perk, fightingTarget, ref actionTarget);
+        }
+
         protected bool CyclePerks(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            if (perk.Name == "Sacrifice" || perk.Name == "Purple Heart")
-                return VolunteerPerk(perk, fightingTarget, ref actionTarget);
-
-            if (perk.Name == "Leadership")
-                return LeadershipPerk(perk, fightingTarget, ref actionTarget);
-            if (perk.Name == "Governance")
-                return GovernancePerk(perk, fightingTarget, ref actionTarget);
-            if (perk.Name == "The Director")
-                return TheDirectorPerk(perk, fightingTarget, ref actionTarget);
+            //if (perk.Name == "Sacrifice" || perk.Name == "Purple Heart")
+            //    return VolunteerPerk(perk, fightingTarget, ref actionTarget);
 
             return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
         }
@@ -429,9 +466,9 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                SimpleChar target = DynelManager.Players
-                    .Where(c => c.HealthPercent < 30
-                        && c.IsInLineOfSight
+                SimpleChar teamMember = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= 30 && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
                     .OrderBy(c => c)
@@ -441,15 +478,16 @@ namespace CombatHandler.Generic
                     .ThenByDescending(c => c.Profession == Profession.Soldier)
                     .FirstOrDefault();
 
-                if (target != null)
+                if (teamMember != null)
                 {
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
+                    actionTarget.Target = teamMember;
                     return true;
                 }
 
                 return false;
             }
+
 
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
             {

@@ -65,7 +65,7 @@ namespace CombatHandler.Generic
             {PerkHash.BattlegroupHeal3, BattleGroupHealPerk3 },
             {PerkHash.BattlegroupHeal4, BattleGroupHealPerk4 },
             {PerkHash.WitOfTheAtrox, SelfBuffPerk },
-            {PerkHash.EvasiveStance, EvasiveStance },
+            {PerkHash.EvasiveStance, EvasiveStance }
         };
 
         private static bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

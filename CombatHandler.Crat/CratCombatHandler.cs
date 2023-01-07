@@ -21,8 +21,6 @@ namespace CombatHandler.Bureaucrat
         private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
 
-        private double _cycleXpPerks = 0;
-
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
         private static bool ToggleDebuffing = false;
@@ -626,44 +624,6 @@ namespace CombatHandler.Bureaucrat
             if (ProcType2Selection.WrongWindow != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
-        #region Perks
-
-        private bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Time.NormalTime > _cycleXpPerks + CycleXpPerksDelay)
-            {
-                _cycleXpPerks = Time.NormalTime;
-
-                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-                //Maybe add something here for KHBuddy
-                if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                    return CyclePerks(perk, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-        private bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-            if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                return CyclePerks(perk, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-        private bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-            if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                return CyclePerks(perk, fightingTarget, ref actionTarget);
-
-            return false;
         }
 
         #endregion

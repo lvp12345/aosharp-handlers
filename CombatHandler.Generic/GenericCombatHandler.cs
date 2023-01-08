@@ -160,7 +160,8 @@ namespace CombatHandler.Generic
                     "Nanovoider",
                     "Punishment",
                     "Flaming Chaos",
-                    "Flaming Punishment"
+                    "Flaming Punishment",
+                    "Flaming Vengeance"
         };
 
         public static IPCChannel IPCChannel;
@@ -2044,7 +2045,7 @@ namespace CombatHandler.Generic
         }
         public enum StimTargetSelection
         {
-            None, Self, Target
+            None, Self, Team, Target
         }
 
         public static void IPCChannel_Changed(object s, int e)

@@ -79,7 +79,6 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
 
             Game.TeleportEnded += OnZoned;
 

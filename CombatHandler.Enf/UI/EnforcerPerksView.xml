@@ -2,6 +2,8 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <OptionCheckBox label="Troll form" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TrollForm" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="Bio Cocoon %" layout_borders="Rect(5,5,5,5)"/>
     <TextInputView name="BioCocoonPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

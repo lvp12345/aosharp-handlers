@@ -80,7 +80,6 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.AAOAAD);
             _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
@@ -749,6 +748,7 @@ namespace CombatHandler.Bureaucrat
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -771,6 +771,7 @@ namespace CombatHandler.Bureaucrat
                         && c.FightingTarget != null
                         && !AttackingMob(c)
                         && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -799,6 +800,7 @@ namespace CombatHandler.Bureaucrat
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -820,6 +822,7 @@ namespace CombatHandler.Bureaucrat
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -848,6 +851,7 @@ namespace CombatHandler.Bureaucrat
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -869,6 +873,7 @@ namespace CombatHandler.Bureaucrat
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
                 if (target != null)
@@ -1086,6 +1091,7 @@ namespace CombatHandler.Bureaucrat
                         && (c.Name == "Flaming Vengeance"
                             || c.Name == "Hand of the Colonel"
                             || c.Name == "Alien Seeker"))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
             if (target != null)
@@ -1108,6 +1114,7 @@ namespace CombatHandler.Bureaucrat
                         && c.IsMoving
                         && !c.Buffs.Contains(NanoLine.Root)
                         && c.Name == "Alien Heavy Patroller")
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
             if (target != null)

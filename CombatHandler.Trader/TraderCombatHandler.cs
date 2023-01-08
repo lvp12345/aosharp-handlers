@@ -69,7 +69,6 @@ namespace CombatHandler.Trader
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("DamageDrain", true);
             _settings.AddVariable("HealthDrain", false);

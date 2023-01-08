@@ -68,7 +68,6 @@ namespace CombatHandler.Adventurer
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
             _settings.AddVariable("MorphSelection", (int)MorphSelection.None);

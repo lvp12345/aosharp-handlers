@@ -65,7 +65,6 @@ namespace CombatHandler.Enf
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RagingBlow);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.ViolationBuffer);

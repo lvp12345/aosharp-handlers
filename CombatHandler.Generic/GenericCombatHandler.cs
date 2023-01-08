@@ -1165,15 +1165,13 @@ namespace CombatHandler.Generic
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Stims")) { return false; }
-
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
-                || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
-
             if (StimTargetSelection.Target == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
             {
+                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
+                    || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                    || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+
                 SimpleChar player = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage)
@@ -1191,6 +1189,11 @@ namespace CombatHandler.Generic
             }
 
             if (StimTargetSelection.None == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
+                || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
             int targetHealing = item.UseModifiers
                     .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)

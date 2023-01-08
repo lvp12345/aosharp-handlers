@@ -67,7 +67,6 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AbsoluteFist);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DebilitatingStrike);

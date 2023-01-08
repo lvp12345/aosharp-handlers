@@ -64,7 +64,6 @@ namespace CombatHandler.Shade
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.BlackenedLegacy);

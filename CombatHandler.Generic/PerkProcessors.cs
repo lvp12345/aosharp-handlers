@@ -90,12 +90,12 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        public static bool BattleGroupHealPerk1(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BattleGroupHealPerk1(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return perkAction.IsAvailable;
         }
 
-        public static bool BattleGroupHealPerk2(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BattleGroupHealPerk2(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
 
@@ -105,7 +105,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public static bool BattleGroupHealPerk3(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BattleGroupHealPerk3(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
             PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
@@ -116,7 +116,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public static bool BattleGroupHealPerk4(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BattleGroupHealPerk4(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
             PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);

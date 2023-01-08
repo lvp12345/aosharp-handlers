@@ -1189,6 +1189,37 @@ namespace CombatHandler.Generic
                 }
             }
 
+            if (StimTargetSelection.Team == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
+                    || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                    || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+
+                SimpleChar teamMember = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage)
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
+                        && c.Health > 0)
+                    .OrderBy(c => c)
+                    .ThenByDescending(c => c.HealthPercent)
+                    .ThenByDescending(c => c.Profession == Profession.Enforcer)
+                    .ThenByDescending(c => c.Profession == Profession.Doctor)
+                    .ThenByDescending(c => c.Profession == Profession.Soldier)
+                    .FirstOrDefault();
+
+                if (teamMember != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+
+                    return true;
+                }
+
+                return false;
+            }
+
             if (StimTargetSelection.None == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)

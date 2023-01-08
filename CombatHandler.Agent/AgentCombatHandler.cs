@@ -69,7 +69,6 @@ namespace CombatHandler.Agent
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
-            _settings.AddVariable("Stims", true);
 
             _settings.AddVariable("DOTA", false);
             _settings.AddVariable("EvasionDebuff", false);

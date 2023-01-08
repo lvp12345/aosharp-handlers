@@ -21,6 +21,14 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public string StimTargetName => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].StimTargetName : string.Empty;
         [JsonIgnore]
+        public int StimHealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].StimHealthPercentage : 66;
+        [JsonIgnore]
+        public int StimNanoPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].StimNanoPercentage : 66;
+        [JsonIgnore]
+        public int KitHealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].KitHealthPercentage : 66;
+        [JsonIgnore]
+        public int KitNanoPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].KitNanoPercentage : 66;
+        [JsonIgnore]
         public int HealthDrainPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].HealthDrainPercentage : 90;
         [JsonIgnore]
         public int HealPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].HealPercentage : 90;

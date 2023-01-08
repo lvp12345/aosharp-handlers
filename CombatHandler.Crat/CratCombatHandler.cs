@@ -821,6 +821,7 @@ namespace CombatHandler.Bureaucrat
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
+                        && DynelManager.LocalPlayer.FightingTarget?.Identity != c.Identity
                         && AttackingTeam(c))
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();

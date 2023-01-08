@@ -439,17 +439,17 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= 40)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
-                    return BattleGroupHealPerk1(perk, DynelManager.LocalPlayer, ref actionTarget);
+                    return BattleGroupHealPerk1(perk, ref actionTarget);
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            return BattleGroupHealPerk1(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BattleGroupHealPerk1(perk, ref actionTarget);
         }
 
         protected bool BattleGroupHeal2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -457,19 +457,19 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= 40)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
                 {
-                    return BattleGroupHealPerk2(perk, DynelManager.LocalPlayer, ref actionTarget);
+                    return BattleGroupHealPerk2(perk, ref actionTarget);
                 }
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            return BattleGroupHealPerk2(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BattleGroupHealPerk2(perk, ref actionTarget);
         }
 
         protected bool BattleGroupHeal3(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -477,19 +477,19 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= 40)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
                 {
-                    return BattleGroupHealPerk3(perk, DynelManager.LocalPlayer, ref actionTarget);
+                    return BattleGroupHealPerk3(perk, ref actionTarget);
                 }
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            return BattleGroupHealPerk3(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BattleGroupHealPerk3(perk, ref actionTarget);
         }
 
         protected bool BattleGroupHeal4(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -497,19 +497,19 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= 40)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
                 {
-                    return BattleGroupHealPerk4(perk, DynelManager.LocalPlayer, ref actionTarget);
+                    return BattleGroupHealPerk4(perk, ref actionTarget);
                 }
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            return BattleGroupHealPerk4(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BattleGroupHealPerk4(perk, ref actionTarget);
         }
 
 

@@ -131,19 +131,20 @@ namespace CombatHandler.Generic
 
         public static bool LeadershipPerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perkAction.IsAvailable) { return false; }
-
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Name == perkAction.Name) { return false; }
             }
 
-            return perkAction.IsAvailable;
-        }
-        public static bool GovernancePerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
             if (!perkAction.IsAvailable) { return false; }
 
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+
+        public static bool GovernancePerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Name == perkAction.Name) { return false; }
@@ -152,15 +153,19 @@ namespace CombatHandler.Generic
             if (PerkAction.Find("Leadership", out PerkAction _leadership))
             {
                 if (_leadership?.IsAvailable == false && _leadership?.IsExecuting == false)
-                    return perkAction.IsAvailable;
+                {
+                    if (!perkAction.IsAvailable) { return false; }
+
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;
         }
         public static bool TheDirectorPerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perkAction.IsAvailable) { return false; }
-
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Name == perkAction.Name) { return false; }
@@ -169,7 +174,13 @@ namespace CombatHandler.Generic
             if (PerkAction.Find("Leadership", out PerkAction _leadership) && PerkAction.Find("Governance", out PerkAction _governance))
             {
                 if (_leadership?.IsAvailable == false && _leadership?.IsExecuting == false && _governance?.IsAvailable == false && _governance?.IsExecuting == false)
-                    return perkAction.IsAvailable;
+                {
+                    if (!perkAction.IsAvailable) { return false; }
+
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    actionTarget.ShouldSetTarget = true;
+                    return true;
+                }
             }
 
             return false;

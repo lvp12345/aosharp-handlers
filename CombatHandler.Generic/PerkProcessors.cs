@@ -129,7 +129,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public static bool LeadershipPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool LeadershipPerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perkAction.IsAvailable) { return false; }
 
@@ -140,7 +140,7 @@ namespace CombatHandler.Generic
 
             return perkAction.IsAvailable;
         }
-        public static bool GovernancePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool GovernancePerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perkAction.IsAvailable) { return false; }
 
@@ -157,7 +157,7 @@ namespace CombatHandler.Generic
 
             return false;
         }
-        public static bool TheDirectorPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool TheDirectorPerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perkAction.IsAvailable) { return false; }
 

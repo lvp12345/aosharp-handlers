@@ -523,7 +523,7 @@ namespace CombatHandler.Generic
 
                 //Maybe add something here for KHBuddy
                 if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                    return LeadershipPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                    return LeadershipPerk(perk, ref actionTarget);
             }
 
             return false;
@@ -534,7 +534,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
             if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                return GovernancePerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                return GovernancePerk(perk, ref actionTarget);
 
             return false;
         }
@@ -543,7 +543,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
             if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                return TheDirectorPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                return TheDirectorPerk(perk, ref actionTarget);
 
             return false;
         }

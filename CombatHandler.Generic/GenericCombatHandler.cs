@@ -559,41 +559,41 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.HealthPercent >= 75) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool Moonmist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null || (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2)) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool Starfall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

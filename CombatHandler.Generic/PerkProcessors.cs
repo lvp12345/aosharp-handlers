@@ -175,7 +175,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public static bool VolunteerPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool VolunteerPerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perkAction.IsAvailable) { return false; }
 

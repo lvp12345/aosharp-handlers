@@ -552,7 +552,7 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return VolunteerPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return VolunteerPerk(perk, ref actionTarget);
         }
 
         protected bool CyclePerks(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -93,12 +93,9 @@ namespace CombatHandler.Generic
                                 AppendSettingsTab(settingsName, settingsWindow);
 
                                 settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                                settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView engiBioCocoonInput);
 
                                 if (channelInput != null)
                                     channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
-                                if (engiBioCocoonInput != null)
-                                    engiBioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].BioCocoonPercentage}";
                             }
                         }
                     }

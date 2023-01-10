@@ -62,17 +62,21 @@ namespace CombatHandler.Generic
 
         private static bool InstallExplosiveDevice(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
             return ShouldInstallPrimedDevice(fightingTarget, RelevantEffects.ThermalPrimerBuff);
         }
 
         private static bool InstallNotumDepletionDevice(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
             return ShouldInstallPrimedDevice(fightingTarget, RelevantEffects.SuppressivePrimerBuff);
         }
 
         private static bool ShouldInstallPrimedDevice(SimpleChar fightingTarget, int primerBuffId)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking) { return false; }
+            if (fightingTarget == null) { return false; }
 
             if (fightingTarget.Buffs.Find(primerBuffId, out Buff primerBuff))
                 if (primerBuff.RemainingTime > 10) //Only install device if it will trigger before primer expires
@@ -85,17 +89,17 @@ namespace CombatHandler.Generic
 
         public static bool DamageBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
             return true;
         }
 
-        public static bool BattleGroupHealPerk1(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BattleGroupHealPerk1(PerkAction perkAction)
         {
             return perkAction.IsAvailable;
         }
 
-        public static bool BattleGroupHealPerk2(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BattleGroupHealPerk2(PerkAction perkAction)
         {
             PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
 
@@ -105,7 +109,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public static bool BattleGroupHealPerk3(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BattleGroupHealPerk3(PerkAction perkAction)
         {
             PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
             PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
@@ -116,7 +120,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public static bool BattleGroupHealPerk4(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool BattleGroupHealPerk4(PerkAction perkAction)
         {
             PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
             PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
@@ -129,21 +133,16 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public static bool LeadershipPerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool LeadershipPerk(PerkAction perkAction)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Name == perkAction.Name) { return false; }
             }
 
-            if (!perkAction.IsAvailable) { return false; }
-
-            actionTarget.Target = DynelManager.LocalPlayer;
-            actionTarget.ShouldSetTarget = true;
-            return true;
+            return perkAction.IsAvailable;
         }
-
-        public static bool GovernancePerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool GovernancePerk(PerkAction perkAction)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
@@ -153,18 +152,12 @@ namespace CombatHandler.Generic
             if (PerkAction.Find("Leadership", out PerkAction _leadership))
             {
                 if (_leadership?.IsAvailable == false && _leadership?.IsExecuting == false)
-                {
-                    if (!perkAction.IsAvailable) { return false; }
-
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+                    return perkAction.IsAvailable;
             }
 
             return false;
         }
-        public static bool TheDirectorPerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool TheDirectorPerk(PerkAction perkAction)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
@@ -174,13 +167,7 @@ namespace CombatHandler.Generic
             if (PerkAction.Find("Leadership", out PerkAction _leadership) && PerkAction.Find("Governance", out PerkAction _governance))
             {
                 if (_leadership?.IsAvailable == false && _leadership?.IsExecuting == false && _governance?.IsAvailable == false && _governance?.IsExecuting == false)
-                {
-                    if (!perkAction.IsAvailable) { return false; }
-
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+                    return perkAction.IsAvailable;
             }
 
             return false;
@@ -188,8 +175,6 @@ namespace CombatHandler.Generic
 
         public static bool VolunteerPerk(PerkAction perkAction, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perkAction.IsAvailable) { return false; }
-
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
                 if (buff.Name == perkAction.Name) { return false; }
@@ -200,12 +185,12 @@ namespace CombatHandler.Generic
             _timer = Time.NormalTime;
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;
-            return true;
+            return perkAction.IsAvailable;
         }
 
         public static bool BuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perkAction.IsAvailable || fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
             {
@@ -224,6 +209,8 @@ namespace CombatHandler.Generic
         }
         public static bool StarFallPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
             if (PerkAction.Find(PerkHash.Combust, out PerkAction combust) && !combust.IsAvailable) { return false; }
 
             actionTarget.ShouldSetTarget = true;
@@ -231,6 +218,8 @@ namespace CombatHandler.Generic
         }
         public static bool QuickShotPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
             if (PerkAction.Find("Double Shot", out PerkAction doubleShot) && !doubleShot.IsAvailable) { return false; }
 
             actionTarget.ShouldSetTarget = true;
@@ -238,16 +227,18 @@ namespace CombatHandler.Generic
         }
         public static bool TargetedDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
             actionTarget.ShouldSetTarget = true;
             return DamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
 
         public static bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null || fightingTarget.HealthPercent < 5) { return false; }
+
             if (perkAction.Name == "Unhallowed Wrath" || perkAction.Name == "Spectator Wrath" || perkAction.Name == "Righteous Wrath")
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Skill2hEdged)) { return false; }
-
-            if (fightingTarget == null || fightingTarget.HealthPercent < 5) { return false; }
 
             return true;
         }

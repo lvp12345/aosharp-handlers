@@ -276,8 +276,6 @@ namespace CombatHandler.Generic
         {
             base.OnUpdate(deltaTime);
 
-            SettingsController.CleanUp();
-
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
@@ -327,16 +325,14 @@ namespace CombatHandler.Generic
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
+                SettingsController.CleanUp();
+
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
                 if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
-                {
                     if (int.TryParse(channelInput.Text, out int channelValue)
                         && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
-                    {
                         Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
-                    }
-                }
             }
 
             if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
@@ -355,6 +351,8 @@ namespace CombatHandler.Generic
             //if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
             //    return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
 
+            if (!perk.IsAvailable) { return false; }
+
             if (DynelManager.LocalPlayer.HealthPercent <= 75)
                 return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
 
@@ -367,6 +365,8 @@ namespace CombatHandler.Generic
 
             //if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
             //    return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+
+            if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent <= 75)
                 return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
@@ -419,6 +419,8 @@ namespace CombatHandler.Generic
 
         protected bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable || fightingTarget == null) { return false; }
+
             if (!IsSettingEnabled("LegShot")) { return false; }
 
             return DamagePerk(perk, fightingTarget, ref actionTarget);
@@ -426,7 +428,8 @@ namespace CombatHandler.Generic
 
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.HealthPercent > BioCocoonPercentage
+            if (!perk.IsAvailable || !InCombat()
+                || DynelManager.LocalPlayer.HealthPercent > BioCocoonPercentage
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
@@ -436,6 +439,8 @@ namespace CombatHandler.Generic
 
         protected bool BattleGroupHeal1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable || !InCombat()) { return false; }
+
             if (Team.IsInTeam)
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
@@ -444,16 +449,18 @@ namespace CombatHandler.Generic
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
-                    return BattleGroupHealPerk1(perk, ref actionTarget);
+                    return BattleGroupHealPerk1(perk);
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            return BattleGroupHealPerk1(perk, ref actionTarget);
+            return BattleGroupHealPerk1(perk);
         }
 
         protected bool BattleGroupHeal2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable || !InCombat()) { return false; }
+
             if (Team.IsInTeam)
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
@@ -463,17 +470,19 @@ namespace CombatHandler.Generic
 
                 if (dyingTeamMember.Count >= 1)
                 {
-                    return BattleGroupHealPerk2(perk, ref actionTarget);
+                    return BattleGroupHealPerk2(perk);
                 }
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            return BattleGroupHealPerk2(perk, ref actionTarget);
+            return BattleGroupHealPerk2(perk);
         }
 
         protected bool BattleGroupHeal3(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable || !InCombat()) { return false; }
+
             if (Team.IsInTeam)
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
@@ -483,17 +492,19 @@ namespace CombatHandler.Generic
 
                 if (dyingTeamMember.Count >= 1)
                 {
-                    return BattleGroupHealPerk3(perk, ref actionTarget);
+                    return BattleGroupHealPerk3(perk);
                 }
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            return BattleGroupHealPerk3(perk, ref actionTarget);
+            return BattleGroupHealPerk3(perk);
         }
 
         protected bool BattleGroupHeal4(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable || !InCombat()) { return false; }
+
             if (Team.IsInTeam)
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
@@ -503,18 +514,20 @@ namespace CombatHandler.Generic
 
                 if (dyingTeamMember.Count >= 1)
                 {
-                    return BattleGroupHealPerk4(perk, ref actionTarget);
+                    return BattleGroupHealPerk4(perk);
                 }
             }
 
             if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
 
-            return BattleGroupHealPerk4(perk, ref actionTarget);
+            return BattleGroupHealPerk4(perk);
         }
 
 
         protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable) { return false; }
+
             if (Time.NormalTime > CycleXpPerks + CycleXpPerksDelay)
             {
                 CycleXpPerks = Time.NormalTime;
@@ -522,8 +535,8 @@ namespace CombatHandler.Generic
                 if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
                 //Maybe add something here for KHBuddy
-                if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                    return LeadershipPerk(perk, ref actionTarget);
+                if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                    return LeadershipPerk(perk);
             }
 
             return false;
@@ -531,25 +544,31 @@ namespace CombatHandler.Generic
 
         protected bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
-            if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                return GovernancePerk(perk, ref actionTarget);
+            if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                return GovernancePerk(perk);
 
             return false;
         }
         protected bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
-            if (DynelManager.NPCs.Any(c => AttackingTeam(c)))
-                return TheDirectorPerk(perk, ref actionTarget);
+            if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                return TheDirectorPerk(perk);
 
             return false;
         }
 
         protected bool Volunteer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
             return VolunteerPerk(perk, ref actionTarget);
@@ -557,6 +576,8 @@ namespace CombatHandler.Generic
 
         protected bool CyclePerks(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable || fightingTarget == null) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
             return BuffPerk(perk, fightingTarget, ref actionTarget);
@@ -564,46 +585,56 @@ namespace CombatHandler.Generic
 
         protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
         }
 
         protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
         }
 
         protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
         }
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!perk.IsAvailable) { return false; }
+
             if (DynelManager.LocalPlayer.HealthPercent >= 75) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
         }
 
         protected bool Moonmist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2)) { return false; }
+            if (!perk.IsAvailable || fightingTarget == null) { return false; }
+
+            if (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2) { return false; }
 
             return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool Starfall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (!perk.IsAvailable || fightingTarget == null) { return false; }
 
             return StarFallPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool QuickShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (!perk.IsAvailable || fightingTarget == null) { return false; }
 
             return QuickShotPerk(perk, fightingTarget, ref actionTarget);
         }
@@ -1707,6 +1738,18 @@ namespace CombatHandler.Generic
 
             return mob.FightingTarget?.Name == DynelManager.LocalPlayer.Name
                 || (bool)mob.FightingTarget?.IsPet;
+        }
+
+        public static bool InCombat()
+        {
+            if (Team.IsInTeam)
+            {
+                return DynelManager.Characters
+                    .Any(c => Team.Members.Select(m => m.Name).Contains(c.FightingTarget?.Name));
+            }
+
+            return DynelManager.Characters
+                    .Any(c => c.FightingTarget?.Name == DynelManager.LocalPlayer.Name);
         }
 
         public static CharacterWieldedWeapon GetWieldedWeapons(SimpleChar local) => (CharacterWieldedWeapon)local.GetStat(Stat.EquippedWeapons);

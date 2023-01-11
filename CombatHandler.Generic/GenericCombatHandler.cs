@@ -1784,7 +1784,7 @@ namespace CombatHandler.Generic
                     .Any(c => Team.Members.Select(m => m.Name).Contains(c.FightingTarget?.Name));
             }
 
-            return DynelManager.Characters
+            return DynelManager.Players
                     .Any(c => c.FightingTarget?.Name == DynelManager.LocalPlayer.Name);
         }
 

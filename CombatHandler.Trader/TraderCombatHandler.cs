@@ -153,7 +153,7 @@ namespace CombatHandler.Trader
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.GrandThefts, GrandTheftHumidity, CombatActionPriority.High);
-            //RegisterSpellProcessor(RelevantNanos.MyEnemiesEnemyIsMyFriend, MyEnemy);
+            RegisterSpellProcessor(RelevantNanos.MyEnemiesEnemyIsMyFriend, MyEnemy);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAADDrain).OrderByStackingOrder(), AADDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAAODrain).OrderByStackingOrder(), AAODrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.DivestDamage, DamageDrain, CombatActionPriority.Medium);
@@ -456,6 +456,8 @@ namespace CombatHandler.Trader
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region Settings
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -550,6 +552,8 @@ namespace CombatHandler.Trader
                         if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
                             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
             }
+
+            #endregion
 
             if ((RansackSelection.Area == (RansackSelection)_settings["RansackSelection"].AsInt32()
                 || DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32()
@@ -909,32 +913,21 @@ namespace CombatHandler.Trader
             return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        //private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+        private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (MyEnemySelection.Target == (MyEnemySelection)_settings["MyEnemySelection"].AsInt32())
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-        //    if (MyEnemySelection.Target == (MyEnemySelection)_settings["MyEnemySelection"].AsInt32())
-        //    {
-        //        if (fightingTarget == null || !InCombat()) { return false; }
+            if (MyEnemySelection.Boss == (MyEnemySelection)_settings["MyEnemySelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-        //        if (Spell.Find(270714, out Spell _myEnemy))
-        //            if (_myEnemy.IsReady)
-        //                _myEnemy.Cast(DynelManager.LocalPlayer, true);
-        //    }
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
 
-        //    if (MyEnemySelection.Boss == (MyEnemySelection)_settings["MyEnemySelection"].AsInt32())
-        //    {
-        //        if (fightingTarget?.MaxHealth < 1000000
-        //            || fightingTarget == null
-        //            || !InCombat()) { return false; }
+            return false;
 
-        //        if (Spell.Find(270714, out Spell _myEnemy))
-        //            if (_myEnemy.IsReady)
-        //                _myEnemy.Cast(DynelManager.LocalPlayer, true);
-        //    }
-
-        //    return false;
-        //}
+        }
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -946,33 +939,6 @@ namespace CombatHandler.Trader
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-            if (GrandTheftHumiditySelection.Area == (GrandTheftHumiditySelection)_settings["GrandTheftHumiditySelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
-                {
-                    if (spell.StackingOrder <= buff.StackingOrder)
-                    {
-                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
-
-                        if (buff.RemainingTime > 20) { return false; }
-
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = _drainTarget;
-                        return true;
-                    }
-
-                    return false;
-                }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
             }
 
             return false;
@@ -1199,17 +1165,6 @@ namespace CombatHandler.Trader
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
-
-            if (_drainTarget?.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA) == false)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
-            }
-
             return false;
         }
         private bool NanoResistB(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1224,18 +1179,6 @@ namespace CombatHandler.Trader
 
                 if (fightingTarget?.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA) == true)
                     return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
-
-            if (_drainTarget?.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA) == true
-                && !_drainTarget?.Buffs.Contains(NanoLine.DebuffNanoACHeavy) == true)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
             }
 
             return false;
@@ -1334,7 +1277,7 @@ namespace CombatHandler.Trader
         }
         public enum NanoResistSelection
         {
-            None, Target, Area, Boss
+            None, Target, Boss
         }
         public enum DamageDrainSelection
         {
@@ -1350,7 +1293,7 @@ namespace CombatHandler.Trader
         }
         public enum GrandTheftHumiditySelection
         {
-            None, Target, Area, Boss
+            None, Target, Boss
         }
         public enum MyEnemySelection
         {

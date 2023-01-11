@@ -960,21 +960,29 @@ namespace CombatHandler.Doctor
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
+
             return ToggledTargetDebuff("Nuking", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
+
             return ToggledTargetDebuff("DOTA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DOTBDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
+
             return ToggledTargetDebuff("DOTB", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool DOTCDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
+
             return ToggledTargetDebuff("DOTC", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 

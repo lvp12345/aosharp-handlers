@@ -2,6 +2,23 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <OptionCheckBox label="Sharp objects" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SharpObjects" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Grenades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Grenades" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Scorpio taunt tool" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ScorpioTauntTool" layout_borders="Rect(10,1,5,1)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="Absorbs %*" layout_borders="Rect(5,5,5,5)"/>
+    <View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(1,1,90,1)" max_size="Point(16000,-1)">
+      <TextView value="Duck" layout_borders="Rect(4,4,4,4)"/>
+      <TextView value="BodyDev" layout_borders="Rect(4,4,4,4)"/>
+      <TextView value="Strength" layout_borders="Rect(4,4,4,4)"/>
+    </View>
+    <View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(1,1,90,1)" max_size="Point(16000,-1)">
+      <TextInputView name="DuckAbsorbsItemPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+      <TextInputView name="BodyDevAbsorbsItemPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+      <TextInputView name="StrengthAbsorbsItemPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    </View>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Kits" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Kits" layout_borders="Rect(10,1,5,6)"/>
     <View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(2,2,90,2)" max_size="Point(16000,-1)">
     <TextView value="Health %" layout_borders="Rect(0,0,0,2)"/>
@@ -28,8 +45,7 @@
       <TextInputView name="StimNanoPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
     </View>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Scorpio taunt tool" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ScorpioTauntTool" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="*Absorbs by use stat." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="*Target uses percentages." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

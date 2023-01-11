@@ -507,6 +507,6 @@ namespace CombatHandler.Generic
 
     enum PerkType
     {
-        Generic, SelfBuff, SelfHeal, SelfNano, TargetHeal, TargetNano, TargetDamage, DamageBuff, PetBuff, PetHeal, LEProc, Clease, Custom, Disabled, Unknown
+        Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, PetBuff, PetHeal, LEProc, Clease, Custom, Disabled, Unknown
     }
 }

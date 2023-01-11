@@ -177,6 +177,10 @@ namespace CombatHandler.Doctor
             TeamNanoPerkPercentage = Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage;
             BodyDevAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage;
             StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
+            BattleGroupHeal1Percentage = Config.CharSettings[Game.ClientInst].BattleGroupHeal1Percentage;
+            BattleGroupHeal2Percentage = Config.CharSettings[Game.ClientInst].BattleGroupHeal2Percentage;
+            BattleGroupHeal3Percentage = Config.CharSettings[Game.ClientInst].BattleGroupHeal3Percentage;
+            BattleGroupHeal4Percentage = Config.CharSettings[Game.ClientInst].BattleGroupHeal4Percentage;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow };

@@ -559,7 +559,6 @@ namespace CombatHandler.Trader
                 || DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32()
                 || DamageDrainSelection.Area == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32()
                 || ACDrainSelection.Area == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32()
-                || NanoResistSelection.Area == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()
                 || AAODrainSelection.Area == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32()
                 || AADDrainSelection.Area == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
                 && Time.NormalTime > _drainTick + 1)

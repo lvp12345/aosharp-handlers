@@ -33,10 +33,10 @@ namespace CombatHandler.Generic
                     return SelfHeal;
                 case PerkType.SelfNano:
                     return SelfNano;
-                //case PerkType.TargetHeal:
-                //    return TargetHeal;
-                //case PerkType.TargetNano:
-                //    return TargetNano;
+                case PerkType.TeamHeal:
+                    return TeamHeal;
+                case PerkType.TeamNano:
+                    return TeamNano;
                 case PerkType.TargetDamage:
                     return TargetedDamagePerk;
                 case PerkType.DamageBuff:

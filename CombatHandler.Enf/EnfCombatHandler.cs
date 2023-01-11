@@ -54,6 +54,15 @@ namespace CombatHandler.Enf
             Config.CharSettings[Game.ClientInst].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
             Config.CharSettings[Game.ClientInst].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
             Config.CharSettings[Game.ClientInst].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
+            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
+            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentageChangedEvent += DuckAbsorbsItemPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -61,6 +70,9 @@ namespace CombatHandler.Enf
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
+
+            _settings.AddVariable("SharpObjects", true);
+            _settings.AddVariable("Grenades", true);
 
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
@@ -100,7 +112,6 @@ namespace CombatHandler.Enf
 
             //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
-            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
@@ -147,6 +158,15 @@ namespace CombatHandler.Enf
             StimNanoPercentage = Config.CharSettings[Game.ClientInst].StimNanoPercentage;
             KitHealthPercentage = Config.CharSettings[Game.ClientInst].KitHealthPercentage;
             KitNanoPercentage = Config.CharSettings[Game.ClientInst].KitNanoPercentage;
+            CycleSpherePerkDelay = Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay;
+            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay;
+            SelfHealPerkPercentage = Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage;
+            SelfNanoPerkPercentage = Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage;
+            TeamHealPerkPercentage = Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage;
+            TeamNanoPerkPercentage = Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage;
+            DuckAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage;
+            BodyDevAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage;
+            StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
@@ -274,6 +294,9 @@ namespace CombatHandler.Enf
                 window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
                 window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
                 window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+                window.FindView("DuckAbsorbsItemPercentageBox", out TextInputView duckInput);
+                window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
+                window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
                     stimTargetInput.Text = $"{StimTargetName}";
@@ -285,6 +308,12 @@ namespace CombatHandler.Enf
                     kitHealthInput.Text = $"{KitHealthPercentage}";
                 if (kitNanoInput != null)
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                if (duckInput != null)
+                    duckInput.Text = $"{DuckAbsorbsItemPercentage}";
+                if (bodyDevInput != null)
+                    bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                if (strengthInput != null)
+                    strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
@@ -296,6 +325,9 @@ namespace CombatHandler.Enf
                 container.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
                 container.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
                 container.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+                container.FindView("DuckAbsorbsItemPercentageBox", out TextInputView duckInput);
+                container.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
+                container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
                     stimTargetInput.Text = $"{StimTargetName}";
@@ -307,6 +339,12 @@ namespace CombatHandler.Enf
                     kitHealthInput.Text = $"{KitHealthPercentage}";
                 if (kitNanoInput != null)
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                if (duckInput != null)
+                    duckInput.Text = $"{DuckAbsorbsItemPercentage}";
+                if (bodyDevInput != null)
+                    bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                if (strengthInput != null)
+                    strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
             }
         }
 
@@ -338,9 +376,27 @@ namespace CombatHandler.Enf
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "EnforcerPerksView" }, _perkView);
 
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+                window.FindView("SphereDelayBox", out TextInputView sphereInput);
+                window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (bioCocoonInput != null)
                     bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                if (sphereInput != null)
+                    sphereInput.Text = $"{CycleSpherePerkDelay}";
+                if (witOfTheAtroxInput != null)
+                    witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                if (selfHealInput != null)
+                    selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                if (selfNanoInput != null)
+                    selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                if (teamHealInput != null)
+                    teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                if (teamNanoInput != null)
+                    teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -348,9 +404,27 @@ namespace CombatHandler.Enf
                 _perkWindow = container;
 
                 container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+                container.FindView("SphereDelayBox", out TextInputView sphereInput);
+                container.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+                container.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
+                container.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
+                container.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
+                container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (bioCocoonInput != null)
                     bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                if (sphereInput != null)
+                    sphereInput.Text = $"{CycleSpherePerkDelay}";
+                if (witOfTheAtroxInput != null)
+                    witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                if (selfHealInput != null)
+                    selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                if (selfNanoInput != null)
+                    selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                if (teamHealInput != null)
+                    teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                if (teamNanoInput != null)
+                    teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
             }
         }
 
@@ -378,6 +452,15 @@ namespace CombatHandler.Enf
                 window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
                 window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
                 window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+                window.FindView("SphereDelayBox", out TextInputView sphereInput);
+                window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+                window.FindView("DuckAbsorbsItemPercentageBox", out TextInputView duckInput);
+                window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
+                window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
                     if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
@@ -432,6 +515,51 @@ namespace CombatHandler.Enf
                     if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
                         if (Config.CharSettings[Game.ClientInst].KitNanoPercentage != kitNanoValue)
                             Config.CharSettings[Game.ClientInst].KitNanoPercentage = kitNanoValue;
+
+                if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
+                    if (int.TryParse(sphereInput.Text, out int sphereValue))
+                        if (Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay != sphereValue)
+                            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay = sphereValue;
+
+                if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
+                    if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
+                        if (Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+
+                if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
+                    if (int.TryParse(selfHealInput.Text, out int selfHealValue))
+                        if (Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage != selfHealValue)
+                            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage = selfHealValue;
+
+                if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
+                    if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
+                        if (Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage != selfNanoValue)
+                            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage = selfNanoValue;
+
+                if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
+                    if (int.TryParse(teamHealInput.Text, out int teamHealValue))
+                        if (Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage != teamHealValue)
+                            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage = teamHealValue;
+
+                if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
+                    if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
+                        if (Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage != teamNanoValue)
+                            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage = teamNanoValue;
+
+                if (duckInput != null && !string.IsNullOrEmpty(duckInput.Text))
+                    if (int.TryParse(duckInput.Text, out int duckValue))
+                        if (Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage != duckValue)
+                            Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage = duckValue;
+
+                if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
+                    if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
+                        if (Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage = bodyDevValue;
+
+                if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
+                    if (int.TryParse(strengthInput.Text, out int strengthValue))
+                        if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
+                            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

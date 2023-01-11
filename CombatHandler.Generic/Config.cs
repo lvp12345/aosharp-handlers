@@ -54,7 +54,32 @@ namespace CombatHandler.Generic
         public int NullitySpherePercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].NullitySpherePercentage : 35;
         [JsonIgnore]
         public int IzgimmersWealthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IzgimmersWealthPercentage : 25;
-
+        [JsonIgnore]
+        public int CycleSpherePerkDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleSpherePerkDelay : 1;
+        [JsonIgnore]
+        public int CycleWitOfTheAtroxPerkDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay : 1;
+        [JsonIgnore]
+        public int SelfHealPerkPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SelfHealPerkPercentage : 75;
+        [JsonIgnore]
+        public int SelfNanoPerkPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SelfNanoPerkPercentage : 75;
+        [JsonIgnore]
+        public int TeamHealPerkPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].TeamHealPerkPercentage : 65;
+        [JsonIgnore]
+        public int TeamNanoPerkPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].TeamNanoPerkPercentage : 65;
+        [JsonIgnore]
+        public int BattleGroupHeal1Percentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BattleGroupHeal1Percentage : 80;
+        [JsonIgnore]
+        public int BattleGroupHeal2Percentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BattleGroupHeal2Percentage : 70;
+        [JsonIgnore]
+        public int BattleGroupHeal3Percentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BattleGroupHeal3Percentage : 60;
+        [JsonIgnore]
+        public int BattleGroupHeal4Percentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BattleGroupHeal4Percentage : 50;
+        [JsonIgnore]
+        public int DuckAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage : 70;
+        [JsonIgnore]
+        public int BodyDevAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage : 65;
+        [JsonIgnore]
+        public int StrengthAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage : 85;
         #endregion
 
         public static Config Load(string path)
@@ -209,6 +234,74 @@ namespace CombatHandler.Generic
                 }
             }
         }
+        public event EventHandler<int> SelfHealPerkPercentageChangedEvent;
+        private int _selfHealPerkPercentage = 75;
+        public int SelfHealPerkPercentage
+        {
+            get
+            {
+                return _selfHealPerkPercentage;
+            }
+            set
+            {
+                if (_selfHealPerkPercentage != value)
+                {
+                    _selfHealPerkPercentage = value;
+                    SelfHealPerkPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> SelfNanoPerkPercentageChangedEvent;
+        private int _selfNanoPerkPercentage = 75;
+        public int SelfNanoPerkPercentage
+        {
+            get
+            {
+                return _selfNanoPerkPercentage;
+            }
+            set
+            {
+                if (_selfNanoPerkPercentage != value)
+                {
+                    _selfNanoPerkPercentage = value;
+                    SelfNanoPerkPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> TeamHealPerkPercentageChangedEvent;
+        private int _teamHealPerkPercentage = 65;
+        public int TeamHealPerkPercentage
+        {
+            get
+            {
+                return _teamHealPerkPercentage;
+            }
+            set
+            {
+                if (_teamHealPerkPercentage != value)
+                {
+                    _teamHealPerkPercentage = value;
+                    TeamHealPerkPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> TeamNanoPerkPercentageChangedEvent;
+        private int _teamNanoPerkPercentage = 65;
+        public int TeamNanoPerkPercentage
+        {
+            get
+            {
+                return _teamNanoPerkPercentage;
+            }
+            set
+            {
+                if (_teamNanoPerkPercentage != value)
+                {
+                    _teamNanoPerkPercentage = value;
+                    TeamNanoPerkPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> HealthDrainPercentageChangedEvent;
         private int _healthDrainPercentage = 90;
         public int HealthDrainPercentage
@@ -260,7 +353,125 @@ namespace CombatHandler.Generic
                 }
             }
         }
-
+        public event EventHandler<int> BattleGroupHeal1PercentageChangedEvent;
+        private int _battleGroupHeal1Percentage = 80;
+        public int BattleGroupHeal1Percentage
+        {
+            get
+            {
+                return _battleGroupHeal1Percentage;
+            }
+            set
+            {
+                if (_battleGroupHeal1Percentage != value)
+                {
+                    _battleGroupHeal1Percentage = value;
+                    BattleGroupHeal1PercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> BattleGroupHeal2PercentageChangedEvent;
+        private int _battleGroupHeal2Percentage = 70;
+        public int BattleGroupHeal2Percentage
+        {
+            get
+            {
+                return _battleGroupHeal2Percentage;
+            }
+            set
+            {
+                if (_battleGroupHeal2Percentage != value)
+                {
+                    _battleGroupHeal2Percentage = value;
+                    BattleGroupHeal2PercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> BattleGroupHeal3PercentageChangedEvent;
+        private int _battleGroupHeal3Percentage = 60;
+        public int BattleGroupHeal3Percentage
+        {
+            get
+            {
+                return _battleGroupHeal3Percentage;
+            }
+            set
+            {
+                if (_battleGroupHeal3Percentage != value)
+                {
+                    _battleGroupHeal3Percentage = value;
+                    BattleGroupHeal3PercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> BattleGroupHeal4PercentageChangedEvent;
+        private int _battleGroupHeal4Percentage = 50;
+        public int BattleGroupHeal4Percentage
+        {
+            get
+            {
+                return _battleGroupHeal4Percentage;
+            }
+            set
+            {
+                if (_battleGroupHeal4Percentage != value)
+                {
+                    _battleGroupHeal4Percentage = value;
+                    BattleGroupHeal4PercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> DuckAbsorbsItemPercentageChangedEvent;
+        private int _duckAbsorbsItemPercentage = 70;
+        public int DuckAbsorbsItemPercentage
+        {
+            get
+            {
+                return _duckAbsorbsItemPercentage;
+            }
+            set
+            {
+                if (_duckAbsorbsItemPercentage != value)
+                {
+                    _duckAbsorbsItemPercentage = value;
+                    DuckAbsorbsItemPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> BodyDevAbsorbsItemPercentageChangedEvent;
+        private int _bodyDevAbsorbsItemPercentage = 65;
+        public int BodyDevAbsorbsItemPercentage
+        {
+            get
+            {
+                return _bodyDevAbsorbsItemPercentage;
+            }
+            set
+            {
+                if (_bodyDevAbsorbsItemPercentage != value)
+                {
+                    _bodyDevAbsorbsItemPercentage = value;
+                    BodyDevAbsorbsItemPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> StrengthAbsorbsItemPercentageChangedEvent;
+        private int _strengthAbsorbsItemPercentage = 85;
+        public int StrengthAbsorbsItemPercentage
+        {
+            get
+            {
+                return _strengthAbsorbsItemPercentage;
+            }
+            set
+            {
+                if (_strengthAbsorbsItemPercentage != value)
+                {
+                    _strengthAbsorbsItemPercentage = value;
+                    StrengthAbsorbsItemPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> MongoTauntDelayChangedEvent;
         private int _mongoTauntDelay = 1;
         public int MongoTauntDelay
@@ -431,7 +642,40 @@ namespace CombatHandler.Generic
                 }
             }
         }
-
+        public event EventHandler<int> CycleSpherePerkDelayChangedEvent;
+        private int _cycleSpherePerkDelay = 1;
+        public int CycleSpherePerkDelay
+        {
+            get
+            {
+                return _cycleSpherePerkDelay;
+            }
+            set
+            {
+                if (_cycleSpherePerkDelay != value)
+                {
+                    _cycleSpherePerkDelay = value;
+                    CycleSpherePerkDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> CycleWitOfTheAtroxPerkDelayChangedEvent;
+        private int _cycleWitOfTheAtroxPerkDelay = 1;
+        public int CycleWitOfTheAtroxPerkDelay
+        {
+            get
+            {
+                return _cycleWitOfTheAtroxPerkDelay;
+            }
+            set
+            {
+                if (_cycleWitOfTheAtroxPerkDelay != value)
+                {
+                    _cycleWitOfTheAtroxPerkDelay = value;
+                    CycleWitOfTheAtroxPerkDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         #endregion
     }
 }

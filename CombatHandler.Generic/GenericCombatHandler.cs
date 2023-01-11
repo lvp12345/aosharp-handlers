@@ -35,6 +35,8 @@ namespace CombatHandler.Generic
         public static int SingleTauntDelay = 0;
         public static int MongoTauntDelay = 0;
         public static int CycleXpPerksDelay = 0;
+        public static int CycleSpherePerkDelay = 0;
+        public static int CycleWitOfTheAtroxPerkDelay = 0;
         public static int CycleChallengerDelay = 0;
         public static int CycleRageDelay = 0;
         public static int CycleAbsorbsDelay = 0;
@@ -45,6 +47,20 @@ namespace CombatHandler.Generic
         public static int NullitySpherePercentage = 0;
         public static int IzgimmersWealthPercentage = 0;
 
+        public static int SelfHealPerkPercentage = 0;
+        public static int SelfNanoPerkPercentage = 0;
+        public static int TeamHealPerkPercentage = 0;
+        public static int TeamNanoPerkPercentage = 0;
+
+        public static int BattleGroupHeal1Percentage = 0;
+        public static int BattleGroupHeal2Percentage = 0;
+        public static int BattleGroupHeal3Percentage = 0;
+        public static int BattleGroupHeal4Percentage = 0;
+
+        public static int DuckAbsorbsItemPercentage = 0;
+        public static int BodyDevAbsorbsItemPercentage = 0;
+        public static int StrengthAbsorbsItemPercentage = 0;
+
         public static int StimHealthPercentage = 0;
         public static int StimNanoPercentage = 0;
         public static int KitHealthPercentage = 0;
@@ -52,6 +68,8 @@ namespace CombatHandler.Generic
         public static string StimTargetName = string.Empty;
 
         private double CycleXpPerks = 0;
+        private double CycleSpherePerk = 0;
+        private double CycleWitOfTheAtroxPerk = 0;
 
         private static double _updateTick;
 
@@ -177,8 +195,11 @@ namespace CombatHandler.Generic
             _settings = new Settings("CombatHandler");
 
             RegisterPerkProcessors();
+            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
             RegisterPerkProcessor(PerkHash.DazzleWithLights, Starfall, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.QuickShot, QuickShot, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
             RegisterItemProcessor(RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh, FlowerOfLife);
@@ -204,11 +225,12 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.DesecratedFlesh, DescFlesh, CombatActionPriority.High);
             RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-            RegisterItemProcessor(RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.MeteoriteSpikes, TargetedDamageItem);
-            RegisterItemProcessor(RelevantGenericItems.TearOfOedipus, RelevantGenericItems.TearOfOedipus, TargetedDamageItem);
-            RegisterItemProcessor(RelevantGenericItems.LavaCapsule, RelevantGenericItems.LavaCapsule, TargetedDamageItem);
-            RegisterItemProcessor(RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh, TargetedDamageItem);
-            RegisterItemProcessor(RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.KizzermoleGumboil, TargetedDamageItem);
+            RegisterItemProcessor(RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.MeteoriteSpikes, SharpObjects);
+            RegisterItemProcessor(RelevantGenericItems.TearOfOedipus, RelevantGenericItems.TearOfOedipus, SharpObjects);
+            RegisterItemProcessor(RelevantGenericItems.LavaCapsule, RelevantGenericItems.LavaCapsule, SharpObjects);
+            RegisterItemProcessor(RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.KizzermoleGumboil, SharpObjects);
+
+            RegisterItemProcessor(RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh, Grenades);
 
             RegisterItemProcessor(RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh, TargetedDamageItem);
             RegisterItemProcessor(RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh, TargetedDamageItem);
@@ -353,7 +375,7 @@ namespace CombatHandler.Generic
 
             if (!perk.IsAvailable) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 75)
+            if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
                 return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
 
             return false;
@@ -368,54 +390,55 @@ namespace CombatHandler.Generic
 
             if (!perk.IsAvailable) { return false; }
 
-            if (DynelManager.LocalPlayer.NanoPercent <= 75)
+            if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
                 return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
 
             return false;
         }
 
-        //protected static bool TargetHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+        public static bool TeamHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
-        //    if (Team.IsInTeam)
-        //    {
-        //        SimpleChar _person = DynelManager.Players
-        //            .Where(c => c.Health > 0
-        //                && c.Name == _targetHealPerkName
-        //                && c.HealthPercent <= TargetHealPerkPercentage)
-        //            .FirstOrDefault();
+            if (Team.IsInTeam)
+            {
+                SimpleChar _person = DynelManager.Players
+                    .Where(c => c.Health > 0
+                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= TeamHealPerkPercentage)
+                    .FirstOrDefault();
 
-        //        if (_person != null)
-        //            return GenericPerk(perk, _person, ref actionTarget);
-        //    }
+                if (_person != null)
+                    return BuffPerk(perk, _person, ref actionTarget);
+            }
 
-        //    if (DynelManager.LocalPlayer.HealthPercent <= TargetHealPerkPercentage)
-        //        return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            if (DynelManager.LocalPlayer.HealthPercent <= TeamHealPerkPercentage)
+                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
 
-        //    return false;
-        //}
-        //protected static bool TargetNano(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+            return false;
+        }
 
-        //    if (Team.IsInTeam)
-        //    {
-        //        SimpleChar _person = DynelManager.Players
-        //            .Where(c => c.Health > 0
-        //                && c.Name == _targetNanoPerkName
-        //                && c.NanoPercent <= TargetNanoPerkPercentage)
-        //            .FirstOrDefault();
+        public static bool TeamNano(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
-        //        if (_person != null)
-        //            return GenericPerk(perk, _person, ref actionTarget);
-        //    }
+            if (Team.IsInTeam)
+            {
+                SimpleChar _person = DynelManager.Players
+                    .Where(c => c.Health > 0
+                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.NanoPercent <= TeamNanoPerkPercentage)
+                    .FirstOrDefault();
 
-        //    if (DynelManager.LocalPlayer.NanoPercent <= TargetNanoPerkPercentage)
-        //        return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                if (_person != null)
+                    return BuffPerk(perk, _person, ref actionTarget);
+            }
 
-        //    return false;
-        //}
+            if (DynelManager.LocalPlayer.NanoPercent <= TeamNanoPerkPercentage)
+                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+
+            return false;
+        }
 
         protected bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -445,14 +468,14 @@ namespace CombatHandler.Generic
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= 40)
+                        && c.HealthPercent <= BattleGroupHeal1Percentage)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
                     return BattleGroupHealPerk1(perk);
             }
 
-            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > BattleGroupHeal1Percentage) { return false; }
 
             return BattleGroupHealPerk1(perk);
         }
@@ -465,7 +488,7 @@ namespace CombatHandler.Generic
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= 40)
+                        && c.HealthPercent <= BattleGroupHeal2Percentage)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
@@ -474,7 +497,7 @@ namespace CombatHandler.Generic
                 }
             }
 
-            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > BattleGroupHeal2Percentage) { return false; }
 
             return BattleGroupHealPerk2(perk);
         }
@@ -487,7 +510,7 @@ namespace CombatHandler.Generic
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= 40)
+                        && c.HealthPercent <= BattleGroupHeal3Percentage)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
@@ -496,7 +519,7 @@ namespace CombatHandler.Generic
                 }
             }
 
-            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > BattleGroupHeal3Percentage) { return false; }
 
             return BattleGroupHealPerk3(perk);
         }
@@ -509,7 +532,7 @@ namespace CombatHandler.Generic
             {
                 List<SimpleChar> dyingTeamMember = DynelManager.Characters
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= 40)
+                        && c.HealthPercent <= BattleGroupHeal4Percentage)
                     .ToList();
 
                 if (dyingTeamMember.Count >= 1)
@@ -518,7 +541,7 @@ namespace CombatHandler.Generic
                 }
             }
 
-            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > BattleGroupHeal4Percentage) { return false; }
 
             return BattleGroupHealPerk4(perk);
         }
@@ -639,33 +662,33 @@ namespace CombatHandler.Generic
             return QuickShotPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        //protected bool WitOfAtrox(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (Time.NormalTime > CycleWitOfAtroxPerk + CycleWitOfAtroxPerkDelay)
-        //    {
-        //        CycleWitOfAtroxPerk = Time.NormalTime;
+        protected bool WitOfTheAtrox(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Time.NormalTime > CycleWitOfTheAtroxPerk + CycleWitOfTheAtroxPerkDelay)
+            {
+                CycleWitOfTheAtroxPerk = Time.NormalTime;
 
-        //        if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-        //        return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
-        //    }
+                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
-        //protected bool Sphere(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (Time.NormalTime > CycleSpherePerk + CycleSpherePerkDelay)
-        //    {
-        //        CycleSpherePerk = Time.NormalTime;
+        protected bool Sphere(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Time.NormalTime > CycleSpherePerk + CycleSpherePerkDelay)
+            {
+                CycleSpherePerk = Time.NormalTime;
 
-        //        if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-        //        return SelfBuffPerk(perk, fightingTarget, ref actionTarget);
-        //    }
+                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
         #endregion
 
@@ -1105,6 +1128,19 @@ namespace CombatHandler.Generic
 
         #region Items
 
+        protected virtual bool SharpObjects(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("SharpObjects") || fightingTarget == null) { return false; }
+
+            return TargetedDamageItem(item, fightingTarget, ref actionTarget);
+        }
+        protected virtual bool Grenades(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Grenades") || fightingTarget == null) { return false; }
+
+            return TargetedDamageItem(item, fightingTarget, ref actionTarget);
+        }
+
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null && fightingTarget.IsInAttackRange();
@@ -1337,7 +1373,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength) 
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
-                || DynelManager.LocalPlayer.HealthPercent > 75
+                || DynelManager.LocalPlayer.HealthPercent > StrengthAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return item != null;
@@ -1348,7 +1384,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp) 
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
-                || DynelManager.LocalPlayer.HealthPercent > 75
+                || DynelManager.LocalPlayer.HealthPercent > DuckAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return item != null;
@@ -1372,7 +1408,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
-                || DynelManager.LocalPlayer.HealthPercent > 75
+                || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return item != null;
@@ -1398,7 +1434,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
-                || DynelManager.LocalPlayer.HealthPercent > 75
+                || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return item != null;
@@ -2240,7 +2276,84 @@ namespace CombatHandler.Generic
             IzgimmersWealthPercentage = e;
             Config.Save();
         }
-
+        public static void CycleSpherePerkDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay = e;
+            CycleSpherePerkDelay = e;
+            Config.Save();
+        }
+        public static void CycleWitOfTheAtroxPerkDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = e;
+            CycleWitOfTheAtroxPerkDelay = e;
+            Config.Save();
+        }
+        public static void SelfHealPerkPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage = e;
+            SelfHealPerkPercentage = e;
+            Config.Save();
+        }
+        public static void SelfNanoPerkPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage = e;
+            SelfNanoPerkPercentage = e;
+            Config.Save();
+        }
+        public static void TeamHealPerkPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage = e;
+            TeamHealPerkPercentage = e;
+            Config.Save();
+        }
+        public static void TeamNanoPerkPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage = e;
+            TeamNanoPerkPercentage = e;
+            Config.Save();
+        }
+        public static void BattleGroupHeal1Percentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].BattleGroupHeal1Percentage = e;
+            BattleGroupHeal1Percentage = e;
+            Config.Save();
+        }
+        public static void BattleGroupHeal2Percentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].BattleGroupHeal2Percentage = e;
+            BattleGroupHeal2Percentage = e;
+            Config.Save();
+        }
+        public static void BattleGroupHeal3Percentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].BattleGroupHeal3Percentage = e;
+            BattleGroupHeal3Percentage = e;
+            Config.Save();
+        }
+        public static void BattleGroupHeal4Percentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].BattleGroupHeal4Percentage = e;
+            BattleGroupHeal4Percentage = e;
+            Config.Save();
+        }
+        public static void DuckAbsorbsItemPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage = e;
+            DuckAbsorbsItemPercentage = e;
+            Config.Save();
+        }
+        public static void BodyDevAbsorbsItemPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage = e;
+            BodyDevAbsorbsItemPercentage = e;
+            Config.Save();
+        }
+        public static void StrengthAbsorbsItemPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = e;
+            StrengthAbsorbsItemPercentage = e;
+            Config.Save();
+        }
         #endregion
     }
 }

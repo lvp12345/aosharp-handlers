@@ -37,6 +37,7 @@ namespace CombatHandler.Generic
         public static int CycleXpPerksDelay = 0;
         public static int CycleSpherePerkDelay = 0;
         public static int CycleWitOfTheAtroxPerkDelay = 0;
+        public static int CycleBioRegrowthPerkDelay = 0;
         public static int CycleChallengerDelay = 0;
         public static int CycleRageDelay = 0;
         public static int CycleAbsorbsDelay = 0;
@@ -51,6 +52,8 @@ namespace CombatHandler.Generic
         public static int SelfNanoPerkPercentage = 0;
         public static int TeamHealPerkPercentage = 0;
         public static int TeamNanoPerkPercentage = 0;
+
+        public static int BioRegrowthPercentage = 0;
 
         public static int BattleGroupHeal1Percentage = 0;
         public static int BattleGroupHeal2Percentage = 0;
@@ -70,6 +73,7 @@ namespace CombatHandler.Generic
         private double CycleXpPerks = 0;
         private double CycleSpherePerk = 0;
         private double CycleWitOfTheAtroxPerk = 0;
+        private double CycleBioRegrowthPerk = 0;
 
         private static double _updateTick;
 
@@ -200,6 +204,7 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.QuickShot, QuickShot, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
             RegisterItemProcessor(RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh, FlowerOfLife);
@@ -466,7 +471,7 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                List<SimpleChar> dyingTeamMember = DynelManager.Players
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BattleGroupHeal1Percentage)
                     .ToList();
@@ -486,7 +491,7 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                List<SimpleChar> dyingTeamMember = DynelManager.Players
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BattleGroupHeal2Percentage)
                     .ToList();
@@ -508,7 +513,7 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                List<SimpleChar> dyingTeamMember = DynelManager.Players
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BattleGroupHeal3Percentage)
                     .ToList();
@@ -530,7 +535,7 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                List<SimpleChar> dyingTeamMember = DynelManager.Players
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BattleGroupHeal4Percentage)
                     .ToList();
@@ -671,6 +676,25 @@ namespace CombatHandler.Generic
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
                 return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            }
+
+            return false;
+        }
+
+        protected bool BioRegrowth(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Time.NormalTime > CycleBioRegrowthPerk + CycleBioRegrowthPerkDelay)
+            {
+                CycleBioRegrowthPerk = Time.NormalTime;
+
+                SimpleChar dyingTeamMember = DynelManager.Players
+                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= BioRegrowthPercentage)
+                    .FirstOrDefault();
+
+                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+                return BuffPerk(perk, dyingTeamMember, ref actionTarget);
             }
 
             return false;
@@ -1580,7 +1604,7 @@ namespace CombatHandler.Generic
 
         protected bool FindMemberWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
 
             if (Team.IsInTeam)
             {
@@ -1619,7 +1643,7 @@ namespace CombatHandler.Generic
 
         protected bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
 
             SimpleChar player = DynelManager.Players
                 .Where(c => c.HealthPercent <= healthPercentThreshold 
@@ -2286,6 +2310,18 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = e;
             CycleWitOfTheAtroxPerkDelay = e;
+            Config.Save();
+        }
+        public static void CycleBioRegrowthPerkDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay = e;
+            CycleBioRegrowthPerkDelay = e;
+            Config.Save();
+        }
+        public static void BioRegrowthPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].BioRegrowthPercentage = e;
+            BioRegrowthPercentage = e;
             Config.Save();
         }
         public static void SelfHealPerkPercentage_Changed(object s, int e)

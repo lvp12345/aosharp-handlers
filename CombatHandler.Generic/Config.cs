@@ -80,6 +80,10 @@ namespace CombatHandler.Generic
         public int BodyDevAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage : 65;
         [JsonIgnore]
         public int StrengthAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage : 85;
+        [JsonIgnore]
+        public int CycleBioRegrowthDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay : 1;
+        [JsonIgnore]
+        public int BioRegrowthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BioRegrowthPercentage : 70;
         #endregion
 
         public static Config Load(string path)
@@ -673,6 +677,40 @@ namespace CombatHandler.Generic
                 {
                     _cycleWitOfTheAtroxPerkDelay = value;
                     CycleWitOfTheAtroxPerkDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> CycleBioRegrowthPerkDelayChangedEvent;
+        private int _cycleBioRegrowthPerkDelay = 1;
+        public int CycleBioRegrowthPerkDelay
+        {
+            get
+            {
+                return _cycleBioRegrowthPerkDelay;
+            }
+            set
+            {
+                if (_cycleBioRegrowthPerkDelay != value)
+                {
+                    _cycleBioRegrowthPerkDelay = value;
+                    CycleBioRegrowthPerkDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> BioRegrowthPercentageChangedEvent;
+        private int _bioRegrowthPercentage = 70;
+        public int BioRegrowthPercentage
+        {
+            get
+            {
+                return _bioRegrowthPercentage;
+            }
+            set
+            {
+                if (_bioRegrowthPercentage != value)
+                {
+                    _bioRegrowthPercentage = value;
+                    BioRegrowthPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

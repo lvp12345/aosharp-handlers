@@ -15,6 +15,7 @@ using CombatHandler.Generic;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization.Formatters;
 using System.Timers;
+using System.ComponentModel;
 
 namespace CombatHandler.Adventurer
 {
@@ -65,6 +66,8 @@ namespace CombatHandler.Adventurer
             Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
             Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].BioRegrowthPercentageChangedEvent += BioRegrowthPercentage_Changed;
+            Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelayChangedEvent += CycleBioRegrowthPerkDelay_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -159,6 +162,8 @@ namespace CombatHandler.Adventurer
             TeamNanoPerkPercentage = Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage;
             BodyDevAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage;
             StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
+            BioRegrowthPercentage = Config.CharSettings[Game.ClientInst].BioRegrowthPercentage;
+            CycleBioRegrowthPerkDelay = Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay;
 
             //Items
             //RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
@@ -280,6 +285,8 @@ namespace CombatHandler.Adventurer
                 window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
                 window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
                 window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+                window.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
+                window.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
 
                 if (bioCocoonInput != null)
                     bioCocoonInput.Text = $"{BioCocoonPercentage}";
@@ -295,6 +302,10 @@ namespace CombatHandler.Adventurer
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
                 if (teamNanoInput != null)
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                if (bioRegrowthPercentageInput != null)
+                    bioRegrowthPercentageInput.Text = $"{BioCocoonPercentage}";
+                if (bioRegrowthDelayInput != null)
+                    bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -308,6 +319,8 @@ namespace CombatHandler.Adventurer
                 container.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
                 container.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
                 container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+                container.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
+                container.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
 
                 if (bioCocoonInput != null)
                     bioCocoonInput.Text = $"{BioCocoonPercentage}";
@@ -323,6 +336,10 @@ namespace CombatHandler.Adventurer
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
                 if (teamNanoInput != null)
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                if (bioRegrowthPercentageInput != null)
+                    bioRegrowthPercentageInput.Text = $"{BioCocoonPercentage}";
+                if (bioRegrowthDelayInput != null)
+                    bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
             }
         }
 
@@ -456,6 +473,8 @@ namespace CombatHandler.Adventurer
                 window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                window.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
+                window.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                     if (int.TryParse(healInput.Text, out int healValue))
@@ -535,6 +554,16 @@ namespace CombatHandler.Adventurer
                     if (int.TryParse(strengthInput.Text, out int strengthValue))
                         if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
                             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
+
+                if (bioRegrowthPercentageInput != null && !string.IsNullOrEmpty(bioRegrowthPercentageInput.Text))
+                    if (int.TryParse(bioRegrowthPercentageInput.Text, out int bioRegrowthPercentageValue))
+                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioRegrowthPercentageValue)
+                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioRegrowthPercentageValue;
+
+                if (bioRegrowthDelayInput != null && !string.IsNullOrEmpty(bioRegrowthDelayInput.Text))
+                    if (int.TryParse(bioRegrowthDelayInput.Text, out int bioRegrowthDelayValue))
+                        if (Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay != bioRegrowthDelayValue)
+                            Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay = bioRegrowthDelayValue;
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

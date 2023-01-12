@@ -31,7 +31,7 @@ namespace CombatHandler.Enf
         private static double _absorbs;
         private static double _challenger;
         private static double _rage;
-        private static double _mongoTaunt;
+        private static double _mongo;
         private static double _singleTaunt;
 
         private static double _ncuUpdateTime;
@@ -45,7 +45,7 @@ namespace CombatHandler.Enf
 
             Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
             Config.CharSettings[Game.ClientInst].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
-            Config.CharSettings[Game.ClientInst].MongoTauntDelayChangedEvent += MongoTauntDelay_Changed;
+            Config.CharSettings[Game.ClientInst].MongoDelayChangedEvent += MongoDelay_Changed;
             Config.CharSettings[Game.ClientInst].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
             Config.CharSettings[Game.ClientInst].CycleChallengerDelayChangedEvent += CycleChallengerDelay_Changed;
             Config.CharSettings[Game.ClientInst].CycleRageDelayChangedEvent += CycleRageDelay_Changed;
@@ -85,7 +85,7 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
 
-            _settings.AddVariable("MongoTaunt", false);
+            _settings.AddVariable("Mongo", false);
             _settings.AddVariable("CycleAbsorbs", false);
             _settings.AddVariable("CycleChallenger", false);
             _settings.AddVariable("CycleRage", false);
@@ -117,7 +117,7 @@ namespace CombatHandler.Enf
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), MongoTaunt, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
@@ -151,7 +151,7 @@ namespace CombatHandler.Enf
 
             BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
             SingleTauntDelay = Config.CharSettings[Game.ClientInst].SingleTauntDelay;
-            MongoTauntDelay = Config.CharSettings[Game.ClientInst].MongoTauntDelay;
+            MongoDelay = Config.CharSettings[Game.ClientInst].MongoDelay;
             CycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay;
             CycleChallengerDelay = Config.CharSettings[Game.ClientInst].CycleChallengerDelay;
             CycleRageDelay = Config.CharSettings[Game.ClientInst].CycleRageDelay;
@@ -266,7 +266,7 @@ namespace CombatHandler.Enf
                 if (singleInput != null)
                     singleInput.Text = $"{SingleTauntDelay}";
                 if (mongoInput != null)
-                    mongoInput.Text = $"{MongoTauntDelay}";
+                    mongoInput.Text = $"{MongoDelay}";
             }
             else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
             {
@@ -279,7 +279,7 @@ namespace CombatHandler.Enf
                 if (singleInput != null)
                     singleInput.Text = $"{SingleTauntDelay}";
                 if (mongoInput != null)
-                    mongoInput.Text = $"{MongoTauntDelay}";
+                    mongoInput.Text = $"{MongoDelay}";
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -492,8 +492,8 @@ namespace CombatHandler.Enf
 
                 if (mongoInput != null && !string.IsNullOrEmpty(mongoInput.Text))
                     if (int.TryParse(mongoInput.Text, out int mongoValue))
-                        if (Config.CharSettings[Game.ClientInst].MongoTauntDelay != mongoValue)
-                            Config.CharSettings[Game.ClientInst].MongoTauntDelay = mongoValue;
+                        if (Config.CharSettings[Game.ClientInst].MongoDelay != mongoValue)
+                            Config.CharSettings[Game.ClientInst].MongoDelay = mongoValue;
 
                 if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
                     if (int.TryParse(absorbsInput.Text, out int absorbsValue))
@@ -946,18 +946,18 @@ namespace CombatHandler.Enf
             return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool MongoTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("MongoTaunt") || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Mongo") || !CanCast(spell)) { return false; }
 
             if (DynelManager.NPCs.Any(c => c.Health > 0
                     && c.Name == "Alien Heavy Patroller"
                     && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
 
-            if (Time.NormalTime > _mongoTaunt + MongoTauntDelay
+            if (Time.NormalTime > _mongo + MongoDelay
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
-                _mongoTaunt = Time.NormalTime;
+                _mongo = Time.NormalTime;
                 return DynelManager.NPCs.Any(c => c.Health > 0
                     && c.FightingTarget?.IsPet == false
                     && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f);

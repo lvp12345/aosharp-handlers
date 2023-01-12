@@ -688,6 +688,8 @@ namespace CombatHandler.Generic
             {
                 CycleBioRegrowthPerk = Time.NormalTime;
 
+                if (!InCombat()) { return false; }
+
                 SimpleChar dyingTeamMember = DynelManager.Players
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
@@ -1810,7 +1812,7 @@ namespace CombatHandler.Generic
                     .Any(c => Team.Members.Select(m => m.Name).Contains(c.FightingTarget?.Name));
             }
 
-            return DynelManager.Players
+            return DynelManager.Characters
                     .Any(c => c.FightingTarget?.Name == DynelManager.LocalPlayer.Name);
         }
 

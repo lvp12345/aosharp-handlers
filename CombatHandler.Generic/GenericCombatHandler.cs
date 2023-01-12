@@ -1309,7 +1309,7 @@ namespace CombatHandler.Generic
                 if (teamMember != null)
                 {
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
+                    actionTarget.Target = teamMember;
 
                     return true;
                 }

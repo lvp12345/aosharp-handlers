@@ -498,6 +498,10 @@ namespace CombatHandler.Doctor
                 window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                window.FindView("BattleGroupHeal1PercentageBox", out TextInputView bg1Input);
+                window.FindView("BattleGroupHeal2PercentageBox", out TextInputView bg2Input);
+                window.FindView("BattleGroupHeal3PercentageBox", out TextInputView bg3Input);
+                window.FindView("BattleGroupHeal4PercentageBox", out TextInputView bg4Input);
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                     if (int.TryParse(healInput.Text, out int healValue))
@@ -572,6 +576,26 @@ namespace CombatHandler.Doctor
                     if (int.TryParse(strengthInput.Text, out int strengthValue))
                         if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
                             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
+
+                if (bg1Input != null && !string.IsNullOrEmpty(bg1Input.Text))
+                    if (int.TryParse(bg1Input.Text, out int bg1Value))
+                        if (Config.CharSettings[Game.ClientInst].BattleGroupHeal1Percentage != bg1Value)
+                            Config.CharSettings[Game.ClientInst].BattleGroupHeal1Percentage = bg1Value;
+
+                if (bg2Input != null && !string.IsNullOrEmpty(bg2Input.Text))
+                    if (int.TryParse(bg2Input.Text, out int bg2Value))
+                        if (Config.CharSettings[Game.ClientInst].BattleGroupHeal2Percentage != bg2Value)
+                            Config.CharSettings[Game.ClientInst].BattleGroupHeal2Percentage = bg2Value;
+
+                if (bg3Input != null && !string.IsNullOrEmpty(bg3Input.Text))
+                    if (int.TryParse(bg3Input.Text, out int bg3Value))
+                        if (Config.CharSettings[Game.ClientInst].BattleGroupHeal3Percentage != bg3Value)
+                            Config.CharSettings[Game.ClientInst].BattleGroupHeal3Percentage = bg3Value;
+
+                if (bg4Input != null && !string.IsNullOrEmpty(bg4Input.Text))
+                    if (int.TryParse(bg4Input.Text, out int bg4Value))
+                        if (Config.CharSettings[Game.ClientInst].BattleGroupHeal4Percentage != bg4Value)
+                            Config.CharSettings[Game.ClientInst].BattleGroupHeal4Percentage = bg4Value;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

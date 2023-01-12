@@ -84,6 +84,7 @@ namespace CombatHandler.Generic
         public int CycleBioRegrowthDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay : 1;
         [JsonIgnore]
         public int BioRegrowthPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].BioRegrowthPercentage : 70;
+
         #endregion
 
         public static Config Load(string path)

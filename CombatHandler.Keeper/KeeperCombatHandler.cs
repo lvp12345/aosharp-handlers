@@ -304,7 +304,7 @@ namespace CombatHandler.Keeper
                 if (teamNanoInput != null)
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
                 if (bioRegrowthPercentageInput != null)
-                    bioRegrowthPercentageInput.Text = $"{BioCocoonPercentage}";
+                    bioRegrowthPercentageInput.Text = $"{BioRegrowthPercentage}";
                 if (bioRegrowthDelayInput != null)
                     bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
             }
@@ -338,7 +338,7 @@ namespace CombatHandler.Keeper
                 if (teamNanoInput != null)
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
                 if (bioRegrowthPercentageInput != null)
-                    bioRegrowthPercentageInput.Text = $"{BioCocoonPercentage}";
+                    bioRegrowthPercentageInput.Text = $"{BioRegrowthPercentage}";
                 if (bioRegrowthDelayInput != null)
                     bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
             }

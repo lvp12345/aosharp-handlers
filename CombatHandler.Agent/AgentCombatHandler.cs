@@ -1005,8 +1005,7 @@ namespace CombatHandler.Agent
                 SimpleChar dyingTeamMember = DynelManager.Players
                     .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent < 90)
-                    .OrderBy(c => c)
-                    .ThenByDescending(c => c.HealthPercent)
+                    .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
@@ -1019,7 +1018,7 @@ namespace CombatHandler.Agent
             Pet dyingPet = DynelManager.LocalPlayer.Pets
                  .Where(pet => pet.Character.HealthPercent < 90
                     && (pet.Type == PetType.Attack || pet.Type == PetType.Social))
-                 .OrderByDescending(pet => pet.Character.HealthPercent)
+                 .OrderBy(pet => pet.Character.HealthPercent)
                  .FirstOrDefault();
 
             if (dyingPet != null)

@@ -1129,7 +1129,7 @@ namespace CombatHandler.Metaphysicist
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent < 85)
                     .Where(c => DynelManager.LocalPlayer.DistanceFrom(c) < 30f)
-                    .OrderByDescending(c => c.HealthPercent)
+                    .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
@@ -1143,7 +1143,7 @@ namespace CombatHandler.Metaphysicist
                      .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
                      .Where(pet => pet.Character.HealthPercent < 80)
                      .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-                     .OrderByDescending(pet => pet.Character.HealthPercent)
+                     .OrderBy(pet => pet.Character.HealthPercent)
                      .FirstOrDefault();
 
                 if (dyingPet != null)

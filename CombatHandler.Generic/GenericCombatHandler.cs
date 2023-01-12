@@ -744,11 +744,10 @@ namespace CombatHandler.Generic
                         && c.HealthPercent <= 30 && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
-                    .OrderBy(c => c)
-                    .ThenByDescending(c => c.HealthPercent)
-                    .ThenByDescending(c => c.Profession == Profession.Enforcer)
-                    .ThenByDescending(c => c.Profession == Profession.Doctor)
-                    .ThenByDescending(c => c.Profession == Profession.Soldier)
+                    .OrderBy(c => c.HealthPercent)
+                    .OrderBy(c => c.Profession == Profession.Enforcer)
+                    .OrderBy(c => c.Profession == Profession.Doctor)
+                    .OrderBy(c => c.Profession == Profession.Soldier)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1299,11 +1298,10 @@ namespace CombatHandler.Generic
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
                         && c.Health > 0)
-                    .OrderBy(c => c)
-                    .ThenByDescending(c => c.HealthPercent)
-                    .ThenByDescending(c => c.Profession == Profession.Enforcer)
-                    .ThenByDescending(c => c.Profession == Profession.Doctor)
-                    .ThenByDescending(c => c.Profession == Profession.Soldier)
+                    .OrderBy(c => c.HealthPercent)
+                    .OrderBy(c => c.Profession == Profession.Enforcer)
+                    .OrderBy(c => c.Profession == Profession.Doctor)
+                    .OrderBy(c => c.Profession == Profession.Soldier)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1619,11 +1617,10 @@ namespace CombatHandler.Generic
                         && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
-                    .OrderBy(c => c)
-                    .ThenByDescending(c => c.HealthPercent)
-                    .ThenByDescending(c => c.Profession == Profession.Enforcer)
-                    .ThenByDescending(c => c.Profession == Profession.Doctor)
-                    .ThenByDescending(c => c.Profession == Profession.Soldier)
+                    .OrderBy(c => c.HealthPercent)
+                    .OrderBy(c => c.Profession == Profession.Enforcer)
+                    .OrderBy(c => c.Profession == Profession.Doctor)
+                    .OrderBy(c => c.Profession == Profession.Soldier)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1652,15 +1649,14 @@ namespace CombatHandler.Generic
             if (!CanCast(spell)) { return false; }
 
             SimpleChar player = DynelManager.Players
-                .Where(c => c.HealthPercent <= healthPercentThreshold 
+                .Where(c => c.HealthPercent <= healthPercentThreshold
                     && c.IsInLineOfSight
                     && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                     && c.Health > 0)
-                .OrderBy(c => c)
-                .ThenByDescending(c => c.HealthPercent)
-                .ThenByDescending(c => c.Profession == Profession.Enforcer)
-                .ThenByDescending(c => c.Profession == Profession.Doctor)
-                .ThenByDescending(c => c.Profession == Profession.Soldier)
+                .OrderBy(c => c.HealthPercent)
+                .OrderBy(c => c.Profession == Profession.Enforcer)
+                .OrderBy(c => c.Profession == Profession.Doctor)
+                .OrderBy(c => c.Profession == Profession.Soldier)
                 .FirstOrDefault();
 
             if (player != null)

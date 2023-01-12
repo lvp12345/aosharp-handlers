@@ -692,6 +692,7 @@ namespace CombatHandler.Generic
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
                     .OrderBy(c => c)
+                    //Not sure about this
                     .ThenByDescending(c => c.HealthPercent)
                     .ThenByDescending(c => c.Profession == Profession.Enforcer)
                     .ThenByDescending(c => c.Profession == Profession.Doctor)

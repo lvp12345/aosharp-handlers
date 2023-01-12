@@ -564,7 +564,6 @@ namespace CombatHandler.Generic
 
                 if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
-                //Maybe add something here for KHBuddy
                 if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
                     return LeadershipPerk(perk);
             }
@@ -695,6 +694,8 @@ namespace CombatHandler.Generic
                     .FirstOrDefault();
 
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+                if (dyingTeamMember == null) { return false; }
 
                 return BuffPerk(perk, dyingTeamMember, ref actionTarget);
             }

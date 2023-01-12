@@ -693,9 +693,8 @@ namespace CombatHandler.Generic
                         && c.HealthPercent <= BioRegrowthPercentage)
                     .FirstOrDefault();
 
-                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
-
-                if (dyingTeamMember == null) { return false; }
+                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()
+                    || dyingTeamMember == null) { return false; }
 
                 return BuffPerk(perk, dyingTeamMember, ref actionTarget);
             }

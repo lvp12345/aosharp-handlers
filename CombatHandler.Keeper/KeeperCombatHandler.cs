@@ -462,8 +462,8 @@ namespace CombatHandler.Keeper
 
                 if (bioRegrowthPercentageInput != null && !string.IsNullOrEmpty(bioRegrowthPercentageInput.Text))
                     if (int.TryParse(bioRegrowthPercentageInput.Text, out int bioRegrowthPercentageValue))
-                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioRegrowthPercentageValue)
-                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioRegrowthPercentageValue;
+                        if (Config.CharSettings[Game.ClientInst].BioRegrowthPercentage != bioRegrowthPercentageValue)
+                            Config.CharSettings[Game.ClientInst].BioRegrowthPercentage = bioRegrowthPercentageValue;
 
                 if (bioRegrowthDelayInput != null && !string.IsNullOrEmpty(bioRegrowthDelayInput.Text))
                     if (int.TryParse(bioRegrowthDelayInput.Text, out int bioRegrowthDelayValue))

@@ -33,7 +33,7 @@ namespace CombatHandler.Generic
 
         public static int BioCocoonPercentage = 0;
         public static int SingleTauntDelay = 0;
-        public static int MongoTauntDelay = 0;
+        public static int MongoDelay = 0;
         public static int CycleXpPerksDelay = 0;
         public static int CycleSpherePerkDelay = 0;
         public static int CycleWitOfTheAtroxPerkDelay = 0;
@@ -2204,10 +2204,10 @@ namespace CombatHandler.Generic
             Config.Save();
         }
 
-        public static void MongoTauntDelay_Changed(object s, int e)
+        public static void MongoDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].MongoTauntDelay = e;
-            MongoTauntDelay = e;
+            Config.CharSettings[Game.ClientInst].MongoDelay = e;
+            MongoDelay = e;
             Config.Save();
         }
         public static void CycleAbsorbsDelay_Changed(object s, int e)

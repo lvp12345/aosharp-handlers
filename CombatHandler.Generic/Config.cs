@@ -37,7 +37,7 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int SingleTauntDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SingleTauntDelay : 1;
         [JsonIgnore]
-        public int MongoTauntDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].MongoTauntDelay : 1;
+        public int MongoDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].MongoDelay : 1;
         [JsonIgnore]
         public int CycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleAbsorbsDelay : 1;
         [JsonIgnore]
@@ -476,20 +476,20 @@ namespace CombatHandler.Generic
                 }
             }
         }
-        public event EventHandler<int> MongoTauntDelayChangedEvent;
-        private int _mongoTauntDelay = 1;
-        public int MongoTauntDelay
+        public event EventHandler<int> MongoDelayChangedEvent;
+        private int _mongoDelay = 1;
+        public int MongoDelay
         {
             get
             {
-                return _mongoTauntDelay;
+                return _mongoDelay;
             }
             set
             {
-                if (_mongoTauntDelay != value)
+                if (_mongoDelay != value)
                 {
-                    _mongoTauntDelay = value;
-                    MongoTauntDelayChangedEvent?.Invoke(this, value);
+                    _mongoDelay = value;
+                    MongoDelayChangedEvent?.Invoke(this, value);
                 }
             }
         }

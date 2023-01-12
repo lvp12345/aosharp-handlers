@@ -451,6 +451,8 @@ namespace CombatHandler.Generic
 
             if (!IsSettingEnabled("LegShot")) { return false; }
 
+            if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
+
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 

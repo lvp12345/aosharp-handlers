@@ -691,6 +691,11 @@ namespace CombatHandler.Generic
                 SimpleChar dyingTeamMember = DynelManager.Players
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
+                    .OrderBy(c => c)
+                    .ThenByDescending(c => c.HealthPercent)
+                    .ThenByDescending(c => c.Profession == Profession.Enforcer)
+                    .ThenByDescending(c => c.Profession == Profession.Doctor)
+                    .ThenByDescending(c => c.Profession == Profession.Soldier)
                     .FirstOrDefault();
 
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()

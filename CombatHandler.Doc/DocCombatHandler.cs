@@ -811,7 +811,7 @@ namespace CombatHandler.Doctor
 
                     if (dyingTeamMember.Count >= 4) 
                     { 
-                        return true;
+                        return CanCast(spell);
                     }
                 }
             }
@@ -885,7 +885,7 @@ namespace CombatHandler.Doctor
 
                     if (dyingTeamMember.Count >= 4) 
                     {
-                        return true;
+                        return CanCast(spell);
                     }
                 }
             }

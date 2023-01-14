@@ -381,7 +381,7 @@ namespace CombatHandler.Generic
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
-                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                return BuffPerk(perk, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -396,7 +396,7 @@ namespace CombatHandler.Generic
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
-                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                return BuffPerk(perk, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -414,11 +414,15 @@ namespace CombatHandler.Generic
                     .FirstOrDefault();
 
                 if (_person != null)
-                    return BuffPerk(perk, _person, ref actionTarget);
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _person;
+                    return true;
+                }
             }
 
             if (DynelManager.LocalPlayer.HealthPercent <= TeamHealPerkPercentage)
-                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                return BuffPerk(perk, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -436,11 +440,15 @@ namespace CombatHandler.Generic
                     .FirstOrDefault();
 
                 if (_person != null)
-                    return BuffPerk(perk, _person, ref actionTarget);
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _person;
+                    return true;
+                }
             }
 
             if (DynelManager.LocalPlayer.NanoPercent <= TeamNanoPerkPercentage)
-                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                return BuffPerk(perk, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -464,7 +472,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool BattleGroupHeal1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -618,7 +626,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -627,7 +635,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -636,7 +644,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -644,7 +652,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.HealthPercent >= 75) { return false; }
 
-            return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool Moonmist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -674,11 +682,9 @@ namespace CombatHandler.Generic
             {
                 CycleWitOfTheAtroxPerk = Time.NormalTime;
 
-                if (!InCombat()) { return false; }
-
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                return BuffPerk(perk, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -704,7 +710,9 @@ namespace CombatHandler.Generic
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()
                     || dyingTeamMember == null) { return false; }
 
-                return BuffPerk(perk, dyingTeamMember, ref actionTarget);
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = dyingTeamMember;
+                return true;
             }
 
             return false;
@@ -716,11 +724,9 @@ namespace CombatHandler.Generic
             {
                 CycleSpherePerk = Time.NormalTime;
 
-                if (!InCombat()) { return false; }
-
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-                return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
+                return BuffPerk(perk, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -1812,6 +1818,8 @@ namespace CombatHandler.Generic
 
         public bool AttackingTeam(SimpleChar mob)
         {
+            if (mob.FightingTarget == null) { return false; }
+
             if (Team.IsInTeam)
                 return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget?.Name)
                         || (bool)mob.FightingTarget?.IsPet;

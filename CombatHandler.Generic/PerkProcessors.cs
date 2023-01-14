@@ -203,7 +203,7 @@ namespace CombatHandler.Generic
                 || perkAction.Name == "Limber" || perkAction.Name == "Dance of Fools"
                 || perkAction.Name == "Leg Shot") { return false; }
 
-            actionTarget.Target = fightingTarget;
+            actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;
             return true;
         }

@@ -674,6 +674,8 @@ namespace CombatHandler.Generic
             {
                 CycleWitOfTheAtroxPerk = Time.NormalTime;
 
+                if (!InCombat()) { return false; }
+
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
                 return BuffPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
@@ -713,6 +715,8 @@ namespace CombatHandler.Generic
             if (Time.NormalTime > CycleSpherePerk + CycleSpherePerkDelay)
             {
                 CycleSpherePerk = Time.NormalTime;
+
+                if (!InCombat()) { return false; }
 
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 

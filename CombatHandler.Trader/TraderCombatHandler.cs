@@ -878,10 +878,7 @@ namespace CombatHandler.Trader
         {
             if (IsInsideInnerSanctum() || EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
-            if (EvadesSelection.Self == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return Buff(spell, spell.Nanoline, ref actionTarget);
-
-            return false;
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

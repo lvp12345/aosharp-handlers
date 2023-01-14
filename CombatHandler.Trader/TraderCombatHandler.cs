@@ -876,14 +876,17 @@ namespace CombatHandler.Trader
 
         protected bool ImprovedQuantumUncertanity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum() || EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            if (EvadesSelection.Self == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
+                return Buff(spell, spell.Nanoline, ref actionTarget);
+
+            return false;
         }
 
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum() || EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
             if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
                 return GenericTeamBuff(spell, ref actionTarget);

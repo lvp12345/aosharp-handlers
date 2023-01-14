@@ -796,7 +796,7 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("Composites") || IsInsideInnerSanctum()) { return false; }
 
-            return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+            return GenericTeamBuff(spell, ref actionTarget);
         }
         #endregion
 
@@ -850,25 +850,37 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Non Combat
-        protected bool GenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        protected bool GenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool GlobalGenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            return GenericBuff(spell, ref actionTarget);
+        }
+
+        protected bool GlobalGenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
+
+        protected bool GenericBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool GenericTeamBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             if (Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool Buff(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             if (SpellChecksPlayer(spell, nanoline))
             {
@@ -880,9 +892,9 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool TeamBuff(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool TeamBuff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             SimpleChar target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
@@ -907,16 +919,16 @@ namespace CombatHandler.Generic
             if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
             if (Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         protected bool BuffExclusion(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
 
-            if (fightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             if (SpellChecksPlayer(spell, nanoline))
             {
@@ -1605,7 +1617,7 @@ namespace CombatHandler.Generic
                 }
             }
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget); ;
+            return Buff(spell, spell.Nanoline, ref actionTarget); ;
         }
 
         protected bool FindMemberWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

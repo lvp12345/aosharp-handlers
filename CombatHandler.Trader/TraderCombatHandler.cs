@@ -142,8 +142,8 @@ namespace CombatHandler.Trader
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
-            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GenericBuff);
-            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GenericBuff);
+            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GlobalGenericBuff);
+            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GlobalGenericBuff);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
@@ -858,7 +858,7 @@ namespace CombatHandler.Trader
 
             if (DynelManager.NPCs.Any(c => c.Health > 0
                 && AttackingTeam(c)))
-                return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return Buff(spell, spell.Nanoline, ref actionTarget);
 
             return false;
         }
@@ -879,17 +879,17 @@ namespace CombatHandler.Trader
             if (IsInsideInnerSanctum()) { return false; }
 
             if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+                return GenericTeamBuff(spell, ref actionTarget);
 
             if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
         protected bool ImprovedQuantumUncertanity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #endregion

@@ -137,8 +137,8 @@ namespace CombatHandler.Metaphysicist
 
             //Self buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericTeamBuffExclusion);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), GenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Team buffs
             RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
@@ -810,17 +810,17 @@ namespace CombatHandler.Metaphysicist
             if (CostBuffSelection.Team == (CostBuffSelection)_settings["CostBuffSelection"].AsInt32())
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (CompositeNanoSkillsBuffSelection.Team == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, fightingTarget, ref actionTarget);
+                return GenericTeamBuff(spell, ref actionTarget);
 
             if (CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         private bool MatCre(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -874,11 +874,11 @@ namespace CombatHandler.Metaphysicist
         private bool InterruptModifier(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InterruptSelection.Team == (InterruptSelection)_settings["InterruptSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
 
             if (InterruptSelection.None == (InterruptSelection)_settings["InterruptSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #endregion

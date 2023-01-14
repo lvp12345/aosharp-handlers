@@ -865,10 +865,23 @@ namespace CombatHandler.MartialArtist
             if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
                 return GenericTeamBuff(spell, ref actionTarget);
 
-            if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
+            if (EvadesSelection.Self == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
+                return Buff(spell, spell.Nanoline, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return false;
         }
+
+        //protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsInsideInnerSanctum()) { return false; }
+
+        //    if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
+        //        return GenericTeamBuff(spell, ref actionTarget);
+
+        //    if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
+
+        //    return Buff(spell, spell.Nanoline, ref actionTarget);
+        //}
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

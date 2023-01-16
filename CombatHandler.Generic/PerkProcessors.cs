@@ -209,7 +209,7 @@ namespace CombatHandler.Generic
         }
         public static bool StarFallPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (fightingTarget == null || (fightingTarget.MaxHealth < 1000000 && fightingTarget.HealthPercent < 5)) { return false; }
 
             if (PerkAction.Find(PerkHash.Combust, out PerkAction combust) && !combust.IsAvailable) { return false; }
 
@@ -218,7 +218,7 @@ namespace CombatHandler.Generic
         }
         public static bool QuickShotPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (fightingTarget == null || (fightingTarget.MaxHealth < 1000000 && fightingTarget.HealthPercent < 5)) { return false; }
 
             if (PerkAction.Find("Double Shot", out PerkAction doubleShot) && !doubleShot.IsAvailable) { return false; }
 
@@ -235,7 +235,7 @@ namespace CombatHandler.Generic
 
         public static bool DamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
+            if (fightingTarget == null || (fightingTarget.MaxHealth < 1000000 && fightingTarget.HealthPercent < 5)) { return false; }
 
             if (perkAction.Name == "Unhallowed Wrath" || perkAction.Name == "Spectator Wrath" || perkAction.Name == "Righteous Wrath")
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Skill2hEdged)) { return false; }

@@ -369,7 +369,7 @@ namespace LootManager
                 if (r.Global)
                     globalscope = "G";
                 else
-                    globalscope = "N";
+                    globalscope = "L";
 
                 //entry.Tag = iEntry;
                 tx.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + " ] - " + r.Name;
@@ -437,7 +437,7 @@ namespace LootManager
                     if (r.Global)
                         scope = "G";
                     else
-                        scope = "N";
+                        scope = "L";
                     tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
 
 

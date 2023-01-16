@@ -1417,6 +1417,8 @@ namespace CombatHandler.Bureaucrat
 
         protected bool RobotSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
             return PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget);
         }
 

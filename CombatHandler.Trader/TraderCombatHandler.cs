@@ -856,10 +856,7 @@ namespace CombatHandler.Trader
         {
             if (!IsSettingEnabled("NanoHeal")) { return false; }
 
-            if (DynelManager.NPCs.Any(c => c.Health > 0 && AttackingTeam(c)))
-                return Buff(spell, spell.Nanoline, ref actionTarget);
-
-            return false;
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #endregion

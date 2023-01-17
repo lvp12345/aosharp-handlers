@@ -90,8 +90,6 @@ namespace CombatHandler.Trader
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DebtCollection);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.UnopenedLetter);
 
-            _settings.AddVariable("NanoHeal", false);
-
             _settings.AddVariable("LegShot", false);
 
             _settings.AddVariable("PerkSelection", (int)PerkSelection.Sacrifice);
@@ -108,6 +106,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
+            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Self);
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
@@ -854,9 +853,16 @@ namespace CombatHandler.Trader
 
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NanoHeal")) { return false; }
+            if (NanoHealSelection.None == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
+                if (InCombat())
+                    return Buff(spell, spell.Nanoline, ref actionTarget);
+
+            if (NanoHealSelection.Self == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
+                    return Buff(spell, spell.Nanoline, ref actionTarget);
+
+            return false;
         }
 
         #endregion
@@ -1255,6 +1261,10 @@ namespace CombatHandler.Trader
         public enum HealSelection
         {
             None, SingleTeam, SingleArea, Team
+        }
+        public enum NanoHealSelection
+        {
+            None, Self, Combat
         }
         public enum NanoDrainSelection
         {

@@ -89,11 +89,6 @@ namespace CombatHandler.Adventurer
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AesirAbsorption);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.HealingHerbs);
 
-            _settings.AddVariable("DragonMorph", false);
-            _settings.AddVariable("LeetMorph", false);
-            _settings.AddVariable("SaberMorph", false);
-            _settings.AddVariable("WolfMorph", false);
-
             _settings.AddVariable("ArmorBuff", false);
 
             _settings.AddVariable("CH", false);
@@ -435,11 +430,11 @@ namespace CombatHandler.Adventurer
                 if (window.Views.Contains(_morphView)) { return; }
 
                 _morphView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvMorphView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Debuffs", XmlViewName = "AdvMorphView" }, _morphView);
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Morphs", XmlViewName = "AdvMorphView" }, _morphView);
             }
             else if (_morphWindow == null || (_morphWindow != null && !_morphWindow.IsValid))
             {
-                SettingsController.CreateSettingsTab(_morphWindow, PluginDir, new WindowOptions() { Name = "Debuffs", XmlViewName = "AdvMorphView" }, _morphView, out var container);
+                SettingsController.CreateSettingsTab(_morphWindow, PluginDir, new WindowOptions() { Name = "Morphs", XmlViewName = "AdvMorphView" }, _morphView, out var container);
                 _morphWindow = container;
             }
         }

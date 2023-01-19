@@ -28,7 +28,7 @@ namespace CombatHandler.Generic
                     if (!CustomProcessor.ContainsKey(perkHash)) { return null; }
                     return CustomProcessor[perkHash];
                 case PerkType.SelfBuff:
-                    return BuffPerk;
+                    return CombatBuffPerk;
                 case PerkType.SelfHeal:
                     return SelfHeal;
                 case PerkType.SelfNano:
@@ -188,7 +188,7 @@ namespace CombatHandler.Generic
             return perkAction.IsAvailable;
         }
 
-        public static bool BuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool CombatBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
 
@@ -207,6 +207,7 @@ namespace CombatHandler.Generic
             actionTarget.ShouldSetTarget = true;
             return true;
         }
+
         public static bool StarFallPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null || (fightingTarget.MaxHealth < 1000000 && fightingTarget.HealthPercent < 5)) { return false; }

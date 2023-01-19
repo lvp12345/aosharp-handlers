@@ -381,7 +381,7 @@ namespace CombatHandler.Generic
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
-                return BuffPerk(perk, fightingTarget, ref actionTarget);
+                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -396,7 +396,7 @@ namespace CombatHandler.Generic
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
-                return BuffPerk(perk, fightingTarget, ref actionTarget);
+                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -422,7 +422,7 @@ namespace CombatHandler.Generic
             }
 
             if (DynelManager.LocalPlayer.HealthPercent <= TeamHealPerkPercentage)
-                return BuffPerk(perk, fightingTarget, ref actionTarget);
+                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -448,7 +448,7 @@ namespace CombatHandler.Generic
             }
 
             if (DynelManager.LocalPlayer.NanoPercent <= TeamNanoPerkPercentage)
-                return BuffPerk(perk, fightingTarget, ref actionTarget);
+                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -472,7 +472,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool BattleGroupHeal1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -617,7 +617,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -626,7 +626,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -635,7 +635,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -644,7 +644,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -652,7 +652,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.HealthPercent >= 75) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool Moonmist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -661,7 +661,7 @@ namespace CombatHandler.Generic
 
             if (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool Starfall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -684,7 +684,7 @@ namespace CombatHandler.Generic
 
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-                return BuffPerk(perk, fightingTarget, ref actionTarget);
+                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -726,7 +726,7 @@ namespace CombatHandler.Generic
 
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-                return BuffPerk(perk, fightingTarget, ref actionTarget);
+                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
             }
 
             return false;

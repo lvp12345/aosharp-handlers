@@ -472,7 +472,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool BattleGroupHeal1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -617,7 +617,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -626,7 +626,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

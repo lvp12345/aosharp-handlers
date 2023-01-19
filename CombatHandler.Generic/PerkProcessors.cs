@@ -28,7 +28,7 @@ namespace CombatHandler.Generic
                     if (!CustomProcessor.ContainsKey(perkHash)) { return null; }
                     return CustomProcessor[perkHash];
                 case PerkType.SelfBuff:
-                    return CombatBuffPerk;
+                    return BuffPerk;
                 case PerkType.SelfHeal:
                     return SelfHeal;
                 case PerkType.SelfNano:
@@ -186,6 +186,24 @@ namespace CombatHandler.Generic
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;
             return perkAction.IsAvailable;
+        }
+
+        public static bool BuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            {
+                if (buff.Name == perkAction.Name) { return false; }
+            }
+
+            if (!DynelManager.LocalPlayer.IsAttacking &&
+                (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox"
+                || perkAction.Name == "Dodge the Blame" || perkAction.Name == "Devotional Armor")
+                || perkAction.Name == "Limber" || perkAction.Name == "Dance of Fools"
+                || perkAction.Name == "Leg Shot") { return false; }
+
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         public static bool CombatBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

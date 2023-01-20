@@ -60,6 +60,8 @@ namespace ResearchManager
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _tick + 3f)
             {
+                _tick = Time.NormalTime;
+
                 if (_asyncToggle == false && (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0
                     || !Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
                         == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
@@ -83,7 +85,7 @@ namespace ResearchManager
                             _asyncToggle = false;
                         });
                 }
-                _tick = Time.NormalTime;
+
             }
         }
     }

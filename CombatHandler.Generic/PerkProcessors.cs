@@ -195,12 +195,6 @@ namespace CombatHandler.Generic
                 if (buff.Name == perkAction.Name) { return false; }
             }
 
-            if (!DynelManager.LocalPlayer.IsAttacking &&
-                (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox"
-                || perkAction.Name == "Dodge the Blame" || perkAction.Name == "Devotional Armor")
-                || perkAction.Name == "Limber" || perkAction.Name == "Dance of Fools"
-                || perkAction.Name == "Leg Shot") { return false; }
-
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;
             return true;
@@ -214,12 +208,6 @@ namespace CombatHandler.Generic
             {
                 if (buff.Name == perkAction.Name) { return false; }
             }
-
-            if (!DynelManager.LocalPlayer.IsAttacking && 
-                (perkAction.Name == "Bio Shield" || perkAction.Name == "Wit of the Atrox" 
-                || perkAction.Name == "Dodge the Blame" || perkAction.Name == "Devotional Armor")
-                || perkAction.Name == "Limber" || perkAction.Name == "Dance of Fools"
-                || perkAction.Name == "Leg Shot") { return false; }
 
             actionTarget.Target = DynelManager.LocalPlayer;
             actionTarget.ShouldSetTarget = true;

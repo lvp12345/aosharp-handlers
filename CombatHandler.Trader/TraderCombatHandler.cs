@@ -92,7 +92,7 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("LegShot", false);
 
-            _settings.AddVariable("PerkSelection", (int)PerkSelection.Sacrifice);
+            _settings.AddVariable("PerkSelection", (int)PerkSelection.None);
 
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
@@ -782,6 +782,7 @@ namespace CombatHandler.Trader
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (PerkSelection.Sacrifice != (PerkSelection)_settings["PerkSelection"].AsInt32()
+                || PerkSelection.None == (PerkSelection)_settings["PerkSelection"].AsInt32()
                 || fightingTarget == null) { return false; }
 
             return Volunteer(perk, fightingTarget, ref actionTarget);
@@ -789,7 +790,10 @@ namespace CombatHandler.Trader
 
         private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+
+
             if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()
+                || PerkSelection.None == (PerkSelection)_settings["PerkSelection"].AsInt32()
                 || fightingTarget == null) { return false; }
 
             return Volunteer(perk, fightingTarget, ref actionTarget);
@@ -1256,7 +1260,7 @@ namespace CombatHandler.Trader
 
         public enum PerkSelection
         {
-            Sacrifice, PurpleHeart
+           None, Sacrifice, PurpleHeart
         }
         public enum HealSelection
         {

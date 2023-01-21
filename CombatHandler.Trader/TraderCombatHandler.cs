@@ -790,8 +790,6 @@ namespace CombatHandler.Trader
 
         private bool PurpleHeart(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-
-
             if (PerkSelection.PurpleHeart != (PerkSelection)_settings["PerkSelection"].AsInt32()
                 || PerkSelection.None == (PerkSelection)_settings["PerkSelection"].AsInt32()
                 || fightingTarget == null) { return false; }

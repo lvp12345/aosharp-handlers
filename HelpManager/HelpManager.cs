@@ -150,6 +150,9 @@ namespace HelpManager
 
                     MailBot = !MailBot;
                 }
+
+                if (param.Length == 0)
+                    MailBot = !MailBot;
             });
 
             Chat.RegisterCommand("yalm", YalmCommand);

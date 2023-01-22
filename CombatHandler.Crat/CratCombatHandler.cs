@@ -1412,6 +1412,8 @@ namespace CombatHandler.Bureaucrat
 
         protected bool CarloSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
             return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 

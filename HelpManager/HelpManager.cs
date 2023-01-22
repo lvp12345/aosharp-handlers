@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
 using System.Windows.Input;
+using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 
 namespace HelpManager
 {
@@ -103,6 +104,10 @@ namespace HelpManager
             //new Vector3(76.1, 29.0, 28.3)
         };
 
+        private static string _mailName = string.Empty;
+        private static int _mailCreds = 0;
+        private static bool MailBot = false;
+
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public override void Run(string pluginDir)
@@ -135,6 +140,17 @@ namespace HelpManager
             _settings.AddVariable("Db3Shapes", false);
 
             Chat.RegisterCommand("autosit", AutoSitSwitch);
+
+            Chat.RegisterCommand("mail", (string command, string[] param, ChatWindow chatWindow) =>
+            {
+                if (param.Length == 2)
+                {
+                    _mailName = param[0];
+                    _mailCreds = Convert.ToInt32(param[1]);
+
+                    MailBot = !MailBot;
+                }
+            });
 
             Chat.RegisterCommand("yalm", YalmCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
@@ -231,25 +247,28 @@ namespace HelpManager
             //    _init = false;
             //}
 
-            if (Time.NormalTime > _updateTick + 8f)
+            if (MailBot)
             {
-                List<SimpleChar> PlayersInRange = DynelManager.Characters
-                    .Where(x => x.IsPlayer)
-                    .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
-                    .ToList();
-
-                foreach (SimpleChar player in PlayersInRange)
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.ComputerLiteracy))
                 {
-                    Network.Send(new CharacterActionMessage()
+                    if (DynelManager.LocalPlayer.GetStat(Stat.Cash) == _mailCreds)
                     {
-                        Action = CharacterActionType.InfoRequest,
-                        Target = player.Identity
+                        Network.Send(new MailMessage()
+                        {
+                            Unknown1 = 06,
+                            Recipient = $"{_mailName}",
+                            Subject = "Sending creds.",
+                            Body = $"I've sent you {_mailCreds - 200000} credits.",
+                            Item = Identity.None,
+                            Credits = _mailCreds - 200000,
+                            Express = true
+                        });
 
-                    });
+                        Chat.WriteLine($"Sent {_mailCreds - 200000} credits.");
+                    }
                 }
-
-                _updateTick = Time.NormalTime;
             }
+
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {

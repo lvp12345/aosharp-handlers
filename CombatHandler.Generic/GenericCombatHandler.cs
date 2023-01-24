@@ -2099,10 +2099,8 @@ namespace CombatHandler.Generic
 
         public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
         {
-            //InfBuddy edge case fix
-            if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(2720.0f, 24.9f, 3329.9f)) < 3f) { return; }
-
-            if (SettingsController.IsCharacterRegistered(e.Requester))
+            if (SettingsController.IsCharacterRegistered(e.Requester) 
+                && DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(2720.0f, 24.9f, 3329.9f)) > 1f)
                 e.Accept();
         }
 

@@ -18,6 +18,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
 using System.Windows.Input;
 using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using AOSharp.Core.GMI;
 
 namespace HelpManager
 {
@@ -108,6 +109,13 @@ namespace HelpManager
         private static int _mailCreds = 0;
         private static bool MailBot = false;
 
+
+        private static int EndPrice = 0;
+        private static int QueuedCash = 0;
+        private static bool GMIBot = false;
+        private static double _gmiBotTimer;
+        private static string _gmiOrder = string.Empty;
+
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public override void Run(string pluginDir)
@@ -153,6 +161,41 @@ namespace HelpManager
 
                 if (param.Length == 0)
                     MailBot = !MailBot;
+
+                //Listens when our cash stat = _mailCreds to send mail
+            });
+
+            Chat.RegisterCommand("gmi", (string command, string[] param, ChatWindow chatWindow) =>
+            {
+                if (param.Length == 3)
+                {
+                    if (param[0] == "order")
+                    {
+                        if (param[1] == "name")
+                            _gmiOrder = param[2];
+                        if (param[1] == "endprice")
+                            EndPrice = Convert.ToInt32(param[2]);
+                    }
+
+                    if (param[0] == "deposit")
+                    {
+                        GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
+                    }
+
+                    if (param[0] == "modify" 
+                        && !string.IsNullOrEmpty(_gmiOrder)
+                        && EndPrice > 0)
+                    {
+                        RequestGMIInventory();
+                    }
+                }
+
+                if (param.Length == 0 
+                    && !string.IsNullOrEmpty(_gmiOrder)
+                    && EndPrice > 0)
+                    GMIBot = !GMIBot;
+
+                //Listens when our gmi cash is at max amount to modify buy order
             });
 
             Chat.RegisterCommand("yalm", YalmCommand);
@@ -272,6 +315,10 @@ namespace HelpManager
                 }
             }
 
+            if (GMIBot && Time.NormalTime > _gmiBotTimer + 5)
+            {
+                RequestGMIInventory();
+            }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
@@ -747,6 +794,64 @@ namespace HelpManager
                 return 414;
 
             return 0;
+        }
+
+        private static void RequestGMIInventory()
+        {
+            GMI.GetInventory().ContinueWith(async marketInventory =>
+            {
+                if (marketInventory.IsFaulted || marketInventory.Result == null)
+                {
+                    await Task.Delay(1000);
+                    RequestGMIInventory();
+                    return;
+                }
+
+                OnMarketInventoryLoaded(marketInventory.Result);
+            });
+        }
+
+        private static void OnMarketInventoryLoaded(MarketInventory marketInventory)
+        {
+            //if (marketInventory.Credits < QueuedCash)
+            //{
+            //    Task.Delay(2000).ContinueWith((e) => RequestGMIInventory());
+            //    return;
+            //}
+
+            GMI.GetMarketOrders().ContinueWith(marketOrders =>
+            {
+                if (!marketOrders.IsFaulted && marketOrders.Result != null)
+                    OnMarketOrdersLoaded(marketInventory, marketOrders.Result);
+            });
+        }
+
+        private static void OnMarketOrdersLoaded(MarketInventory marketInventory, MyMarketOrders myOrders)
+        {
+            MyMarketBuyOrder ourOrder = myOrders.BuyOrders.Where(x => x.Name == _gmiOrder
+                && x.Price < EndPrice).OrderByDescending(x => x.Price).FirstOrDefault();
+
+            if (ourOrder == null) 
+            {
+                GMIBot = false;
+                Chat.WriteLine("Should be finished?");
+                return;
+            }
+
+            long desiredIncrease = Math.Min(EndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.995f)) / ourOrder.Count;
+
+            ourOrder.ModifyPrice(ourOrder.Price + desiredIncrease).ContinueWith(modifyOrder =>
+            {
+                if (modifyOrder.Result.Succeeded)
+                {
+                    Chat.WriteLine($"Item order {ourOrder.Id} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
+                    //QueuedCash = 0;
+                }
+                else
+                {
+                    Chat.WriteLine($"Failed to modify order. The error is {modifyOrder.Result.Message}");
+                }
+            });
         }
 
         private static class RelevantNanos

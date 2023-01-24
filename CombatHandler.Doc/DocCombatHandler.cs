@@ -815,38 +815,14 @@ namespace CombatHandler.Doctor
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HealPercentage == 0) { return false; }
-
             if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
                 return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                if (Spell.List.Any(c => c.Id == 275011)) { return false; }
-
-                if (Team.IsInTeam)
-                {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && c.HealthPercent <= 85 && c.HealthPercent >= 50)
-                        .ToList();
-
-                    if (dyingTeamMember.Count >= 4) 
-                    { 
-                        return CanCast(spell);
-                    }
-                }
-            }
 
             return false;
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HealPercentage == 0) { return false; }
-
             if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
             {
                 if (Team.IsInTeam)
@@ -907,10 +883,7 @@ namespace CombatHandler.Doctor
                              && c.HealthPercent <= 85 && c.HealthPercent >= 50)
                         .ToList();
 
-                    if (dyingTeamMember.Count >= 4) 
-                    {
-                        return CanCast(spell);
-                    }
+                    if (dyingTeamMember.Count >= 4) { return CanCast(spell); }
                 }
             }
 
@@ -925,20 +898,13 @@ namespace CombatHandler.Doctor
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        // Template for all
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //We use this logic because it has radio options
-            //If not we use GenericCombatBuff as the processor condition
-
             if (ShortHOTSelection.Team == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
                 return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
 
             if (ShortHOTSelection.None == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
 
-            //We allow here for our own input of NanoLine in ref to Supazooted
-            //NanoLine.TraderTeamSkillWranglerBuff
-            //Different to the spell.NanoLine
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
@@ -1013,6 +979,7 @@ namespace CombatHandler.Doctor
         #endregion
 
         #region Misc
+
 
         private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

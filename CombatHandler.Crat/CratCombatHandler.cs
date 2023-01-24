@@ -1497,6 +1497,8 @@ namespace CombatHandler.Bureaucrat
         }
         private void OnZoned(object s, EventArgs e)
         {
+            _lastZonedTime = Time.NormalTime;
+            _lastCombatTime = double.MinValue;
             ResetTrimmers();
         }
 

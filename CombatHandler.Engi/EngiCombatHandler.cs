@@ -7,6 +7,7 @@ using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CombatHandler.Engineer
 {
@@ -61,7 +62,6 @@ namespace CombatHandler.Engineer
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
 
-            Game.TeleportEnded += OnZoned;
             Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
             Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
@@ -1271,7 +1271,7 @@ namespace CombatHandler.Engineer
             return pet.Type == PetType.Attack && !attackPetTrimmedAggressive;
         }
 
-        private void ResetTrimmers()
+        public void ResetTrimmers()
         {
             attackPetTrimmedAggressive = false;
             petTrimmedOffDiv[PetType.Attack] = false;
@@ -1284,7 +1284,8 @@ namespace CombatHandler.Engineer
 
         private void OnZoned(object s, EventArgs e)
         {
-
+            _lastZonedTime = Time.NormalTime;
+            _lastCombatTime = double.MinValue;
             ResetTrimmers();
         }
 

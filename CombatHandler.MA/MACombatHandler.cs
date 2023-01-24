@@ -914,7 +914,6 @@ namespace CombatHandler.MartialArtist
 
         #region Misc
 
-
         private static class RelevantNanos
         {
             public const int FistsOfTheWinterFlame = 269470;

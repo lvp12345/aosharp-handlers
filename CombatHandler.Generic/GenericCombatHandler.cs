@@ -285,8 +285,9 @@ namespace CombatHandler.Generic
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
             }
 
-            Game.TeleportEnded += OnZoned;
-            Game.TeleportEnded += TeleportEnded;
+            if (DynelManager.LocalPlayer.Profession != Profession.Engineer && DynelManager.LocalPlayer.Profession != Profession.Bureaucrat)
+                Game.TeleportEnded += OnZoned;
+
             Team.TeamRequest += Team_TeamRequest;
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
             //Network.N3MessageSent += Network_N3MessageSent;
@@ -301,6 +302,8 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning) { return; }
+
             base.OnUpdate(deltaTime);
 
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
@@ -335,11 +338,13 @@ namespace CombatHandler.Generic
             //    _init = false;
             //}
 
-            if (Time.NormalTime > _updateTick + 0.1f)
+            if (Time.NormalTime > _updateTick + 2f)
             {
-                foreach (SimpleChar player in DynelManager.Characters
-                    .Where(c => c.IsPlayer && DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
+                foreach (SimpleChar player in DynelManager.Players
+                    .Where(c => DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
                 {
+                    if (Game.IsZoning) { return; }
+
                     Network.Send(new CharacterActionMessage()
                     {
                         Action = CharacterActionType.InfoRequest,
@@ -1792,11 +1797,6 @@ namespace CombatHandler.Generic
             return SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
         }
 
-        private void TeleportEnded(object sender, EventArgs e)
-        {
-            _lastCombatTime = double.MinValue;
-        }
-
         protected void CancelHostileAuras(int[] auras)
         {
             if (Time.NormalTime - _lastCombatTime > 5)
@@ -1974,7 +1974,6 @@ namespace CombatHandler.Generic
         public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
         {
             Team.Disband();
-            IPCChannel.Broadcast(new DisbandMessage());
         }
 
         public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
@@ -1988,7 +1987,6 @@ namespace CombatHandler.Generic
         public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
         {
             Team.Disband();
-            IPCChannel.Broadcast(new DisbandMessage());
             Task.Factory.StartNew(
                 async () =>
                 {
@@ -2096,14 +2094,16 @@ namespace CombatHandler.Generic
         private void OnZoned(object s, EventArgs e)
         {
             _lastZonedTime = Time.NormalTime;
+            _lastCombatTime = double.MinValue;
         }
 
         public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
         {
+            //InfBuddy edge case fix
+            if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(2720.0f, 24.9f, 3329.9f)) < 3f) { return; }
+
             if (SettingsController.IsCharacterRegistered(e.Requester))
-            {
                 e.Accept();
-            }
         }
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)

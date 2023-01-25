@@ -1045,7 +1045,6 @@ namespace HelpManager
             {
                 if (modifyOrder.Result.Succeeded)
                 {
-                    Chat.WriteLine($"We have credots! {marketInventory.Credits}.");
                     Chat.WriteLine($"{_gmiOrder} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
                     //QueuedCash = 0;
                 }

@@ -118,6 +118,7 @@ namespace HelpManager
         private static bool GMIBot = false;
         private static bool GMIWithdrawBot = false;
         private static double _gmiBotTimer;
+        private static double _gmiInventoryTimer;
         private static double _mailBotTimer;
         private static double _gmiWithdrawBotTimer;
         private static string _gmiOrder = string.Empty;
@@ -162,7 +163,7 @@ namespace HelpManager
 
             Chat.RegisterCommand("mail", (string command, string[] param, ChatWindow chatWindow) =>
             {
-                if (param.Length == 2)
+                if (param.Length >= 2)
                 {
                     _mailName = param[0];
                     _mailCreds = Convert.ToInt32(param[1]);
@@ -178,42 +179,48 @@ namespace HelpManager
 
             Chat.RegisterCommand("gmi", (string command, string[] param, ChatWindow chatWindow) =>
             {
-                if (param[0] == "order")
+                if (param.Length >= 1)
                 {
-                    if (param.Length == 3)
+                    if (param[0] == "order")
                     {
-                        if (param[1] == "name")
-                            _gmiOrder = param[2];
-                        if (param[1] == "endprice")
-                            EndPrice = Convert.ToInt32(param[2]);
+                        if (param.Length == 3)
+                        {
+                            if (param[1] == "name")
+                                _gmiOrder = param[2];
+                            if (param[1] == "endprice")
+                                EndPrice = Convert.ToInt32(param[2]);
+                        }
+                    }
+
+                    if (param[0] == "deposit")
+                    {
+                        GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
+                    }
+
+                    if (param[0] == "withdraw")
+                    {
+                        if (param.Length == 2)
+                        {
+                            _gmiWithdrawEndAmount = Convert.ToInt32(param[1]);
+                            GMIWithdrawBot = !GMIWithdrawBot;
+                        }
+                    }
+
+                    if (param[0] == "modify"
+                        && !string.IsNullOrEmpty(_gmiOrder)
+                        && EndPrice > 0)
+                    {
+                        RequestGMIInventory();
                     }
                 }
 
-                if (param[0] == "deposit")
-                {
-                    GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
-                }
-
-                if (param[0] == "withdraw")
-                {
-                    if (param.Length == 2)
-                    {
-                        _gmiWithdrawEndAmount = Convert.ToInt32(param[1]);
-                        GMIWithdrawBot = !GMIWithdrawBot;
-                    }
-                }
-
-                if (param[0] == "modify"
+                if (param.Length == 0
                     && !string.IsNullOrEmpty(_gmiOrder)
                     && EndPrice > 0)
                 {
-                    RequestGMIInventory();
-                }
-
-                if (param.Length == 0 
-                    && !string.IsNullOrEmpty(_gmiOrder)
-                    && EndPrice > 0)
                     GMIBot = !GMIBot;
+                    Chat.WriteLine($"Starting..");
+                }
 
                 //Listens when our gmi cash is at max amount to modify buy order
             });
@@ -373,7 +380,7 @@ namespace HelpManager
 
 
             //Chat.WriteLine($"ID: {messageId} / From: {fromTitle} / Subject: {subjectTitle}");
-            Chat.WriteLine($"Mail populated.");
+            //Chat.WriteLine($"Mail populated.");
 
             if (_mailId == 0)
                 _mailId = messageId;
@@ -432,23 +439,23 @@ namespace HelpManager
                     Task.Factory.StartNew(
                         async () =>
                         {
-                            await Task.Delay(500);
-                            if (_mailId == 0) 
+                            if (_mailId > 0) 
                             {
-                                Chat.WriteLine("No mail.");
-                                return;
+                                await Task.Delay(500);
+                                Chat.WriteLine($"{_mailId}");
+                                ReadMail(_mailId);
+                                await Task.Delay(1000);
+                                TakeAllMail(_mailId);
+                                await Task.Delay(1000);
+                                DeleteMail(_mailId);
+                                await Task.Delay(1000);
+                                _mailId = 0;
+                                await Task.Delay(2000);
+                                ReadMail(0);
+                                await Task.Delay(1000);
                             }
-                            Chat.WriteLine($"{_mailId}");
-                            ReadMail(_mailId);
-                            await Task.Delay(1000);
-                            TakeAllMail(_mailId);
-                            await Task.Delay(1000);
-                            DeleteMail(_mailId);
-                            await Task.Delay(1000);
-                            _mailId = 0;
-                            await Task.Delay(2000);
-                            ReadMail(0);
-                            await Task.Delay(1000);
+                            else
+                                Chat.WriteLine($"No mail.");
                         });
                 }
 
@@ -466,7 +473,7 @@ namespace HelpManager
                             await GMI.WithdrawCash(1000000000);
                             await Task.Delay(500);
                             _gmiWithdrawAmount++;
-                            Chat.WriteLine($"Withdrew 1b, currently withdraw {_gmiWithdrawAmount}b.");
+                            Chat.WriteLine($"Withdrew 1b, currently withdrawn {_gmiWithdrawAmount}b.");
                         });
                 }
                 else
@@ -477,30 +484,37 @@ namespace HelpManager
                 _gmiWithdrawBotTimer = Time.NormalTime;
             }
 
+            if (GMIBot && Time.NormalTime > _gmiInventoryTimer + 5)
+            {
+                Chat.WriteLine($"Requesting..");
+                RequestGMIInventory();
+
+                _gmiInventoryTimer = Time.NormalTime;
+            }
+
             if (GMIBot && Time.NormalTime > _gmiBotTimer + 10)
             {
                     Task.Factory.StartNew(
                         async () =>
                         {
-                            await Task.Delay(500);
-                            if (_mailId == 0) 
+                            if (_mailId > 0) 
                             {
-                                Chat.WriteLine("No mail.");
-                                return;
+                                await Task.Delay(500);
+                                Chat.WriteLine($"{_mailId}");
+                                ReadMail(_mailId);
+                                await Task.Delay(1000);
+                                TakeAllMail(_mailId);
+                                await Task.Delay(1000);
+                                DeleteMail(_mailId);
+                                await Task.Delay(1000);
+                                GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
+                                _mailId = 0;
+                                await Task.Delay(2000);
+                                ReadMail(0);
+                                await Task.Delay(1000);
                             }
-                            Chat.WriteLine($"{_mailId}");
-                            ReadMail(_mailId);
-                            await Task.Delay(1000);
-                            TakeAllMail(_mailId);
-                            await Task.Delay(1000);
-                            DeleteMail(_mailId);
-                            await Task.Delay(1000);
-                            GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
-                            _mailId = 0;
-                            await Task.Delay(2000);
-                            RequestGMIInventory();
-                            ReadMail(0);
-                            await Task.Delay(1000);
+                            else
+                                Chat.WriteLine($"No mail.");
                         });
 
                 _gmiBotTimer = Time.NormalTime;
@@ -1020,7 +1034,7 @@ namespace HelpManager
             if (ourOrder == null) 
             {
                 GMIBot = false;
-                Chat.WriteLine("Should be finished?");
+                Chat.WriteLine("Finished");
                 return;
             }
 
@@ -1030,7 +1044,7 @@ namespace HelpManager
             {
                 if (modifyOrder.Result.Succeeded)
                 {
-                    Chat.WriteLine($"Item order {ourOrder.Id} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
+                    Chat.WriteLine($"{_gmiOrder} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
                     //QueuedCash = 0;
                 }
                 else

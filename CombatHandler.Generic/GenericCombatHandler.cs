@@ -921,6 +921,10 @@ namespace CombatHandler.Generic
 
             if (target != null)
             {
+                if (spell.Nanoline == NanoLine.CriticalIncreaseBuff && target.Buffs.Contains(NanoLine.TraderAAODrain)) { return false; }
+
+                if (spell.Nanoline == NanoLine.RunspeedBuffs && target.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = target;
                 return true;

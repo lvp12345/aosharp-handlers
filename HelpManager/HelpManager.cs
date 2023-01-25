@@ -465,9 +465,8 @@ namespace HelpManager
                             await Task.Delay(500);
                             await GMI.WithdrawCash(1000000000);
                             await Task.Delay(500);
-                            Chat.WriteLine($"Withdrew 1b, currently withdraw {_gmiWithdrawAmount}b.");
-                            await Task.Delay(500);
                             _gmiWithdrawAmount++;
+                            Chat.WriteLine($"Withdrew 1b, currently withdraw {_gmiWithdrawAmount}b.");
                         });
                 }
                 else

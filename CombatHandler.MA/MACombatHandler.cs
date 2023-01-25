@@ -118,7 +118,7 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).Where(c => c.Id != RelevantNanos.ReduceInertia).OrderByStackingOrder(), GlobalGenericBuff);
 
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Spells
@@ -858,6 +858,11 @@ namespace CombatHandler.MartialArtist
             return false;
         }
 
+        protected bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+        }
+
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum() || EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
@@ -870,18 +875,6 @@ namespace CombatHandler.MartialArtist
 
             return false;
         }
-
-        //protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IsInsideInnerSanctum()) { return false; }
-
-        //    if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-        //        return GenericTeamBuff(spell, ref actionTarget);
-
-        //    if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
-
-        //    return Buff(spell, spell.Nanoline, ref actionTarget);
-        //}
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

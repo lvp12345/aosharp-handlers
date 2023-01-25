@@ -878,7 +878,7 @@ namespace CombatHandler.MartialArtist
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return Buff(spell, NanoLine.MajorEvasionBuffs, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

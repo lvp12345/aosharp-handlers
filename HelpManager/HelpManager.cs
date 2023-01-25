@@ -1039,18 +1039,19 @@ namespace HelpManager
                 return;
             }
 
-            long desiredIncrease = Math.Min(EndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.995f)) / ourOrder.Count;
+            long desiredIncrease = Math.Min(EndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.990f)) / ourOrder.Count;
 
             ourOrder.ModifyPrice(ourOrder.Price + desiredIncrease).ContinueWith(modifyOrder =>
             {
                 if (modifyOrder.Result.Succeeded)
                 {
+                    Chat.WriteLine($"We have credots! {marketInventory.Credits}.");
                     Chat.WriteLine($"{_gmiOrder} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
                     //QueuedCash = 0;
                 }
                 else
                 {
-                    Chat.WriteLine($"Failed to modify order. The error is {modifyOrder.Result.Message}");
+                    Chat.WriteLine($"No credits.");
                 }
             });
         }

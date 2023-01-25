@@ -113,7 +113,7 @@ namespace HelpManager
         private static bool MailBot = false;
 
 
-        private static int EndPrice = 0;
+        private static long EndPrice = 0;
         private static int QueuedCash = 0;
         private static bool GMIBot = false;
         private static bool GMIWithdrawBot = false;
@@ -188,7 +188,7 @@ namespace HelpManager
                             if (param[1] == "name")
                                 _gmiOrder = param[2];
                             if (param[1] == "endprice")
-                                EndPrice = Convert.ToInt32(param[2]);
+                                EndPrice = Convert.ToInt64(param[2]);
                         }
                     }
 

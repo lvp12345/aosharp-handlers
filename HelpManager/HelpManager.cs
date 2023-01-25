@@ -19,6 +19,9 @@ using AOSharp.Common.GameData.UI;
 using System.Windows.Input;
 using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using AOSharp.Core.GMI;
+using Zoltu.IO;
+using System.IO;
+using System.Text;
 
 namespace HelpManager
 {
@@ -114,7 +117,10 @@ namespace HelpManager
         private static int QueuedCash = 0;
         private static bool GMIBot = false;
         private static double _gmiBotTimer;
+        private static double _mailBotTimer;
         private static string _gmiOrder = string.Empty;
+
+        private static int _mailId = 0;
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
@@ -140,6 +146,7 @@ namespace HelpManager
             RegisterSettingsWindow("Help Manager", "HelpManagerSettingWindow.xml");
 
             Game.OnUpdate += OnUpdate;
+            Network.PacketReceived += HandleMail;
 
             _settings.AddVariable("AutoSit", true);
 
@@ -266,6 +273,99 @@ namespace HelpManager
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
 
+        public enum MailMsgType
+        {
+            Read = 1,
+            TakeAll = 3,
+            Delete = 5,
+        }
+        private static void SendShortMailMsg(MailMsgType msgType, int msgId)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                using (BigEndianBinaryWriter writer = new BigEndianBinaryWriter(stream))
+                {
+                    //Header
+                    writer.Write((short)0);
+                    writer.Write((short)PacketType.N3Message);
+                    writer.Write((short)1);
+                    writer.Write((short)0);
+                    writer.Write(Game.ClientInst);
+                    writer.Write((int)2);
+                    writer.Write((int)N3MessageType.Mail);
+                    writer.Write((int)IdentityType.SimpleChar);
+                    writer.Write(Game.ClientInst);
+                    writer.Write((byte)0);
+
+                    //Body
+                    writer.Write((short)msgType);
+                    writer.Write((int)0);
+                    writer.Write(msgId);
+
+
+                    //Fix packet length
+                    short length = (short)writer.BaseStream.Position;
+                    writer.BaseStream.Position = 6;
+                    writer.Write(length);
+
+                    Network.Send(stream.ToArray());
+                }
+            }
+        }
+
+        public static void ReadMail(int msgId)
+        {
+            SendShortMailMsg(MailMsgType.Read, msgId);
+        }
+        public static void TakeAllMail(int msgId)
+        {
+            SendShortMailMsg(MailMsgType.TakeAll, msgId);
+        }
+        public static void DeleteMail(int msgId)
+        {
+            SendShortMailMsg(MailMsgType.Delete, msgId);
+        }
+        public static void HandleMail(object s, byte[] packet)
+        {
+            using (MemoryStream stream = new MemoryStream(packet))
+            {
+                using (BigEndianBinaryReader reader = new BigEndianBinaryReader(stream))
+                {
+                    reader.BaseStream.Position = 30;
+                    byte mailInstance = reader.ReadByte();
+
+                    if (mailInstance == 0)
+                        PopMail(reader);
+                }
+            }
+        }
+
+        private static void PopMail(BigEndianBinaryReader reader)
+        {
+            int messageCount = (reader.ReadInt32() - 0x3f1) / 0x3f1;
+
+            reader.ReadInt32();
+            int messageId = reader.ReadInt32();
+            int source = reader.ReadInt32();
+            reader.ReadByte();
+            byte fromLength = reader.ReadByte();
+            string fromTitle = Encoding.Default.GetString(reader.ReadBytes(Convert.ToInt32(fromLength)));
+            reader.ReadByte();
+            byte subjectLength = reader.ReadByte();
+            string subjectTitle = Encoding.Default.GetString(reader.ReadBytes(Convert.ToInt32(subjectLength)));
+            reader.ReadInt32();
+            reader.ReadInt32();
+            reader.ReadInt32();
+            reader.ReadByte();
+
+
+            //Chat.WriteLine($"ID: {messageId} / From: {fromTitle} / Subject: {subjectTitle}");
+            Chat.WriteLine($"Mail populated.");
+
+            if (_mailId == 0)
+                _mailId = messageId;
+        }
+
 
         private void OnUpdate(object s, float deltaTime)
         {
@@ -293,7 +393,7 @@ namespace HelpManager
             //    _init = false;
             //}
 
-            if (MailBot)
+            if (MailBot && Time.NormalTime > _mailBotTimer + 10)
             {
                 if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.ComputerLiteracy))
                 {
@@ -313,11 +413,62 @@ namespace HelpManager
                         Chat.WriteLine($"Sent {_mailCreds - 200000} credits.");
                     }
                 }
+
+                if (DynelManager.LocalPlayer.GetStat(Stat.Cash) == 0)
+                {
+                    Task.Factory.StartNew(
+                        async () =>
+                        {
+                            await Task.Delay(500);
+                            if (_mailId == 0) 
+                            {
+                                Chat.WriteLine("No mail.");
+                                return;
+                            }
+                            Chat.WriteLine($"{_mailId}");
+                            ReadMail(_mailId);
+                            await Task.Delay(1000);
+                            TakeAllMail(_mailId);
+                            await Task.Delay(1000);
+                            DeleteMail(_mailId);
+                            await Task.Delay(1000);
+                            _mailId = 0;
+                            await Task.Delay(2000);
+                            ReadMail(0);
+                            await Task.Delay(1000);
+                        });
+                }
+
+                _mailBotTimer = Time.NormalTime;
             }
 
-            if (GMIBot && Time.NormalTime > _gmiBotTimer + 5)
+            if (GMIBot && Time.NormalTime > _gmiBotTimer + 10)
             {
-                RequestGMIInventory();
+                    Task.Factory.StartNew(
+                        async () =>
+                        {
+                            await Task.Delay(500);
+                            if (_mailId == 0) 
+                            {
+                                Chat.WriteLine("No mail.");
+                                return;
+                            }
+                            Chat.WriteLine($"{_mailId}");
+                            ReadMail(_mailId);
+                            await Task.Delay(1000);
+                            TakeAllMail(_mailId);
+                            await Task.Delay(1000);
+                            DeleteMail(_mailId);
+                            await Task.Delay(1000);
+                            GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
+                            _mailId = 0;
+                            await Task.Delay(2000);
+                            RequestGMIInventory();
+                            ReadMail(0);
+                            await Task.Delay(1000);
+                        });
+
+                _gmiBotTimer = Time.NormalTime;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

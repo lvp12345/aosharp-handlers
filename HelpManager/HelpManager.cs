@@ -116,11 +116,15 @@ namespace HelpManager
         private static int EndPrice = 0;
         private static int QueuedCash = 0;
         private static bool GMIBot = false;
+        private static bool GMIWithdrawBot = false;
         private static double _gmiBotTimer;
         private static double _mailBotTimer;
+        private static double _gmiWithdrawBotTimer;
         private static string _gmiOrder = string.Empty;
 
         private static int _mailId = 0;
+        private static int _gmiWithdrawEndAmount = 0;
+        private static int _gmiWithdrawAmount = 0;
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
@@ -174,27 +178,36 @@ namespace HelpManager
 
             Chat.RegisterCommand("gmi", (string command, string[] param, ChatWindow chatWindow) =>
             {
-                if (param.Length == 3)
+                if (param[0] == "order")
                 {
-                    if (param[0] == "order")
+                    if (param.Length == 3)
                     {
                         if (param[1] == "name")
                             _gmiOrder = param[2];
                         if (param[1] == "endprice")
                             EndPrice = Convert.ToInt32(param[2]);
                     }
+                }
 
-                    if (param[0] == "deposit")
-                    {
-                        GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
-                    }
+                if (param[0] == "deposit")
+                {
+                    GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
+                }
 
-                    if (param[0] == "modify" 
-                        && !string.IsNullOrEmpty(_gmiOrder)
-                        && EndPrice > 0)
+                if (param[0] == "withdraw")
+                {
+                    if (param.Length == 2)
                     {
-                        RequestGMIInventory();
+                        _gmiWithdrawEndAmount = Convert.ToInt32(param[1]);
+                        GMIWithdrawBot = !GMIWithdrawBot;
                     }
+                }
+
+                if (param[0] == "modify"
+                    && !string.IsNullOrEmpty(_gmiOrder)
+                    && EndPrice > 0)
+                {
+                    RequestGMIInventory();
                 }
 
                 if (param.Length == 0 
@@ -440,6 +453,29 @@ namespace HelpManager
                 }
 
                 _mailBotTimer = Time.NormalTime;
+            }
+
+            if (GMIWithdrawBot && Time.NormalTime > _gmiWithdrawBotTimer + 10)
+            {
+                if (_gmiWithdrawAmount < _gmiWithdrawEndAmount)
+                {
+                    Task.Factory.StartNew(
+                        async () =>
+                        {
+                            await Task.Delay(500);
+                            await GMI.WithdrawCash(1000000000);
+                            await Task.Delay(500);
+                            Chat.WriteLine($"Withdrew 1b, currently withdraw {_gmiWithdrawAmount}b.");
+                            await Task.Delay(500);
+                            _gmiWithdrawAmount++;
+                        });
+                }
+                else
+                {
+                    Chat.WriteLine($"Finished withdrawing.");
+                }
+
+                _gmiWithdrawBotTimer = Time.NormalTime;
             }
 
             if (GMIBot && Time.NormalTime > _gmiBotTimer + 10)

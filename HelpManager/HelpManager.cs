@@ -1039,7 +1039,7 @@ namespace HelpManager
                 return;
             }
 
-            long desiredIncrease = Math.Min(EndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.990f)) / ourOrder.Count;
+            long desiredIncrease = Math.Min(EndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.980f)) / ourOrder.Count;
 
             ourOrder.ModifyPrice(ourOrder.Price + desiredIncrease).ContinueWith(modifyOrder =>
             {

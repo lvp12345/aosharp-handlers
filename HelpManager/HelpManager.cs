@@ -470,7 +470,7 @@ namespace HelpManager
                         async () =>
                         {
                             await Task.Delay(500);
-                            await GMI.WithdrawCash(1000000000);
+                            await GMI.WithdrawCash(999999999);
                             await Task.Delay(500);
                             _gmiWithdrawAmount++;
                             Chat.WriteLine($"Withdrew 1b, currently withdrawn {_gmiWithdrawAmount}b.");
@@ -478,6 +478,7 @@ namespace HelpManager
                 }
                 else
                 {
+                    GMIWithdrawBot = false;
                     Chat.WriteLine($"Finished withdrawing.");
                 }
 

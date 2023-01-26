@@ -116,6 +116,7 @@ namespace HelpManager
         private static long EndPrice = 0;
         private static int QueuedCash = 0;
         private static bool GMIBot = false;
+        private static bool _initGMIBot = false;
         private static bool GMIWithdrawBot = false;
         private static double _gmiBotTimer;
         private static double _gmiInventoryTimer;
@@ -498,10 +499,12 @@ namespace HelpManager
                     Task.Factory.StartNew(
                         async () =>
                         {
-                            if (_mailId > 0) 
+                            if (_mailId > 0 || !_initGMIBot) 
                             {
+                                if (!_initGMIBot)
+                                    _initGMIBot = true;
+
                                 await Task.Delay(500);
-                                Chat.WriteLine($"{_mailId}");
                                 ReadMail(_mailId);
                                 await Task.Delay(1000);
                                 TakeAllMail(_mailId);

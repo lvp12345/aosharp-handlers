@@ -32,7 +32,7 @@ namespace GMIManager
         private static double _mailOpenTimer;
         private static double _gmiUpdateTimer;
         private static double _gmiWithdrawTimer;
-        private static int _gmiWithdrawAmount;
+        private static int _gmiWithdrawAmount = 0;
 
         private static int _mailId = 0;
 
@@ -288,9 +288,6 @@ namespace GMIManager
         {
             if (!_settings["Toggle"].AsBool() && Toggle)
                 Toggle = false;
-
-            if (_settings["Toggle"].AsBool() && !Toggle)
-                _settings["Toggle"] = false;
 
             if (_settings["Toggle"].AsBool() && !Game.IsZoning && Time.NormalTime > _mailOpenTimer + 10)
             {

@@ -316,6 +316,7 @@ namespace GMIManager
                     else
                     {
                         _settings["Toggle"] = false;
+                        Toggle = false;
                         Chat.WriteLine($"Finished withdrawing.");
                     }
 

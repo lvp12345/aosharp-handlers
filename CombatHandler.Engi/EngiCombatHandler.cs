@@ -101,7 +101,7 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("HealPets", false);
             _settings.AddVariable("WarpPets", false);
 
-            _settings.AddVariable("DivertHpTrimmer", true);
+            _settings.AddVariable("DivertHpTrimmer", false);
             _settings.AddVariable("DivertOffTrimmer", true);
             _settings.AddVariable("TauntTrimmer", true);
             _settings.AddVariable("AggDefTrimmer", true);

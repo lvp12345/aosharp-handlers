@@ -40,6 +40,8 @@ namespace CombatHandler.NanoTechnician
         private static View _nukeView;
         private static View _perkView;
 
+        private static SimpleChar _drainTarget;
+
         private static double _ncuUpdateTime;
 
         public NTCombatHandler(string pluginDir) : base(pluginDir)
@@ -74,8 +76,8 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
-            _settings.AddVariable("SharpObjects", true);
-            _settings.AddVariable("Grenades", true);
+            _settings.AddVariable("IllusionistSelection", false);
+            _settings.AddVariable("NotumGrafttSelection", false);
 
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
@@ -95,6 +97,8 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.OptimizedLibrary);
 
             _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
+            _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
+            _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
 
             _settings.AddVariable("AOESelection", (int)AOESelection.None);
 
@@ -146,6 +150,14 @@ namespace CombatHandler.NanoTechnician
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
             RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist);
+
+            //Items
+            RegisterItemProcessor(RelevantNotum.NotumItem, NotumItem);
+            RegisterItemProcessor(RelevantWill.WilloftheIllusionist, RelevantWill.WilloftheIllusionist, Illusionist);
+
 
             PluginDirectory = pluginDir;
 
@@ -841,6 +853,55 @@ namespace CombatHandler.NanoTechnician
 
         #endregion
 
+        #region Debuffs
+
+        private bool HaloNanoDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HaloSelection.None == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return false; }
+
+            if (HaloSelection.Target != (HaloSelection)_settings["HaloSelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (HaloSelection.Boss != (HaloSelection)_settings["HaloSelection"].AsInt32())
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+        }
+
+
+        private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
+
+            if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+            if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+
+
+            if (!_drainTarget.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
+        }
+
+
+
+        #endregion
+
         #region Perks
 
         private bool FlimFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -909,6 +970,28 @@ namespace CombatHandler.NanoTechnician
 
         #endregion
 
+        #region Items
+
+        protected bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("NotumGrafttSelection")) { return false; }
+            if (DynelManager.LocalPlayer.NanoPercent < 50) { return true; }
+
+            return false;
+        }
+
+        private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("IllusionistSelection")) { return false; }
+            if (fightingtarget?.MaxHealth > 1000000) { return true; }
+
+            return false;
+
+        }
+
+
+        #endregion
+
         #region Misc
 
         public enum ProcType1Selection
@@ -924,6 +1007,15 @@ namespace CombatHandler.NanoTechnician
         {
             None, Target, AOE
         }
+        public enum HaloSelection
+        {
+            None, Target, Boss
+        }
+        public enum NanoResistSelection
+        {
+            None, Target, Boss
+        }
+
 
         public enum AOESelection
         {
@@ -960,6 +1052,19 @@ namespace CombatHandler.NanoTechnician
             public static readonly int[] NanobotShelter = { 273388, 263265 };
             public static readonly int CompositeAttribute = 223372;
             public static readonly int CompositeNano = 223380;
+        }
+
+        private static class RelevantNotum
+        {
+            public static readonly int[] NotumItem = { 204649, 305513 };
+
+        }
+
+        private static class RelevantWill
+        {
+
+            public const int WilloftheIllusionist = 274717;
+
         }
 
         #endregion

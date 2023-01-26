@@ -86,7 +86,9 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
             _settings.AddVariable("SingleTauntSelection", (int)SingleTauntSelection.None);
-            _settings.AddVariable("EvadesSelection", (int)EvadesSelection.Self);
+
+            _settings.AddVariable("EvadesSelection", (int)EvadesSelection.None);
+            _settings.AddVariable("ArmorBuffSelection", (int)ArmorBuffSelection.None);
 
             _settings.AddVariable("Zazen", false);
 
@@ -115,10 +117,10 @@ namespace CombatHandler.MartialArtist
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).Where(c => c.Id != RelevantNanos.ReduceInertia).OrderByStackingOrder(), GlobalGenericBuff);
+            //RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), Evades);
 
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Spells
@@ -137,7 +139,7 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), RunSpeed);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).Where(s => s.Id != 28879).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).Where(s => s.Id != 28879).OrderByStackingOrder(), ArmorBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistZazenStance).OrderByStackingOrder(), ZazenStance);
 
@@ -860,16 +862,40 @@ namespace CombatHandler.MartialArtist
 
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
+            if (IsInsideInnerSanctum() || spell.Nanoline == NanoLine.MajorEvasionBuffs) { return false; }
 
-            if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
+            if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
 
             if (EvadesSelection.Self == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
                 return Buff(spell, spell.Nanoline, ref actionTarget);
 
+            if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+
             return false;
         }
+
+        protected bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (spell.Nanoline == NanoLine.ArmorBuff) { return false; }
+
+            if (ArmorBuffSelection.None == (ArmorBuffSelection)_settings["ArmorBuffSelection"].AsInt32()) { return false; }
+
+            if (ArmorBuffSelection.Self == (ArmorBuffSelection)_settings["ArmorBuffSelection"].AsInt32())
+                return Buff(spell, spell.Nanoline, ref actionTarget);
+
+            if (ArmorBuffSelection.Team == (ArmorBuffSelection)_settings["ArmorBuffSelection"].AsInt32())
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return false;
+        }
+
+        protected bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+        }
+
 
         //protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         //{
@@ -885,7 +911,7 @@ namespace CombatHandler.MartialArtist
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return Buff(spell, NanoLine.MajorEvasionBuffs, ref actionTarget);
+            return Buff(spell, NanoLine.RunspeedBuffs, ref actionTarget);
         }
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -962,6 +988,12 @@ namespace CombatHandler.MartialArtist
         {
             None, Self, Team
         }
+
+        public enum ArmorBuffSelection
+        {
+            None, Self, Team
+        }
+
 
         #endregion
     }

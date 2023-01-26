@@ -287,7 +287,10 @@ namespace GMIManager
         private void OnUpdate(object s, float deltaTime)
         {
             if (!_settings["Toggle"].AsBool() && Toggle)
+            {
                 Toggle = false;
+                _init = false;
+            }
 
             if (_settings["Toggle"].AsBool() && !Game.IsZoning)
             {

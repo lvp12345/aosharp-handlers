@@ -372,7 +372,10 @@ namespace GMIManager
                                 await Task.Delay(1000);
                             }
                             else
+                            {
                                 Chat.WriteLine($"No mail.");
+                                ReadMail(0);
+                            }
                         });
 
                     _mailOpenTimer = Time.NormalTime;

@@ -289,7 +289,7 @@ namespace GMIManager
             if (!_settings["Toggle"].AsBool() && Toggle)
                 Toggle = false;
 
-            if (_settings["Toggle"].AsBool() && !Game.IsZoning && Time.NormalTime > _mailOpenTimer + 10)
+            if (_settings["Toggle"].AsBool() && !Game.IsZoning)
             {
                 if (!Toggle)
                 {

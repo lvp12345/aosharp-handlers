@@ -188,7 +188,8 @@ namespace FollowManager
                 }
                 if (navFollowDistanceInput != null && !string.IsNullOrEmpty(navFollowDistanceInput.Text))
                 {
-                    if (int.TryParse(navFollowDistanceInput.Text, out int navFollowDistanceValue))
+                    if (int.TryParse(navFollowDistanceInput.Text, out int navFollowDistanceValue)
+                        && Config.CharSettings[Game.ClientInst].NavFollowDistance != navFollowDistanceValue)
                     {
                         Config.CharSettings[Game.ClientInst].NavFollowDistance = navFollowDistanceValue;
                     }

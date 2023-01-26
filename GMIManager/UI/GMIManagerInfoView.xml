@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="MailManagerInfoView" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Withdraw - withdraws 1b at a time the upto the amount." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Modify - Reads and deposits mail, modifying a buy order to end price." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="/gmi - toggles start and stop." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Open GMI first." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+  </BorderView>
+</root>

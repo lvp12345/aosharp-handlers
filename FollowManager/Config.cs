@@ -74,7 +74,6 @@ namespace FollowManager
         public event EventHandler<int> IPCChannelChangedEvent;
         private int _ipcChannel = 0;
 
-        //Breaking out auto-property
         public int IPCChannel
         {
             get
@@ -93,7 +92,6 @@ namespace FollowManager
         public event EventHandler<string> FollowPlayerChangedEvent;
         private string _followPlayer = string.Empty;
 
-        //Breaking out auto-property
         public string FollowPlayer
         {
             get
@@ -112,7 +110,6 @@ namespace FollowManager
         public event EventHandler<string> NavFollowIdentityChangedEvent;
         private string _navFollowPlayer = string.Empty;
 
-        //Breaking out auto-property
         public string NavFollowIdentity
         {
             get
@@ -131,7 +128,6 @@ namespace FollowManager
         public event EventHandler<int> NavFollowDistanceChangedEvent;
         private int _navFollowDistance = 0;
 
-        //Breaking out auto-property
         public int NavFollowDistance
         {
             get

@@ -326,6 +326,7 @@ namespace GMIManager
                 }
 
                 if (_settings["Toggle"].AsBool() && !Game.IsZoning
+                    && _init
                     && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
                     && Time.NormalTime > _gmiUpdateTimer + 5)
                 {
@@ -346,11 +347,13 @@ namespace GMIManager
                             {
                                 if (!_init)
                                 {
-                                    Dynel _terminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
+                                    Dynel _mailTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
+                                    Dynel _marketTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Market Terminal");
                                     await Task.Delay(500);
-                                    if (_terminal != null)
-                                        _terminal.Use();
-
+                                    _mailTerminal?.Use();
+                                    _marketTerminal?.Use();
+                                    await Task.Delay(500);
+                                    _marketTerminal?.Use();
                                     _init = true;
                                 }
 

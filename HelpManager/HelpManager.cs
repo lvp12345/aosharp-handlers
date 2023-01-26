@@ -220,6 +220,7 @@ namespace HelpManager
                     && EndPrice > 0)
                 {
                     GMIBot = !GMIBot;
+                    _initGMIBot = false;
                     Chat.WriteLine($"Starting..");
                 }
 

@@ -87,9 +87,9 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
-            _settings.AddVariable("DOTA", false);
-            _settings.AddVariable("DOTB", false);
-            _settings.AddVariable("DOTC", false);
+            _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.None);
+            _settings.AddVariable("DOTB", (int)DOTBDebuffTargetSelection.None);
+            _settings.AddVariable("DOTC", (int)DOTCDebuffTargetSelection.None);
 
             _settings.AddVariable("Nuking", false);
 
@@ -979,6 +979,16 @@ namespace CombatHandler.Doctor
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
+            if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
             return false;
         }
 
@@ -993,21 +1003,91 @@ namespace CombatHandler.Doctor
         {
             if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
 
-            return ToggledTargetDebuff("DOTA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (DOTADebuffTargetSelection.None == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()) { return false; }
+
+            if (DOTADebuffTargetSelection.Area == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
+
+            if (DOTADebuffTargetSelection.Target == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (DOTADebuffTargetSelection.Boss == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
+                 && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+
         }
 
         private bool DOTBDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
 
-            return ToggledTargetDebuff("DOTB", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (DOTBDebuffTargetSelection.None == (DOTBDebuffTargetSelection)_settings["DOTB"].AsInt32()) { return false; }
+
+            if (DOTBDebuffTargetSelection.Area == (DOTBDebuffTargetSelection)_settings["DOTB"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
+
+            if (DOTBDebuffTargetSelection.Target == (DOTBDebuffTargetSelection)_settings["DOTB"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (DOTBDebuffTargetSelection.Boss == (DOTBDebuffTargetSelection)_settings["DOTB"].AsInt32()
+                 && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool DOTCDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
 
-            return ToggledTargetDebuff("DOTC", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (DOTCDebuffTargetSelection.None == (DOTCDebuffTargetSelection)_settings["DOTC"].AsInt32()) { return false; }
+
+            if (DOTCDebuffTargetSelection.Area == (DOTCDebuffTargetSelection)_settings["DOTC"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
+
+            if (DOTCDebuffTargetSelection.Target == (DOTCDebuffTargetSelection)_settings["DOTC"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (DOTCDebuffTargetSelection.Boss == (DOTCDebuffTargetSelection)_settings["DOTC"].AsInt32()
+                 && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         #endregion
@@ -1035,7 +1115,21 @@ namespace CombatHandler.Doctor
         }
         public enum InitDebuffSelection
         {
-            None, Target, Area
+            None, Target, Area, Boss
+        }
+
+        public enum DOTADebuffTargetSelection
+        {
+            None, Target, Area, Boss
+        }
+
+        public enum DOTBDebuffTargetSelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum DOTCDebuffTargetSelection
+        {
+            None, Target, Area, Boss
         }
         public enum ShortHpSelection
         {

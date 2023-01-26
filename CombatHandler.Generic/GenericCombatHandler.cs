@@ -916,6 +916,11 @@ namespace CombatHandler.Generic
 
             if (target != null)
             {
+
+                if (spell.Nanoline == NanoLine.CriticalIncreaseBuff && target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
+
+                if (spell.Nanoline == NanoLine.RunspeedBuffs && target.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = target;
                 return true;
@@ -2188,8 +2193,10 @@ namespace CombatHandler.Generic
             public const int InnerSanctumDebuff = 206387;
             public const int InsightIntoSL = 268610;
             public static int[] IgnoreNanos = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
+            public static int[] AAOTransfer = new[] { 301524, 301520, 267263, 267265 };
         }
 
+      
         public class PetSpellData
         {
             public int ShellId;

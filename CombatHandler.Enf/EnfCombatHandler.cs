@@ -71,7 +71,7 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("Ost", false);
 
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
@@ -117,8 +117,8 @@ namespace CombatHandler.Enf
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
@@ -955,13 +955,20 @@ namespace CombatHandler.Enf
                     && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
 
             if (Time.NormalTime > _mongo + MongoDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+     && fightingTarget != null)
             {
                 _mongo = Time.NormalTime;
-                return DynelManager.NPCs.Any(c => c.Health > 0
-                    && c.FightingTarget?.IsPet == false
-                    && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f);
+                return true;
             }
+
+            //if (Time.NormalTime > _mongo + MongoDelay
+            //    && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+            //{
+            //    _mongo = Time.NormalTime;
+            //    return DynelManager.NPCs.Any(c => c.Health > 0
+            //        && c.FightingTarget?.IsPet == false
+            //        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f);
+            //}
 
             return false;
         }

@@ -61,6 +61,7 @@ namespace LootManager
         private static List<string> _ignores = new List<string>();
 
         public static string PluginDir;
+        private static bool _toggle = false;
 
         public override void Run(string pluginDir)
         {
@@ -83,6 +84,13 @@ namespace LootManager
                             _invItems.Add(item);
 
                     Chat.WriteLine("Set inventory list, items will be ignored.");
+                });
+
+                Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    _toggle = !_toggle;
+
+                    Chat.WriteLine("Leaving loot open now.");
                 });
 
 
@@ -167,7 +175,8 @@ namespace LootManager
             _corpsePosList.Add(_currentPos);
             _corpseIdList.Add(container.Identity);
             //Chat.WriteLine($"Adding bits");
-            Item.Use(container.Identity);
+            if (!_toggle)
+                Item.Use(container.Identity);
             _currentlyLooting = false;
             _internalOpen = false;
             _weAreDoingThings = false;

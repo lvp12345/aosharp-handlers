@@ -107,6 +107,11 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("AggDefTrimmer", true);
 
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
+            _settings.AddVariable("TeamArmorBuff", true);
+            _settings.AddVariable("TeamPistol", true);
+            _settings.AddVariable("GrenadeTeam", true);
+            _settings.AddVariable("ShadowlandReflectBase", true);
+            _settings.AddVariable("DamageShields", false);
 
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
             _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
@@ -140,16 +145,20 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamArmorBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), Grenade);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), ShadowlandReflectBase);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), DamageShields);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.BoostedTendons, GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GlobalGenericTeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GlobalGenericTeamBuff);
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
             RegisterSpellProcessor(RelevantNanos.ShieldRippers, ShieldRipperAura);
             RegisterSpellProcessor(RelevantNanos.ArmorAura, ArmorAura);
@@ -158,7 +167,7 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.ShieldAura, ShieldAura);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
             //RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
+           
 
             //Pet Spawners
             RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Attack).Select(c => c.Key).ToArray(), PetSpawner);
@@ -846,9 +855,17 @@ namespace CombatHandler.Engineer
         }
         #endregion
 
+
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
         protected bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Team.IsInTeam)
+            if (Team.IsInTeam && IsSettingEnabled("GrenadeTeam"))
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
                         || TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
 
@@ -856,6 +873,20 @@ namespace CombatHandler.Engineer
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
                     || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        protected bool ShadowlandReflectBase(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ShadowlandReflectBase")) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
+        }
+
+        protected bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("DamageShields")) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
         }
 
         protected bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -887,6 +918,13 @@ namespace CombatHandler.Engineer
                 || !GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TeamArmorBuff")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
         }
 
         #endregion

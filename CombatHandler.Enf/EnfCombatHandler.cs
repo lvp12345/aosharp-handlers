@@ -93,6 +93,7 @@ namespace CombatHandler.Enf
             _settings.AddVariable("AbsorbACBuff", true);
             _settings.AddVariable("TargetedHpBufff", true);
             _settings.AddVariable("InitiativeBuffs", true);
+            _settings.AddVariable("DamageShields", false);
 
 
             _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
@@ -129,7 +130,7 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), DamageShields);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
@@ -1016,6 +1017,12 @@ namespace CombatHandler.Enf
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
+        protected bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("DamageShields")) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
+        }
 
         #endregion
 

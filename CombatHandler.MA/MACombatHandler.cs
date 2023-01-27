@@ -89,10 +89,13 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("EvadesSelection", (int)EvadesSelection.None);
             _settings.AddVariable("ArmorBuffSelection", (int)ArmorBuffSelection.None);
+            _settings.AddVariable("CritBuffSelection", (int)CritBuffSelection.None);
+            
 
             _settings.AddVariable("Zazen", false);
 
             _settings.AddVariable("ShortDamage", false);
+            _settings.AddVariable("RunSpeed", false);
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
@@ -121,7 +124,7 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), Evades);
 
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), SelfCrit);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
@@ -891,9 +894,23 @@ namespace CombatHandler.MartialArtist
             return false;
         }
 
+        protected bool SelfCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+
+            if (CritBuffSelection.None == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32()) { return false; }
+
+            if (CritBuffSelection.Self == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32())
+                return Buff(spell, spell.Nanoline, ref actionTarget);
+
+            return false;
+        }
+
         protected bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (CritBuffSelection.Team == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32())
             return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+            return false;
         }
 
 
@@ -911,6 +928,8 @@ namespace CombatHandler.MartialArtist
 
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("RunSpeed")) { return false; }
+
             return Buff(spell, NanoLine.RunspeedBuffs, ref actionTarget);
         }
 
@@ -994,6 +1013,11 @@ namespace CombatHandler.MartialArtist
             None, Self, Team
         }
 
+        public enum CritBuffSelection
+        {
+            None, Self, Team
+        }
+        
 
         #endregion
     }

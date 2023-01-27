@@ -6,7 +6,10 @@
     <OptionCheckBox label="(Local) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="(Team) Nano Delta" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoDeltaTeam" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+	<OptionCheckBox label="(Team) Pistol" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PistolTeam" layout_borders="Rect(10,1,5,1)"/>
+	<OptionCheckBox label="(Team) Neuronal Stimulator" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NeuronalStimulatorTeam" layout_borders="Rect(10,1,5,1)"/>
+	<OptionCheckBox label="(Team) Cut Red Tape" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CutRedTape" layout_borders="Rect(10,1,5,1)"/>
+	  <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionRadioButtonGroup label="Buffing Auras" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__BuffingAuraSelection">
       <RadioButton label="AAO/AAD" value="0"/>
       <RadioButton label="Crit" value="1"/>

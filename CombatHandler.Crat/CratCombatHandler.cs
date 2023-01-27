@@ -102,6 +102,9 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.WrongWindow);
 
             _settings.AddVariable("NanoDeltaTeam", false);
+            _settings.AddVariable("PistolTeam", false);
+            _settings.AddVariable("NeuronalStimulatorTeam", false);
+            _settings.AddVariable("CutRedTape", false);
 
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
@@ -148,12 +151,12 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericTeamBuff);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
-            RegisterSpellProcessor(RelevantNanos.PistolBuffs, Pistol);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.PistolBuffs, PistolTeam);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), PsyIntBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), CutRedTape);
 
             //Buff Aura
             RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
@@ -1099,6 +1102,29 @@ namespace CombatHandler.Bureaucrat
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        private bool PsyIntBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("NeuronalStimulatorTeam"))
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool CutRedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("NeuronalStimulatorTeam")) { return false; }
+
+                return GenericTeamBuff(spell, ref actionTarget);
         }
 
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

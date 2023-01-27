@@ -83,7 +83,10 @@ namespace CombatHandler.Doctor
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
+            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
+            _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.None);
+            _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
+
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
@@ -97,6 +100,8 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.MassiveVitaePlan);
 
             _settings.AddVariable("NanoResistTeam", false);
+            _settings.AddVariable("PistolTeam", false);
+            _settings.AddVariable("HealDeltaBuff)", false);
 
             _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
             _settings.AddVariable("ShortHOTSelection", (int)ShortHOTSelection.None);
@@ -138,13 +143,14 @@ namespace CombatHandler.Doctor
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), GlobalGenericTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
 
             //Team Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), HealDeltaBuff);
             RegisterSpellProcessor(RelevantNanos.TeamDeathlessBlessing, TeamDeathlessBlessing);
             RegisterSpellProcessor(RelevantNanos.IndividualShortHOTs, ShortHOT);
 
@@ -891,6 +897,27 @@ namespace CombatHandler.Doctor
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
+        private bool TreatmentBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (TreatmentBuffSelection.Team == (TreatmentBuffSelection)_settings["TreatmentBuffSelection"].AsInt32())
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            if (TreatmentBuffSelection.None == (TreatmentBuffSelection)_settings["TreatmentBuffSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+
         private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
@@ -923,6 +950,21 @@ namespace CombatHandler.Doctor
             if (!IsSettingEnabled("NanoResistTeam")) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        protected bool HealDeltaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("HealDeltaBuff")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
         }
 
         // Template for all
@@ -1106,6 +1148,15 @@ namespace CombatHandler.Doctor
             return false;
         }
         public enum InitBuffSelection
+        {
+            None, Self, Team
+        }
+
+        public enum TreatmentBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum StrengthBuffSelection
         {
             None, Self, Team
         }

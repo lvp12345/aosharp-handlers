@@ -29,6 +29,8 @@ namespace GMIManager
 
         public static bool Toggle = false;
 
+        private static double _timeOut = Time.NormalTime;
+
         private static double _mailOpenTimer;
         private static double _gmiUpdateTimer;
         private static double _gmiWithdrawTimer;
@@ -293,13 +295,23 @@ namespace GMIManager
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (Game.IsZoning) { return; }
+
             if (!_settings["Toggle"].AsBool() && Toggle)
             {
                 Toggle = false;
                 _init = false;
             }
 
-            if (_settings["Toggle"].AsBool() && !Game.IsZoning)
+            if (_settings["Toggle"].AsBool() && Toggle
+                && Time.NormalTime > _timeOut + 240)
+            {
+                Toggle = false;
+                _init = false;
+                _settings["Toggle"] = false;
+            }
+
+            if (_settings["Toggle"].AsBool())
             {
                 if (!Toggle)
                 {
@@ -307,8 +319,7 @@ namespace GMIManager
                     Toggle = true;
                 }
 
-                if (_settings["Toggle"].AsBool() && !Game.IsZoning 
-                    && ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32()
+                if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32()
                     && Time.NormalTime > _gmiWithdrawTimer + 3)
                 {
                     if (_gmiWithdrawAmount < GMIWithdrawAmount)
@@ -333,8 +344,7 @@ namespace GMIManager
                     _gmiWithdrawTimer = Time.NormalTime;
                 }
 
-                if (_settings["Toggle"].AsBool() && !Game.IsZoning
-                    && _init
+                if (_init
                     && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
                     && Time.NormalTime > _gmiUpdateTimer + 3)
                 {
@@ -343,8 +353,7 @@ namespace GMIManager
                     _gmiUpdateTimer = Time.NormalTime;
                 }
 
-                if (_settings["Toggle"].AsBool()
-                    && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
+                if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
                     && Time.NormalTime > _mailOpenTimer + 7)
                 {
                     Task.Factory.StartNew(
@@ -365,6 +374,7 @@ namespace GMIManager
                             if (_mailId > 0 && _queuedCash < _maxQueuedCash)
                             {
                                 Chat.WriteLine("Handling mail..");
+                                _timeOut = Time.NormalTime;
                                 await Task.Delay(500);
                                 ReadMail(_mailId);
                                 await Task.Delay(1100);

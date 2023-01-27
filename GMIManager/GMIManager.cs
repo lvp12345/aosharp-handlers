@@ -44,7 +44,7 @@ namespace GMIManager
 
         public static string PluginDir;
         private static long _queuedCash = 0;
-        private static long _maxQueuedCash = 2999999999;
+        private static long _maxQueuedCash = 1999999999;
 
         public override void Run(string pluginDir)
         {

@@ -74,22 +74,24 @@ namespace GMIManager
                     if (param[0] == "deposit")
                         GMI.Deposit(Convert.ToInt32(param[0]));
                 }
-
-                if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32())
+                else
                 {
-                    if (GMIWithdrawAmount > 0)
+                    if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32())
                     {
-                        _settings["Toggle"] = !_settings["Toggle"].AsBool();
-                        Chat.WriteLine("Starting.");
+                        if (GMIWithdrawAmount > 0)
+                        {
+                            _settings["Toggle"] = !_settings["Toggle"].AsBool();
+                            Chat.WriteLine("Starting.");
+                        }
                     }
-                }
 
-                if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32())
-                {
-                    if (!string.IsNullOrEmpty(GMIBuyOrderName) && GMIBuyOrderEndPrice > 0)
+                    if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32())
                     {
-                        _settings["Toggle"] = !_settings["Toggle"].AsBool();
-                        Chat.WriteLine("Starting.");
+                        if (!string.IsNullOrEmpty(GMIBuyOrderName) && GMIBuyOrderEndPrice > 0)
+                        {
+                            _settings["Toggle"] = !_settings["Toggle"].AsBool();
+                            Chat.WriteLine("Starting.");
+                        }
                     }
                 }
             });

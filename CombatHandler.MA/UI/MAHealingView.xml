@@ -7,7 +7,7 @@
       <RadioButton label="(Team) Single" value="1"/>
       <RadioButton label="(Area) Single" value="2"/>
     </OptionRadioButtonGroup>
-    <TextInputView name="HealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+    <TextInputView name="HealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="*Threshold calculated as percentage." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

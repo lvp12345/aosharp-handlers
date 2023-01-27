@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
   <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
       <OptionRadioButtonGroup label="Grand Theft Humidity" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__GrandTheftHumiditySelection">
         <RadioButton label="None" value="0"/>
@@ -53,7 +53,7 @@
         <RadioButton label="Rubi-Ka" value="1"/>
         <RadioButton label="Shadowlands" value="2"/>
       </OptionRadioButtonGroup>
-      <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+      <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     </View>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">

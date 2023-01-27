@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
   <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Spawn pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Buff pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Sync pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SyncPets" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="Warp pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__WarpPets" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Mezz Pet" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MezzPet" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
@@ -15,7 +15,7 @@
         <RadioButton label="Induced Apathy" value="1"/>
         <RadioButton label="Masters Biddng" value="2"/>
       </OptionRadioButtonGroup>
-      <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+      <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     </View>
     <!--<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
       <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>

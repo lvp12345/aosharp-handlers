@@ -894,7 +894,7 @@ namespace CombatHandler.Soldier
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
             if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SolTauntDelaySingle)
+                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
@@ -917,10 +917,17 @@ namespace CombatHandler.Soldier
                     actionTarget.Target = mob;
                     return true;
                 }
+                else if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
             }
 
             if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SolTauntDelaySingle)
+                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
                 if (fightingTarget != null)
                 {

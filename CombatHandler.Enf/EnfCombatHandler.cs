@@ -846,6 +846,13 @@ namespace CombatHandler.Enf
                     actionTarget.Target = mob;
                     return true;
                 }
+                else if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
             }
 
             if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 

@@ -4,10 +4,10 @@
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Rename bags to 'loot' these will be the bags that" layout_borders="Rect(0,0,0,2)"/>
     <TextView value="items will be sent to when inventory is full." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="Select an item in the list view to show it's Ql's and Id in the UI." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="De-select to add new items, or you won't be able to enter any values." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>

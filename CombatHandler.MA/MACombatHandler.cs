@@ -843,6 +843,12 @@ namespace CombatHandler.MartialArtist
                     actionTarget.Target = mob;
                     return true;
                 }
+                else if (fightingTarget != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
             }
 
             if (SingleTauntSelection.Target == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())

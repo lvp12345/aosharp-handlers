@@ -331,7 +331,7 @@ namespace GMIManager
                     && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
                     && Time.NormalTime > _gmiUpdateTimer + 5)
                 {
-                    Chat.WriteLine($"Requesting..");
+                    Chat.WriteLine($"Requesting GMI..");
                     RequestGMIInventory();
 
                     _gmiUpdateTimer = Time.NormalTime;
@@ -358,6 +358,7 @@ namespace GMIManager
 
                             if (_mailId > 0)
                             {
+                                Chat.WriteLine("Handling mail..");
                                 await Task.Delay(500);
                                 ReadMail(_mailId);
                                 await Task.Delay(1000);

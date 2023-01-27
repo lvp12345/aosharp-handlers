@@ -210,18 +210,18 @@ namespace MailManager
                     Task.Factory.StartNew(
                         async () =>
                         {
-                            if (_mailId > 0 || !_init)
+                            if (!_init)
                             {
-                                if (!_init)
-                                {
-                                    Dynel _terminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
-                                    await Task.Delay(500);
-                                    if (_terminal != null)
-                                        _terminal.Use();
+                                Dynel _terminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
+                                await Task.Delay(500);
+                                if (_terminal != null)
+                                    _terminal.Use();
 
-                                    _init = true;
-                                }
+                                _init = true;
+                            }
 
+                            if (_mailId > 0)
+                            {
                                 Chat.WriteLine("Handling mail..");
                                 await Task.Delay(500);
                                 ReadMail(_mailId);

@@ -37,6 +37,7 @@ namespace MailManager
         public static View _infoView;
 
         public static string PluginDir;
+        private static int _currentMailAmount = 0;
 
         public override void Run(string pluginDir)
         {
@@ -203,6 +204,12 @@ namespace MailManager
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (!_settings["Toggle"].AsBool() && _init)
+            {
+                _currentMailAmount = 0;
+                _init = false;
+            }
+
             if (_settings["Toggle"].AsBool() && !Game.IsZoning && Time.NormalTime > _mailOpenTimer + 10)
             {
                 if (DynelManager.LocalPlayer.GetStat(Stat.Cash) == 0)
@@ -217,11 +224,19 @@ namespace MailManager
                                 if (_terminal != null)
                                     _terminal.Use();
 
+                                _currentMailAmount = 0;
                                 _init = true;
                             }
 
                             if (_mailId > 0)
                             {
+                                _currentMailAmount++;
+                                if (_currentMailAmount >= MailAmount)
+                                {
+                                    Chat.WriteLine($"Reached mail amount {MailAmount}.");
+                                    _settings["Toggle"] = false;
+                                }
+
                                 Chat.WriteLine("Handling mail..");
                                 await Task.Delay(500);
                                 ReadMail(_mailId);

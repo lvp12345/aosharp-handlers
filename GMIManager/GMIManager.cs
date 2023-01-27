@@ -69,12 +69,12 @@ namespace GMIManager
 
             Chat.RegisterCommand("gmi", (string command, string[] param, ChatWindow chatWindow) =>
             {
-                if (param.Length == 1)
+                if (param.Length == 2)
                 {
                     if (param[0] == "deposit")
                         GMI.Deposit(Convert.ToInt32(param[1]));
                 }
-                else
+                else if (param.Length == 0)
                 {
                     if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32())
                     {

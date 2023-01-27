@@ -90,7 +90,8 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("DamageDebuffSelection", (int)DamageDebuffSelection.None);
 
             _settings.AddVariable("Cost", false);
-            _settings.AddVariable("CostTeam", false);
+            _settings.AddVariable("MajorEvasionBuffs", false);
+            _settings.AddVariable("PistolTeam", false);
 
             _settings.AddVariable("NanoResistanceDebuff", (int)NanoResistanceDebuffSelection.None);
             _settings.AddVariable("NanoShutdownDebuff", (int)NanoShutdownDebuffSelection.None);
@@ -136,7 +137,7 @@ namespace CombatHandler.Metaphysicist
             RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, DiffuseRage, CombatActionPriority.Low);
 
             //Self buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericTeamBuffExclusion);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), MajorEvasionBuffs);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
@@ -154,7 +155,7 @@ namespace CombatHandler.Metaphysicist
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifier);
             RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke, CombatActionPriority.Medium);
@@ -973,6 +974,8 @@ namespace CombatHandler.Metaphysicist
 
         #region Pets
 
+        #endregion
+
         #region Warp
 
         protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1134,6 +1137,25 @@ namespace CombatHandler.Metaphysicist
         }
 
         #endregion
+
+        #region Team Buffs
+        protected bool MajorEvasionBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs) || !IsSettingEnabled("MajorEvasionBuffs")) { return false; }
+
+            if (Team.IsInTeam)
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
 
         #endregion
 

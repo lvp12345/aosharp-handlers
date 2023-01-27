@@ -921,6 +921,10 @@ namespace CombatHandler.Generic
 
             if (target != null)
             {
+                //Exceptions
+                if (target.Identity == DynelManager.LocalPlayer.Identity && spell.Nanoline == NanoLine.CriticalIncreaseBuff
+                    && (DynelManager.LocalPlayer.Profession == Profession.MartialArtist || DynelManager.LocalPlayer.Profession == Profession.Agent)) { return false; }
+
                 if (spell.Nanoline == NanoLine.CriticalIncreaseBuff && target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
 
                 if (spell.Nanoline == NanoLine.RunspeedBuffs && target.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }

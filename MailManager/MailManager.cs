@@ -68,6 +68,8 @@ namespace MailManager
             Chat.WriteLine("Mail Manager Loaded!");
             Chat.WriteLine("/mailmanager for settings.");
 
+            _settings["Toggle"] = false;
+
             MailCharacterName = Config.CharSettings[Game.ClientInst].MailCharacterName;
             MailAmount = Config.CharSettings[Game.ClientInst].MailAmount;
         }

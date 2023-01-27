@@ -43,6 +43,8 @@ namespace GMIManager
         public static View _infoView;
 
         public static string PluginDir;
+        private static long _queuedCash = 0;
+        private static long _maxQueuedCash = 2999999999;
 
         public override void Run(string pluginDir)
         {
@@ -87,6 +89,8 @@ namespace GMIManager
 
             Chat.WriteLine("GMI Manager Loaded!");
             Chat.WriteLine("/gmimanager for settings.");
+
+            _settings["Toggle"] = false;
 
             GMIWithdrawAmount = Config.CharSettings[Game.ClientInst].GMIWithdrawAmount;
             GMIBuyOrderName = Config.CharSettings[Game.ClientInst].GMIBuyOrderName;
@@ -268,6 +272,8 @@ namespace GMIManager
                 return;
             }
 
+            if (marketInventory.Credits < _queuedCash) { return; }
+
             long desiredIncrease = Math.Min(GMIBuyOrderEndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.980f)) / ourOrder.Count;
 
             ourOrder.ModifyPrice(ourOrder.Price + desiredIncrease).ContinueWith(modifyOrder =>
@@ -275,10 +281,11 @@ namespace GMIManager
                 if (modifyOrder.Result.Succeeded)
                 {
                     Chat.WriteLine($"{GMIBuyOrderName} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
+                    _queuedCash = 0;
                 }
                 else
                 {
-                    Chat.WriteLine($"No credits.");
+                    //Chat.WriteLine($"No credits {marketInventory.Credits}.");
                 }
             });
         }
@@ -302,9 +309,9 @@ namespace GMIManager
 
                 if (_settings["Toggle"].AsBool() && !Game.IsZoning 
                     && ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                    && Time.NormalTime > _gmiWithdrawTimer + 10)
+                    && Time.NormalTime > _gmiWithdrawTimer + 3)
                 {
-                    if (_gmiWithdrawAmount < GMIBuyOrderEndPrice)
+                    if (_gmiWithdrawAmount < GMIWithdrawAmount)
                     {
                         Task.Factory.StartNew(
                             async () =>
@@ -313,7 +320,7 @@ namespace GMIManager
                                 await GMI.WithdrawCash(999999999);
                                 await Task.Delay(500);
                                 _gmiWithdrawAmount++;
-                                Chat.WriteLine($"Withdrew 1b, currently withdrawn {_gmiWithdrawAmount}b.");
+                                Chat.WriteLine($"Withdrew 1b, withdrawn {_gmiWithdrawAmount}b.");
                             });
                     }
                     else
@@ -329,9 +336,8 @@ namespace GMIManager
                 if (_settings["Toggle"].AsBool() && !Game.IsZoning
                     && _init
                     && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                    && Time.NormalTime > _gmiUpdateTimer + 5)
+                    && Time.NormalTime > _gmiUpdateTimer + 3)
                 {
-                    Chat.WriteLine($"Requesting GMI..");
                     RequestGMIInventory();
 
                     _gmiUpdateTimer = Time.NormalTime;
@@ -339,7 +345,7 @@ namespace GMIManager
 
                 if (_settings["Toggle"].AsBool()
                     && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                    && Time.NormalTime > _mailOpenTimer + 10)
+                    && Time.NormalTime > _mailOpenTimer + 7)
                 {
                     Task.Factory.StartNew(
                         async () =>
@@ -356,25 +362,23 @@ namespace GMIManager
                                 _init = true;
                             }
 
-                            if (_mailId > 0)
+                            if (_mailId > 0 && _queuedCash < _maxQueuedCash)
                             {
                                 Chat.WriteLine("Handling mail..");
                                 await Task.Delay(500);
                                 ReadMail(_mailId);
-                                await Task.Delay(1000);
+                                await Task.Delay(1100);
                                 TakeAllMail(_mailId);
-                                await Task.Delay(1000);
+                                await Task.Delay(1100);
                                 DeleteMail(_mailId);
-                                await Task.Delay(1000);
+                                await Task.Delay(1100);
+                                _queuedCash += DynelManager.LocalPlayer.GetStat(Stat.Cash);
                                 GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
                                 _mailId = 0;
-                                await Task.Delay(2000);
                                 ReadMail(0);
-                                await Task.Delay(1000);
                             }
-                            else
+                            else 
                             {
-                                Chat.WriteLine($"No mail.");
                                 ReadMail(0);
                             }
                         });

@@ -66,6 +66,8 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
+            _settings.AddVariable("AAOBuffs", true);
+
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
@@ -127,7 +129,7 @@ namespace CombatHandler.Keeper
             RegisterSpellProcessor(RelevantNanos.ReaperAuras, ReaperAura);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, AAOBuffs);
 
             PluginDirectory = pluginDir;
 
@@ -678,6 +680,13 @@ namespace CombatHandler.Keeper
         #endregion
 
         #region Buffs
+
+        protected bool AAOBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("AAOBuffs")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
 
         #region Auras
 

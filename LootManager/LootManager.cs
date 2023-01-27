@@ -62,6 +62,7 @@ namespace LootManager
 
         public static string PluginDir;
         private static bool _toggle = false;
+        private static bool _initCheck = false;
 
         public override void Run(string pluginDir)
         {
@@ -146,7 +147,13 @@ namespace LootManager
                 if (Inventory.NumFreeSlots >= 1)
                 {
                     if (CheckRules(item))
-                        item.MoveToInventory();
+                    {
+                        if (!_toggle)
+                        {
+                            item.MoveToInventory();
+                            _initCheck = true;
+                        }
+                    }
                     else if (Delete)
                         item.Delete();
                     //else if (!_ignores.Contains(item.Name))
@@ -166,7 +173,13 @@ namespace LootManager
                     }
 
                     if (CheckRules(item))
-                        item.MoveToInventory();
+                    {
+                        if (!_toggle)
+                        {
+                            item.MoveToInventory();
+                            _initCheck = true;
+                        }
+                    }
                     else if (Delete)
                         item.Delete();
                 }
@@ -175,11 +188,12 @@ namespace LootManager
             _corpsePosList.Add(_currentPos);
             _corpseIdList.Add(container.Identity);
             //Chat.WriteLine($"Adding bits");
-            if (!_toggle)
+            if (!_toggle && !_initCheck)
                 Item.Use(container.Identity);
             _currentlyLooting = false;
             _internalOpen = false;
             _weAreDoingThings = false;
+            _initCheck = false;
         }
 
         private void OnUpdate(object sender, float deltaTime)

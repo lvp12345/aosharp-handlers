@@ -309,20 +309,20 @@ namespace GMIManager
             if (!_settings["Toggle"].AsBool())
                 _init = false;
 
-            if (_settings["Toggle"].AsBool()
-                && Time.NormalTime > _timeOut + 240)
-            {
-                _init = false;
-                _settings["Toggle"] = false;
-                Chat.WriteLine("Timed out.");
-            }
-
             if (_settings["Toggle"].AsBool())
             {
                 if (_initStart)
                 {
                     Chat.WriteLine($"Starting.");
+                    _timeOut = Time.NormalTime;
                     _initStart = false;
+                }
+
+                if (!_initStart && Time.NormalTime > _timeOut + 240)
+                {
+                    _init = false;
+                    _settings["Toggle"] = false;
+                    Chat.WriteLine("Timed out.");
                 }
 
                 if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32()

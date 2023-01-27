@@ -306,6 +306,7 @@ namespace GMIManager
             {
                 _init = false;
                 _settings["Toggle"] = false;
+                Chat.WriteLine("Timed out.");
             }
 
             if (_settings["Toggle"].AsBool())

@@ -47,6 +47,7 @@ namespace GMIManager
         public static string PluginDir;
         private static long _queuedCash = 0;
         private static long _maxQueuedCash = 1999999999;
+        private static bool _initStart = true;
 
         public override void Run(string pluginDir)
         {
@@ -238,7 +239,7 @@ namespace GMIManager
             Withdraw, Modify
         }
 
-        private static void RequestGMIInventory()
+        private void RequestGMIInventory()
         {
             GMI.GetInventory().ContinueWith(async marketInventory =>
             {
@@ -253,7 +254,7 @@ namespace GMIManager
             });
         }
 
-        private static void OnMarketInventoryLoaded(MarketInventory marketInventory)
+        private void OnMarketInventoryLoaded(MarketInventory marketInventory)
         {
             GMI.GetMarketOrders().ContinueWith(marketOrders =>
             {
@@ -262,15 +263,15 @@ namespace GMIManager
             });
         }
 
-        private static void OnMarketOrdersLoaded(MarketInventory marketInventory, MyMarketOrders myOrders)
+        private void OnMarketOrdersLoaded(MarketInventory marketInventory, MyMarketOrders myOrders)
         {
             MyMarketBuyOrder ourOrder = myOrders.BuyOrders.Where(x => x.Name == GMIBuyOrderName
                 && x.Price < GMIBuyOrderEndPrice).OrderByDescending(x => x.Price).FirstOrDefault();
 
             if (ourOrder == null)
             {
-                Toggle = false;
-                Chat.WriteLine("Finished");
+                _settings["Toggle"] = false;
+                Chat.WriteLine("Finished.");
                 return;
             }
 
@@ -297,26 +298,22 @@ namespace GMIManager
         {
             if (Game.IsZoning) { return; }
 
-            if (!_settings["Toggle"].AsBool() && Toggle)
-            {
-                Toggle = false;
+            if (!_settings["Toggle"].AsBool())
                 _init = false;
-            }
 
-            if (_settings["Toggle"].AsBool() && Toggle
+            if (_settings["Toggle"].AsBool()
                 && Time.NormalTime > _timeOut + 240)
             {
-                Toggle = false;
                 _init = false;
                 _settings["Toggle"] = false;
             }
 
             if (_settings["Toggle"].AsBool())
             {
-                if (!Toggle)
+                if (_initStart)
                 {
-                    Chat.WriteLine("Starting.");
-                    Toggle = true;
+                    Chat.WriteLine($"Starting.");
+                    _initStart = false;
                 }
 
                 if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32()
@@ -331,13 +328,12 @@ namespace GMIManager
                                 await GMI.WithdrawCash(999999999);
                                 await Task.Delay(500);
                                 _gmiWithdrawAmount++;
-                                Chat.WriteLine($"Withdrew 1b, withdrawn {_gmiWithdrawAmount}b.");
+                                Chat.WriteLine($"Withdrawn {_gmiWithdrawAmount}b.");
                             });
                     }
                     else
                     {
                         _settings["Toggle"] = false;
-                        Toggle = false;
                         Chat.WriteLine($"Finished withdrawing.");
                     }
 

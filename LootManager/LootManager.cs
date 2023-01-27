@@ -149,10 +149,8 @@ namespace LootManager
                     if (CheckRules(item))
                     {
                         if (!_toggle)
-                        {
                             item.MoveToInventory();
-                        }
-                        if (_toggle)
+                        else if (_toggle)
                             _initCheck = true;
                     }
                     else if (Delete)
@@ -176,11 +174,8 @@ namespace LootManager
                     if (CheckRules(item))
                     {
                         if (!_toggle)
-                        {
                             item.MoveToInventory();
-                        }
-
-                        if (_toggle)
+                        else if (_toggle)
                             _initCheck = true;
                     }
                     else if (Delete)

@@ -72,7 +72,7 @@ namespace GMIManager
                 if (param.Length == 1)
                 {
                     if (param[0] == "deposit")
-                        GMI.Deposit(Convert.ToInt32(param[0]));
+                        GMI.Deposit(Convert.ToInt32(param[1]));
                 }
                 else
                 {

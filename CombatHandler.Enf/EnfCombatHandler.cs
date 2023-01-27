@@ -85,11 +85,17 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
 
-            _settings.AddVariable("Mongo", false);
+            _settings.AddVariable("Mongo", true);
             _settings.AddVariable("CycleAbsorbs", false);
             _settings.AddVariable("CycleChallenger", false);
             _settings.AddVariable("CycleRage", false);
-            _settings.AddVariable("TauntProc", false);
+            _settings.AddVariable("TauntProc", true);
+            _settings.AddVariable("AbsorbACBuff", true);
+            _settings.AddVariable("TargetedHpBufff", true);
+            _settings.AddVariable("InitiativeBuffs", true);
+
+
+            _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
 
             _settings.AddVariable("TrollForm", false);
 
@@ -134,10 +140,12 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeEnergyBuffWeapon);
 
             //Team buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), Melee);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitiativeBuffs);
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, GlobalGenericTeamBuff);
-            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TargetedHpBuff);
             RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
 
             RegisterItemProcessor(244655, 244655, TauntTool);
 
@@ -975,6 +983,49 @@ namespace CombatHandler.Enf
 
         #endregion
 
+        #region Team Buffs
+
+        protected bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("AbsorbACBufff")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
+
+        protected bool TargetedHpBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TargetedHpBuff")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
+
+        protected bool InitiativeBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("InitiativeBuffs")) { return false; }
+
+            if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
+            {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+
+        #endregion
+
         #region Misc
 
         private static class RelevantNanos
@@ -988,6 +1039,7 @@ namespace CombatHandler.Enf
             public static readonly int[] MeleeEnergy = { 203215, 203207, 203209, 203211, 203213 };
             public static readonly int[] TargetedHpBuff = { 273629, 95708, 95700, 95701, 95702, 95704, 95706, 95707 };
             public static readonly int[] FortifyBuffs = { 273320, 270350, 117686, 117688, 117682, 117687, 117685, 117684, 117683, 117680, 117681 };
+            public static readonly int[] AbsorbACBuff = { 270350, 117686, 117688, 117682, 117687, 117685, 117684, 117683, 117680, 117681 };
             public static readonly Spell[] TargetedDamageShields = Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder().Where(spell => spell.Id != ICE_BURN).ToArray();
             public const int MONGO_KRAKEN = 273322;
             public const int MONGO_DEMOLISH = 270786;
@@ -1012,6 +1064,10 @@ namespace CombatHandler.Enf
             None, Target, Area
         }
 
+        public enum StrengthBuffSelection
+        {
+            None, Self, Team
+        }
         #endregion
     }
 }

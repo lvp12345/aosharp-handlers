@@ -151,8 +151,9 @@ namespace LootManager
                         if (!_toggle)
                         {
                             item.MoveToInventory();
-                            _initCheck = true;
                         }
+                        if (_toggle)
+                            _initCheck = true;
                     }
                     else if (Delete)
                         item.Delete();
@@ -177,8 +178,10 @@ namespace LootManager
                         if (!_toggle)
                         {
                             item.MoveToInventory();
-                            _initCheck = true;
                         }
+
+                        if (_toggle)
+                            _initCheck = true;
                     }
                     else if (Delete)
                         item.Delete();

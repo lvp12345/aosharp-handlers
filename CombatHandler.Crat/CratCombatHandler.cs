@@ -1122,9 +1122,10 @@ namespace CombatHandler.Bureaucrat
 
         protected bool CutRedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NeuronalStimulatorTeam")) { return false; }
-
+            if (IsSettingEnabled("CutRedTape")) 
                 return GenericTeamBuff(spell, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

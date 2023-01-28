@@ -86,6 +86,8 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("EvadesSelection", (int)EvadesSelection.None);
 
+            _settings.AddVariable("DamageBuffSelection", false) ;
+
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DebtCollection);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.UnopenedLetter);
@@ -107,6 +109,8 @@ namespace CombatHandler.Trader
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
             _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Self);
+
+            _settings.AddVariable("Root", false);
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
@@ -141,11 +145,13 @@ namespace CombatHandler.Trader
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
-            RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GlobalGenericBuff);
+            //RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GlobalGenericBuff);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(), DamageBuff);
+
 
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
@@ -169,6 +175,8 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderDebuffACNanos).OrderByStackingOrder(), ACDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
+
+            RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
 
             PluginDirectory = pluginDir;
 
@@ -902,6 +910,13 @@ namespace CombatHandler.Trader
             return false;
         }
 
+        protected bool DamageBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("DamageBuff")) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
+        }
+
         #endregion
 
         #region Debuffs
@@ -1250,7 +1265,47 @@ namespace CombatHandler.Trader
 
         #endregion
 
+        #region Roots
+
+        private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")
+                || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
+
+            SimpleChar target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && IsMoving(c)
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && (c.Name == "Flaming Vengeance"
+                            || c.Name == "Hand of the Colonel"
+                            || c.Name == "Alien Seeker"))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.Target = target;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Misc
+
+
+        private static bool IsMoving(SimpleChar target)
+        {
+            if (Playfield.Identity.Instance == 4021)
+            {
+                return true;
+            }
+
+            return target.IsMoving;
+        }
 
         private static class RelevantNanos
         {
@@ -1260,6 +1315,7 @@ namespace CombatHandler.Trader
             public const int DivestDamage = 273407;
             public const int UmbralWranglerPremium = 235291;
             public const int MyEnemiesEnemyIsMyFriend = 270714;
+            public const int FlowofTime = 30719;
             public static int[] GrandThefts = { 269842, 280050 };
             public static int[] HealthDrain = { 270357, 77195, 76478, 76475, 76487, 76481,
                 76484, 76491, 76494, 76499, 76571, 76503, 76651, 76614, 76656,

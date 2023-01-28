@@ -20,12 +20,13 @@
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="Name" layout_borders="Rect(5,5,5,5)"/>
     <TextInputView name="GMIBuyOrdersName" min_size="Point(140,14)" max_size="Point(140,14)" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="End price" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="End price*" layout_borders="Rect(5,5,5,5)"/>
     <TextInputView name="GMIBuyOrdersEndPrice" min_size="Point(190,14)" max_size="Point(190,14)" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="*Withdraw amount in billions." layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="*Withdraw amount - amount of billions." layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="*End price - exact number." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

@@ -7,7 +7,7 @@
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Taunt Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TauntProc" layout_borders="Rect(10,1,5,1)"/>
 	<OptionCheckBox label="(Team) Absorb AC Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AbsorbACBuff" layout_borders="Rect(10,1,5,1)"/>
-	<OptionCheckBox label="(Team) HP Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TargetedHpBufff" layout_borders="Rect(10,1,5,1)"/>
+	<OptionCheckBox label="(Team) HP Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TargetedHpBuff" layout_borders="Rect(10,1,5,1)"/>
 	<OptionCheckBox label="(Team) Initiative Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitiativeBuffs" layout_borders="Rect(10,1,5,1)"/>
 	  <OptionCheckBox label="(Team) DamageShields" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageShields" layout_borders="Rect(10,1,5,1)"/>
 	  <TextView value=" " layout_borders="Rect(5,5,5,5)"/>

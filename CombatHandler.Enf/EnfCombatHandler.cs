@@ -5,6 +5,7 @@ using System.Linq;
 using System;
 using AOSharp.Core.IPC;
 using CombatHandler.Generic;
+using System.Diagnostics;
 
 namespace CombatHandler.Enf
 {
@@ -91,7 +92,7 @@ namespace CombatHandler.Enf
             _settings.AddVariable("CycleRage", false);
             _settings.AddVariable("TauntProc", true);
             _settings.AddVariable("AbsorbACBuff", true);
-            _settings.AddVariable("TargetedHpBufff", true);
+            _settings.AddVariable("TargetedHpBuff", true);
             _settings.AddVariable("InitiativeBuffs", true);
             _settings.AddVariable("DamageShields", false);
 
@@ -130,7 +131,7 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), DamageShields);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
@@ -142,11 +143,11 @@ namespace CombatHandler.Enf
 
             //Team buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitiativeBuffs);
-            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
             RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TargetedHpBuff);
-            RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GlobalGenericTeamBuff);
+            //RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GlobalGenericTeamBuff);
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
+            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength, StrengthBuff);
 
             RegisterItemProcessor(244655, 244655, TauntTool);
 
@@ -988,7 +989,7 @@ namespace CombatHandler.Enf
 
         protected bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AbsorbACBufff")) { return false; }
+            if (!IsSettingEnabled("AbsorbACBuff")) { return false; }
 
             return GenericTeamBuff(spell, ref actionTarget);
         }
@@ -1002,17 +1003,19 @@ namespace CombatHandler.Enf
 
         protected bool InitiativeBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("InitiativeBuffs") || !GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee)) { return false; }
+            if (IsSettingEnabled("InitiativeBuffs"))
+                return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
+
 
         private bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
+
             if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
                 return GenericTeamBuff(spell, ref actionTarget);
-
-            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -1021,7 +1024,7 @@ namespace CombatHandler.Enf
         {
             if (!IsSettingEnabled("DamageShields")) { return false; }
 
-            return GenericBuff(spell, ref actionTarget);
+            return GenericTeamBuff(spell, ref actionTarget);
         }
 
         #endregion
@@ -1047,6 +1050,7 @@ namespace CombatHandler.Enf
             public const int IMPROVED_ESSENCE_OF_BEHEMOTH = 273629;
             public const int CORUSCATING_SCREEN = 55751;
             public const int ICE_BURN = 269460;
+            public const int ProdigiousStrength = 29652;
             public const int BioCocoon = 209802;
         }
 

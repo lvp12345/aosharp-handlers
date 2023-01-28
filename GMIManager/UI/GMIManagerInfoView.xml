@@ -4,6 +4,7 @@
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Withdraw - withdraws 900m at a time the upto the Withdraw amount." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Modify - reads mail, deposits credits and modifies a buy order to End price. " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Refresh - moves credits from one order to another with same name." layout_borders="Rect(0,0,0,2)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(0,0,0,2)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>

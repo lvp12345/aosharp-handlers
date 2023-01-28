@@ -12,6 +12,7 @@
       <OptionRadioButtonGroup label="Mode" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="GMIManager__ModeSelection">
         <RadioButton label="Withdraw" value="0"/>
         <RadioButton label="Modify" value="1"/>
+        <RadioButton label="Refresh" value="2"/>
       </OptionRadioButtonGroup>
     </View>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

@@ -51,6 +51,13 @@ namespace GMIManager
         private static bool _initStart = true;
         private static bool _initMarketCredits = false;
         private static long _marketCredits = 0;
+        private static MyMarketBuyOrder _oldOrder;
+        private static MyMarketBuyOrder _newOrder;
+        private static long _modifyAmount = 3600000000;
+        private static bool _modifyingAmount = false;
+        private static bool _lastDeposit = false;
+
+        //private static long _modifyAmount = 20000;
 
         public override void Run(string pluginDir)
         {
@@ -250,7 +257,7 @@ namespace GMIManager
 
         public enum ModeSelection
         {
-            Withdraw, Modify
+            Withdraw, Modify, Refresh
         }
 
         private void RequestGMIInventory()
@@ -279,39 +286,105 @@ namespace GMIManager
 
         private void OnMarketOrdersLoaded(MarketInventory marketInventory, MyMarketOrders myOrders)
         {
-            MyMarketBuyOrder ourOrder = myOrders.BuyOrders.Where(x => x.Name == GMIBuyOrderName
-                && x.Price < GMIBuyOrderEndPrice).OrderByDescending(x => x.Price).FirstOrDefault();
-
-            _marketCredits = marketInventory.Credits;
-
-            if (ourOrder == null)
+            if (ModeSelection.Refresh == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                _init = false;
-                _initStart = true;
-                _settings["Toggle"] = false;
-                _initMarketCredits = false;
-                Chat.WriteLine("Finished.");
-                return;
-            }
-
-            long desiredIncrease = Math.Min(GMIBuyOrderEndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.980f)) / ourOrder.Count;
-
-            ourOrder.ModifyPrice(ourOrder.Price + desiredIncrease).ContinueWith(modifyOrder =>
-            {
-                if (!_initMarketCredits)
-                    _initMarketCredits = true;
-
-                if (modifyOrder.Result.Succeeded)
+                if (!_init)
                 {
-                    Chat.WriteLine($"{GMIBuyOrderName} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
-                    _queuedCash = (ulong)_marketCredits - (ulong)marketInventory.Credits;
-                    _marketCredits = marketInventory.Credits;
+                    _oldOrder = myOrders.BuyOrders.Where(x => x.Name == GMIBuyOrderName
+                        && x.Price > 1).FirstOrDefault();
+
+                    _newOrder = myOrders.BuyOrders.Where(x => x.Name == GMIBuyOrderName
+                        && x.Price == 1).FirstOrDefault();
+
+                    _init = true;
+                }
+
+                _oldOrder = myOrders.BuyOrders.Where(c => c.Id == _oldOrder.Id).FirstOrDefault();
+                _newOrder = myOrders.BuyOrders.Where(c => c.Id == _newOrder.Id).FirstOrDefault();
+
+                if (_lastDeposit && _modifyingAmount == false && _oldOrder == null)
+                {
+                    _newOrder.ModifyPrice(_newOrder.Price + (long)(marketInventory.Credits * 0.980f) / _newOrder.Count).ContinueWith(modifyNewOrder =>
+                    {
+                        if (modifyNewOrder.Result.Succeeded)
+                        {
+                            Chat.WriteLine($"Modified.");
+                            _settings["Toggle"] = false;
+                            _lastDeposit = false;
+                            Chat.WriteLine("Finished.");
+                            return;
+                        }
+                    });
+                }
+
+                if (_oldOrder.Price < _modifyAmount && marketInventory.Credits < _oldOrder.Price
+                    && _modifyingAmount == false)
+                {
+                    _oldOrder.Cancel();
+                    _lastDeposit = true;
+                }
+
+                if (_modifyingAmount)
+                {
+                    _newOrder.ModifyPrice(_newOrder.Price + ((long)(marketInventory.Credits * 0.980f) / _newOrder.Count)).ContinueWith(modifyNewOrder =>
+                    {
+                        if (modifyNewOrder.Result.Succeeded)
+                        {
+                            _modifyingAmount = false;
+                            Chat.WriteLine($"Modified.");
+                        }
+                    });
                 }
                 else
                 {
-                    //Chat.WriteLine($"No credits {marketInventory.Credits}.");
+                    _oldOrder.ModifyPrice(_oldOrder.Price - _modifyAmount).ContinueWith(modifyOldOrder =>
+                    {
+                        if (modifyOldOrder.Result.Succeeded)
+                        {
+                            _modifyingAmount = true;
+                            Chat.WriteLine($"Modified.");
+                        }
+                    });
                 }
-            });
+            }
+
+            if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+
+                MyMarketBuyOrder ourOrder = myOrders.BuyOrders.Where(x => x.Name == GMIBuyOrderName
+                && x.Price < GMIBuyOrderEndPrice).OrderByDescending(x => x.Price).FirstOrDefault();
+
+                _marketCredits = marketInventory.Credits;
+
+                if (ourOrder == null)
+                {
+                    _init = false;
+                    _initStart = true;
+                    _settings["Toggle"] = false;
+                    _initMarketCredits = false;
+                    Chat.WriteLine("Finished.");
+                    return;
+                }
+
+                long desiredIncrease = Math.Min(GMIBuyOrderEndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.980f)) / ourOrder.Count;
+
+                ourOrder.ModifyPrice(ourOrder.Price + desiredIncrease).ContinueWith(modifyOrder =>
+                {
+                    if (!_initMarketCredits)
+                        _initMarketCredits = true;
+
+                    if (modifyOrder.Result.Succeeded)
+                    {
+                        Chat.WriteLine($"{GMIBuyOrderName} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
+                        _queuedCash = (ulong)_marketCredits - (ulong)marketInventory.Credits;
+                        _marketCredits = marketInventory.Credits;
+                    }
+                    else
+                    {
+                        //Chat.WriteLine($"No credits {marketInventory.Credits}.");
+                    }
+                });
+            }
         }
 
 
@@ -332,6 +405,7 @@ namespace GMIManager
                 }
 
                 if (!_initStart 
+                    && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
                     && Time.NormalTime > _timeOut + 340)
                 {
                     _init = false;
@@ -353,7 +427,7 @@ namespace GMIManager
                                 await GMI.WithdrawCash(900000000);
                                 await Task.Delay(500);
                                 _gmiWithdrawAmount++;
-                                Chat.WriteLine($"Withdrawn {_gmiWithdrawAmount}b. {_gmiWithdrawAmount}/{GMIWithdrawAmount}");
+                                Chat.WriteLine($"Withdrawn {_gmiWithdrawAmount}b. {_gmiWithdrawAmount}b/{GMIWithdrawAmount}b");
                             });
                     }
                     else
@@ -363,6 +437,13 @@ namespace GMIManager
                     }
 
                     _gmiWithdrawTimer = Time.NormalTime;
+                }
+
+                if (ModeSelection.Refresh == (ModeSelection)_settings["ModeSelection"].AsInt32()
+                    && Time.NormalTime > _gmiUpdateTimer + 2.5)
+                {
+                    RequestGMIInventory();
+                    _gmiUpdateTimer = Time.NormalTime;
                 }
 
                 if (_init

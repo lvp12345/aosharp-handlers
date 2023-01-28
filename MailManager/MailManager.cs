@@ -269,7 +269,7 @@ namespace MailManager
                 {
                     if (DynelManager.LocalPlayer.GetStat(Stat.Cash) > 0)
                     {
-                        Chat.WriteLine($"Sent {DynelManager.LocalPlayer.GetStat(Stat.Cash) - 200000} credits to {MailCharacterName}.");
+                        Chat.WriteLine($"Sent {DynelManager.LocalPlayer.GetStat(Stat.Cash) - 200000} credits to {MailCharacterName}. {_currentMailAmount}/{MailAmount}");
 
                         Network.Send(new MailMessage()
                         {

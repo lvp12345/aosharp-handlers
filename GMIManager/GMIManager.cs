@@ -45,9 +45,12 @@ namespace GMIManager
         public static View _infoView;
 
         public static string PluginDir;
-        private static long _queuedCash = 0;
-        private static long _maxQueuedCash = 2999999999;
+        private static ulong _queuedCash = 0;
+        private static ulong _maxCredits = 999999999;
+        private static ulong _maxMarketCredits = 3999999999;
         private static bool _initStart = true;
+        private static bool _initMarketCredits = false;
+        private static long _marketCredits = 0;
 
         public override void Run(string pluginDir)
         {
@@ -76,23 +79,26 @@ namespace GMIManager
                 }
                 else if (param.Length == 0)
                 {
-                    if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32())
-                    {
-                        if (GMIWithdrawAmount > 0)
-                        {
-                            _settings["Toggle"] = !_settings["Toggle"].AsBool();
-                            Chat.WriteLine("Starting.");
-                        }
-                    }
+                    _queuedCash -= 4345454;
+                    Chat.WriteLine($"{_queuedCash}");
 
-                    if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32())
-                    {
-                        if (!string.IsNullOrEmpty(GMIBuyOrderName) && GMIBuyOrderEndPrice > 0)
-                        {
-                            _settings["Toggle"] = !_settings["Toggle"].AsBool();
-                            Chat.WriteLine("Starting.");
-                        }
-                    }
+                    //if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32())
+                    //{
+                    //    if (GMIWithdrawAmount > 0)
+                    //    {
+                    //        _settings["Toggle"] = !_settings["Toggle"].AsBool();
+                    //        Chat.WriteLine("Starting.");
+                    //    }
+                    //}
+
+                    //if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32())
+                    //{
+                    //    if (!string.IsNullOrEmpty(GMIBuyOrderName) && GMIBuyOrderEndPrice > 0)
+                    //    {
+                    //        _settings["Toggle"] = !_settings["Toggle"].AsBool();
+                    //        Chat.WriteLine("Starting.");
+                    //    }
+                    //}
                 }
             });
 
@@ -276,23 +282,30 @@ namespace GMIManager
             MyMarketBuyOrder ourOrder = myOrders.BuyOrders.Where(x => x.Name == GMIBuyOrderName
                 && x.Price < GMIBuyOrderEndPrice).OrderByDescending(x => x.Price).FirstOrDefault();
 
+            _marketCredits = marketInventory.Credits;
+
             if (ourOrder == null)
             {
+                _init = false;
+                _initStart = true;
                 _settings["Toggle"] = false;
+                _initMarketCredits = false;
                 Chat.WriteLine("Finished.");
                 return;
             }
-
-            if (marketInventory.Credits < _queuedCash) { return; }
 
             long desiredIncrease = Math.Min(GMIBuyOrderEndPrice - ourOrder.Price, (long)(marketInventory.Credits * 0.980f)) / ourOrder.Count;
 
             ourOrder.ModifyPrice(ourOrder.Price + desiredIncrease).ContinueWith(modifyOrder =>
             {
+                if (!_initMarketCredits)
+                    _initMarketCredits = true;
+
                 if (modifyOrder.Result.Succeeded)
                 {
                     Chat.WriteLine($"{GMIBuyOrderName} successfully increased to {(ourOrder.Price + desiredIncrease):N0}");
-                    _queuedCash = 0;
+                    _queuedCash = (ulong)_marketCredits - (ulong)marketInventory.Credits;
+                    _marketCredits = marketInventory.Credits;
                 }
                 else
                 {
@@ -318,26 +331,29 @@ namespace GMIManager
                     _initStart = false;
                 }
 
-                if (!_initStart && Time.NormalTime > _timeOut + 240)
+                if (!_initStart 
+                    && Time.NormalTime > _timeOut + 340)
                 {
                     _init = false;
+                    _initStart = true;
                     _settings["Toggle"] = false;
+                    _initMarketCredits = false;
                     Chat.WriteLine("Timed out.");
                 }
 
                 if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32()
                     && Time.NormalTime > _gmiWithdrawTimer + 3)
                 {
-                    if (_gmiWithdrawAmount < GMIWithdrawAmount)
+                    if ((_gmiWithdrawAmount < GMIWithdrawAmount) || GMIWithdrawAmount == 0)
                     {
                         Task.Factory.StartNew(
                             async () =>
                             {
                                 await Task.Delay(500);
-                                await GMI.WithdrawCash(999999999);
+                                await GMI.WithdrawCash(900000000);
                                 await Task.Delay(500);
                                 _gmiWithdrawAmount++;
-                                Chat.WriteLine($"Withdrawn {_gmiWithdrawAmount}b.");
+                                Chat.WriteLine($"Withdrawn {_gmiWithdrawAmount}b. {_gmiWithdrawAmount}/{GMIWithdrawAmount}");
                             });
                     }
                     else
@@ -376,7 +392,9 @@ namespace GMIManager
                                 _init = true;
                             }
 
-                            if (_mailId > 0 && _queuedCash < _maxQueuedCash)
+                            if (_mailId > 0 
+                                && _initMarketCredits
+                                && _queuedCash < (_maxMarketCredits - _maxCredits))
                             {
                                 Chat.WriteLine("Handling mail..");
                                 _timeOut = Time.NormalTime;
@@ -387,8 +405,16 @@ namespace GMIManager
                                 await Task.Delay(1100);
                                 DeleteMail(_mailId);
                                 await Task.Delay(1100);
-                                _queuedCash += DynelManager.LocalPlayer.GetStat(Stat.Cash);
-                                GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
+                                if ((_maxMarketCredits - _queuedCash) >= _maxCredits)
+                                {
+                                    _queuedCash += (ulong)DynelManager.LocalPlayer.GetStat(Stat.Cash);
+                                    GMI.Deposit(DynelManager.LocalPlayer.GetStat(Stat.Cash));
+                                }
+                                else
+                                {
+                                    _queuedCash += _maxMarketCredits - _queuedCash;
+                                    GMI.Deposit((int)_maxMarketCredits - (int)_queuedCash);
+                                }
                                 _mailId = 0;
                                 ReadMail(0);
                             }

@@ -25,7 +25,7 @@
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="*Withdraw amount - amount of billions." layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="*Withdraw amount - amount of 900millions." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="*End price - exact number." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>

@@ -230,7 +230,7 @@ namespace MailManager
                                 _init = true;
                             }
 
-                            if (_mailId > 0 && _init)
+                            if (_mailId > 0)
                             {
                                 _currentMailAmount++;
                                 if (_currentMailAmount >= MailAmount)
@@ -251,11 +251,6 @@ namespace MailManager
                                 await Task.Delay(2000);
                                 ReadMail(0);
                                 await Task.Delay(1000);
-                            }
-                            else if (_mailId == 0)
-                            {
-                                Chat.WriteLine($"No mail.");
-                                _settings["Toggle"] = false;
                             }
                         });
                 }

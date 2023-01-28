@@ -376,7 +376,7 @@ namespace GMIManager
                                 _init = true;
                             }
 
-                            if (_mailId > 0 && _queuedCash < _maxQueuedCash && _init)
+                            if (_mailId > 0 && _queuedCash < _maxQueuedCash)
                             {
                                 Chat.WriteLine("Handling mail..");
                                 _timeOut = Time.NormalTime;

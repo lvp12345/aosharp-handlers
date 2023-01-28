@@ -230,7 +230,7 @@ namespace MailManager
                                 _init = true;
                             }
 
-                            if (_mailId > 0)
+                            if (_mailId > 0 && _init)
                             {
                                 _currentMailAmount++;
                                 if (_currentMailAmount >= MailAmount)
@@ -252,7 +252,7 @@ namespace MailManager
                                 ReadMail(0);
                                 await Task.Delay(1000);
                             }
-                            else
+                            else if (_mailId == 0)
                             {
                                 Chat.WriteLine($"No mail.");
                                 _settings["Toggle"] = false;

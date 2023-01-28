@@ -71,7 +71,7 @@ namespace CombatHandler.Soldier
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("DeTaunt", false);
 
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
@@ -79,6 +79,10 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
+
+            _settings.AddVariable("TeamArmorBuff", true);
+            _settings.AddVariable("MajorEvasionBuffs", false);
+            _settings.AddVariable("PistolTeam", false);
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
@@ -115,6 +119,9 @@ namespace CombatHandler.Soldier
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
+            // DeTaunt
+            //RegisterSpellProcessor(RelevantNanos.Detaunt, DeTaunt);
+
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => !c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
@@ -124,20 +131,20 @@ namespace CombatHandler.Soldier
             RegisterSpellProcessor(RelevantNanos.Phalanx, Phalanx);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericTeamBuffExclusion);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), MajorEvasionBuffs);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), Shotgun);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HeavyWeaponsBuffs).OrderByStackingOrder(), HeavyWeapon);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GlobalGenericTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamArmorBuff);
 
             RegisterSpellProcessor(RelevantNanos.ArBuffs, AssaultRifle);
             RegisterSpellProcessor(RelevantNanos.HeavyComp, HeavyCompBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RiotControl);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
@@ -749,6 +756,25 @@ namespace CombatHandler.Soldier
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
+        protected bool MajorEvasionBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs) || !IsSettingEnabled("MajorEvasionBuffs")) { return false; }
+
+            if (Team.IsInTeam)
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+
+        }
+
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
         private bool RiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (RiotControlSelection.Team == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32())
@@ -873,6 +899,13 @@ namespace CombatHandler.Soldier
             if (DynelManager.LocalPlayer.Buffs.Contains(162357)) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TeamArmorBuff")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
         }
 
         private bool SLReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1009,6 +1042,7 @@ namespace CombatHandler.Soldier
             public static readonly int[] SolDrainHeal = { 29241, 301897 };
             public static readonly int[] TauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
             29218, 100205, 100206, 100208, 29228};
+            public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211 };
             public const int HeavyComp = 269482;
             public const int Phalanx = 29245;
             public static readonly int[] ArBuffs = { 275027, 203119, 29220, 203121 };

@@ -84,9 +84,8 @@ namespace CombatHandler.Trader
             _settings.AddVariable("DamageDrain", true);
             _settings.AddVariable("HealthDrain", false);
 
-            _settings.AddVariable("EvadesSelection", (int)EvadesSelection.None);
-
-            _settings.AddVariable("DamageBuffSelection", false) ;
+            _settings.AddVariable("Evades", false);
+            _settings.AddVariable("UmbralWrangler", false);
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DebtCollection);
@@ -145,12 +144,13 @@ namespace CombatHandler.Trader
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
-            //RegisterSpellProcessor(RelevantNanos.UnstoppableKiller, GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.UmbralWranglerPremium, GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(), GlobalGenericBuff);
+
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(), DamageBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderTeamSkillWranglerBuff).OrderByStackingOrder(), UmbralWrangler);
+            
 
 
             //Team Nano heal (Rouse Outfit nanoline)
@@ -883,36 +883,32 @@ namespace CombatHandler.Trader
 
         #region Buffs
 
-        //protected bool UmbralWrangle(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("UmbralWrangle")) { return false; }
-
-        //    return Buff(spell, NanoLine.TraderTeamSkillWranglerBuff, fightingTarget, ref actionTarget);
-        //}
-
         protected bool ImprovedQuantumUncertanity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
+
+
+        #endregion
+
+        #region Team Buffs
+
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
+            if (IsInsideInnerSanctum() ) { return false; }
 
-            if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
+            if (Team.IsInTeam && IsSettingEnabled("Evades"))
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget)
 
-            if (EvadesSelection.Self == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return Buff(spell, spell.Nanoline, ref actionTarget);
-
-            return false;
+                    ; return false;
         }
 
-        protected bool DamageBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool UmbralWrangler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DamageBuff")) { return false; }
+            if (!IsSettingEnabled("UmbralWrangler")) { return false; }
 
             return GenericBuff(spell, ref actionTarget);
         }

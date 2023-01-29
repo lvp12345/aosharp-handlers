@@ -93,7 +93,7 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("NanoHOTTeam", false);
             _settings.AddVariable("CostTeam", false);
             _settings.AddVariable("AbsorbACBuff", false);
-            _settings.AddVariable("MajorEvasionBuffs", false);
+            _settings.AddVariable("Evades", false);
             _settings.AddVariable("NFRangeBuff", false);
 
 
@@ -137,7 +137,7 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDamageMultiplierBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), NFRangeBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), MajorEvasionBuffs);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHOT);
@@ -146,7 +146,8 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), CycleAbsorbs);
 
             //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), AbsorbACBuff);
+            RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
+            RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
 
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDOTNuke, CombatActionPriority.Medium);
@@ -983,20 +984,20 @@ namespace CombatHandler.NanoTechnician
 
         protected bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AbsorbACBufff")) { return false; }
+            if (IsSettingEnabled("AbsorbACBuff")) 
+                     return GenericTeamBuff(spell, ref actionTarget);
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return false;   
         }
 
-        protected bool MajorEvasionBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs) || !IsSettingEnabled("MajorEvasionBuffs")) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
-            if (Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+            if (IsSettingEnabled("Evades"))
+                return GenericTeamBuff(spell, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-
+            return false;
         }
 
         private bool NFRangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1054,8 +1055,6 @@ namespace CombatHandler.NanoTechnician
         {
             None, Target, Boss
         }
-
-
         public enum AOESelection
         {
             None, Normal, VE
@@ -1068,12 +1067,13 @@ namespace CombatHandler.NanoTechnician
             public const int Garuk = 275692;
             public const int PierceReflect = 266287;
             public const int VolcanicEruption = 28638;
+            public const int DarkMovement = 28603;
             public const int BioCocoon = 209802;
             public static readonly int[] AOENukes = { 266293, 28638,
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };
             public const int SuperiorFleetingImmunity = 273386;
-            public static readonly Spell[] AbsortAcTargetBuffs = Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder().Where(spell => spell.Id != SuperiorFleetingImmunity).ToArray();
+            public static readonly int[] AbsorbACBuff = { 270356, 117676, 117675, 117677, 117678, 117679 };
             public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
             public static readonly int[] SingleTargetNukes = { 218168, 218164, 218162, 218160, 218158, 218156, 218154, 218152, 218150, 
                 218148, 218146, 218144, 218142, 218140, 218138, 218136, 269473, 218134, 201935, 202262, 201933, 218132, 28618, 218124, 218130, 

@@ -101,7 +101,7 @@ namespace CombatHandler.Doctor
 
             _settings.AddVariable("NanoResistTeam", false);
             _settings.AddVariable("PistolTeam", false);
-            _settings.AddVariable("HealDeltaBuff)", false);
+            _settings.AddVariable("HealDeltaBuff", false);
 
             _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
             _settings.AddVariable("ShortHOTSelection", (int)ShortHOTSelection.None);
@@ -147,13 +147,14 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), HealDeltaBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.TeamDeathlessBlessing, TeamDeathlessBlessing);
             RegisterSpellProcessor(RelevantNanos.IndividualShortHOTs, ShortHOT);
-
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), HealDeltaBuff);
             RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
             RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
 
@@ -947,7 +948,8 @@ namespace CombatHandler.Doctor
         //Add raido options
         private bool NanoResistance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NanoResistTeam")) { return false; }
+            if (IsSettingEnabled("NanoResistTeam"))
+            return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -962,10 +964,12 @@ namespace CombatHandler.Doctor
 
         protected bool HealDeltaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("HealDeltaBuff")) { return false; }
+            if (IsSettingEnabled("HealDeltaBuff"))
+                 return GenericTeamBuff(spell, ref actionTarget);
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
+
 
         // Template for all
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

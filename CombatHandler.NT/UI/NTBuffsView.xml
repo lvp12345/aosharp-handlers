@@ -6,7 +6,7 @@
     <OptionCheckBox label="(Local) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
 	  <OptionCheckBox label="(Team) Absorb AC Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AbsorbACBuff" layout_borders="Rect(10,1,5,1)"/>
-	  <OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MajorEvasionBuffs" layout_borders="Rect(10,1,5,1)"/>
+	  <OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Evades" layout_borders="Rect(10,1,5,1)"/>
 	  <OptionCheckBox label="(Team) NF Range" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NFRangeBuff" layout_borders="Rect(10,1,5,1)"/>
 	  <OptionCheckBox label="(Team) Nano HOT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoHOTTeam" layout_borders="Rect(10,1,5,1)"/>
 	  <OptionCheckBox label="(Team) Cost" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CostTeam" layout_borders="Rect(10,1,5,1)"/>

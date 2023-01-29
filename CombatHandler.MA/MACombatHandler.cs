@@ -87,7 +87,7 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
             _settings.AddVariable("SingleTauntSelection", (int)SingleTauntSelection.None);
 
-            _settings.AddVariable("EvadesSelection", (int)EvadesSelection.None);
+            _settings.AddVariable("EvadesSelection", false);
             _settings.AddVariable("ArmorBuffSelection", (int)ArmorBuffSelection.None);
             _settings.AddVariable("CritBuffSelection", (int)CritBuffSelection.None);
             
@@ -120,8 +120,8 @@ namespace CombatHandler.MartialArtist
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
             //Team Buffs
-            //RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), Evades);
+            RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), SelfCrit);
@@ -865,16 +865,10 @@ namespace CombatHandler.MartialArtist
 
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || spell.Nanoline == NanoLine.MajorEvasionBuffs) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
-            if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
-
-            if (EvadesSelection.Self == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return Buff(spell, spell.Nanoline, ref actionTarget);
-
-            if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
+            if (IsSettingEnabled("Evades"))
+                return GenericTeamBuff(spell, ref actionTarget);
 
             return false;
         }
@@ -1002,10 +996,6 @@ namespace CombatHandler.MartialArtist
         public enum DamageTypeSelection
         {
             Melee, Fire, Energy, Chemical
-        }
-        public enum EvadesSelection
-        {
-            None, Self, Team
         }
 
         public enum ArmorBuffSelection

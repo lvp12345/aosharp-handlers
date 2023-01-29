@@ -90,7 +90,7 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("DamageDebuffSelection", (int)DamageDebuffSelection.None);
 
             _settings.AddVariable("Cost", false);
-            _settings.AddVariable("MajorEvasionBuffs", false);
+            _settings.AddVariable("Evades", false);
             _settings.AddVariable("PistolTeam", false);
 
             _settings.AddVariable("NanoResistanceDebuff", (int)NanoResistanceDebuffSelection.None);
@@ -137,12 +137,13 @@ namespace CombatHandler.Metaphysicist
             RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, DiffuseRage, CombatActionPriority.Low);
 
             //Self buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), MajorEvasionBuffs);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Team buffs
             RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
+            RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
@@ -176,7 +177,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(RelevantNanos.InducedApathy, InducedApathy);
 
-            RegisterSpellProcessor(RelevantNanos.EvadeBuff, EvasionPet);
+            RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, EvasionPet);
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
             RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetSeed);
@@ -1139,14 +1140,14 @@ namespace CombatHandler.Metaphysicist
         #endregion
 
         #region Team Buffs
-        protected bool MajorEvasionBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs) || !IsSettingEnabled("MajorEvasionBuffs")) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
-            if (Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+            if (IsSettingEnabled("Evades"))
+                return GenericTeamBuff(spell, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return false;
         }
 
         protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1298,7 +1299,8 @@ namespace CombatHandler.Metaphysicist
         {
             public const int MastersBidding = 268171;
             public const int InducedApathy = 301888;
-            public const int EvadeBuff = 29272;
+            public const int AnticipationofRetaliation = 29272;
+            public const int ImprovedAnticipationofRetaliation = 302188;
             public const int PetWarp = 209488;
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
@@ -1354,6 +1356,8 @@ namespace CombatHandler.Metaphysicist
         {
             Self, Team
         }
+
+
         public enum ProcType1Selection
         {
             NanobotContingentArrest, AnticipatedEvasion, ThoughtfulMeans, RegainFocus, EconomicNanobotUse

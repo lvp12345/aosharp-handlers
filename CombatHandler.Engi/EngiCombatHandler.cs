@@ -108,7 +108,7 @@ namespace CombatHandler.Engineer
 
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
             _settings.AddVariable("TeamArmorBuff", true);
-            _settings.AddVariable("TeamPistol", true);
+            _settings.AddVariable("PistolTeam", true);
             _settings.AddVariable("GrenadeTeam", true);
             _settings.AddVariable("ShadowlandReflectBase", true);
             _settings.AddVariable("DamageShields", false);
@@ -884,9 +884,10 @@ namespace CombatHandler.Engineer
 
         protected bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DamageShields")) { return false; }
+            if (IsSettingEnabled("DamageShields"))
+                return GenericTeamBuff(spell, ref actionTarget);
 
-            return GenericBuff(spell, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         protected bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -922,9 +923,10 @@ namespace CombatHandler.Engineer
 
         protected bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TeamArmorBuff")) { return false; }
+            if (IsSettingEnabled("TeamArmorBuff"))
+                    return GenericTeamBuff(spell, ref actionTarget);
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #endregion

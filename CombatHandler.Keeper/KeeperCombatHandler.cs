@@ -683,9 +683,10 @@ namespace CombatHandler.Keeper
 
         protected bool AAOBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AAOBuffs")) { return false; }
+            if (IsSettingEnabled("AAOBuffs"))
+                return GenericTeamBuff(spell, ref actionTarget);
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #region Auras

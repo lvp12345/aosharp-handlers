@@ -1,45 +1,25 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="(Local) Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Buffing" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="(Local) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <OptionCheckBox label="Notum-Grenades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NotumGrenades" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-	  <OptionCheckBox label="(Team) Armor Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamArmorBuff" layout_borders="Rect(10,1,5,1)"/>
-	  <OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MajorEvasionBuffs" layout_borders="Rect(10,1,5,1)"/>
-	  <OptionCheckBox label="(Team) Pistol" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PistolTeam" layout_borders="Rect(10,1,5,1)"/>
-
-	  <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-	  <OptionRadioButtonGroup label="Reflects" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ReflectSelection">
-      <RadioButton label="(Self) Rubi-Ka" value="0"/>
-      <RadioButton label="(Team) Rubi-Ka" value="1"/>
-      <RadioButton label="Shadowlands" value="2"/>
-    </OptionRadioButtonGroup>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <OptionRadioButtonGroup label="Riot control" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RiotControlSelection">
-      <RadioButton label="None" value="0"/>
-      <RadioButton label="Self" value="1"/>
-      <RadioButton label="Team" value="2"/>
-    </OptionRadioButtonGroup>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitBuffSelection">
-      <RadioButton label="None" value="0"/>
-      <RadioButton label="Self" value="1"/>
-      <RadioButton label="Team" value="2"/>
-    </OptionRadioButtonGroup>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="AAO" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AAOSelection">
-      <RadioButton label="None" value="0"/>
-      <RadioButton label="Self" value="1"/>
-      <RadioButton label="Team" value="2"/>
-    </OptionRadioButtonGroup>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Comp Heavy Artilery" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__CompHeavyArtSelection">
-      <RadioButton label="None" value="0"/>
-      <RadioButton label="Self" value="1"/>
-      <RadioButton label="Team" value="2"/>
+	    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<OptionCheckBox label="(Team) Shadowland Reflect" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShadowlandReflect" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(Team) Armor Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamArmorBuff" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Evades" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(Team) Initiative Buffs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitBuff" layout_borders="Rect(10,1,5,1)"/>
+		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>>
+		<OptionCheckBox label="(Team) AAO" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AAO" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(Team) Pistol" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PistolTeam" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(Team) Composite Heavy Artillery" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CompHeavyArt" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(Team) Riot control" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RiotControl" layout_borders="Rect(10,1,5,1)"/>
+	<TextView value=" " layout_borders="Rect(5,5,5,5)"/>>
+	    <OptionRadioButtonGroup label="Rubi-Ka Reflects" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RKReflectSelection">
+        <RadioButton label="(Self) Rubi-Ka" value="0"/>
+        <RadioButton label="(Team) Rubi-Ka" value="1"/>
     </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

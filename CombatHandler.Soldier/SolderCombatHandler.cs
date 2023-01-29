@@ -80,24 +80,27 @@ namespace CombatHandler.Soldier
 
             _settings.AddVariable("Kits", true);
 
+            _settings.AddVariable("ShadowlandReflect", true);
             _settings.AddVariable("TeamArmorBuff", true);
-            _settings.AddVariable("MajorEvasionBuffs", false);
+            _settings.AddVariable("Evades", false);
+            _settings.AddVariable("InitBuff", false);
+
+
+            _settings.AddVariable("AAO", false);
             _settings.AddVariable("PistolTeam", false);
+            _settings.AddVariable("CompHeavyArt", false);
+            _settings.AddVariable("RiotControl", false);
 
-            //LE Proc
-            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
-            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.GrazeJugularVein);
-
-            _settings.AddVariable("ReflectSelection", (int)ReflectSelection.Shadowlands);
-            _settings.AddVariable("AAOSelection", (int)AAOSelection.Self);
-            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
-            _settings.AddVariable("RiotControlSelection", (int)RiotControlSelection.Self);
-            _settings.AddVariable("CompHeavyArtSelection", (int)CompHeavyArtSelection.None);
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
+
+            _settings.AddVariable("ReflectSelection", (int)ReflectSelection.RubiKaTeam);
 
             _settings.AddVariable("NotumGrenades", false);
 
             _settings.AddVariable("LegShot", false);
+
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.GrazeJugularVein);
 
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
 
@@ -131,22 +134,26 @@ namespace CombatHandler.Soldier
             RegisterSpellProcessor(RelevantNanos.Phalanx, Phalanx);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), MajorEvasionBuffs);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), Shotgun);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HeavyWeaponsBuffs).OrderByStackingOrder(), HeavyWeapon);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamArmorBuff);
 
             RegisterSpellProcessor(RelevantNanos.ArBuffs, AssaultRifle);
-            RegisterSpellProcessor(RelevantNanos.HeavyComp, HeavyCompBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeHeavyArtillery, HeavyCompBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RiotControl);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
+
+            //Team Buffs
+            RegisterSpellProcessor(RelevantNanos.Precognition, Evades);
 
             // Needs work for 2nd tanking Abmouth and Ayjous
             //if (TauntTools.CanTauntTool())
@@ -729,7 +736,7 @@ namespace CombatHandler.Soldier
 
         private bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AAOSelection.Team == (AAOSelection)_settings["AAOSelection"].AsInt32())
+            if (!IsSettingEnabled("AAO")) { return false; }
             {
                 if (Team.IsInTeam)
                 {
@@ -751,20 +758,7 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (AAOSelection.None == (AAOSelection)_settings["AAOSelection"].AsInt32()) { return false; }
-
             return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        protected bool MajorEvasionBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs) || !IsSettingEnabled("MajorEvasionBuffs")) { return false; }
-
-            if (Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-
         }
 
         protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -777,7 +771,7 @@ namespace CombatHandler.Soldier
 
         private bool RiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (RiotControlSelection.Team == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32())
+            if (!IsSettingEnabled("RiotControl")) { return false; }
             {
                 if (Team.IsInTeam)
                 {
@@ -799,43 +793,22 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (RiotControlSelection.None == (RiotControlSelection)_settings["RiotControlSelection"].AsInt32()) { return false; }
-
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+
+        protected bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
-            {
-                if (Team.IsInTeam)
-                {
-                    SimpleChar target = DynelManager.Players
-                        .Where(c => c.IsInLineOfSight
-                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && c.Health > 0
-                            && c.Profession != Profession.NanoTechnician
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
 
-                    if (target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = target;
-                        return true;
-                    }
-                }
-            }
-
-            if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
+            if (IsSettingEnabled("InitBuff"))
+                return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CompHeavyArtSelection.Team == (CompHeavyArtSelection)_settings["CompHeavyArtSelection"].AsInt32())
+            if (IsSettingEnabled("CompHeavyArt"))
             {
                 if (Team.IsInTeam)
                 {
@@ -861,8 +834,6 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (CompHeavyArtSelection.None == (CompHeavyArtSelection)_settings["CompHeavyArtSelection"].AsInt32()) { return false; }
-
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
                                 || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun)
                                 || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade);
@@ -882,7 +853,12 @@ namespace CombatHandler.Soldier
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
         }
+        private bool SLReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ShadowlandReflect")) { return false; }
 
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
         private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ReflectSelection.RubiKa == (ReflectSelection)_settings["ReflectSelection"].AsInt32())
@@ -896,6 +872,8 @@ namespace CombatHandler.Soldier
 
         private bool Phalanx(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("TeamArmorBuff")) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Contains(162357)) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
@@ -903,14 +881,8 @@ namespace CombatHandler.Soldier
 
         protected bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TeamArmorBuff")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool SLReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ReflectSelection.Shadowlands != (ReflectSelection)_settings["ReflectSelection"].AsInt32()) { return false; }
+            if (IsSettingEnabled("TeamArmorBuff"))
+                return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -992,6 +964,19 @@ namespace CombatHandler.Soldier
 
         #endregion
 
+        #region Team Buffs
+        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum()) { return false; }
+
+            if (IsSettingEnabled("Evades"))
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return false;
+        }
+
+        #endregion
+
         #region Misc
 
         private bool HeavyCompWeaponChecks(SimpleChar _target)
@@ -1004,24 +989,9 @@ namespace CombatHandler.Soldier
 
         public enum ReflectSelection
         {
-            RubiKa, RubiKaTeam, Shadowlands
+            RubiKa, RubiKaTeam
         }
-        public enum RiotControlSelection
-        {
-            None, Self, Team
-        }
-        public enum AAOSelection
-        {
-            None, Self, Team
-        }
-        public enum InitBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum CompHeavyArtSelection
-        {
-            None, Self, Team
-        }
+
         public enum SingleTauntsSelection
         {
             None, Target, Area
@@ -1043,8 +1013,9 @@ namespace CombatHandler.Soldier
             public static readonly int[] TauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
             29218, 100205, 100206, 100208, 29228};
             public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211 };
-            public const int HeavyComp = 269482;
+            public const int CompositeHeavyArtillery = 269482;
             public const int Phalanx = 29245;
+            public const int Precognition = 29247;
             public static readonly int[] ArBuffs = { 275027, 203119, 29220, 203121 };
         }
 

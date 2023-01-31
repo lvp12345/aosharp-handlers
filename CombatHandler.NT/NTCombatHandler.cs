@@ -40,6 +40,8 @@ namespace CombatHandler.NanoTechnician
         private static View _nukeView;
         private static View _perkView;
 
+        private static SimpleChar _drainTarget;
+
         private static double _ncuUpdateTime;
 
         public NTCombatHandler(string pluginDir) : base(pluginDir)
@@ -72,10 +74,10 @@ namespace CombatHandler.NanoTechnician
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("DeTaunt", false);
 
-            _settings.AddVariable("SharpObjects", true);
-            _settings.AddVariable("Grenades", true);
+            _settings.AddVariable("IllusionistSelection", false);
+            _settings.AddVariable("NotumGrafttSelection", false);
 
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
@@ -90,11 +92,17 @@ namespace CombatHandler.NanoTechnician
 
             _settings.AddVariable("NanoHOTTeam", false);
             _settings.AddVariable("CostTeam", false);
+            _settings.AddVariable("AbsorbACBuff", false);
+            _settings.AddVariable("Evades", false);
+            _settings.AddVariable("NFRangeBuff", false);
+
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ThermalReprieve);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.OptimizedLibrary);
 
             _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
+            _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
+            _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
 
             _settings.AddVariable("AOESelection", (int)AOESelection.None);
 
@@ -116,6 +124,8 @@ namespace CombatHandler.NanoTechnician
 
             RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.Low);
 
+            // DeTaunt
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
@@ -125,15 +135,19 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(RelevantNanos.NanobotShelter, GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDamageMultiplierBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), GlobalGenericTeamBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), NFRangeBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericTeamBuffExclusion);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHOT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), CycleAbsorbs);
+
+            //Team Buffs
+            RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
+            RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
 
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDOTNuke, CombatActionPriority.Medium);
@@ -146,6 +160,14 @@ namespace CombatHandler.NanoTechnician
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
             RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist);
+
+            //Items
+            RegisterItemProcessor(RelevantNotum.NotumItem, NotumItem);
+            RegisterItemProcessor(RelevantWill.WilloftheIllusionist, RelevantWill.WilloftheIllusionist, Illusionist);
+
 
             PluginDirectory = pluginDir;
 
@@ -841,6 +863,55 @@ namespace CombatHandler.NanoTechnician
 
         #endregion
 
+        #region Debuffs
+
+        private bool HaloNanoDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HaloSelection.None == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return false; }
+
+            if (HaloSelection.Target != (HaloSelection)_settings["HaloSelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (HaloSelection.Boss != (HaloSelection)_settings["HaloSelection"].AsInt32())
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+        }
+
+
+        private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
+
+            if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+            if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+
+
+            if (!_drainTarget.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
+        }
+
+
+
+        #endregion
+
         #region Perks
 
         private bool FlimFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -909,6 +980,58 @@ namespace CombatHandler.NanoTechnician
 
         #endregion
 
+        #region Team Buffs
+
+        protected bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("AbsorbACBuff")) 
+                     return GenericTeamBuff(spell, ref actionTarget);
+
+            return false;   
+        }
+
+        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum()) { return false; }
+
+            if (IsSettingEnabled("Evades"))
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return false;
+        }
+
+        private bool NFRangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("NFRangeBuff"))
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Items
+
+        protected bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("NotumGrafttSelection")) { return false; }
+            if (DynelManager.LocalPlayer.NanoPercent < 50) { return true; }
+
+            return false;
+        }
+
+        private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("IllusionistSelection")) { return false; }
+            if (fightingtarget?.MaxHealth > 1000000) { return true; }
+
+            return false;
+
+        }
+
+
+        #endregion
+
         #region Misc
 
         public enum ProcType1Selection
@@ -924,7 +1047,14 @@ namespace CombatHandler.NanoTechnician
         {
             None, Target, AOE
         }
-
+        public enum HaloSelection
+        {
+            None, Target, Boss
+        }
+        public enum NanoResistSelection
+        {
+            None, Target, Boss
+        }
         public enum AOESelection
         {
             None, Normal, VE
@@ -937,12 +1067,13 @@ namespace CombatHandler.NanoTechnician
             public const int Garuk = 275692;
             public const int PierceReflect = 266287;
             public const int VolcanicEruption = 28638;
+            public const int DarkMovement = 28603;
             public const int BioCocoon = 209802;
             public static readonly int[] AOENukes = { 266293, 28638,
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };
             public const int SuperiorFleetingImmunity = 273386;
-            public static readonly Spell[] AbsortAcTargetBuffs = Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder().Where(spell => spell.Id != SuperiorFleetingImmunity).ToArray();
+            public static readonly int[] AbsorbACBuff = { 270356, 117676, 117675, 117677, 117678, 117679 };
             public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
             public static readonly int[] SingleTargetNukes = { 218168, 218164, 218162, 218160, 218158, 218156, 218154, 218152, 218150, 
                 218148, 218146, 218144, 218142, 218140, 218138, 218136, 269473, 218134, 201935, 202262, 201933, 218132, 28618, 218124, 218130, 
@@ -960,6 +1091,19 @@ namespace CombatHandler.NanoTechnician
             public static readonly int[] NanobotShelter = { 273388, 263265 };
             public static readonly int CompositeAttribute = 223372;
             public static readonly int CompositeNano = 223380;
+        }
+
+        private static class RelevantNotum
+        {
+            public static readonly int[] NotumItem = { 204649, 305513 };
+
+        }
+
+        private static class RelevantWill
+        {
+
+            public const int WilloftheIllusionist = 274717;
+
         }
 
         #endregion

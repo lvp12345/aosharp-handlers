@@ -244,7 +244,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, 
+            RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200,
             RelevantGenericItems.HealthAndNanoStim400, }, HealthAndNanoStim, CombatActionPriority.High);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.PremSitKit, RelevantGenericItems.AreteSitKit, RelevantGenericItems.SitKit1,
@@ -290,7 +290,6 @@ namespace CombatHandler.Generic
 
             Team.TeamRequest += Team_TeamRequest;
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
-            //Network.N3MessageSent += Network_N3MessageSent;
 
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
@@ -793,9 +792,11 @@ namespace CombatHandler.Generic
         #region Extensions
 
         #region Comps
+
         protected bool CompositeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Composites") || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (!IsSettingEnabled("Composites") || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)
+                || fightingTarget != null) { return false; }
 
             if (SpellChecksPlayer(spell, spell.Nanoline))
             {
@@ -809,10 +810,11 @@ namespace CombatHandler.Generic
 
         protected bool CompositeBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Composites") || IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return CompositeBuff(spell, fightingTarget, ref actionTarget);
         }
+
         #endregion
 
         #region Buffs
@@ -866,19 +868,13 @@ namespace CombatHandler.Generic
 
         #region Non Combat
 
-        protected bool GlobalGenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return GenericBuff(spell, ref actionTarget);
-        }
+        protected bool GlobalGenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericTeamBuff(spell, ref actionTarget);
 
-        protected bool GlobalGenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
+        protected bool GlobalGenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericBuff(spell, ref actionTarget);
 
         protected bool GenericBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -1233,7 +1229,7 @@ namespace CombatHandler.Generic
 
         private bool FreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                 || (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
                 && !DynelManager.LocalPlayer.Buffs.Contains(258231))) { return false; }
 
@@ -1435,7 +1431,7 @@ namespace CombatHandler.Generic
             //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             //}
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > StrengthAbsorbsItemPercentage
@@ -1446,7 +1442,7 @@ namespace CombatHandler.Generic
 
         private bool AssaultClass(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > DuckAbsorbsItemPercentage
@@ -1470,7 +1466,7 @@ namespace CombatHandler.Generic
             //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             //}
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
@@ -1496,7 +1492,7 @@ namespace CombatHandler.Generic
             //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
             //}
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
@@ -1532,7 +1528,7 @@ namespace CombatHandler.Generic
 
             if (!petData.ContainsKey(spell.Id)) { return false; }
 
-            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) 
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell))
             {
                 if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
 
@@ -1610,7 +1606,7 @@ namespace CombatHandler.Generic
 
                 if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
                     && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
-                        pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
             }
         }
 
@@ -1874,71 +1870,6 @@ namespace CombatHandler.Generic
             }
         }
 
-        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
-        //{
-        //    if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
-
-        //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
-
-        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
-        //    {
-        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
-        //        IPCChannel.Broadcast(new TargetMessage()
-        //        {
-        //            Target = lookAtMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.Attack)
-        //    {
-        //        AttackMessage attackMsg = (AttackMessage)n3Msg;
-        //        IPCChannel.Broadcast(new AttackIPCMessage()
-        //        {
-        //            Target = attackMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.StopFight)
-        //    {
-        //        StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
-        //        IPCChannel.Broadcast(new StopAttackIPCMessage());
-        //    }
-        //}
-
-        //public static void OnStopAttackMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    DynelManager.LocalPlayer.StopAttack();
-        //}
-
-        //public static void OnTargetMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    TargetMessage targetMsg = (TargetMessage)msg;
-        //    Targeting.SetTarget(targetMsg.Target);
-        //}
-
-        //public static void OnAttackMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
-        //    Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
-        //    DynelManager.LocalPlayer.Attack(targetDynel, true);
-        //}
-
         public static bool IsRaidEnabled(string[] param)
         {
             return param.Length > 0 && "raid".Equals(param[0]);
@@ -2107,7 +2038,7 @@ namespace CombatHandler.Generic
 
         public static void Team_TeamRequest(object s, TeamRequestEventArgs e)
         {
-            if (SettingsController.IsCharacterRegistered(e.Requester) 
+            if (SettingsController.IsCharacterRegistered(e.Requester)
                 && DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(2720.0f, 24.9f, 3329.9f)) > 1f)
                 e.Accept();
         }

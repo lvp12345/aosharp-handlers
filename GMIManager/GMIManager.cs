@@ -404,7 +404,7 @@ namespace GMIManager
                     _initStart = false;
                 }
 
-                if (!_initStart 
+                if (!_initStart
                     && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
                     && Time.NormalTime > _timeOut + 340)
                 {
@@ -443,6 +443,7 @@ namespace GMIManager
                     && Time.NormalTime > _gmiUpdateTimer + 2.5)
                 {
                     RequestGMIInventory();
+
                     _gmiUpdateTimer = Time.NormalTime;
                 }
 
@@ -473,7 +474,7 @@ namespace GMIManager
                                 _init = true;
                             }
 
-                            if (_mailId > 0 
+                            if (_mailId > 0
                                 && _initMarketCredits
                                 && _queuedCash < (_maxMarketCredits - _maxCredits))
                             {
@@ -499,7 +500,7 @@ namespace GMIManager
                                 _mailId = 0;
                                 ReadMail(0);
                             }
-                            else 
+                            else
                             {
                                 ReadMail(0);
                             }
@@ -525,7 +526,7 @@ namespace GMIManager
 
                 if (gMIBuyOrdersEndPriceInput != null && !string.IsNullOrEmpty(gMIBuyOrdersEndPriceInput.Text))
                 {
-                    if (long.TryParse(gMIBuyOrdersEndPriceInput.Text, out long gMIBuyOrdersEndPriceValue) 
+                    if (long.TryParse(gMIBuyOrdersEndPriceInput.Text, out long gMIBuyOrdersEndPriceValue)
                         && Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice != gMIBuyOrdersEndPriceValue)
                     {
                         Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice = gMIBuyOrdersEndPriceValue;

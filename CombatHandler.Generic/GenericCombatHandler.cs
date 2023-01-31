@@ -293,7 +293,6 @@ namespace CombatHandler.Generic
 
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
-            Chat.RegisterCommand("disband", DisbandCommand);
             Chat.RegisterCommand("convert", RaidCommand);
         }
 
@@ -1976,12 +1975,6 @@ namespace CombatHandler.Generic
             Team.Leave();
         }
 
-        public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            Team.Disband();
-            IPCChannel.Broadcast(new DisbandMessage());
-        }
-
         public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
         {
             if (Team.IsLeader)
@@ -1993,7 +1986,6 @@ namespace CombatHandler.Generic
         public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
         {
             Team.Disband();
-            IPCChannel.Broadcast(new DisbandMessage());
             Task.Factory.StartNew(
                 async () =>
                 {

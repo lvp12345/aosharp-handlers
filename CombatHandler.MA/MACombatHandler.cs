@@ -86,11 +86,16 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
             _settings.AddVariable("SingleTauntSelection", (int)SingleTauntSelection.None);
-            _settings.AddVariable("EvadesSelection", (int)EvadesSelection.Self);
+
+            _settings.AddVariable("EvadesSelection", false);
+            _settings.AddVariable("ArmorBuffSelection", (int)ArmorBuffSelection.None);
+            _settings.AddVariable("CritBuffSelection", (int)CritBuffSelection.None);
+            
 
             _settings.AddVariable("Zazen", false);
 
             _settings.AddVariable("ShortDamage", false);
+            _settings.AddVariable("RunSpeed", false);
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
@@ -116,10 +121,10 @@ namespace CombatHandler.MartialArtist
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).Where(c => c.Id != RelevantNanos.ReduceInertia).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), SelfCrit);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
@@ -137,7 +142,7 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), RunSpeed);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).Where(s => s.Id != 28879).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).Where(s => s.Id != 28879).OrderByStackingOrder(), ArmorBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistZazenStance).OrderByStackingOrder(), ZazenStance);
 
@@ -843,12 +848,6 @@ namespace CombatHandler.MartialArtist
                     actionTarget.Target = mob;
                     return true;
                 }
-                else if (fightingTarget != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
             }
 
             if (SingleTauntSelection.Target == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
@@ -864,27 +863,68 @@ namespace CombatHandler.MartialArtist
             return false;
         }
 
-        protected bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-        }
-
         protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
-            if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
+            if (IsSettingEnabled("Evades"))
                 return GenericTeamBuff(spell, ref actionTarget);
 
-            if (EvadesSelection.Self == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
+            return false;
+        }
+
+        protected bool ArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (spell.Nanoline == NanoLine.ArmorBuff) { return false; }
+
+            if (ArmorBuffSelection.None == (ArmorBuffSelection)_settings["ArmorBuffSelection"].AsInt32()) { return false; }
+
+            if (ArmorBuffSelection.Self == (ArmorBuffSelection)_settings["ArmorBuffSelection"].AsInt32())
+                return Buff(spell, spell.Nanoline, ref actionTarget);
+
+            if (ArmorBuffSelection.Team == (ArmorBuffSelection)_settings["ArmorBuffSelection"].AsInt32())
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return false;
+        }
+
+        protected bool SelfCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+
+            if (CritBuffSelection.None == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32()) { return false; }
+
+            if (CritBuffSelection.Self == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32())
                 return Buff(spell, spell.Nanoline, ref actionTarget);
 
             return false;
         }
 
+        protected bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (CritBuffSelection.Team == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32())
+            return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+            return false;
+        }
+
+
+        //protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsInsideInnerSanctum()) { return false; }
+
+        //    if (EvadesSelection.Team == (EvadesSelection)_settings["EvadesSelection"].AsInt32())
+        //        return GenericTeamBuff(spell, ref actionTarget);
+
+        //    if (EvadesSelection.None == (EvadesSelection)_settings["EvadesSelection"].AsInt32()) { return false; }
+
+        //    return Buff(spell, spell.Nanoline, ref actionTarget);
+        //}
+
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            if (!IsSettingEnabled("RunSpeed")) { return false; }
+
+            return Buff(spell, NanoLine.RunspeedBuffs, ref actionTarget);
         }
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -912,6 +952,7 @@ namespace CombatHandler.MartialArtist
         #endregion
 
         #region Misc
+
 
         private static class RelevantNanos
         {
@@ -956,10 +997,17 @@ namespace CombatHandler.MartialArtist
         {
             Melee, Fire, Energy, Chemical
         }
-        public enum EvadesSelection
+
+        public enum ArmorBuffSelection
         {
             None, Self, Team
         }
+
+        public enum CritBuffSelection
+        {
+            None, Self, Team
+        }
+        
 
         #endregion
     }

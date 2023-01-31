@@ -102,6 +102,9 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.WrongWindow);
 
             _settings.AddVariable("NanoDeltaTeam", false);
+            _settings.AddVariable("PistolTeam", false);
+            _settings.AddVariable("NeuronalStimulatorTeam", false);
+            _settings.AddVariable("CutRedTape", false);
 
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
@@ -111,10 +114,12 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("MastersBidding", false);
 
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
+            _settings.AddVariable("RedTapeSelection", (int)RedTapeSelection.None);
+            _settings.AddVariable("IntensifyStressSelection", (int)IntensifyStressSelection.None);
 
-            _settings.AddVariable("DivertTrimmer", false);
-            _settings.AddVariable("TauntTrimmer", false);
-            _settings.AddVariable("AggDefTrimmer", false);
+            _settings.AddVariable("DivertTrimmer", true);
+            _settings.AddVariable("TauntTrimmer", true);
+            _settings.AddVariable("AggDefTrimmer", true);
 
             _settings.AddVariable("Nuking", false);
             _settings.AddVariable("Root", false);
@@ -146,12 +151,12 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericTeamBuff);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
-            RegisterSpellProcessor(RelevantNanos.PistolBuffs, Pistol);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.PistolBuffs, PistolTeam);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), PsyIntBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), CutRedTape);
 
             //Buff Aura
             RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
@@ -203,6 +208,14 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.DroidDamageMatrix, DroidMatrixBuff);
             RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix, DroidMatrixBuff);
 
+            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, PetTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, PetSupportTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetSupportTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetSupportTargetBuff);
+
+
             //Pet Spawners
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), CarloSpawner);
             RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), RobotSpawner);
@@ -210,9 +223,9 @@ namespace CombatHandler.Bureaucrat
             //Pet Trimmers
             ResetTrimmers();
 
-            RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
-            RegisterItemProcessor(new int[] { RelevantTrimmers.IncreaseAggressivenessLow, RelevantTrimmers.IncreaseAggressivenessHigh }, PetAggressiveTrimmer);
-            RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToOffenseLow, RelevantTrimmers.DivertEnergyToOffenseHigh }, PetDivertOffTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness, PetAggressiveTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
 
 
             //RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
@@ -1091,6 +1104,30 @@ namespace CombatHandler.Bureaucrat
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        private bool PsyIntBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("NeuronalStimulatorTeam"))
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool CutRedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("CutRedTape")) 
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
         protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || !IsSettingEnabled("MastersBidding")) { return false; }
@@ -1158,28 +1195,60 @@ namespace CombatHandler.Bureaucrat
 
         private bool IntensifyStress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget?.MaxHealth < 1000000) { return false; }
+            if (IntensifyStressSelection.None == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()) { return false; }
 
-            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (IntensifyStressSelection.Boss == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (IntensifyStressSelection.Target == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool RedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget?.MaxHealth < 1000000) { return false; }
+            if (RedTapeSelection.None == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()) { return false; }
 
-            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (RedTapeSelection.Boss == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (RedTapeSelection.Area == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
+
+            if (RedTapeSelection.Target == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InitDebuffSelection.None == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()) { return false; }
 
-            if (spell.Nanoline == NanoLine.GeneralRadiationACDebuff || spell.Nanoline == NanoLine.GeneralProjectileACDebuff)
+            if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
             {
-                if (fightingTarget != null)
-                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-                return false;
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
             if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
@@ -1340,6 +1409,11 @@ namespace CombatHandler.Bureaucrat
         private bool PetTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool PetSupportTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         protected bool DroidMatrixBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1514,6 +1588,9 @@ namespace CombatHandler.Bureaucrat
             public const int MastersBidding = 268171;
             public const int PuissantVoidInertia = 224129;
             public const int ShacklesofObedience = 82463;
+            public const int CompositeAttribute = 223372;
+            public const int CompositeMartialProwess = 302158;
+            public const int CompositeMelee = 223360;
             public const int PetWarp = 209488;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
@@ -1548,18 +1625,26 @@ namespace CombatHandler.Bureaucrat
 
         private static class RelevantTrimmers
         {
-            public const int IncreaseAggressivenessLow = 154940;
-            public const int IncreaseAggressivenessHigh = 154940;
-            public const int DivertEnergyToOffenseLow = 88377;
-            public const int DivertEnergyToOffenseHigh = 88378;
-            public const int PositiveAggressiveDefensive = 88384;
-            public const int DivertEnergyToHitpointsLow = 88381;
-            public const int DivertEnergyToHitpointsHigh = 88382;
+
+            public static readonly int[] IncreaseAggressiveness = { 154939, 154940 };
+            public static readonly int[] DivertEnergyToOffense = { 88377, 88378 };
+            public static readonly int[] PositiveAggressiveDefensive = { 88383, 88384 };
+            public static readonly int[] DivertEnergyToHitpoints = { 88381, 88382 };
+
         }
 
         public enum InitDebuffSelection
         {
-            None, Target, Area
+            None, Target, Area, Boss
+        }
+        public enum RedTapeSelection
+        {
+            None, Target, Area, Boss
+        }
+
+        public enum IntensifyStressSelection
+        {
+            None, Target, Area, Boss
         }
 
         public enum ProcType1Selection

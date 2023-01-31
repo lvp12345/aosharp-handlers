@@ -6,10 +6,20 @@
       <RadioButton label="None" value="0"/>
       <RadioButton label="Target" value="1"/>
       <RadioButton label="Area" value="2"/>
+		<RadioButton label="Boss" value="3"/>
+	</OptionRadioButtonGroup>
+	<OptionRadioButtonGroup label="Nano Resistance" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoResistanceDebuff">
+		<RadioButton label="None" value="0"/>
+		<RadioButton label="Target" value="1"/>
+		<RadioButton label="Area" value="2"/>
+		<RadioButton label="Boss" value="3"/>
+	</OptionRadioButtonGroup>
+	<OptionRadioButtonGroup label="Nano Shutdown" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoShutdownDebuff">
+		<RadioButton label="None" value="0"/>
+		<RadioButton label="Target" value="1"/>
+		<RadioButton label="Area" value="2"/>
+		<RadioButton label="Boss" value="3"/>
     </OptionRadioButtonGroup>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Nano Resistance" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoResistanceDebuff" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Nano Shutdown" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NanoShutdownDebuff" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </BorderView>
 </root>

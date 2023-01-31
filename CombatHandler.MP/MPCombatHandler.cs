@@ -90,10 +90,11 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("DamageDebuffSelection", (int)DamageDebuffSelection.None);
 
             _settings.AddVariable("Cost", false);
-            _settings.AddVariable("CostTeam", false);
+            _settings.AddVariable("Evades", false);
+            _settings.AddVariable("PistolTeam", false);
 
-            _settings.AddVariable("NanoResistanceDebuff", false);
-            _settings.AddVariable("NanoShutdownDebuff", false);
+            _settings.AddVariable("NanoResistanceDebuff", (int)NanoResistanceDebuffSelection.None);
+            _settings.AddVariable("NanoShutdownDebuff", (int)NanoShutdownDebuffSelection.None);
 
             _settings.AddVariable("CompositesNanoSkills", false);
             _settings.AddVariable("CompositesNanoSkillsTeam", false);
@@ -136,12 +137,13 @@ namespace CombatHandler.Metaphysicist
             RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, DiffuseRage, CombatActionPriority.Low);
 
             //Self buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GenericTeamBuffExclusion);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Team buffs
             RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
+            RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
@@ -154,7 +156,7 @@ namespace CombatHandler.Metaphysicist
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifier);
             RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Pistol);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke, CombatActionPriority.Medium);
@@ -162,8 +164,8 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResistanceDebuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(), NanoShutdownDebuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResistanceDebuff, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(), NanoShutdownDebuff, CombatActionPriority.High);
 
             //Pets
             RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
@@ -175,7 +177,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(RelevantNanos.InducedApathy, InducedApathy);
 
-            RegisterSpellProcessor(RelevantNanos.EvadeBuff, EvasionPet);
+            RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, EvasionPet);
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
             RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetSeed);
@@ -887,16 +889,64 @@ namespace CombatHandler.Metaphysicist
 
         private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledTargetDebuff("NanoShutdownDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (NanoShutdownDebuffSelection.None == (NanoShutdownDebuffSelection)_settings["NanoShutdownDebuff"].AsInt32()) { return false; }
+
+            if (NanoShutdownDebuffSelection.Area == (NanoShutdownDebuffSelection)_settings["NanoShutdownDebuff"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
+
+            if (NanoShutdownDebuffSelection.Target == (NanoShutdownDebuffSelection)_settings["NanoShutdownDebuff"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (NanoShutdownDebuffSelection.Boss == (NanoShutdownDebuffSelection)_settings["NanoShutdownDebuff"].AsInt32()
+                 && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return ToggledTargetDebuff("NanoResistanceDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (NanoResistanceDebuffSelection.None == (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32()) { return false; }
+
+            if (NanoResistanceDebuffSelection.Area == (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
+
+            if (NanoResistanceDebuffSelection.Target == (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (NanoResistanceDebuffSelection.Boss == (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32()
+                 && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DamageDebuffSelection.None == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32()) { return false; }
+
             if (DamageDebuffSelection.Area == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32())
                 return AreaDebuff(spell, ref actionTarget);
 
@@ -908,12 +958,24 @@ namespace CombatHandler.Metaphysicist
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
+            if (DamageDebuffSelection.Boss == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32()
+                 && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
             return false;
         }
 
         #endregion
 
         #region Pets
+
+        #endregion
 
         #region Warp
 
@@ -1077,6 +1139,25 @@ namespace CombatHandler.Metaphysicist
 
         #endregion
 
+        #region Team Buffs
+        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsInsideInnerSanctum()) { return false; }
+
+            if (IsSettingEnabled("Evades"))
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return false;
+        }
+
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
         #endregion
 
         #region Misc
@@ -1218,7 +1299,8 @@ namespace CombatHandler.Metaphysicist
         {
             public const int MastersBidding = 268171;
             public const int InducedApathy = 301888;
-            public const int EvadeBuff = 29272;
+            public const int AnticipationofRetaliation = 29272;
+            public const int ImprovedAnticipationofRetaliation = 302188;
             public const int PetWarp = 209488;
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
@@ -1256,7 +1338,15 @@ namespace CombatHandler.Metaphysicist
         }
         public enum DamageDebuffSelection
         {
-            None, Target, Area
+            None, Target, Area, Boss
+        }
+        public enum NanoShutdownDebuffSelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum NanoResistanceDebuffSelection
+        {
+            None, Target, Area, Boss
         }
         public enum InterruptSelection
         {
@@ -1266,6 +1356,8 @@ namespace CombatHandler.Metaphysicist
         {
             Self, Team
         }
+
+
         public enum ProcType1Selection
         {
             NanobotContingentArrest, AnticipatedEvasion, ThoughtfulMeans, RegainFocus, EconomicNanobotUse

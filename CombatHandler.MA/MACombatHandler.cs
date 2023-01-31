@@ -89,7 +89,7 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("EvadesSelection", false);
             _settings.AddVariable("ArmorBuffSelection", (int)ArmorBuffSelection.None);
-            _settings.AddVariable("CritBuffSelection", (int)CritBuffSelection.None);
+            _settings.AddVariable("CritBuff", false);
             
 
             _settings.AddVariable("Zazen", false);
@@ -124,7 +124,7 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), SelfCrit);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
@@ -888,21 +888,11 @@ namespace CombatHandler.MartialArtist
             return false;
         }
 
-        protected bool SelfCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-
-            if (CritBuffSelection.None == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32()) { return false; }
-
-            if (CritBuffSelection.Self == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32())
-                return Buff(spell, spell.Nanoline, ref actionTarget);
-
-            return false;
-        }
 
         protected bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (CritBuffSelection.Team == (CritBuffSelection)_settings["CritBuffSelection"].AsInt32())
-            return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+            if  (IsSettingEnabled("CritBuff"))
+                    return TeamBuff(spell, spell.Nanoline, ref actionTarget);
 
             return false;
         }

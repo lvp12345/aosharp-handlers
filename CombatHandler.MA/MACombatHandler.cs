@@ -75,6 +75,8 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
+            _settings.AddVariable("FlurryOfBlows", true);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
@@ -159,6 +161,8 @@ namespace CombatHandler.MartialArtist
             RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
             RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
             RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+
+            RegisterItemProcessor(RelevantItems.FlurryOfBlows, FlurryOfBlows);
 
             PluginDirectory = pluginDir;
 
@@ -786,6 +790,18 @@ namespace CombatHandler.MartialArtist
             return true;
         }
 
+        private bool FlurryOfBlows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("FlurryOfBlows")) { return false; }
+
+            if (fightingtarget == null) { return false; }
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.AggDef)) { return false; }
+            
+
+            return true; 
+        }
+
         #endregion
 
         #region Buffs
@@ -963,6 +979,7 @@ namespace CombatHandler.MartialArtist
             public const int TouchOfSaiFung = 275018;
             public const int Sappo = 267525;
             public const int TreeOfEnlightenment = 204607;
+            public static readonly int[] FlurryOfBlows = { 85907, 85908 };
         }
 
         public enum HealSelection

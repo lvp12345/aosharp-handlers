@@ -805,7 +805,7 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("Composites") || IsInsideInnerSanctum()) { return false; }
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return GenericBuff(spell, ref actionTarget); ;
         }
         #endregion
 

@@ -77,8 +77,6 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("MASASelection", (int)MASASelection.Sappo);
 
-           // _settings.AddVariable("FlurryOfBlows", true);
-
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
@@ -170,7 +168,6 @@ namespace CombatHandler.MartialArtist
             RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
             RegisterItemProcessor(RelevantItems.StingoftheViper, RelevantItems.StingoftheViper, StingoftheViper);
             RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
-            //RegisterItemProcessor(RelevantItems.FlurryOfBlowsLow, RelevantItems.FlurryOfBlowsHigh, FlurryOfBlows, CombatActionPriority.High);
 
 
 
@@ -802,17 +799,6 @@ namespace CombatHandler.MartialArtist
             return true;
         }
 
-        //private bool FlurryOfBlows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("FlurryOfBlows")) { return false; }
-
-        //    if (fightingtarget == null) { return false; }
-
-        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.AggDef)) { return false; }
-
-        //    return true;
-        //}
-
         private bool MartialArtsTeamHealAttack(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingtarget == null) { return false; }
@@ -1008,8 +994,6 @@ namespace CombatHandler.MartialArtist
             public const int StingoftheViper = 305542;
             public const int Sappo = 267525;
             public const int TreeOfEnlightenment = 204607;
-            //public const int FlurryOfBlowsLow = 85907;
-            //public const int FlurryOfBlowsHigh = 85908;
         }
 
         public enum HealSelection

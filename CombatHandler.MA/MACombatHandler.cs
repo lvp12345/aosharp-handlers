@@ -87,6 +87,8 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
             _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
+            _settings.AddVariable("SelfEvadeSelection", (int)SelfEvadeSelection.Target);
+
             _settings.AddVariable("SingleTauntSelection", (int)SingleTauntSelection.None);
 
             _settings.AddVariable("Evades", false);
@@ -131,7 +133,10 @@ namespace CombatHandler.MartialArtist
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.LimboMastery, GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(RelevantNanos.PercentEvades, PercentEvades);
+            RegisterSpellProcessor(RelevantNanos.TargetEvades, TargetEvades);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(), GlobalGenericBuff);
@@ -140,7 +145,6 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).Where(s => s.Id != 28879).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RiposteBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistZazenStance).OrderByStackingOrder(), ZazenStance);
@@ -154,7 +158,7 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.ReduceInertia, Evades);
+            RegisterSpellProcessor(RelevantNanos.TargetEvades, Evades);
             RegisterSpellProcessor(RelevantNanos.LimboMastery, LimboMastery);
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
             RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs, TeamArmor);
@@ -884,8 +888,6 @@ namespace CombatHandler.MartialArtist
             return false;
         }
 
-      
-
         protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("RunSpeed")) { return false; }
@@ -913,6 +915,20 @@ namespace CombatHandler.MartialArtist
             if (fightingTarget == null || fightingTarget?.HealthPercent <= 50) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        protected bool PercentEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (SelfEvadeSelection.Percent != (SelfEvadeSelection)_settings["SelfEvadeSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
+        }
+
+        protected bool TargetEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (SelfEvadeSelection.Target != (SelfEvadeSelection)_settings["SelfEvadeSelection"].AsInt32()) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
         }
 
         #endregion
@@ -961,7 +977,8 @@ namespace CombatHandler.MartialArtist
         {
             public const int FistsOfTheWinterFlame = 269470;
             public const int LimboMastery = 28894;
-            public const int ReduceInertia = 28903;
+            public static int[] PercentEvades = {218060, 218062, 218064, 218066, 218068, 218070 };
+            public static int[] TargetEvades = { 28872, 28878, 28903};
             public static int[] TeamCritBuffs = { 160574, 160575, 160576 };
             public static int[] TargetArmorBuffs = { 75350, 75349, 75348, 28905, 75346, 75347, 75345, 75344, 28907, 75343, 75341, 75342, 75340, 75339, 75337, 28869, 75338, 75336, 75351 };
             public static int[] Taunts = { 301936, 100214, 100216, 100215, 100217, 28866 };
@@ -1009,6 +1026,10 @@ namespace CombatHandler.MartialArtist
         {
             Melee, Fire, Energy, Chemical
         }
+        public enum SelfEvadeSelection
+        {
+            Percent, Target
+    }
 
         public enum ArmorBuffSelection
         {

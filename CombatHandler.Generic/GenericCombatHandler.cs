@@ -213,7 +213,8 @@ namespace CombatHandler.Generic
 
             RegisterItemProcessor(RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, Coffee);
 
-            RegisterItemProcessor(RelevantGenericItems.FlurryOfBlowsLow, RelevantGenericItems.FlurryOfBlowsHigh, DamageItem);
+            RegisterItemProcessor(RelevantGenericItems.FlurryOfBlowsHigh, RelevantGenericItems.FlurryOfBlowsHigh, DamageItem);
+            RegisterItemProcessor(RelevantGenericItems.FlurryOfBlowsLow, RelevantGenericItems.FlurryOfBlowsLow, DamageItem);
 
             RegisterItemProcessor(RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.StrengthOfTheImmortal, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.MightOfTheRevenant, DamageItem);

@@ -77,6 +77,8 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("MASASelection", (int)MASASelection.Sappo);
 
+           // _settings.AddVariable("FlurryOfBlows", true);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
@@ -135,7 +137,6 @@ namespace CombatHandler.MartialArtist
             RegisterSpellProcessor(RelevantNanos.LimboMastery, GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.PercentEvades, PercentEvades);
             RegisterSpellProcessor(RelevantNanos.TargetEvades, TargetEvades);
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(), GlobalGenericBuff);
@@ -169,8 +170,9 @@ namespace CombatHandler.MartialArtist
             RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
             RegisterItemProcessor(RelevantItems.StingoftheViper, RelevantItems.StingoftheViper, StingoftheViper);
             RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+            //RegisterItemProcessor(RelevantItems.FlurryOfBlowsLow, RelevantItems.FlurryOfBlowsHigh, FlurryOfBlows, CombatActionPriority.High);
 
-            
+
 
             PluginDirectory = pluginDir;
 
@@ -799,6 +801,17 @@ namespace CombatHandler.MartialArtist
 
             return true;
         }
+
+        //private bool FlurryOfBlows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("FlurryOfBlows")) { return false; }
+
+        //    if (fightingtarget == null) { return false; }
+
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.AggDef)) { return false; }
+
+        //    return true;
+        //}
 
         private bool MartialArtsTeamHealAttack(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

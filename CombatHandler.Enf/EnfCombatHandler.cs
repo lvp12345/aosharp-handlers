@@ -1017,12 +1017,12 @@ namespace CombatHandler.Enf
         }
 
 
-        private bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
 
-            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
+           if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }

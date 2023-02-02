@@ -295,6 +295,7 @@ namespace CombatHandler.Generic
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
             Chat.RegisterCommand("convert", RaidCommand);
+            Chat.RegisterCommand("disband", DisbandCommand);
         }
 
         public static Window[] _window => new Window[] { _perkWindow };
@@ -916,7 +917,6 @@ namespace CombatHandler.Generic
 
             if (target != null)
             {
-
                 if (spell.Nanoline == NanoLine.CriticalIncreaseBuff && target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
 
                 if (spell.Nanoline == NanoLine.RunspeedBuffs && target.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
@@ -1976,6 +1976,12 @@ namespace CombatHandler.Generic
             Team.Leave();
         }
 
+        public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            Team.Disband();
+            IPCChannel.Broadcast(new DisbandMessage());
+        }
+
         public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
         {
             if (Team.IsLeader)
@@ -1987,6 +1993,7 @@ namespace CombatHandler.Generic
         public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
         {
             Team.Disband();
+            IPCChannel.Broadcast(new DisbandMessage());
             Task.Factory.StartNew(
                 async () =>
                 {
@@ -2187,9 +2194,11 @@ namespace CombatHandler.Generic
             public const int InsightIntoSL = 268610;
             public static int[] IgnoreNanos = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
             public static int[] AAOTransfer = new[] { 301524, 301520, 267263, 267265 };
+            public static int[] KeeperStrStamAgiBuff = new[] { 211158, 211160, 211162, 273365 };
+
         }
 
-      
+
         public class PetSpellData
         {
             public int ShellId;

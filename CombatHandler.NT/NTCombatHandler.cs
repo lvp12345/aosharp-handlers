@@ -926,7 +926,6 @@ namespace CombatHandler.NanoTechnician
         #region DeTaunt
 
         private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
 

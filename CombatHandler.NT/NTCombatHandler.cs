@@ -125,7 +125,7 @@ namespace CombatHandler.NanoTechnician
             RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.Low);
 
             // DeTaunt
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
@@ -919,6 +919,35 @@ namespace CombatHandler.NanoTechnician
             if (!IsSettingEnabled("FlimFocus")) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region DeTaunt
+
+        private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
+
+            SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.FightingTarget != null
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
         }
 
         #endregion

@@ -123,7 +123,7 @@ namespace CombatHandler.Soldier
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             // DeTaunt
-            //RegisterSpellProcessor(RelevantNanos.Detaunt, DeTaunt);
+            RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
@@ -732,6 +732,35 @@ namespace CombatHandler.Soldier
 
         #endregion
 
+        #region DeTaunt
+
+        private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
+
+            SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.FightingTarget != null
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Buffs
 
         private bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1019,7 +1048,7 @@ namespace CombatHandler.Soldier
             public static readonly int[] SolDrainHeal = { 29241, 301897 };
             public static readonly int[] TauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
             29218, 100205, 100206, 100208, 29228};
-            public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211 };
+            public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211};
             public const int CompositeHeavyArtillery = 269482;
             public const int Phalanx = 29245;
             public const int Precognition = 29247;

@@ -235,6 +235,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantGenericItems.TearOfOedipus, RelevantGenericItems.TearOfOedipus, SharpObjects);
             RegisterItemProcessor(RelevantGenericItems.LavaCapsule, RelevantGenericItems.LavaCapsule, SharpObjects);
             RegisterItemProcessor(RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.KizzermoleGumboil, SharpObjects);
+            RegisterItemProcessor(RelevantGenericItems.FallenStar, RelevantGenericItems.FallenStar, SharpObjects);
 
             RegisterItemProcessor(RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh, Grenades);
 
@@ -2078,6 +2079,7 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.MeteoriteSpikes:
                 case RelevantGenericItems.LavaCapsule:
                 case RelevantGenericItems.KizzermoleGumboil:
+                case RelevantGenericItems.FallenStar:
                 case RelevantGenericItems.TearOfOedipus:
                     return Stat.SharpObject;
                 case RelevantGenericItems.SteamingHotCupOfEnhancedCoffee:
@@ -2131,6 +2133,7 @@ namespace CombatHandler.Generic
             public const int HSRLow = 164780;
             public const int HSRHigh = 164781;
             public const int KizzermoleGumboil = 245323;
+            public const int FallenStar = 244214;
             public const int TearOfOedipus = 244216;
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
             public const int DreadlochEnduranceBooster = 267168;

@@ -737,6 +737,8 @@ namespace CombatHandler.Soldier
         private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         //(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
             if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
 
             SimpleChar target = DynelManager.NPCs

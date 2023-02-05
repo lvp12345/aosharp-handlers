@@ -813,8 +813,6 @@ namespace CombatHandler.Agent
 
         #endregion
 
-        #region Buffs
-
         #region False Profs
 
         private bool FalseProfEnforcer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -892,10 +890,9 @@ namespace CombatHandler.Agent
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
-
-
         #endregion
 
+        #region Buffs
 
         private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -912,7 +909,7 @@ namespace CombatHandler.Agent
         }
         private bool DamageA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-return GenericTeamBuff(spell, ref actionTarget);
+        return GenericTeamBuff(spell, ref actionTarget);
         }
 
         private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -935,6 +932,17 @@ return GenericTeamBuff(spell, ref actionTarget);
             if (ProcSelection.Damage != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfSol.Contains(c.Id)) || !IsSettingEnabled("Buffing")) { return false; }
+
+            if (fightingtarget == null || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
+
+            return false;
         }
 
         #endregion
@@ -965,20 +973,6 @@ return GenericTeamBuff(spell, ref actionTarget);
         private bool EvasionDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return ToggledTargetDebuff("EvasionDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
-        #region False Profs
-        private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfSol.Contains(c.Id)) || !IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingtarget == null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
-
-            return false;
         }
 
         #endregion

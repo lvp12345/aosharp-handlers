@@ -977,7 +977,7 @@ namespace CombatHandler.Shade
             {
                 List<SimpleChar> teamMembersLowHp = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
-                    .Where(c => c.HealthPercent <= 80)
+                    .Where(c => c.HealthPercent <= 50)
                     .ToList();
 
                 if (teamMembersLowHp.Count >= 3)

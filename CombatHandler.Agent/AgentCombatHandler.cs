@@ -118,6 +118,10 @@ namespace CombatHandler.Agent
             RegisterPerkProcessor(PerkHash.LEProcAgentImprovedFocus, ImprovedFocus, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, BrokenAnkle, CombatActionPriority.Low);
 
+            //Healing
+            RegisterSpellProcessor(RelevantNanos.Healing, Healing, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.CompleteHealing, CompleteHealing, CombatActionPriority.High);
+
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AimedShotBuffs).OrderByStackingOrder(), GlobalGenericBuff);
@@ -129,9 +133,6 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcentrationCriticalLine).OrderByStackingOrder(), Concentration, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.DetauntProcs, DetauntProc);
             RegisterSpellProcessor(RelevantNanos.DOTProcs, DamageProc);
-
-            RegisterSpellProcessor(RelevantNanos.Healing, Healing, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.CompleteHealing, CompleteHealing, CombatActionPriority.High);
 
             //False Profs
             RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);

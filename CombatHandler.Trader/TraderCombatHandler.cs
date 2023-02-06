@@ -83,11 +83,11 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("DamageDrain", true);
             _settings.AddVariable("HealthDrain", false);
+            _settings.AddVariable("LEHealthDrain", false);
 
             _settings.AddVariable("Evades", false);
             _settings.AddVariable("UmbralWrangler", false);
 
-            //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DebtCollection);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.UnopenedLetter);
 
@@ -816,9 +816,26 @@ namespace CombatHandler.Trader
 
         #region Healing
 
+        //private bool LEHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    return FindMemberWithHealthBelow(60, spell, ref actionTarget);
+        //}
+
         private bool LEHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return FindMemberWithHealthBelow(60, spell, ref actionTarget);
+            if (fightingTarget == null || HealthDrainPercentage == 0 || !IsSettingEnabled("LEHealthDrain")) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= HealthDrainPercentage)
+            {
+                if (SpellChecksOther(spell, spell.Nanoline, fightingTarget))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

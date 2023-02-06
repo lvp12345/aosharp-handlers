@@ -88,7 +88,7 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("InitBuff", false);
 
             _settings.AddVariable("LEHealthDrain", false);
-            _settings.AddVariable("CompleteHealingLine", false);
+            _settings.AddVariable("CH", true);
 
             _settings.AddVariable("AAO", false);
             _settings.AddVariable("PistolTeam", false);
@@ -131,6 +131,7 @@ namespace CombatHandler.Soldier
 
             //Heals
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
@@ -813,6 +814,13 @@ namespace CombatHandler.Soldier
 
         #region Heals
 
+        private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
+
+            return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
+        }
+
         //private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         //{
         //    if (!IsSettingEnabled("Buffing")) { return false; }
@@ -841,6 +849,8 @@ namespace CombatHandler.Soldier
 
             return false;
         }
+
+
 
         #endregion
 

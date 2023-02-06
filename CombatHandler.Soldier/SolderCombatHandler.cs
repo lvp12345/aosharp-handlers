@@ -740,6 +740,7 @@ namespace CombatHandler.Soldier
             if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
 
             if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
+            if (!Team.IsInTeam) { return false; }
 
             SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)

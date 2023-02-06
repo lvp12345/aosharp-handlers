@@ -86,6 +86,8 @@ namespace CombatHandler.Fixer
 
             _settings.AddVariable("Evasion", false);
 
+            _settings.AddVariable("AOESnare", false);
+
             RegisterSettingsWindow("Fixer Handler", "FixerSettingsView.xml");
 
             //LE Proc
@@ -108,6 +110,8 @@ namespace CombatHandler.Fixer
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
+
+            //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), GlobalGenericBuff);
@@ -122,6 +126,10 @@ namespace CombatHandler.Fixer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDecrease);
             RegisterSpellProcessor(RelevantNanos.Grid, Grid);
             RegisterSpellProcessor(RelevantNanos.ShadowwebSpinner, ShadowwebSpinner);
+
+            //Root/Snare
+            RegisterSpellProcessor(RelevantNanos.SpinNanoweb, AOESnare, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.IntenseAgglutinativeNanoweb, Snare, CombatActionPriority.High);
 
             PluginDirectory = pluginDir;
 
@@ -728,7 +736,69 @@ namespace CombatHandler.Fixer
 
         #endregion
 
+        #region Snare
+
+        private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")
+                || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
+
+            SimpleChar target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && c.IsMoving
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && c.Name == "Alien Heavy Patroller")
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.Target = target;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool AOESnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")
+                || !IsSettingEnabled("AOESnare") || !CanCast(spell)) { return false; }
+
+            SimpleChar target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && IsMoving(c)
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && (c.Name == "Flaming Vengeance"
+                            || c.Name == "Hand of the Colonel"
+                            || c.Name == "Alien Seeker"))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.Target = target;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Misc
+
+        private static bool IsMoving(SimpleChar target)
+        {
+            if (Playfield.Identity.Instance == 4021)
+            {
+                return true;
+            }
+
+            return target.IsMoving;
+        }
 
         private void EquipBackArmor()
         {
@@ -758,6 +828,8 @@ namespace CombatHandler.Fixer
         {
             public const int GreaterPreservationMatrix = 275679;
             public const int SuperiorInsuranceHack = 273352;
+            public const int SpinNanoweb = 85216;
+            public const int IntenseAgglutinativeNanoweb = 223143;
             public static readonly int[] ShadowlandsRunspeed = { 223125, 223131, 223129, 215718, 223127, 272416, 272415, 272414, 272413, 272412 };
             public static readonly int[] RubiKaRunspeed = { 93132, 93126, 93127, 93128, 93129, 93130, 93131, 93125 };
             public static readonly int[] Evasion = { 275844, 29247, 28903, 28878, 28872, 218070, 218068, 218066,

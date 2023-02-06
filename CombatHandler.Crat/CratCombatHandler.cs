@@ -1265,6 +1265,10 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
+        #endregion
+
+        #region Root/Snare
+
         private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing")
@@ -1313,13 +1317,13 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-        #endregion
+            #endregion
 
-        #region Pets
+            #region Pets
 
-        #region Trimmers
+            #region Trimmers
 
-        protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+            protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 

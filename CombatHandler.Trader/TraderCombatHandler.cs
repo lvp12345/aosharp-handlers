@@ -816,24 +816,13 @@ namespace CombatHandler.Trader
 
         #region Healing
 
-        //private bool LEHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    return FindMemberWithHealthBelow(60, spell, ref actionTarget);
-        //}
-
         private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || HealthDrainPercentage == 0 || !IsSettingEnabled("LEHealthDrain")) { return false; }
+            if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= HealthDrainPercentage)
-            {
-                if (SpellChecksOther(spell, spell.Nanoline, fightingTarget))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
+            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return true; }
 
             return false;
         }

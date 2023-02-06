@@ -26,12 +26,14 @@ namespace CombatHandler.Soldier
         private static bool ToggleDebuffing = false;
 
         private static Window _buffWindow;
+        private static Window _healingWindow;
         private static Window _tauntWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
         private static Window _perkWindow;
 
         private static View _buffView;
+        private static View _healingView;
         private static View _tauntView;
         private static View _procView;
         private static View _itemView;
@@ -85,6 +87,8 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("Evades", false);
             _settings.AddVariable("InitBuff", false);
 
+            _settings.AddVariable("LEHealthDrain", false);
+            _settings.AddVariable("CompleteHealingLine", false);
 
             _settings.AddVariable("AAO", false);
             _settings.AddVariable("PistolTeam", false);
@@ -125,11 +129,14 @@ namespace CombatHandler.Soldier
             // DeTaunt
             RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);
 
+            //Heals
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal);
+
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => !c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflects);
-            RegisterSpellProcessor(RelevantNanos.SolDrainHeal, DrainHeal);
+            
             RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.Phalanx, Phalanx);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
@@ -239,6 +246,40 @@ namespace CombatHandler.Soldier
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "SoldierBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+            }
+        }
+        private void HandleHealingViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                //Cannot re-use the view, as crashes client. I don't know why.
+                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
+                _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierHealingView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "SoldierHealingView" }, _healingView);
+
+                window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
+
+                if (healInput != null)
+                    healInput.Text = $"{HealPercentage}";
+
+                if (healthDrainInput != null)
+                    healthDrainInput.Text = $"{HealthDrainPercentage}";
+            }
+            else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "SoldierHealingView" }, _healingView, out var container);
+                _healingWindow = container;
+
+                container.FindView("HealPercentageBox", out TextInputView healInput);
+                container.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
+
+                if (healInput != null)
+                    healInput.Text = $"{HealPercentage}";
+
+                if (healthDrainInput != null)
+                    healthDrainInput.Text = $"{HealthDrainPercentage}";
             }
         }
         private void HandlePerkViewClick(object s, ButtonBase button)
@@ -541,6 +582,12 @@ namespace CombatHandler.Soldier
                     perkView.Clicked = HandlePerkViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
+                {
+                    healingView.Tag = SettingsController.settingsWindow;
+                    healingView.Clicked = HandleHealingViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
@@ -764,6 +811,39 @@ namespace CombatHandler.Soldier
 
         #endregion
 
+        #region Heals
+
+        //private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Buffing")) { return false; }
+
+        //    if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
+
+        //    if (DynelManager.LocalPlayer.HealthPercent <= 40) { return true; }
+
+        //    return false;
+        //}
+
+
+        private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || HealthDrainPercentage == 0 || !IsSettingEnabled("LEHealthDrain")) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= HealthDrainPercentage)
+            {
+                if (SpellChecksOther(spell, spell.Nanoline, fightingTarget))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Buffs
 
         private bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -978,18 +1058,6 @@ namespace CombatHandler.Soldier
             return false;
         }
 
-
-        private bool DrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 40) { return true; }
-
-            return false;
-        }
-
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
@@ -1048,7 +1116,7 @@ namespace CombatHandler.Soldier
 
         private static class RelevantNanos
         {
-            public static readonly int[] SolDrainHeal = { 29241, 301897 };
+            //public static readonly int[] SolDrainHeal = { 29241, 301897 };
             public static readonly int[] TauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
             29218, 100205, 100206, 100208, 29228};
             public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211};

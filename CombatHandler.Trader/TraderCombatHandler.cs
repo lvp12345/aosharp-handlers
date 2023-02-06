@@ -83,7 +83,7 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("DamageDrain", true);
             _settings.AddVariable("HealthDrain", false);
-            _settings.AddVariable("LEHealthDrain", false);
+            _settings.AddVariable("LEDrainHeal", false);
 
             _settings.AddVariable("Evades", false);
             _settings.AddVariable("UmbralWrangler", false);
@@ -137,7 +137,7 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.Heal, Healing);
             RegisterSpellProcessor(RelevantNanos.TeamHeal, Healing);
             RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEHeal);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
@@ -821,7 +821,7 @@ namespace CombatHandler.Trader
         //    return FindMemberWithHealthBelow(60, spell, ref actionTarget);
         //}
 
-        private bool LEHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null || HealthDrainPercentage == 0 || !IsSettingEnabled("LEHealthDrain")) { return false; }
 

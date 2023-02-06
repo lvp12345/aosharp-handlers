@@ -932,6 +932,7 @@ namespace CombatHandler.NanoTechnician
             SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
+                        && c.Team.IsInTeam
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f

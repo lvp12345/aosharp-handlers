@@ -928,11 +928,11 @@ namespace CombatHandler.NanoTechnician
         private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
+            if (!Team.IsInTeam) { return false; }
 
-            SimpleChar target = DynelManager.NPCs
+                SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
-                        && c.Team.IsInTeam
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f

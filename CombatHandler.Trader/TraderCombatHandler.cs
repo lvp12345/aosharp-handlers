@@ -21,7 +21,7 @@ namespace CombatHandler.Trader
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        private static bool ToggleDebuffing = false;
+        //private static bool ToggleDebuffing = false;
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
@@ -42,7 +42,7 @@ namespace CombatHandler.Trader
         private static double _drainTick;
         private static double _ncuUpdateTime;
 
-        private static bool _purpleReady = false;
+        //private static bool _purpleReady = false;
 
         public TraderCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -820,7 +820,7 @@ namespace CombatHandler.Trader
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
+           if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= 30) { return true; }
 

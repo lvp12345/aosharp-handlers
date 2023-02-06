@@ -176,6 +176,7 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
 
+            //Root/Snare
             RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
 
             PluginDirectory = pluginDir;

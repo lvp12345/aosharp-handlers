@@ -13,7 +13,7 @@
     <OptionCheckBox label="Health Drain*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealthDrain" layout_borders="Rect(10,1,5,1)"/>
     <TextInputView name="HealthDrainPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
 	  <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-	  <OptionCheckBox label="LE Health Drain*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LEDrainHeal" layout_borders="Rect(10,1,5,1)"/>
+	  <OptionCheckBox label="LE Drain Heal*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LEDrainHeal" layout_borders="Rect(10,1,5,1)"/>
 	  <TextInputView name="LEHealthDrainPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <TextView value="*Threshold calculated as percentage." layout_borders="Rect(5,5,5,5)"/>

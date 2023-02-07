@@ -818,9 +818,9 @@ namespace CombatHandler.Trader
 
         private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            //if (!IsSettingEnabled("Buffing")) { return false; }
 
-           if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= 40) { return true; }
 

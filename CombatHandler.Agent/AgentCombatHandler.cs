@@ -91,6 +91,8 @@ namespace CombatHandler.Agent
 
             _settings.AddVariable("CritTeam", false);
 
+            _settings.AddVariable("SpawnPets", true);
+
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.GrimReaper);
@@ -165,9 +167,8 @@ namespace CombatHandler.Agent
 
             //Metaphysicist
             //Pets
-            RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
-            RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AttackPets).OrderByStackingOrder(), AttackPetSpawner);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealPets).OrderByStackingOrder(), HealPetSpawner);
 
 
             //Soldier
@@ -941,40 +942,36 @@ namespace CombatHandler.Agent
 
         private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("Metaphysicist")) { return false; }
-           
+            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfMp.Contains(c.Id))) { return false; }
+
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
             return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("Metaphysicist")) { return false; }
-
-            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("Metaphysicist")) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfMp.Contains(c.Id))) { return false; }
+
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
 
             return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
         }
 
-        private Spell[] GetAttackPetsWithSLPetsFirst()
-        {
-            List<Spell> attackPetsWithoutSL = Spell.GetSpellsForNanoline(NanoLine.AttackPets).Where(spell => !RelevantNanos.SLAttackPets.Contains(spell.Id)).OrderByStackingOrder().ToList();
-            List<Spell> attackPets = RelevantNanos.SLAttackPets.Select(FindSpell).Where(spell => spell != null).ToList();
-            attackPets.AddRange(attackPetsWithoutSL);
-            return attackPets.ToArray();
-        }
 
-        private Spell FindSpell(int spellHash)
+        #endregion
+
+        #region Soldier
+
+        private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (Spell.Find(spellHash, out Spell spell))
-            {
-                return spell;
-            }
-            return null;
+            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfSol.Contains(c.Id)) || !IsSettingEnabled("Buffing")) { return false; }
+
+            if (fightingtarget == null || !CanCast(spell)) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
+
+            return false;
         }
 
         #endregion
@@ -984,17 +981,15 @@ namespace CombatHandler.Agent
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Trader != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
 
-           
+            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
         }
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FalseProfSelection.Trader != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
 
-           
+            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget); 
         }
         #endregion
 
@@ -1038,17 +1033,6 @@ namespace CombatHandler.Agent
             if (ProcSelection.Damage != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfSol.Contains(c.Id)) || !IsSettingEnabled("Buffing")) { return false; }
-
-            if (fightingtarget == null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
-
-            return false;
         }
 
         #endregion
@@ -1134,17 +1118,17 @@ namespace CombatHandler.Agent
         private static class RelevantNanos
         {
             public static int[] DetauntProcs = { 226437, 226435, 226433, 226431, 226429, 226427 };
-            public static int[] FalseProfDoc = { 117210, 117221, 32033 };
-            public static int[] FalseProfEng = { 117213, 117224, 32034 };
-            public static int[] FalseProfSol = { 117216, 117227, 32038 };
-            public static int[] FalseProfCrat = { 117209, 117220, 32032 };
-            public static int[] FalseProfTrader = { 117211, 117222, 32040 };
-            public static int[] FalseProfAdv = { 117214, 117225, 32030 };
-            public static int[] FalseProfMp = { 117210, 117221, 32033 };
-            public static int[] FalseProfFixer = { 117212, 117223, 32039 };
-            public static int[] FalseProfEnf = { 117217, 117228, 32041 };
-            public static int[] FalseProfMa = { 117215, 117226, 32035 };
-            public static int[] FalseProfNt = { 117207, 117218, 32037 };
+            public static int[] FalseProfDoc = { 117210, 117221, 32033 }; //117210, 117221, 32033
+            public static int[] FalseProfEng = { 117213, 117224, 32034 };  //117213, 117224, 32034
+            public static int[] FalseProfSol = { 117216, 117227, 32038 };  //117216, 117227, 32038
+            public static int[] FalseProfCrat = { 117209, 117220, 32032 }; //117209, 117220, 32032
+            public static int[] FalseProfTrader = { 117211, 117222, 32040 }; //117211, 117222, 32040
+            public static int[] FalseProfAdv = { 117214, 117225, 32030 }; //117214, 117225,  32030
+            public static int[] FalseProfMp = { 117208, 117219, 32036 }; //117208, 117219, 32036
+            public static int[] FalseProfFixer = { 117212, 117223, 32039 };  //117212, 117223, 32039
+            public static int[] FalseProfEnf = { 117217, 117228, 32041 };  //117217, 117228, 32041
+            public static int[] FalseProfMa = { 117215, 117226, 32035 };  //117215, 117226, 32035
+            public static int[] FalseProfNt = { 117207, 117218, 32037 }; //117207, 117218, 32037
             public static int[] DOTProcs = { 226425, 226423, 226421, 226419, 226417, 226415, 226413, 226410 };
             public static int[] TeamCritBuffs = { 160791, 160789, 160787 };
             public static int AssassinsAimedShot = 275007;
@@ -1159,8 +1143,8 @@ namespace CombatHandler.Agent
                 28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
 
             //MP
-            public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
-            public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };
+            //public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
+            //public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };
 
         }
         public enum FalseProfSelection

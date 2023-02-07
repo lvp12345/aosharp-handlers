@@ -163,6 +163,13 @@ namespace CombatHandler.Agent
 
             //False prof
 
+            //Metaphysicist
+            //Pets
+            RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
+            RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
+
+
             //Soldier
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
 
@@ -930,7 +937,49 @@ namespace CombatHandler.Agent
         }
         #endregion
 
-        #region Trader Drains
+        #region MP
+
+        private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("Metaphysicist")) { return false; }
+           
+            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("Metaphysicist")) { return false; }
+
+            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("Metaphysicist")) { return false; }
+
+            return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
+        }
+
+        private Spell[] GetAttackPetsWithSLPetsFirst()
+        {
+            List<Spell> attackPetsWithoutSL = Spell.GetSpellsForNanoline(NanoLine.AttackPets).Where(spell => !RelevantNanos.SLAttackPets.Contains(spell.Id)).OrderByStackingOrder().ToList();
+            List<Spell> attackPets = RelevantNanos.SLAttackPets.Select(FindSpell).Where(spell => spell != null).ToList();
+            attackPets.AddRange(attackPetsWithoutSL);
+            return attackPets.ToArray();
+        }
+
+        private Spell FindSpell(int spellHash)
+        {
+            if (Spell.Find(spellHash, out Spell spell))
+            {
+                return spell;
+            }
+            return null;
+        }
+
+        #endregion
+
+        #region Trader
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1108,6 +1157,11 @@ namespace CombatHandler.Agent
                 43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
                 28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
+
+            //MP
+            public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
+            public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };
+
         }
         public enum FalseProfSelection
         {

@@ -22,7 +22,7 @@ namespace CombatHandler.Agent
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        private static bool ToggleDebuffing = false;
+       //private static bool ToggleDebuffing = false;
 
         private double _lastSwitchedHealTime = 0;
 
@@ -33,6 +33,8 @@ namespace CombatHandler.Agent
         private static Window _falseProfWindow;
         private static Window _healingWindow;
         private static Window _perkWindow;
+        private static Window _mpWindow;
+
 
         private static View _buffView;
         private static View _debuffView;
@@ -41,8 +43,9 @@ namespace CombatHandler.Agent
         private static View _falseProfView;
         private static View _healingView;
         private static View _perkView;
+        private static View _mpView;
 
-        private static SimpleChar _drainTarget;
+        //private static SimpleChar _drainTarget;
 
         private static double _ncuUpdateTime;
 
@@ -187,7 +190,7 @@ namespace CombatHandler.Agent
             StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow, _mpWindow };
 
         #region Callbacks
 
@@ -385,6 +388,26 @@ namespace CombatHandler.Agent
                 _falseProfWindow = container;
             }
         }
+
+
+        private void HandleMPSettingsViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                
+                if (window.Views.Contains(_mpView)) { return; }
+
+                _mpView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentMPView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "MPView", XmlViewName = "AgentMPView" }, _mpView);
+            }
+            else if (_mpWindow == null || (_mpWindow != null && !_mpWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_mpWindow, PluginDir, new WindowOptions() { Name = "MPView", XmlViewName = "AgentMPView" }, _mpView, out var container);
+                _mpWindow = container;
+            }
+        }
+
 
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
@@ -612,6 +635,13 @@ namespace CombatHandler.Agent
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+
+                if (SettingsController.settingsWindow.FindView("MPView", out Button mpView))
+                {
+                    mpView.Tag = SettingsController.settingsWindow;
+                    mpView.Clicked = HandleMPSettingsViewClick;
                 }
 
 

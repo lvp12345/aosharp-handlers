@@ -137,7 +137,7 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.Heal, Healing);
             RegisterSpellProcessor(RelevantNanos.TeamHeal, Healing);
             RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal, CombatActionPriority.High);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
@@ -822,7 +822,7 @@ namespace CombatHandler.Trader
 
            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return true; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 40) { return true; }
 
             return false;
         }

@@ -125,6 +125,8 @@ namespace CombatHandler.Soldier
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            RegisterPerkProcessor(PerkHash.ReinforceSlugs, ReinforceSlugs);
+            RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             // DeTaunt
             RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);

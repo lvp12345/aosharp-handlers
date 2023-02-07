@@ -143,6 +143,7 @@ namespace CombatHandler.Engineer
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             //Buffs
 

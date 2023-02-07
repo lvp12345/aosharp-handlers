@@ -109,7 +109,8 @@ namespace CombatHandler.Fixer
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
-
+            RegisterPerkProcessor(PerkHash.ReinforceSlugs, ReinforceSlugs);
+            RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);

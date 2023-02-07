@@ -132,6 +132,7 @@ namespace CombatHandler.Doctor
             RegisterPerkProcessor(PerkHash.BattlegroupHeal2, BattleGroupHeal2);
             RegisterPerkProcessor(PerkHash.BattlegroupHeal3, BattleGroupHeal3);
             RegisterPerkProcessor(PerkHash.BattlegroupHeal4, BattleGroupHeal4);
+            RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             //Healing
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);

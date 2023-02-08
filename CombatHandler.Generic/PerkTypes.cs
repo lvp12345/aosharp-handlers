@@ -124,10 +124,8 @@ namespace CombatHandler.Generic
             {PerkHash.ECM2 , PerkType.Clease},
             {PerkHash.ElementaryTeleportation , PerkType.Disabled},
             {PerkHash.EncaseInStone , PerkType.TargetDamage},
-
             {PerkHash.Energize , PerkType.Disabled},
             //{PerkHash.Energize , PerkType.DamageBuff},
-
             {PerkHash.EnhancedHeal , PerkType.SelfHeal},
             {PerkHash.Escape , PerkType.Disabled},
             {PerkHash.EtherealTouch , PerkType.TargetDamage},
@@ -421,10 +419,8 @@ namespace CombatHandler.Generic
             {PerkHash.RedDusk , PerkType.TargetDamage},
             {PerkHash.RedeemLastWish , PerkType.SelfBuff},
             {PerkHash.RegainNano , PerkType.SelfNano},
-
             {PerkHash.ReinforceSlugs , PerkType.Disabled},
             //{PerkHash.ReinforceSlugs , PerkType.TargetDamage},
-
             {PerkHash.Reject , PerkType.TargetDamage},
             {PerkHash.Removal1 , PerkType.Clease},
             {PerkHash.Removal2 , PerkType.Clease},

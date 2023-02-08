@@ -14,6 +14,7 @@ using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using System.Reflection;
 using System.ComponentModel;
+using static CombatHandler.Soldier.SoldCombathandler;
 
 namespace CombatHandler.Soldier
 {
@@ -97,7 +98,7 @@ namespace CombatHandler.Soldier
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
 
-            _settings.AddVariable("ReflectSelection", (int)ReflectSelection.RubiKaTeam);
+            _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.RubiKaTeam);
 
             _settings.AddVariable("NotumGrenades", false);
 
@@ -957,10 +958,10 @@ namespace CombatHandler.Soldier
         }
         private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ReflectSelection.RubiKa == (ReflectSelection)_settings["ReflectSelection"].AsInt32())
+            if (RKReflectSelection.RubiKa == (RKReflectSelection)_settings["RKReflectSelection"].AsInt32())
                 return Buff(spell, spell.Nanoline, ref actionTarget);
 
-            if (ReflectSelection.RubiKaTeam == (ReflectSelection)_settings["ReflectSelection"].AsInt32())
+            if (RKReflectSelection.RubiKaTeam == (RKReflectSelection)_settings["RKReflectSelection"].AsInt32())
                 return GenericTeamBuff(spell, ref actionTarget);
 
             return false;
@@ -1078,7 +1079,7 @@ namespace CombatHandler.Soldier
                                 || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Grenade) && _target.Profession != Profession.Engineer);
         }
 
-        public enum ReflectSelection
+        public enum RKReflectSelection
         {
             RubiKa, RubiKaTeam
         }

@@ -470,6 +470,7 @@ namespace CombatHandler.Generic
         {
             if (!perk.IsAvailable || fightingTarget == null) { return false; }
 
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
             //if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
 
             return DamagePerk(perk, fightingTarget, ref actionTarget);
@@ -479,7 +480,8 @@ namespace CombatHandler.Generic
         {
             if (!perk.IsAvailable || fightingTarget == null) { return false; }
 
-            if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+            //if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
 
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }

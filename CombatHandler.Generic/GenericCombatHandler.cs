@@ -488,6 +488,8 @@ namespace CombatHandler.Generic
 
 
 
+
+
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable || !InCombat()
@@ -714,6 +716,8 @@ namespace CombatHandler.Generic
             return false;
         }
 
+
+
         protected bool BioRegrowth(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Time.NormalTime > CycleBioRegrowthPerk + CycleBioRegrowthPerkDelay)
@@ -723,7 +727,7 @@ namespace CombatHandler.Generic
                 if (!InCombat()) { return false; }
 
                 SimpleChar dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => c.Health > 70 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
                     .OrderBy(c => c.HealthPercent)
                     .OrderBy(c => c.Profession == Profession.Enforcer)

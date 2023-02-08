@@ -681,6 +681,8 @@ namespace CombatHandler.Generic
                 }
             }
         }
+
+
         public event EventHandler<int> CycleBioRegrowthPerkDelayChangedEvent;
         private int _cycleBioRegrowthPerkDelay = 1;
         public int CycleBioRegrowthPerkDelay

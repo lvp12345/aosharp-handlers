@@ -124,7 +124,7 @@ namespace CombatHandler.Generic
             {PerkHash.ECM2 , PerkType.Clease},
             {PerkHash.ElementaryTeleportation , PerkType.Disabled},
             {PerkHash.EncaseInStone , PerkType.TargetDamage},
-            {PerkHash.Energize , PerkType.DamageBuff},
+            {PerkHash.Energize , PerkType.CombatBuff},
             {PerkHash.EnhancedHeal , PerkType.SelfHeal},
             {PerkHash.Escape , PerkType.Disabled},
             {PerkHash.EtherealTouch , PerkType.TargetDamage},
@@ -174,7 +174,7 @@ namespace CombatHandler.Generic
             {PerkHash.InstallExplosiveDevice , PerkType.TargetDamage},
             {PerkHash.InstallNotumDepletionDevice , PerkType.TargetDamage},
             {PerkHash.InsuranceClaim , PerkType.Disabled},
-            {PerkHash.JarringBurst , PerkType.DamageBuff},
+            {PerkHash.JarringBurst , PerkType.TargetDamage},
             {PerkHash.KaMon , PerkType.TargetDamage},
             {PerkHash.KenFi , PerkType.TargetDamage},
             {PerkHash.KenSi , PerkType.TargetDamage},
@@ -373,7 +373,7 @@ namespace CombatHandler.Generic
             {PerkHash.NanoTransmission , PerkType.Disabled},
             {PerkHash.NapalmSpray , PerkType.TargetDamage},
             {PerkHash.NCUBooster , PerkType.SelfBuff},
-            {PerkHash.NeutroniumSlug , PerkType.DamageBuff},
+            {PerkHash.NeutroniumSlug , PerkType.TargetDamage},
             {PerkHash.NightKiller , PerkType.TargetDamage},
             {PerkHash.NocturnalStrike , PerkType.TargetDamage},
             {PerkHash.NotumOverflow , PerkType.TargetDamage},
@@ -393,12 +393,12 @@ namespace CombatHandler.Generic
             {PerkHash.PointBlank , PerkType.TargetDamage},
             {PerkHash.PoisonSprinkle , PerkType.TargetDamage},
             {PerkHash.Popshot , PerkType.TargetDamage},
-            {PerkHash.PowerBlast , PerkType.DamageBuff},
+            {PerkHash.PowerBlast , PerkType.TargetDamage},
             {PerkHash.PowerBolt , PerkType.TargetDamage},
             {PerkHash.PowerCombo , PerkType.DamageBuff},
             {PerkHash.PowerOfLight , PerkType.TargetDamage},
-            {PerkHash.PowerShock , PerkType.DamageBuff},
-            {PerkHash.PowerVolley , PerkType.DamageBuff},
+            {PerkHash.PowerShock , PerkType.TargetDamage},
+            {PerkHash.PowerVolley , PerkType.TargetDamage},
             {PerkHash.ProgramOverload , PerkType.TargetDamage},
             {PerkHash.Pulverize , PerkType.TargetDamage},
             {PerkHash.Puppeteer , PerkType.PetBuff},
@@ -418,7 +418,7 @@ namespace CombatHandler.Generic
             {PerkHash.RedDusk , PerkType.TargetDamage},
             {PerkHash.RedeemLastWish , PerkType.SelfBuff},
             {PerkHash.RegainNano , PerkType.SelfNano},
-            {PerkHash.ReinforceSlugs , PerkType.DamageBuff},
+            {PerkHash.ReinforceSlugs , PerkType.CombatBuff},
             {PerkHash.Reject , PerkType.TargetDamage},
             {PerkHash.Removal1 , PerkType.Clease},
             {PerkHash.Removal2 , PerkType.Clease},
@@ -446,7 +446,7 @@ namespace CombatHandler.Generic
             {PerkHash.SnipeShot1 , PerkType.TargetDamage},
             {PerkHash.SnipeShot2 , PerkType.TargetDamage},
             {PerkHash.SoftenUp , PerkType.TargetDamage},
-            {PerkHash.SolidSlug , PerkType.DamageBuff},
+            {PerkHash.SolidSlug , PerkType.TargetDamage},
             {PerkHash.SpectatorWrath , PerkType.TargetDamage},
             {PerkHash.Sphere , PerkType.TargetDamage},
             {PerkHash.SpiritDissolution , PerkType.TargetDamage},
@@ -506,6 +506,6 @@ namespace CombatHandler.Generic
 
     enum PerkType
     {
-        Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, PetBuff, PetHeal, LEProc, Clease, Custom, Disabled, Unknown
+        Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, CombatBuff, PetBuff, PetHeal, LEProc, Clease, Custom, Disabled, Unknown
     }
 }

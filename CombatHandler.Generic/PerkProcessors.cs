@@ -41,6 +41,8 @@ namespace CombatHandler.Generic
                     return TargetedDamagePerk;
                 case PerkType.DamageBuff:
                     return DamageBuffPerk;
+                case PerkType.CombatBuff:
+                    return CombatBuffPerk;
                 case PerkType.PetBuff:
                 case PerkType.PetHeal:
                 case PerkType.LEProc:
@@ -86,6 +88,7 @@ namespace CombatHandler.Generic
 
             return false;
         }
+
 
         public static bool DamageBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -199,6 +202,7 @@ namespace CombatHandler.Generic
             actionTarget.ShouldSetTarget = true;
             return true;
         }
+
 
         public static bool CombatBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

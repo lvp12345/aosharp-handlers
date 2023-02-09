@@ -132,7 +132,7 @@ namespace CombatHandler.Trader
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
             RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
-            RegisterPerkProcessor(PerkHash.Energize, Energize);
+            //RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing);

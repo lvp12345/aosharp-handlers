@@ -17,7 +17,7 @@ namespace CombatHandler.Engineer
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        private static bool ToggleDebuffing = false;
+        //private static bool ToggleDebuffing = false;
 
         private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
@@ -143,7 +143,7 @@ namespace CombatHandler.Engineer
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
-            RegisterPerkProcessor(PerkHash.Energize, Energize);
+            //RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             //Buffs
 

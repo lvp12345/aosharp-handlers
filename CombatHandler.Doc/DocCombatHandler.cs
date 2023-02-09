@@ -22,7 +22,7 @@ namespace CombatHandler.Doctor
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        private static bool ToggleDebuffing = false;
+        //private static bool ToggleDebuffing = false;
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
@@ -132,7 +132,7 @@ namespace CombatHandler.Doctor
             RegisterPerkProcessor(PerkHash.BattlegroupHeal2, BattleGroupHeal2);
             RegisterPerkProcessor(PerkHash.BattlegroupHeal3, BattleGroupHeal3);
             RegisterPerkProcessor(PerkHash.BattlegroupHeal4, BattleGroupHeal4);
-            RegisterPerkProcessor(PerkHash.Energize, Energize);
+            //RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             //Healing
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);

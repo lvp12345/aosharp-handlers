@@ -24,7 +24,7 @@ namespace CombatHandler.Soldier
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        private static bool ToggleDebuffing = false;
+        //private static bool ToggleDebuffing = false;
 
         private static Window _buffWindow;
         private static Window _healingWindow;
@@ -126,8 +126,8 @@ namespace CombatHandler.Soldier
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
-            RegisterPerkProcessor(PerkHash.ReinforceSlugs, ReinforceSlugs);
-            RegisterPerkProcessor(PerkHash.Energize, Energize);
+            //RegisterPerkProcessor(PerkHash.ReinforceSlugs, ReinforceSlugs);
+            //RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             // DeTaunt
             RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);

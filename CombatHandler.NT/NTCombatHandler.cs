@@ -954,9 +954,11 @@ namespace CombatHandler.NanoTechnician
 
         #region Buffs
 
-        protected bool MatCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MatCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (RelevantNanos.CompNanoSkills.Contains(spell.Id)) { return false; }
+            //if (RelevantIgnoreNanos.CompNanoSkills.Contains(spell.Id)) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantIgnoreNanos.CompNanoSkills)) { return false; }
 
             return GenericBuff(spell, ref actionTarget);
         }
@@ -1128,10 +1130,14 @@ namespace CombatHandler.NanoTechnician
             public static readonly int CompositeAttribute = 223372;
             public static readonly int CompositeNano = 223380;
 
-            public static readonly int[] CompNanoSkills = { 220331, 220333, 220335, 220337, 292299, 220339, 220341, 220343 };
+            
         }
+        private static class RelevantIgnoreNanos
+        {
+            public static int[] CompNanoSkills = new[] { 220331, 220333, 220335, 220337, 292299, 220339, 220341, 220343 };
 
 
+        }
 
         private static class RelevantNotum
         {

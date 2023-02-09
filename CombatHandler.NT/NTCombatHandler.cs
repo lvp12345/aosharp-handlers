@@ -136,7 +136,7 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDamageMultiplierBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), NFRangeBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), MatCreaBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), GlobalGenericBuff);
 
@@ -954,6 +954,13 @@ namespace CombatHandler.NanoTechnician
 
         #region Buffs
 
+        protected bool MatCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (RelevantNanos.CompNanoSkills.Contains(spell.Id)) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
+        }
+
         private bool NanoHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("NanoHOTTeam"))
@@ -1120,7 +1127,11 @@ namespace CombatHandler.NanoTechnician
             public static readonly int[] NanobotShelter = { 273388, 263265 };
             public static readonly int CompositeAttribute = 223372;
             public static readonly int CompositeNano = 223380;
+
+            public static readonly int[] CompNanoSkills = { 220331, 220333, 220335, 220337, 292299, 220339, 220341, 220343 };
         }
+
+
 
         private static class RelevantNotum
         {

@@ -150,9 +150,9 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
 
             //Nukes and DoTs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDOTNuke, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDOTNuke, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
             RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);

@@ -109,8 +109,6 @@ namespace CombatHandler.Fixer
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
-            //RegisterPerkProcessor(PerkHash.ReinforceSlugs, ReinforceSlugs);
-            //RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
@@ -742,7 +740,7 @@ namespace CombatHandler.Fixer
         private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing")
-                || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
+                || !IsSettingEnabled("AOESnare") || !CanCast(spell)) { return false; }
 
             SimpleChar target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight

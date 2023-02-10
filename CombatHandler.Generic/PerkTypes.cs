@@ -40,9 +40,12 @@ namespace CombatHandler.Generic
             {PerkHash.Bearhug , PerkType.TargetDamage},
             {PerkHash.Beckoning , PerkType.TargetDamage},
             {PerkHash.BigSmash , PerkType.TargetDamage},
+
+            {PerkHash.BioShield , PerkType.CombatBuff},
             {PerkHash.BioCocoon , PerkType.Disabled},
+            {PerkHash.BioRejuvenation , PerkType.TeamHeal},
             {PerkHash.BioRegrowth , PerkType.Disabled},
-            {PerkHash.BioShield , PerkType.SelfBuff},
+            
             {PerkHash.BladeOfNight , PerkType.TargetDamage},
             {PerkHash.BladeWhirlwind , PerkType.TargetDamage},
             {PerkHash.BlastNano , PerkType.TargetDamage},

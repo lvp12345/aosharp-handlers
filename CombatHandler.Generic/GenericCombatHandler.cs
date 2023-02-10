@@ -501,6 +501,34 @@ namespace CombatHandler.Generic
             return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
+        protected bool BioRegrowth(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Time.NormalTime > CycleBioRegrowthPerk + CycleBioRegrowthPerkDelay)
+            {
+                CycleBioRegrowthPerk = Time.NormalTime;
+
+                if (!InCombat()) { return false; }
+
+                SimpleChar dyingTeamMember = DynelManager.Players
+                    .Where(c => c.Health > 70 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= BioRegrowthPercentage)
+                    .OrderBy(c => c.HealthPercent)
+                    .OrderBy(c => c.Profession == Profession.Enforcer)
+                    .OrderBy(c => c.Profession == Profession.Doctor)
+                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .FirstOrDefault();
+
+                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()
+                    || dyingTeamMember == null) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = dyingTeamMember;
+                return true;
+            }
+
+            return false;
+        }
+
         protected bool BattleGroupHeal1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable || !InCombat()) { return false; }
@@ -711,36 +739,6 @@ namespace CombatHandler.Generic
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
-
-
-        protected bool BioRegrowth(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Time.NormalTime > CycleBioRegrowthPerk + CycleBioRegrowthPerkDelay)
-            {
-                CycleBioRegrowthPerk = Time.NormalTime;
-
-                if (!InCombat()) { return false; }
-
-                SimpleChar dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 70 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= BioRegrowthPercentage)
-                    .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
-                    .FirstOrDefault();
-
-                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()
-                    || dyingTeamMember == null) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = dyingTeamMember;
-                return true;
             }
 
             return false;

@@ -115,6 +115,7 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("GrenadeTeam", true);
             _settings.AddVariable("ShadowlandReflectBase", true);
             _settings.AddVariable("DamageShields", false);
+            _settings.AddVariable("MEBuff", false);
 
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
             _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
@@ -161,6 +162,11 @@ namespace CombatHandler.Engineer
 
             RegisterSpellProcessor(RelevantNanos.BoostedTendons, GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GlobalGenericTeamBuff);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GeneralMechanicalEngineeringBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(RelevantNanos.EngineeringBuff, EngineeringBuff);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MechanicalEngineeringBuff).OrderByStackingOrder(), EngineeringBuff);
+            //
 
             //Pets
             //Pet Spawners
@@ -791,6 +797,13 @@ namespace CombatHandler.Engineer
         #endregion
 
         #region Buffs
+
+        protected bool EngineeringBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("MEBuff")) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
+        }
 
         protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1426,6 +1439,8 @@ namespace CombatHandler.Engineer
             public static readonly int[] ReflectAura = { 154557, 154558, 154559 };
             public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
+            public static readonly int[] EngineeringBuff = { 227657, 227667, 273346 };
+
         }
 
         private static class RelevantTrimmers

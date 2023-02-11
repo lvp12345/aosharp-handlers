@@ -11,7 +11,7 @@
 	  <OptionCheckBox label="(Team) Grenade" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GrenadeTeam" layout_borders="Rect(10,1,5,1)"/>
 	  <OptionCheckBox label="(Team) Shadowland Reflect" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShadowlandReflectBase" layout_borders="Rect(10,1,5,1)"/>
 	  <OptionCheckBox label="(Team) DamageShields" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageShields" layout_borders="Rect(10,1,5,1)"/>
-
+	  <OptionCheckBox label="Mechanical Engineering Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MEBuff" layout_borders="Rect(10,1,5,1)"/>
 	  <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 	  <OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitBuffSelection">
       <RadioButton label="None" value="0"/>

@@ -936,7 +936,7 @@ namespace CombatHandler.Adventurer
 
         public enum ProcType2Selection
         {
-            HealingHerbs, SoothingHerbs, Combustion, CharringBlow, RestoreVigor, MacheteSlice, BasicDressing
+            HealingHerbs, Combustion, CharringBlow, RestoreVigor, MacheteSlice, SoothingHerbs, BasicDressing
         }
 
         #endregion

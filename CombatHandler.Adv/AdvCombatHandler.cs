@@ -91,6 +91,12 @@ namespace CombatHandler.Adventurer
 
             _settings.AddVariable("ArmorBuff", false);
 
+            _settings.AddVariable("TeamArmorBuffs", false);
+            _settings.AddVariable("DamageShields", false);
+            _settings.AddVariable("XPBonus", false);
+            _settings.AddVariable("RunspeedBuffs", false);
+            _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.None);
+
             _settings.AddVariable("CH", false);
 
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
@@ -127,6 +133,16 @@ namespace CombatHandler.Adventurer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.ArmorBuffs, Armor);
+
+            //Team Buffs
+            RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs, TeamArmor);
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
+            RegisterSpellProcessor(RelevantNanos.LearningbyDoing, XPBonus);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamRunSpeedBuffs).OrderByStackingOrder(), TeamRunSpeedBuffs);
+            RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs, TeamRunSpeedBuff);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
+
 
             //Morphs
             RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
@@ -900,6 +916,49 @@ namespace CombatHandler.Adventurer
 
         #endregion
 
+        #region Team Buffs
+
+        protected bool TeamArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("TeamArmorBuffs"))
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("DamageShields")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
+
+        protected bool XPBonus(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("XPBonus")) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool TeamRunSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("RunspeedBuffs")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
+
+        private bool TreatmentBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (TreatmentBuffSelection.Team == (TreatmentBuffSelection)_settings["TreatmentBuffSelection"].AsInt32())
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            if (TreatmentBuffSelection.None == (TreatmentBuffSelection)_settings["TreatmentBuffSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        #endregion
+
         #region Misc
 
         private static class RelevantNanos
@@ -918,6 +977,13 @@ namespace CombatHandler.Adventurer
             public static readonly int[] LeetCrit = { 302229, 302226 };
             public static readonly int[] SaberDamage = { 302243, 302240 };
 
+            public static int[] TargetArmorBuffs = { 74178, 74177, 74176, 74175, 74174, 74173 };
+            public static readonly int[] TargetedDamageShields = { 55812, 55836, 55835, 55833, 55834, 55831, 55832, 55830, 55829, 55828, 55826, 55827,
+                55825, 55824, 55823, 55821, 55822, 55819, 55820, 55816, 55818, 55817, 55814, 55815, 55813, 55837 };
+            public const int LearningbyDoing = 263277;
+
+            public static readonly int[] TeamRunSpeedBuffs = { 26705, 26237 };
+
         }
 
         public enum HealSelection
@@ -927,6 +993,11 @@ namespace CombatHandler.Adventurer
         public enum MorphSelection
         {
             None, Dragon, Saber, Wolf, Leet
+        }
+
+        public enum TreatmentBuffSelection
+        {
+            None, Self, Team
         }
 
         public enum ProcType1Selection

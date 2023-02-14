@@ -347,15 +347,40 @@ namespace CombatHandler.Soldier
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
             }
         }
+
+        //private void HandleTauntViewClick(object s, ButtonBase button)
+        //{
+        //    Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+        //    if (window != null)
+        //    {
+
+        //        if (window.Views.Contains(_tauntView)) { return; }
+
+        //        _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierTauntsView.xml");
+        //        SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView);
+
+        //        window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+
+        //        if (singleInput != null)
+        //            singleInput.Text = $"{SingleTauntDelay}";
+        //    }
+        //    else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
+        //    {
+        //        SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView, out var container);
+        //        _tauntWindow = container;
+
+        //        container.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+
+        //        if (singleInput != null)
+        //            singleInput.Text = $"{SingleTauntDelay}";
+        //    }
+        //}
+
         private void HandleTauntViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
-                if (window.Views.Contains(_tauntView)) { return; }
-
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierTauntsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView);
 
@@ -375,6 +400,7 @@ namespace CombatHandler.Soldier
                     singleInput.Text = $"{SingleTauntDelay}";
             }
         }
+
         private void HandleItemViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -470,7 +496,7 @@ namespace CombatHandler.Soldier
 
             if (window != null && window.IsValid)
             {
-                window.FindView("SingleDelayBox", out TextInputView singleInput);
+                window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
                 window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                 window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
@@ -495,6 +521,7 @@ namespace CombatHandler.Soldier
                     if (int.TryParse(singleInput.Text, out int singleValue))
                         if (Config.CharSettings[Game.ClientInst].SingleTauntDelay != singleValue)
                             Config.CharSettings[Game.ClientInst].SingleTauntDelay = singleValue;
+
                 if (stimTargetInput != null)
                     if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
                         Config.CharSettings[Game.ClientInst].StimTargetName = stimTargetInput.Text;
@@ -814,6 +841,60 @@ namespace CombatHandler.Soldier
 
         #endregion
 
+        #region Taunts
+
+        private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+            {
+                SimpleChar mob = DynelManager.NPCs
+                    .Where(c => c.IsAttacking && c.FightingTarget != null
+                        && c.FightingTarget?.Profession != Profession.Enforcer
+                        && c.IsInLineOfSight
+                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                        && c.Name != "Alien Heavy Patroller"
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.MaxHealth)
+                    .FirstOrDefault();
+
+                if (mob != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
+                    return true;
+                }
+                else if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+            {
+                if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Heals
 
         private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -892,7 +973,6 @@ namespace CombatHandler.Soldier
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
-
 
         protected bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -989,58 +1069,6 @@ namespace CombatHandler.Soldier
             if (!IsSettingEnabled("NotumGrenades")) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-            if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                SimpleChar mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget != null
-                        && c.FightingTarget?.Profession != Profession.Soldier
-                        && c.FightingTarget?.Profession != Profession.Enforcer
-                        && c.FightingTarget?.Profession != Profession.MartialArtist
-                        && c.IsInLineOfSight
-                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.Name != "Alien Heavy Patroller"
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.MaxHealth)
-                    .FirstOrDefault();
-
-                if (mob != null)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = mob;
-                    return true;
-                }
-                else if (fightingTarget != null)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
-
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                if (fightingTarget != null)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)

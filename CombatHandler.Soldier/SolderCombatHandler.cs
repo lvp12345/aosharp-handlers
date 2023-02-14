@@ -40,11 +40,11 @@ namespace CombatHandler.Soldier
         private static View _itemView;
         private static View _perkView;
 
-        private static double _singleTauntTick;
+        //private static double _singleTauntTick;
         private static double _singleTaunt;
         private static double _ncuUpdateTime;
 
-        private static int SolTauntDelaySingle;
+        //private static int SolTauntDelaySingle;
 
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {

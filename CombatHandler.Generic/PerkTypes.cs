@@ -502,8 +502,9 @@ namespace CombatHandler.Generic
             {PerkHash.ViralWipe , PerkType.TargetDamage},
             {PerkHash.VitalShock , PerkType.TargetDamage},
             {PerkHash.WeaponBash , PerkType.TargetDamage},
-            {PerkHash.WitOfTheAtrox , PerkType.Custom},
+            {PerkHash.WitOfTheAtrox , PerkType.Disabled},
             {PerkHash.ZapNano , PerkType.TargetDamage},
+
         };
     }
 

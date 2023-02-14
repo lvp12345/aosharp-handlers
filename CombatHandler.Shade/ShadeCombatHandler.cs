@@ -24,7 +24,7 @@ namespace CombatHandler.Shade
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        private static bool ToggleDebuffing = false;
+        //private static bool ToggleDebuffing = false;
 
         private static bool _shadeSiphon;
 

@@ -22,7 +22,7 @@ namespace CombatHandler.MartialArtist
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        private static bool ToggleDebuffing = false;
+        //private static bool ToggleDebuffing = false;
 
         private static Window _buffWindow;
         private static Window _tauntWindow;
@@ -38,8 +38,8 @@ namespace CombatHandler.MartialArtist
         private static View _itemView;
         private static View _perkView;
 
-        private static double _singleTauntTick;
-        private static double _singleTaunt;
+        //private static double _singleTauntTick;
+        //private static double _singleTaunt;
 
         private static double _ncuUpdateTime;
 

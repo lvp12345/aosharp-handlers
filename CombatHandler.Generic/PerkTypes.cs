@@ -451,7 +451,7 @@ namespace CombatHandler.Generic
             {PerkHash.SoftenUp , PerkType.TargetDamage},
             {PerkHash.SolidSlug , PerkType.TargetDamage},
             {PerkHash.SpectatorWrath , PerkType.TargetDamage},
-            {PerkHash.Sphere , PerkType.TargetDamage},
+            {PerkHash.Sphere , PerkType.Disabled},
             {PerkHash.SpiritDissolution , PerkType.TargetDamage},
             {PerkHash.SpiritOfBlessing , PerkType.TargetDamage},
             {PerkHash.SpiritOfPurity , PerkType.TargetDamage},
@@ -502,8 +502,9 @@ namespace CombatHandler.Generic
             {PerkHash.ViralWipe , PerkType.TargetDamage},
             {PerkHash.VitalShock , PerkType.TargetDamage},
             {PerkHash.WeaponBash , PerkType.TargetDamage},
-            {PerkHash.WitOfTheAtrox , PerkType.Custom},
+            {PerkHash.WitOfTheAtrox , PerkType.Disabled},
             {PerkHash.ZapNano , PerkType.TargetDamage},
+
         };
     }
 

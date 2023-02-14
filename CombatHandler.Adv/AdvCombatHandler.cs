@@ -128,7 +128,6 @@ namespace CombatHandler.Adventurer
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.General1HEdgedBuff).OrderByStackingOrder(), Melee);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Ranged);
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), GenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GlobalGenericBuff);
@@ -138,7 +137,6 @@ namespace CombatHandler.Adventurer
             RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs, TeamArmor);
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
             RegisterSpellProcessor(RelevantNanos.LearningbyDoing, XPBonus);
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamRunSpeedBuffs).OrderByStackingOrder(), TeamRunSpeedBuffs);
             RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs, TeamRunSpeedBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);

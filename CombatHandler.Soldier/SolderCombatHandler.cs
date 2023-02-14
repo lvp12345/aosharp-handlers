@@ -40,11 +40,9 @@ namespace CombatHandler.Soldier
         private static View _itemView;
         private static View _perkView;
 
-        //private static double _singleTauntTick;
         private static double _singleTaunt;
         private static double _ncuUpdateTime;
 
-        //private static int SolTauntDelaySingle;
 
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
@@ -347,34 +345,6 @@ namespace CombatHandler.Soldier
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
             }
         }
-
-        //private void HandleTauntViewClick(object s, ButtonBase button)
-        //{
-        //    Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-        //    if (window != null)
-        //    {
-
-        //        if (window.Views.Contains(_tauntView)) { return; }
-
-        //        _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierTauntsView.xml");
-        //        SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView);
-
-        //        window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
-
-        //        if (singleInput != null)
-        //            singleInput.Text = $"{SingleTauntDelay}";
-        //    }
-        //    else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
-        //    {
-        //        SettingsController.CreateSettingsTab(_tauntWindow, PluginDir, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView, out var container);
-        //        _tauntWindow = container;
-
-        //        container.FindView("SingleTauntDelayBox", out TextInputView singleInput);
-
-        //        if (singleInput != null)
-        //            singleInput.Text = $"{SingleTauntDelay}";
-        //    }
-        //}
 
         private void HandleTauntViewClick(object s, ButtonBase button)
         {

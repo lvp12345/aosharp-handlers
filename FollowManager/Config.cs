@@ -72,7 +72,7 @@ namespace FollowManager
     public class CharacterSettings
     {
         public event EventHandler<int> IPCChannelChangedEvent;
-        private int _ipcChannel = 0;
+        private int _ipcChannel = 3;
 
         public int IPCChannel
         {

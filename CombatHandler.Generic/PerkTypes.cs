@@ -115,7 +115,7 @@ namespace CombatHandler.Generic
             {PerkHash.DisableNaturalHealing , PerkType.TargetDamage},
             {PerkHash.Disorientate , PerkType.TargetDamage},
             {PerkHash.DizzyingHeights , PerkType.TargetDamage},
-            {PerkHash.DodgeTheBlame , PerkType.SelfBuff},
+            {PerkHash.DodgeTheBlame , PerkType.CombatBuff},
             {PerkHash.DoomTouch , PerkType.TargetDamage},
             {PerkHash.DoubleShot , PerkType.TargetDamage},
             {PerkHash.DoubleStab , PerkType.Disabled},

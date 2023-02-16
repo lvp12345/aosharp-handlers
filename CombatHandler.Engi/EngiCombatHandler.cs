@@ -149,7 +149,6 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             //Buffs
-
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamArmorBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), Grenade);
@@ -165,8 +164,6 @@ namespace CombatHandler.Engineer
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GeneralMechanicalEngineeringBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.EngineeringBuff, EngineeringBuff);
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MechanicalEngineeringBuff).OrderByStackingOrder(), EngineeringBuff);
-            //
 
             //Pets
             //Pet Spawners
@@ -1255,6 +1252,8 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
             if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             if (SnareMobExists())
@@ -1265,6 +1264,8 @@ namespace CombatHandler.Engineer
         }
         private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
             if (DebuffingAuraSelection.ShieldRipper != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return DynelManager.NPCs.Any(c => c.Health > 0
@@ -1278,6 +1279,8 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("Buffing")) { return false; }
 
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+
             if (DebuffingAuraSelection.Blind != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
 
             return DynelManager.NPCs.Any(c => c.Health > 0
@@ -1287,22 +1290,22 @@ namespace CombatHandler.Engineer
                 && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f);
         }
 
-        private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null) { return false; }
+        //private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (fightingTarget != null) { return false; }
 
-            actionTarget.Target = DynelManager.LocalPlayer.Pets
-                .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
-                .FirstOrDefault().Character;
+        //    actionTarget.Target = DynelManager.LocalPlayer.Pets
+        //        .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
+        //        .FirstOrDefault().Character;
 
-            if (actionTarget.Target != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+        //    if (actionTarget.Target != null)
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         #endregion
 

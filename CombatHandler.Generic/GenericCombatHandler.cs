@@ -1593,6 +1593,9 @@ namespace CombatHandler.Generic
 
         private void SynchronizePetCombatState(Pet pet)
         {
+            if (Game.IsZoning)
+                pet?.Follow();
+
             if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
                 pet?.Follow();
 
@@ -1607,11 +1610,11 @@ namespace CombatHandler.Generic
             }
         }
 
-        #endregion
+    #endregion
 
-        #region Checks
+    #region Checks
 
-        protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+    protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 

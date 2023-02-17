@@ -594,7 +594,7 @@ namespace CombatHandler.Generic
 
         protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable) { return false; }
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
 
             if (Time.NormalTime > CycleXpPerks + CycleXpPerksDelay)
             {
@@ -611,7 +611,7 @@ namespace CombatHandler.Generic
 
         protected bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable) { return false; }
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
@@ -622,7 +622,7 @@ namespace CombatHandler.Generic
         }
         protected bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable) { return false; }
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 

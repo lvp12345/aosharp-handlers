@@ -880,6 +880,17 @@ namespace CombatHandler.Engineer
 
         #region Pets
 
+        #region Follow
+
+        public void Petfollow(Pet pet)
+        {
+            if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
+                pet?.Follow();
+
+        }
+
+        #endregion
+
         #region Warp
 
         protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -841,8 +841,8 @@ namespace CombatHandler.Doctor
                                 && c.HealthPercent <= 85 && c.HealthPercent >= 50)
                         .ToList();
 
-                    if (dyingTeamMember.Count >= 4) 
-                    { 
+                    if (dyingTeamMember.Count >= 4)
+                    {
                         return CanCast(spell);
                     }
                 }
@@ -936,7 +936,7 @@ namespace CombatHandler.Doctor
                              && c.HealthPercent <= 85 && c.HealthPercent >= 50)
                         .ToList();
 
-                    if (dyingTeamMember.Count >= 4) 
+                    if (dyingTeamMember.Count >= 4)
                     {
                         return CanCast(spell);
                     }
@@ -950,7 +950,7 @@ namespace CombatHandler.Doctor
         private bool NanoResistance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("NanoResistTeam"))
-            return GenericTeamBuff(spell, ref actionTarget);
+                return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -966,7 +966,7 @@ namespace CombatHandler.Doctor
         protected bool HealDeltaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("HealDeltaBuff"))
-                 return GenericTeamBuff(spell, ref actionTarget);
+                return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -1015,6 +1015,7 @@ namespace CombatHandler.Doctor
 
         private bool InitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+
             if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
                 return AreaDebuff(spell, ref actionTarget);
 
@@ -1023,6 +1024,8 @@ namespace CombatHandler.Doctor
             {
                 if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
+                if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 10) { return false; }
+
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
@@ -1030,6 +1033,8 @@ namespace CombatHandler.Doctor
                 && fightingTarget != null)
             {
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 10) { return false; }
 
                 if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 

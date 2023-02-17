@@ -466,30 +466,6 @@ namespace CombatHandler.Generic
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
-        //protected bool ReinforceSlugs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!perk.IsAvailable || fightingTarget == null) { return false; }
-
-        //    if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
-        //    //if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
-
-        //    return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-        //}
-
-        //protected bool Energize(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!perk.IsAvailable || fightingTarget == null) { return false; }
-
-        //    if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
-        //    //if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
-
-        //    return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-        //}
-
-
-
-
-
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable || !InCombat()
@@ -618,7 +594,7 @@ namespace CombatHandler.Generic
 
         protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable) { return false; }
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
 
             if (Time.NormalTime > CycleXpPerks + CycleXpPerksDelay)
             {
@@ -635,7 +611,7 @@ namespace CombatHandler.Generic
 
         protected bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable) { return false; }
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
@@ -646,7 +622,7 @@ namespace CombatHandler.Generic
         }
         protected bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable) { return false; }
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
@@ -1631,11 +1607,13 @@ namespace CombatHandler.Generic
             }
         }
 
-        #endregion
 
-        #region Checks
 
-        protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+            #endregion
+
+            #region Checks
+
+            protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 

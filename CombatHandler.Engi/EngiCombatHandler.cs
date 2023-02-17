@@ -4,6 +4,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -878,6 +879,17 @@ namespace CombatHandler.Engineer
         #endregion
 
         #region Pets
+
+        #region Follow
+
+        public void Petfollow(Pet pet)
+        {
+            if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
+                pet?.Follow();
+
+        }
+
+        #endregion
 
         #region Warp
 

@@ -124,7 +124,7 @@ namespace CombatHandler.NanoTechnician
 
             RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
 
-            // DeTaunt
+            //DeTaunt
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt);
 
             //Buffs

@@ -232,7 +232,7 @@ namespace CombatHandler.Bureaucrat
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
 
             //Pet Perks
-            RegisterPerkProcessor(PerkHash.Puppeteer, Puppeteer);
+            RegisterPerkProcessor(PerkHash.Puppeteer, PetPetCombatBuff);
 
             PluginDirectory = pluginDir;
 
@@ -1146,24 +1146,25 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-        public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
 
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
+        //public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
 
-                if (CanPerkPuppeteer(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
-            }
+        //    foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+        //    {
+        //        if (pet.Character == null) continue;
 
-            return false;
-        }
+        //        if (CanPerkPuppeteer(pet))
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = pet.Character;
+        //            return true;
+        //        }
+        //    }
+
+        //    return false;
+        //}
 
         #endregion
 
@@ -1460,10 +1461,10 @@ namespace CombatHandler.Bureaucrat
             return true;
         }
 
-        private bool CanPerkPuppeteer(Pet pet)
-        {
-            return pet.Type == PetType.Attack;
-        }
+        //private bool CanPerkPuppeteer(Pet pet)
+        //{
+        //    return pet.Type == PetType.Attack;
+        //}
 
         protected bool FindSpellNanoLineFallbackToId(Spell spell, Buff[] buffs, out Buff buff)
         {

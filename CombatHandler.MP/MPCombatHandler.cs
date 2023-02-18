@@ -192,7 +192,9 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
+            //Pet Perks
             RegisterPerkProcessor(PerkHash.ChannelRage, ChannelRage);
+            RegisterPerkProcessor(PerkHash.KenFi, PetPetCombatBuff);
 
             PluginDirectory = pluginDir;
 

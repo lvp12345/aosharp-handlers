@@ -179,7 +179,7 @@ namespace CombatHandler.Generic
             {PerkHash.InsuranceClaim , PerkType.Disabled},
             {PerkHash.JarringBurst , PerkType.TargetDamage},
             {PerkHash.KaMon , PerkType.TargetDamage},
-            {PerkHash.KenFi , PerkType.TargetDamage},
+            {PerkHash.KenFi , PerkType.Disabled},
             {PerkHash.KenSi , PerkType.TargetDamage},
             {PerkHash.KnowledgeEnhancer , PerkType.TargetDamage},
             {PerkHash.Lacerate , PerkType.Disabled},
@@ -404,7 +404,7 @@ namespace CombatHandler.Generic
             {PerkHash.PowerVolley , PerkType.TargetDamage},
             {PerkHash.ProgramOverload , PerkType.CombatBuff},
             {PerkHash.Pulverize , PerkType.TargetDamage},
-            {PerkHash.Puppeteer , PerkType.PetBuff},
+            {PerkHash.Puppeteer , PerkType.Disabled},
             {PerkHash.Purge1 , PerkType.Clease},
             {PerkHash.Purge2 , PerkType.Clease},
             {PerkHash.Purify , PerkType.TargetDamage},
@@ -510,6 +510,6 @@ namespace CombatHandler.Generic
 
     enum PerkType
     {
-        Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, CombatBuff, PetBuff, PetHeal, LEProc, Clease, Custom, Disabled, Unknown
+        Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, CombatBuff, PetBuff, PetHeal, LEProc, Clease, Custom, Disabled, Unknown 
     }
 }

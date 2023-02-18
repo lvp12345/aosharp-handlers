@@ -205,6 +205,7 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
+            //RegisterPerkProcessor(PerkHash.KenFi, KenFi, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
             RegisterItemProcessor(RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh, FlowerOfLife);
@@ -372,6 +373,25 @@ namespace CombatHandler.Generic
 
 
         #region Perks
+
+        public bool PetPerkCombatBuff(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (CanPerkPet(pet))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         public static bool SelfHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1872,6 +1892,11 @@ namespace CombatHandler.Generic
             {
                 RegisterPerkProcessor(perkAction.Hash, ToPerkConditionProcessor(perkConditionProcessor));
             }
+        }
+
+        private bool CanPerkPet(Pet pet)
+        {
+            return pet.Type == PetType.Attack;
         }
 
         //public static void Network_N3MessageSent(object s, N3Message n3Msg)

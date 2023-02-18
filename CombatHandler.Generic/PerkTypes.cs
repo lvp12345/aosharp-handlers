@@ -131,7 +131,7 @@ namespace CombatHandler.Generic
             {PerkHash.EnhancedHeal , PerkType.SelfHeal},
             {PerkHash.Escape , PerkType.Disabled},
             {PerkHash.EtherealTouch , PerkType.TargetDamage},
-            {PerkHash.EvasiveStance , PerkType.Custom},
+            {PerkHash.EvasiveStance , PerkType.Disabled},
             {PerkHash.ExplorationTeleportation , PerkType.Disabled},
             {PerkHash.Exultation , PerkType.TargetDamage},
             {PerkHash.FadeAnger , PerkType.TargetDamage},

@@ -159,8 +159,10 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
             //Debuffs
-            RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaphysicistMindDamageNanoDebuffs).OrderByStackingOrder(), WarmUpNuke);
+            RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
+            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
@@ -774,33 +776,19 @@ namespace CombatHandler.Metaphysicist
         #region Nukes
         private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
-            Spell singleNuke = Spell.List.FirstOrDefault(x => RelevantNanos.SingleTargetNukes.Contains(x.Id));
-
-            if (singleNuke != null)
-            {
-                if (fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-            }
+            if (fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
 
             return true;
         }
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
-            Spell warmupNuke = Spell.List.FirstOrDefault(x => RelevantNanos.WarmUpfNukes.Contains(x.Id));
-
-            if (warmupNuke != null)
-            {
-                if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-            }
-
+            if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
+            
             return true;
         }
 
@@ -1306,13 +1294,11 @@ namespace CombatHandler.Metaphysicist
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
             public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };
             public static readonly int[] MPCompositeNano = { 220343, 220341, 220339, 220337, 220335, 220333, 220331 };
-            public static readonly int[] WarmUpfNukes = { 270355, 125761, 29297, 125762, 29298, 29114 };
             public static readonly int[] PetDefensive = { 267601, 267600, 267599 };
             public static readonly int[] PetCleanse = { 269870, 269869 };
-
             public static readonly int[] PetShortTermDamage = { 267598, 205193, 151827, 205189, 205187, 151828, 205185, 151824, 205183,
             151830, 205191, 151826, 205195, 151825, 205197, 151831 };
-
+            public static readonly int[] WarmUpfNukes = { 270355, 125761, 29297, 125762, 29298, 29114 };
             public static readonly int[] SingleTargetNukes = { 267878, 125763, 125760, 125765, 125764 };
             public static readonly int[] InstillDamageBuffs = { 270800, 285101, 116814, 116817, 116812, 116816, 116821, 116815, 116813 };
             public static readonly int[] ChantBuffs = { 116819, 116818, 116811, 116820 };

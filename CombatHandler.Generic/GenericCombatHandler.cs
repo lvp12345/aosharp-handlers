@@ -663,7 +663,7 @@ namespace CombatHandler.Generic
         {
             if (!perk.IsAvailable) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }

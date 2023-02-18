@@ -232,7 +232,7 @@ namespace CombatHandler.Bureaucrat
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
 
             //Pet Perks
-            RegisterPerkProcessor(PerkHash.Puppeteer, PetPetCombatBuff);
+            RegisterPerkProcessor(PerkHash.Puppeteer, PetPerkCombatBuff);
 
             PluginDirectory = pluginDir;
 

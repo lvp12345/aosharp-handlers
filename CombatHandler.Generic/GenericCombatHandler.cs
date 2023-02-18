@@ -374,7 +374,7 @@ namespace CombatHandler.Generic
 
         #region Perks
 
-        public bool PetPetCombatBuff(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public bool PetPerkCombatBuff(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
 

@@ -194,7 +194,7 @@ namespace CombatHandler.Metaphysicist
 
             //Pet Perks
             RegisterPerkProcessor(PerkHash.ChannelRage, ChannelRage);
-            RegisterPerkProcessor(PerkHash.KenFi, PetPetCombatBuff);
+            RegisterPerkProcessor(PerkHash.KenFi, PetPerkCombatBuff);
 
             PluginDirectory = pluginDir;
 

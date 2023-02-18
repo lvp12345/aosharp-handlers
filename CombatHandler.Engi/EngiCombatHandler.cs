@@ -202,9 +202,11 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
             //RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
 
+            //Pet Perks
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
             RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
+            RegisterPerkProcessor(PerkHash.OptimizeBotProtocol, PetPerkCombatBuff);
 
             ResetTrimmers();
 

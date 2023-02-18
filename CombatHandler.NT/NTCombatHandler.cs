@@ -122,7 +122,7 @@ namespace CombatHandler.NanoTechnician
             RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianIncreaseMomentum, IncreaseMomentum, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianUnstableLibrary, UnstableLibrary, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
 
             // DeTaunt
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt);

@@ -42,8 +42,6 @@ namespace CombatHandler.Trader
         private static double _drainTick;
         private static double _ncuUpdateTime;
 
-        //private static bool _purpleReady = false;
-
         public TraderCombatHandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
@@ -132,7 +130,6 @@ namespace CombatHandler.Trader
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
             RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
-            //RegisterPerkProcessor(PerkHash.Energize, Energize);
 
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing);
@@ -246,8 +243,6 @@ namespace CombatHandler.Trader
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderBuffsView.xml");
@@ -265,8 +260,6 @@ namespace CombatHandler.Trader
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_debuffView)) { return; }
 
                 _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderDebuffsView.xml");
@@ -284,8 +277,6 @@ namespace CombatHandler.Trader
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "TraderHealingView" }, _healingView);
 
@@ -374,7 +365,6 @@ namespace CombatHandler.Trader
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderItemsView.xml");
@@ -437,8 +427,6 @@ namespace CombatHandler.Trader
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderProcsView.xml");
@@ -819,8 +807,6 @@ namespace CombatHandler.Trader
 
         private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (!IsSettingEnabled("Buffing")) { return false; }
-
             if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= 40) { return true; }
@@ -899,8 +885,6 @@ namespace CombatHandler.Trader
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
-
-
 
         #endregion
 
@@ -1272,7 +1256,6 @@ namespace CombatHandler.Trader
         #endregion
 
         #region Roots
-
         private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing")
@@ -1301,8 +1284,6 @@ namespace CombatHandler.Trader
         #endregion
 
         #region Misc
-
-
         private static bool IsMoving(SimpleChar target)
         {
             if (Playfield.Identity.Instance == 4021)

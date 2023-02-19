@@ -123,16 +123,19 @@ namespace CombatHandler.Enf
             //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
-            //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            //Taunts
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
+
+            //Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
+
+            //Weapon Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
@@ -140,22 +143,19 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.Melee2HB, Melee2HBBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleePierceBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeEnergyBuffWeapon);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
 
             //Team buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitiativeBuffs);
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
             RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TargetedHpBuff);
-            //RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GlobalGenericTeamBuff);
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
             RegisterSpellProcessor(RelevantNanos.ProdigiousStrength, StrengthBuff);
 
+            //Taunt Tools
             RegisterItemProcessor(244655, 244655, TauntTool);
 
-            //if (TauntTools.CanUseTauntTool())
-            //{
-            //    Item tauntTool = TauntTools.GetBestTauntTool();
-            //    RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
-            //}
+
 
             PluginDirectory = pluginDir;
 
@@ -183,7 +183,7 @@ namespace CombatHandler.Enf
             CycleBioRegrowthPerkDelay = Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay;
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
+        public Window[] windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)

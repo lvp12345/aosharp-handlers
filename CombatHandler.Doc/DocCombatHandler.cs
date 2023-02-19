@@ -142,8 +142,9 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
 
             //Hots
-            RegisterSpellProcessor(RelevantNanos.TeamDeathlessBlessing, TeamDeathlessBlessing);
-            RegisterSpellProcessor(RelevantNanos.IndividualShortHOTs, ShortHOT);
+            //RegisterSpellProcessor(RelevantNanos.TeamDeathlessBlessing, TeamDeathlessBlessing);
+            //RegisterSpellProcessor(RelevantNanos.IndividualShortHOTs, ShortHOT);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
@@ -1005,15 +1006,15 @@ namespace CombatHandler.Doctor
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ShortHOTSelection.TeamDeathlessBlessing != (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
+        //private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (ShortHOTSelection.TeamDeathlessBlessing != (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.IndividualShortHoTs))
-                CancelBuffs(RelevantNanos.IndividualShortHoTs);
+        //    if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.IndividualShortHoTs))
+        //        CancelBuffs(RelevantNanos.IndividualShortHoTs);
 
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
+        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //}
 
         #endregion
 
@@ -1193,7 +1194,7 @@ namespace CombatHandler.Doctor
         }
         public enum ShortHOTSelection
         {
-            None, Self, Team, TeamDeathlessBlessing
+            None, Self, Team
         }
         public enum ProcType1Selection
         {
@@ -1207,9 +1208,9 @@ namespace CombatHandler.Doctor
 
         private static class RelevantNanos
         {
-            public const int TeamDeathlessBlessing = 269455;
-            public static readonly Spell[] IndividualShortHOTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder()
-                .Where(spell => spell.Id != TeamDeathlessBlessing).ToArray();
+            //public const int TeamDeathlessBlessing = 269455;
+            //public static readonly Spell[] IndividualShortHOTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder()
+            //    .Where(spell => spell.Id != TeamDeathlessBlessing).ToArray();
             public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
                 42399, 43882, 43874, 43880, 42401 };
 

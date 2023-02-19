@@ -142,8 +142,6 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
 
             //Hots
-            //RegisterSpellProcessor(RelevantNanos.TeamDeathlessBlessing, TeamDeathlessBlessing);
-            //RegisterSpellProcessor(RelevantNanos.IndividualShortHOTs, ShortHOT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
             //Buffs
@@ -824,17 +822,17 @@ namespace CombatHandler.Doctor
             return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
         }
 
-        private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("LockCH"))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
+        //private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsSettingEnabled("LockCH"))
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = DynelManager.LocalPlayer;
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -934,7 +932,6 @@ namespace CombatHandler.Doctor
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-
         private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
@@ -961,7 +958,6 @@ namespace CombatHandler.Doctor
             return Buff(spell, NanoLine.DoctorShortHPBuffs, ref actionTarget);
         }
 
-        //Add raido options
         private bool NanoResistance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("NanoResistTeam"))
@@ -1005,16 +1001,6 @@ namespace CombatHandler.Doctor
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
-
-        //private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ShortHOTSelection.TeamDeathlessBlessing != (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
-
-        //    if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.IndividualShortHoTs))
-        //        CancelBuffs(RelevantNanos.IndividualShortHoTs);
-
-        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //}
 
         #endregion
 
@@ -1208,9 +1194,6 @@ namespace CombatHandler.Doctor
 
         private static class RelevantNanos
         {
-            //public const int TeamDeathlessBlessing = 269455;
-            //public static readonly Spell[] IndividualShortHOTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder()
-            //    .Where(spell => spell.Id != TeamDeathlessBlessing).ToArray();
             public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
                 42399, 43882, 43874, 43880, 42401 };
 
@@ -1224,7 +1207,7 @@ namespace CombatHandler.Doctor
 
             public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
 
-            public const int AlphaAndOmega = 42409;
+            //public const int AlphaAndOmega = 42409;
             public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
                 43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,

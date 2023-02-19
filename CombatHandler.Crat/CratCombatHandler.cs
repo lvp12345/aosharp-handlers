@@ -43,10 +43,10 @@ namespace CombatHandler.Bureaucrat
         private static View _itemView;
         private static View _perkView;
 
-        private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
-        private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
+        private readonly Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
+        private readonly Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
 
-        private Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
+        private readonly Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
             { PetType.Support, 0 }
@@ -147,10 +147,11 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, Papercut, CombatActionPriority.Low);
 
             //Buffs
-            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+            RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
+
+            //Nukes
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
-            RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
@@ -201,23 +202,24 @@ namespace CombatHandler.Bureaucrat
             }
             else
             {
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetBuff);
             }
 
             RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
+
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetTargetBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetTargetBuff);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetBuff);
             RegisterSpellProcessor(RelevantNanos.DroidDamageMatrix, DroidMatrixBuff);
             RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix, DroidMatrixBuff);
 
-            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, PetTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, PetSupportTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetSupportTargetBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetSupportTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
 
 
             //Pet Spawners
@@ -1410,7 +1412,7 @@ namespace CombatHandler.Bureaucrat
             return PetTargetBuff(NanoLine.PetShortTermDamageBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget);
         }
 
-        private bool PetTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget);
         }
@@ -1592,7 +1594,6 @@ namespace CombatHandler.Bureaucrat
             public const int MastersBidding = 268171;
             public const int PuissantVoidInertia = 224129;
             public const int ShacklesofObedience = 82463;
-            public const int CompositeAttribute = 223372;
             public const int CompositeMartialProwess = 302158;
             public const int CompositeMelee = 223360;
             public const int PetWarp = 209488;

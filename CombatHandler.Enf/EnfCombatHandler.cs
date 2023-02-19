@@ -123,16 +123,19 @@ namespace CombatHandler.Enf
             //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
-            //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
+            //Taunts
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
+
+            //Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
+
+            //Weapon Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
@@ -140,22 +143,17 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.Melee2HB, Melee2HBBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleePierceBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeEnergyBuffWeapon);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
 
             //Team buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitiativeBuffs);
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
             RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TargetedHpBuff);
-            //RegisterSpellProcessor(RelevantNanos.FOCUSED_ANGER, GlobalGenericTeamBuff);
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
             RegisterSpellProcessor(RelevantNanos.ProdigiousStrength, StrengthBuff);
 
+            //Taunt Tools
             RegisterItemProcessor(244655, 244655, TauntTool);
-
-            //if (TauntTools.CanUseTauntTool())
-            //{
-            //    Item tauntTool = TauntTools.GetBestTauntTool();
-            //    RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
-            //}
 
             PluginDirectory = pluginDir;
 
@@ -812,23 +810,7 @@ namespace CombatHandler.Enf
 
         #endregion
 
-        #region Perks
-
-        private bool TrollForm(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TrollForm") || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            return CyclePerks(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
-        #region Buffs
-
-        private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
-        }
+        #region Taunts
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -865,7 +847,7 @@ namespace CombatHandler.Enf
                 }
             }
 
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
                 if (fightingTarget != null)
@@ -880,14 +862,101 @@ namespace CombatHandler.Enf
             return false;
         }
 
-        private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Edged1H);
+            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Mongo") || !CanCast(spell)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => c.Health > 0
+                && c.Name == "Alien Heavy Patroller"
+                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
+
+            if (Time.NormalTime > _mongo + MongoDelay
+            && fightingTarget != null)
+            {
+                _mongo = Time.NormalTime;
+                return true;
+            }
+            return false;
         }
+
+        private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TauntProc")) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Perks
+
+        private bool TrollForm(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TrollForm") || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Buffs
+
+        private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
+
+            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + CycleAbsorbsDelay
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+            {
+                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+                _absorbs = Time.NormalTime;
+                return true;
+            }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool CycleRage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("CycleRage") && Time.NormalTime > _rage + CycleRageDelay
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+            {
+                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+                _rage = Time.NormalTime;
+                return true;
+            }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)) { return false; }
+
+            return true;
+        }
+
+        private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("CycleChallenger") && Time.NormalTime > _challenger + CycleChallengerDelay
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+            {
+                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+                _challenger = Time.NormalTime;
+                return true;
+            }
+
+            return false;
+        }
+
+        #region Weapon Buffs
 
         private bool Melee1HBBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Blunt1H);
+        }
+
+        private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Edged1H);
         }
 
         private bool Melee2HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -910,119 +979,21 @@ namespace CombatHandler.Enf
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.MeleeEnergy);
         }
 
-        private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CycleChallenger") && Time.NormalTime > _challenger + CycleChallengerDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            {
-                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-                _challenger = Time.NormalTime;
-                return true;
-            }
-
-            return false;
+            return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
         }
 
-        private bool CycleRage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("CycleRage") && Time.NormalTime > _rage + CycleRageDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            {
-                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-                _rage = Time.NormalTime;
-                return true;
-            }
-
-            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)) { return false; }
-
-            return true;
-        }
-
-        private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
-
-            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + CycleAbsorbsDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            {
-                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-                _absorbs = Time.NormalTime;
-                return true;
-            }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TauntProc")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Mongo") || !CanCast(spell)) { return false; }
-
-            if (DynelManager.NPCs.Any(c => c.Health > 0
-                    && c.Name == "Alien Heavy Patroller"
-                    && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
-
-            if (Time.NormalTime > _mongo + MongoDelay
-     && fightingTarget != null)
-            {
-                _mongo = Time.NormalTime;
-                return true;
-            }
-
-            //if (Time.NormalTime > _mongo + MongoDelay
-            //    && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            //{
-            //    _mongo = Time.NormalTime;
-            //    return DynelManager.NPCs.Any(c => c.Health > 0
-            //        && c.FightingTarget?.IsPet == false
-            //        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f);
-            //}
-
-            return false;
-        }
+        #endregion
 
         #endregion
 
         #region Team Buffs
 
-        protected bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("AbsorbACBuff")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        protected bool TargetedHpBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TargetedHpBuff")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
         protected bool InitiativeBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("InitiativeBuffs"))
                 return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-
-        protected bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
-
-           if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -1034,11 +1005,35 @@ namespace CombatHandler.Enf
             return GenericTeamBuff(spell, ref actionTarget);
         }
 
+        protected bool TargetedHpBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TargetedHpBuff")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
+
+        protected bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("AbsorbACBuff")) { return false; }
+
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
+
+        protected bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
+
+           if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
         #endregion
 
         #region Misc
 
-        private static class RelevantNanos
+    private static class RelevantNanos
         {
             public static readonly int[] SingleTargetTaunt = { 275014, 223123, 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
             public static readonly int[] Melee1HB = { 202846, 202844, 202842, 29630, 202840, 29644 };

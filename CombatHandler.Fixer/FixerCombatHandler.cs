@@ -75,7 +75,7 @@ namespace CombatHandler.Fixer
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("ShortHOTSelection", (int)ShortHOTSelection.None);
+            _settings.AddVariable("ShortHot", false);
             _settings.AddVariable("LongHOTSelection", (int)LongHOTSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);
@@ -110,21 +110,28 @@ namespace CombatHandler.Fixer
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
-            //Spells
+            //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), GlobalGenericBuff);
-
             RegisterSpellProcessor(RelevantNanos.NCU, NCU);
-            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
-            RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);
-            RegisterSpellProcessor(RelevantNanos.ShadowlandsRunspeed, SLRunspeed);
 
+            //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDecrease);
+
+            //Spawn Armor
             RegisterSpellProcessor(RelevantNanos.Grid, Grid);
             RegisterSpellProcessor(RelevantNanos.ShadowwebSpinner, ShadowwebSpinner);
+
+            //Hots
+            RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
+
+            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GlobalGenericBuff);
+
+            //Runspeed
+            RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);
+            RegisterSpellProcessor(RelevantNanos.ShadowlandsRunspeed, SLRunspeed);
 
             //Root/Snare
             RegisterSpellProcessor(RelevantNanos.SpinNanoweb, AOESnare, CombatActionPriority.High);
@@ -670,15 +677,37 @@ namespace CombatHandler.Fixer
             return Buff(spell, NanoLine.FixerNCUBuff, ref actionTarget);
         }
 
-        private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        #endregion
+
+        #region Debuffs
+        private bool EvasionDecrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ShortHOTSelection.Team == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
-                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
-
-            if (ShortHOTSelection.None == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return ToggledTargetDebuff("Evasion", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
+
+        #endregion
+
+        #region Spawn Armor
+
+        private bool Grid(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)
+                || ArmorSelection.Grid != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
+
+            return !Inventory.Items.Any(x => RelevantItems.Grid.Contains(x.HighId));
+        }
+
+        private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)
+                || ArmorSelection.ShadowwebSpinner != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
+
+            return !Inventory.Items.Any(x => RelevantItems.ShadowwebSpinner.Contains(x.HighId));
+        }
+
+        #endregion
+
+        #region Hots
 
         private bool LongHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -690,12 +719,16 @@ namespace CombatHandler.Fixer
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool SLRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || RunspeedSelection.Shadowlands != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
+            if (!IsSettingEnabled("ShortHOT")) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
+
+        #endregion
+
+        #region Runspeed
 
         private bool RKRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -709,56 +742,16 @@ namespace CombatHandler.Fixer
             return GenericTeamBuff(spell, ref actionTarget);
         }
 
-        private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SLRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)
-                || ArmorSelection.ShadowwebSpinner != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
+            if (IsInsideInnerSanctum() || RunspeedSelection.Shadowlands != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
 
-            return !Inventory.Items.Any(x => RelevantItems.ShadowwebSpinner.Contains(x.HighId));
-        }
-
-        private bool Grid(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)
-                || ArmorSelection.Grid != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
-
-            return !Inventory.Items.Any(x => RelevantItems.Grid.Contains(x.HighId));
-        }
-
-        #endregion
-
-        #region Debuffs
-        private bool EvasionDecrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledTargetDebuff("Evasion", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #endregion
 
         #region Snare
-
-        private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")
-                || !IsSettingEnabled("AOESnare") || !CanCast(spell)) { return false; }
-
-            SimpleChar target = DynelManager.Characters
-                    .Where(c => c.IsInLineOfSight
-                        && c.IsMoving
-                        && !c.Buffs.Contains(NanoLine.Root)
-                        && c.Name == "Alien Heavy Patroller")
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .FirstOrDefault();
-
-            if (target != null)
-            {
-                actionTarget.Target = target;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-
-            return false;
-        }
 
         private bool AOESnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -772,6 +765,29 @@ namespace CombatHandler.Fixer
                         && (c.Name == "Flaming Vengeance"
                             || c.Name == "Hand of the Colonel"
                             || c.Name == "Alien Seeker"))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.Target = target;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")
+                || !IsSettingEnabled("AOESnare") || !CanCast(spell)) { return false; }
+
+            SimpleChar target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && c.IsMoving
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && c.Name == "Alien Heavy Patroller")
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
@@ -826,7 +842,6 @@ namespace CombatHandler.Fixer
         private static class RelevantNanos
         {
             public const int GreaterPreservationMatrix = 275679;
-            public const int SuperiorInsuranceHack = 273352;
             public const int SpinNanoweb = 85216;
             public const int IntenseAgglutinativeNanoweb = 223143;
             public static readonly int[] ShadowlandsRunspeed = { 223125, 223131, 223129, 215718, 223127, 272416, 272415, 272414, 272413, 272412 };
@@ -837,7 +852,6 @@ namespace CombatHandler.Fixer
             public static readonly int[] Grid = { 155189, 155187, 155188, 155186 };
             public static readonly int[] ShadowwebSpinner = { 273349, 224422, 224420, 224418, 224416, 224414, 224412, 224410, 224408, 224405, 224403 };
             public static readonly int[] NCU = { 275043, 163095, 163094, 163087, 163085, 163083, 163081, 163079, 162995 };
-            //public static readonly Spell[] TeamShortHoTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder().Where(spell => spell.Identity.Instance != SuperiorInsuranceHack).ToArray();
             public static readonly Spell[] LongHOT = Spell.GetSpellsForNanoline(NanoLine.FixerLongHoT).OrderByStackingOrder().Where(spell => spell.Id != GreaterPreservationMatrix).ToArray();
         }
 
@@ -866,10 +880,7 @@ namespace CombatHandler.Fixer
         {
             None, RubiKa, Shadowlands
         }
-        public enum ShortHOTSelection
-        {
-            None, Self, Team
-        }
+
         public enum LongHOTSelection
         {
             None, Self, Team

@@ -141,6 +141,15 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(RelevantNanos.DetauntProcs, DetauntProc);
             RegisterSpellProcessor(RelevantNanos.DOTProcs, DamageProc);
 
+            //Team Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, CritIncrease);
+
+            //Debuffs
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffs, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DOTA, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff, CombatActionPriority.Low);
+
             //False Profs
             RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);
             RegisterSpellProcessor(RelevantNanos.FalseProfAdv, FalseProfAdventurer);
@@ -154,22 +163,10 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(RelevantNanos.FalseProfSol, FalseProfSoldier);
             RegisterSpellProcessor(RelevantNanos.FalseProfTrader, FalseProfTrader);
 
-            //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, CritIncrease);
-
-            //Debuffs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffs, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DOTA, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff, CombatActionPriority.Low);
-
-            //False prof
-
             //Metaphysicist
             //Pets
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AttackPets).OrderByStackingOrder(), AttackPetSpawner);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealPets).OrderByStackingOrder(), HealPetSpawner);
-
 
             //Soldier
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
@@ -245,7 +242,6 @@ namespace CombatHandler.Agent
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentItemsView.xml");
@@ -366,7 +362,6 @@ namespace CombatHandler.Agent
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentProcsView.xml");
@@ -383,8 +378,7 @@ namespace CombatHandler.Agent
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
-            {
-                //Cannot re-use the view, as crashes client. I don't know why.
+            {.
                 if (window.Views.Contains(_falseProfView)) { return; }
 
                 _falseProfView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentFalseProfsView.xml");
@@ -422,7 +416,6 @@ namespace CombatHandler.Agent
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentBuffsView.xml");
@@ -1118,17 +1111,17 @@ namespace CombatHandler.Agent
         private static class RelevantNanos
         {
             public static int[] DetauntProcs = { 226437, 226435, 226433, 226431, 226429, 226427 };
-            public static int[] FalseProfDoc = { 117210, 117221, 32033 }; //117210, 117221, 32033
-            public static int[] FalseProfEng = { 117213, 117224, 32034 };  //117213, 117224, 32034
-            public static int[] FalseProfSol = { 117216, 117227, 32038 };  //117216, 117227, 32038
-            public static int[] FalseProfCrat = { 117209, 117220, 32032 }; //117209, 117220, 32032
-            public static int[] FalseProfTrader = { 117211, 117222, 32040 }; //117211, 117222, 32040
-            public static int[] FalseProfAdv = { 117214, 117225, 32030 }; //117214, 117225,  32030
-            public static int[] FalseProfMp = { 117208, 117219, 32036 }; //117208, 117219, 32036
-            public static int[] FalseProfFixer = { 117212, 117223, 32039 };  //117212, 117223, 32039
-            public static int[] FalseProfEnf = { 117217, 117228, 32041 };  //117217, 117228, 32041
-            public static int[] FalseProfMa = { 117215, 117226, 32035 };  //117215, 117226, 32035
-            public static int[] FalseProfNt = { 117207, 117218, 32037 }; //117207, 117218, 32037
+            public static int[] FalseProfDoc = { 117210, 117221, 32033 };
+            public static int[] FalseProfEng = { 117213, 117224, 32034 };
+            public static int[] FalseProfSol = { 117216, 117227, 32038 };
+            public static int[] FalseProfCrat = { 117209, 117220, 32032 };
+            public static int[] FalseProfTrader = { 117211, 117222, 32040 };
+            public static int[] FalseProfAdv = { 117214, 117225, 32030 };
+            public static int[] FalseProfMp = { 117208, 117219, 32036 };
+            public static int[] FalseProfFixer = { 117212, 117223, 32039 };
+            public static int[] FalseProfEnf = { 117217, 117228, 32041 };
+            public static int[] FalseProfMa = { 117215, 117226, 32035 };
+            public static int[] FalseProfNt = { 117207, 117218, 32037 };
             public static int[] DOTProcs = { 226425, 226423, 226421, 226419, 226417, 226415, 226413, 226410 };
             public static int[] TeamCritBuffs = { 160791, 160789, 160787 };
             public static int AssassinsAimedShot = 275007;
@@ -1141,10 +1134,6 @@ namespace CombatHandler.Agent
                 43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
                 28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
-
-            //MP
-            //public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
-            //public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };
 
         }
         public enum FalseProfSelection

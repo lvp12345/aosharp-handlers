@@ -38,7 +38,7 @@ namespace CombatHandler.Doctor
         private static View _itemView;
         private static View _perkView;
 
-        private static bool _asyncToggle = false;
+        //private static bool _asyncToggle = false;
 
         private static double _ncuUpdateTime;
 

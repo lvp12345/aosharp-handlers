@@ -378,7 +378,7 @@ namespace CombatHandler.Agent
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
-            {.
+            {
                 if (window.Views.Contains(_falseProfView)) { return; }
 
                 _falseProfView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentFalseProfsView.xml");

@@ -81,19 +81,6 @@ namespace CombatHandler.Shade
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.BlackenedLegacy);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.Blackheart);
 
-            //IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
-
-            //IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
-
-            //Network.N3MessageSent += Network_N3MessageSent;
-            //Team.TeamRequest += Team_TeamRequest;
-
-            //Chat.RegisterCommand("reform", ReformCommand);
-            //Chat.RegisterCommand("form", FormCommand);
-            //Chat.RegisterCommand("disband", DisbandCommand);
-            //Chat.RegisterCommand("convert", RaidCommand);
-
             _settings.AddVariable("Runspeed", false);
             _settings.AddVariable("RunspeedTeam", false);
 

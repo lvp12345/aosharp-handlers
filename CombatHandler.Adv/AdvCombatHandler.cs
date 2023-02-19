@@ -120,7 +120,7 @@ namespace CombatHandler.Adventurer
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
 
-            //Spells
+            //Healing
             RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHealing, CombatActionPriority.High);
@@ -138,9 +138,7 @@ namespace CombatHandler.Adventurer
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
             RegisterSpellProcessor(RelevantNanos.LearningbyDoing, XPBonus);
             RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs, TeamRunSpeedBuff);
-
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
-
 
             //Morphs
             RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
@@ -148,6 +146,7 @@ namespace CombatHandler.Adventurer
             RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
             RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
 
+            //Morph Buffs
             RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
             RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
             RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
@@ -173,9 +172,6 @@ namespace CombatHandler.Adventurer
             StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
             BioRegrowthPercentage = Config.CharSettings[Game.ClientInst].BioRegrowthPercentage;
             CycleBioRegrowthPerkDelay = Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay;
-
-            //Items
-            //RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
 
         }
 
@@ -228,8 +224,6 @@ namespace CombatHandler.Adventurer
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvBuffsView.xml");
@@ -246,8 +240,6 @@ namespace CombatHandler.Adventurer
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_healingView)) { return; }
 
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvHealingView.xml");
@@ -357,7 +349,6 @@ namespace CombatHandler.Adventurer
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvItemsView.xml");
@@ -420,8 +411,6 @@ namespace CombatHandler.Adventurer
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvProcsView.xml");
@@ -439,8 +428,6 @@ namespace CombatHandler.Adventurer
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_morphView)) { return; }
 
                 _morphView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvMorphView.xml");

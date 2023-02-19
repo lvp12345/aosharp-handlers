@@ -155,8 +155,6 @@ namespace CombatHandler.Enf
             //Taunt Tools
             RegisterItemProcessor(244655, 244655, TauntTool);
 
-
-
             PluginDirectory = pluginDir;
 
             BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
@@ -183,7 +181,7 @@ namespace CombatHandler.Enf
             CycleBioRegrowthPerkDelay = Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay;
         }
 
-        public Window[] windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
@@ -829,57 +827,6 @@ namespace CombatHandler.Enf
         {
             return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
         }
-
-        private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-            if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                SimpleChar mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget != null
-                        && c.FightingTarget?.Profession != Profession.Enforcer
-                        && c.IsInLineOfSight
-                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.Name != "Alien Heavy Patroller"
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.MaxHealth)
-                    .FirstOrDefault();
-
-                if (mob != null)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = mob;
-                    return true;
-                }
-                else if (fightingTarget != null)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
-
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32() 
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                if (fightingTarget != null)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         private bool Melee1HEBuffWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Edged1H);
@@ -956,40 +903,6 @@ namespace CombatHandler.Enf
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TauntProc")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Mongo") || !CanCast(spell)) { return false; }
-
-            if (DynelManager.NPCs.Any(c => c.Health > 0
-                    && c.Name == "Alien Heavy Patroller"
-                    && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
-
-            if (Time.NormalTime > _mongo + MongoDelay
-     && fightingTarget != null)
-            {
-                _mongo = Time.NormalTime;
-                return true;
-            }
-
-            //if (Time.NormalTime > _mongo + MongoDelay
-            //    && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            //{
-            //    _mongo = Time.NormalTime;
-            //    return DynelManager.NPCs.Any(c => c.Health > 0
-            //        && c.FightingTarget?.IsPet == false
-            //        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 15f);
-            //}
-
-            return false;
-        }
-
         #endregion
 
         #region Team Buffs
@@ -1034,11 +947,88 @@ namespace CombatHandler.Enf
             return GenericTeamBuff(spell, ref actionTarget);
         }
 
+    #endregion
+
+        #region Taunts
+
+        private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("TauntProc")) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Mongo") || !CanCast(spell)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => c.Health > 0
+                && c.Name == "Alien Heavy Patroller"
+                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
+
+            if (Time.NormalTime > _mongo + MongoDelay
+            && fightingTarget != null)
+            {
+                _mongo = Time.NormalTime;
+                return true;
+            }
+            return false;
+        }
+        private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+            {
+                SimpleChar mob = DynelManager.NPCs
+                    .Where(c => c.IsAttacking && c.FightingTarget != null
+                        && c.FightingTarget?.Profession != Profession.Enforcer
+                        && c.IsInLineOfSight
+                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                        && c.Name != "Alien Heavy Patroller"
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.MaxHealth)
+                    .FirstOrDefault();
+
+                if (mob != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
+                    return true;
+                }
+                else if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+            {
+                if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region Misc
 
-        private static class RelevantNanos
+    private static class RelevantNanos
         {
             public static readonly int[] SingleTargetTaunt = { 275014, 223123, 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
             public static readonly int[] Melee1HB = { 202846, 202844, 202842, 29630, 202840, 29644 };

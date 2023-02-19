@@ -124,10 +124,8 @@ namespace CombatHandler.Soldier
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
-            //RegisterPerkProcessor(PerkHash.ReinforceSlugs, ReinforceSlugs);
-            //RegisterPerkProcessor(PerkHash.Energize, Energize);
 
-            // DeTaunt
+            //DeTaunt
             RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);
 
             //Heals
@@ -162,13 +160,6 @@ namespace CombatHandler.Soldier
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.Precognition, Evades);
-
-            // Needs work for 2nd tanking Abmouth and Ayjous
-            //if (TauntTools.CanTauntTool())
-            //{
-            //    Item tauntTool = TauntTools.GetBestTauntTool();
-            //    RegisterItemProcessor(tauntTool.LowId, tauntTool.HighId, TauntTool);
-            //}
 
             PluginDirectory = pluginDir;
 
@@ -236,7 +227,7 @@ namespace CombatHandler.Soldier
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
+
 
                 if (window.Views.Contains(_buffView)) { return; }
 
@@ -254,8 +245,6 @@ namespace CombatHandler.Soldier
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                //Cannot stop Multi-Tabs. Easy fix would be correct naming of views to reference against WindowOptions - options.Name
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "SoldierHealingView" }, _healingView);
 
@@ -376,7 +365,6 @@ namespace CombatHandler.Soldier
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierItemsView.xml");
@@ -439,8 +427,6 @@ namespace CombatHandler.Soldier
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierProcsView.xml");
@@ -782,7 +768,6 @@ namespace CombatHandler.Soldier
         #region DeTaunt
 
         private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
 
@@ -1099,7 +1084,6 @@ namespace CombatHandler.Soldier
 
         private static class RelevantNanos
         {
-            //public static readonly int[] SolDrainHeal = { 29241, 301897 };
             public static readonly int[] TauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
             29218, 100205, 100206, 100208, 29228};
             public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211};

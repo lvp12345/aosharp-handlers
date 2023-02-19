@@ -114,21 +114,22 @@ namespace CombatHandler.Fixer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), GlobalGenericBuff);
-
             RegisterSpellProcessor(RelevantNanos.NCU, NCU);
-            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
-            RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);
-            RegisterSpellProcessor(RelevantNanos.ShadowlandsRunspeed, SLRunspeed);
-
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDecrease);
+
+            //Spawn Armor
             RegisterSpellProcessor(RelevantNanos.Grid, Grid);
             RegisterSpellProcessor(RelevantNanos.ShadowwebSpinner, ShadowwebSpinner);
 
             //Hots
             RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
+
+            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GlobalGenericBuff);
+
+            //Runspeed
+            RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);
+            RegisterSpellProcessor(RelevantNanos.ShadowlandsRunspeed, SLRunspeed);
 
             //Root/Snare
             RegisterSpellProcessor(RelevantNanos.SpinNanoweb, AOESnare, CombatActionPriority.High);
@@ -841,7 +842,6 @@ namespace CombatHandler.Fixer
             public static readonly int[] Grid = { 155189, 155187, 155188, 155186 };
             public static readonly int[] ShadowwebSpinner = { 273349, 224422, 224420, 224418, 224416, 224414, 224412, 224410, 224408, 224405, 224403 };
             public static readonly int[] NCU = { 275043, 163095, 163094, 163087, 163085, 163083, 163081, 163079, 162995 };
-            //public static readonly Spell[] TeamShortHoTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder().Where(spell => spell.Identity.Instance != SuperiorInsuranceHack).ToArray();
             public static readonly Spell[] LongHOT = Spell.GetSpellsForNanoline(NanoLine.FixerLongHoT).OrderByStackingOrder().Where(spell => spell.Id != GreaterPreservationMatrix).ToArray();
         }
 

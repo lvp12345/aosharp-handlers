@@ -183,15 +183,15 @@ namespace CombatHandler.Engineer
 
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
 
-            RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing);
-            RegisterSpellProcessor(RelevantNanos.PetHealingGreater, PetHealingGreater);
-
-
             RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
             RegisterSpellProcessor(RelevantNanos.SedativeInjectors, SedativeInjectors);
+
+            //Pet heals
+            RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing);
+            RegisterSpellProcessor(RelevantNanos.PetHealingGreater, PetHealingGreater);
 
             //Pet Aura
             RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
@@ -209,14 +209,13 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
             RegisterPerkProcessor(PerkHash.OptimizeBotProtocol, PetPerkCombatBuff);
 
-            ResetTrimmers();
-
             //Pet Items
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
             RegisterItemProcessor(new int[] { RelevantTrimmers.IncreaseAggressivenessLow, RelevantTrimmers.IncreaseAggressivenessHigh }, PetAggressiveTrimmer);
             RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToOffenseLow, RelevantTrimmers.DivertEnergyToOffenseHigh }, PetDivertOffTrimmer);
             RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToHitpointsLow, RelevantTrimmers.DivertEnergyToHitpointsHigh }, PetDivertHpTrimmer);
 
+            ResetTrimmers();
 
             PluginDirectory = pluginDir;
 
@@ -885,12 +884,12 @@ namespace CombatHandler.Engineer
 
         #region Follow
 
-        public void Petfollow(Pet pet)
-        {
-            if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
-                pet?.Follow();
+        //public void Petfollow(Pet pet)
+        //{
+        //    if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
+        //        pet?.Follow();
 
-        }
+        //}
 
         #endregion
 

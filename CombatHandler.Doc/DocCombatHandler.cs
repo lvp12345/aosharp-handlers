@@ -38,7 +38,7 @@ namespace CombatHandler.Doctor
         private static View _itemView;
         private static View _perkView;
 
-        private static bool _asyncToggle = false;
+        //private static bool _asyncToggle = false;
 
         private static double _ncuUpdateTime;
 
@@ -104,7 +104,7 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("HealDeltaBuff", false);
 
             _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
-            _settings.AddVariable("ShortHOTSelection", (int)ShortHOTSelection.None);
+            _settings.AddVariable("ShortHOT", false);
 
             _settings.AddVariable("CH", true);
 
@@ -132,15 +132,17 @@ namespace CombatHandler.Doctor
             RegisterPerkProcessor(PerkHash.BattlegroupHeal2, BattleGroupHeal2);
             RegisterPerkProcessor(PerkHash.BattlegroupHeal3, BattleGroupHeal3);
             RegisterPerkProcessor(PerkHash.BattlegroupHeal4, BattleGroupHeal4);
-            //RegisterPerkProcessor(PerkHash.Energize, Energize);
+
 
             //Healing
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
-
             RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
+
+            //Hots
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
@@ -148,14 +150,12 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.TeamDeathlessBlessing, TeamDeathlessBlessing);
-            RegisterSpellProcessor(RelevantNanos.IndividualShortHOTs, ShortHOT);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), HealDeltaBuff);
+
             RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
             RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
 
@@ -814,11 +814,41 @@ namespace CombatHandler.Doctor
 
         #region Healing
 
+
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
 
             return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
+        }
+
+        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HealPercentage == 0) { return false; }
+
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                if (Team.IsInTeam)
+                {
+                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                        .Where(c => Team.Members
+                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                             && c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                        .ToList();
+
+                    if (dyingTeamMember.Count >= 4) { return false; }
+                }
+
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            }
+
+            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            }
+
+            return false;
         }
 
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -851,33 +881,23 @@ namespace CombatHandler.Doctor
             return false;
         }
 
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HealPercentage == 0) { return false; }
-
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (IsSettingEnabled("LockCH"))
             {
-                if (Team.IsInTeam)
-                {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                             && c.HealthPercent <= 85 && c.HealthPercent >= 50)
-                        .ToList();
-
-                    if (dyingTeamMember.Count >= 4) { return false; }
-                }
-
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-            }
-
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
             }
 
             return false;
+        }
+
+        private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("ShortHOT")) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -895,6 +915,14 @@ namespace CombatHandler.Doctor
                 return GenericTeamBuff(spell, ref actionTarget);
 
             if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool NanoResistance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("NanoResistTeam"))
+                return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -919,6 +947,21 @@ namespace CombatHandler.Doctor
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        protected bool HealDeltaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("HealDeltaBuff"))
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
 
         private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -946,65 +989,12 @@ namespace CombatHandler.Doctor
             return Buff(spell, NanoLine.DoctorShortHPBuffs, ref actionTarget);
         }
 
-        //Add raido options
-        private bool NanoResistance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("NanoResistTeam"))
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
-        protected bool HealDeltaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("HealDeltaBuff"))
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-
-        // Template for all
-        private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //We use this logic because it has radio options
-            //If not we use GenericCombatBuff as the processor condition
-
-            if (ShortHOTSelection.Team == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32())
-                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
-
-            if (ShortHOTSelection.None == (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
-
-            //We allow here for our own input of NanoLine in ref to Supazooted
-            //NanoLine.TraderTeamSkillWranglerBuff
-            //Different to the spell.NanoLine
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
         private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
                 return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
 
             if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool TeamDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ShortHOTSelection.TeamDeathlessBlessing != (ShortHOTSelection)_settings["ShortHOTSelection"].AsInt32()) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.IndividualShortHoTs))
-                CancelBuffs(RelevantNanos.IndividualShortHoTs);
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -1146,17 +1136,6 @@ namespace CombatHandler.Doctor
 
         #region Misc
 
-        private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("LockCH"))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            return false;
-        }
         public enum InitBuffSelection
         {
             None, Self, Team
@@ -1196,10 +1175,7 @@ namespace CombatHandler.Doctor
         {
             None, Self, Team
         }
-        public enum ShortHOTSelection
-        {
-            None, Self, Team, TeamDeathlessBlessing
-        }
+
         public enum ProcType1Selection
         {
             DangerousCulture, Antiseptic, MuscleMemory, BloodTransfusion, RestrictiveBandaging
@@ -1212,11 +1188,8 @@ namespace CombatHandler.Doctor
 
         private static class RelevantNanos
         {
-            public const int TeamDeathlessBlessing = 269455;
-            public static readonly Spell[] IndividualShortHOTs = Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder()
-                .Where(spell => spell.Id != TeamDeathlessBlessing).ToArray();
-            public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
-                42399, 43882, 43874, 43880, 42401 };
+            //public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
+            //    42399, 43882, 43874, 43880, 42401 };
 
             public const int ImprovedLC = 275011;
             public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()

@@ -43,10 +43,10 @@ namespace CombatHandler.Bureaucrat
         private static View _itemView;
         private static View _perkView;
 
-        private Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
-        private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
+        private readonly Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
+        private readonly Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
 
-        private Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
+        private readonly Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
             { PetType.Support, 0 }
@@ -88,7 +88,7 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
             _settings.AddVariable("Kits", true);
 
@@ -109,22 +109,22 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
             _settings.AddVariable("BuffPets", true);
-            _settings.AddVariable("WarpPets", true);
+            _settings.AddVariable("WarpPets", false);
 
             _settings.AddVariable("MastersBidding", false);
 
-            _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
-            _settings.AddVariable("RedTapeSelection", (int)RedTapeSelection.None);
-            _settings.AddVariable("IntensifyStressSelection", (int)IntensifyStressSelection.None);
+            _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.Boss);
+            _settings.AddVariable("RedTapeSelection", (int)RedTapeSelection.Boss);
+            _settings.AddVariable("IntensifyStressSelection", (int)IntensifyStressSelection.Boss);
 
             _settings.AddVariable("DivertTrimmer", true);
             _settings.AddVariable("TauntTrimmer", true);
             _settings.AddVariable("AggDefTrimmer", true);
 
-            _settings.AddVariable("Nuking", false);
-            _settings.AddVariable("Root", false);
+            _settings.AddVariable("Nuking", true);
+            _settings.AddVariable("Root", true);
 
-            _settings.AddVariable("CycleXpPerks", true);
+            _settings.AddVariable("CycleXpPerks", false);
 
             _settings.AddVariable("Calm12Man", false);
             //_settings.AddVariable("CalmSector7", false);
@@ -147,9 +147,6 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, Papercut, CombatActionPriority.Low);
 
             //Buffs
-            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
-            RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
 
             //Team Buffs
@@ -176,6 +173,9 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(), RedTape, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(), IntensifyStress, CombatActionPriority.High);
 
+            //Nukes
+            RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
+            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
 
             //Calms
             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalm, CombatActionPriority.High);
@@ -194,6 +194,10 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
+            //Pet Spawners
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), CarloSpawner);
+            RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), RobotSpawner);
+
             //Pet Buffs
             if (Spell.Find(RelevantNanos.CorporateStrategy, out Spell spell))
             {
@@ -201,38 +205,36 @@ namespace CombatHandler.Bureaucrat
             }
             else
             {
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetTargetBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetBuff);
             }
 
-            RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
-            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetTargetBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetTargetBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.DroidDamageMatrix, DroidMatrixBuff);
-            RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix, DroidMatrixBuff);
-
-            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, PetTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeAttribute, PetSupportTargetBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetSupportTargetBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetSupportTargetBuff);
 
+            RegisterSpellProcessor(RelevantNanos.DroidDamageMatrix, DroidMatrixBuff);
+            RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix, DroidMatrixBuff);
 
-            //Pet Spawners
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), CarloSpawner);
-            RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), RobotSpawner);
+            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
+
+            RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
+
+            //Pet warp
+            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
 
             //Pet Trimmers
-            ResetTrimmers();
-
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness, PetAggressiveTrimmer);
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
 
+            ResetTrimmers();
+
             //Pet Perks
-            RegisterPerkProcessor(PerkHash.Puppeteer, Puppeteer);
+            RegisterPerkProcessor(PerkHash.Puppeteer, PetPerkCombatBuff);
 
             PluginDirectory = pluginDir;
 
@@ -830,87 +832,203 @@ namespace CombatHandler.Bureaucrat
 
         #endregion
 
-        #region Calms
+        #region Buffs
 
-        //private bool CalmSector7(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Buffing")) { return false; }
-
-        //    if (!CanCast(spell)) { return false; }
-
-        //    if (!IsSettingEnabled("CalmSector7")) { return false; }
-
-        //    SimpleChar target = DynelManager.NPCs
-        //        .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-        //        .Where(c => c.IsInLineOfSight)
-        //        .Where(c => c.Name == "Kyr'Ozch Guardian")
-        //        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
-        //        .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-        //        .Where(c => c.MaxHealth < 1000000)
-        //        .FirstOrDefault();
-
-        //    if (target != null)
-        //    {
-        //        actionTarget.Target = target;
-        //        actionTarget.ShouldSetTarget = true;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-        private bool RKCalm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool PistolSelfOnly(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
 
-            if (CalmingSelection.RK != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
-                || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
+        private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("NanoDeltaTeam"))
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        private bool PsyIntBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("NeuronalStimulatorTeam"))
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool CutRedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("CutRedTape"))
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Auras
+
+        private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+                || fightingTarget == null) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+
+
+
+
+        #endregion
+
+        #region Debuffs
+
+        private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (InitDebuffSelection.None == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()) { return false; }
+
+            if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000)
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .FirstOrDefault();
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
-            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
-            {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000
-                        && c.FightingTarget != null
-                        && !AttackingMob(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .FirstOrDefault();
+            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
 
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
+            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
             return false;
         }
+
+        private bool RedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (RedTapeSelection.None == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()) { return false; }
+
+            if (RedTapeSelection.Boss == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (RedTapeSelection.Area == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
+
+            if (RedTapeSelection.Target == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
+
+        private bool IntensifyStress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IntensifyStressSelection.None == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()) { return false; }
+
+            if (IntensifyStressSelection.Boss == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (IntensifyStressSelection.Target == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Nukes
+
+        private bool WorkplaceDepressionTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Nuking")
+                || fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)
+                || (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000)) { return false; }
+
+            return true;
+        }
+        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Nuking")) { return false; }
+
+            if (Spell.Find(273631, out Spell workplace))
+            {
+                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842) &&
+                    ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000)
+                    || fightingTarget.MaxHealth > 1000000)) { return false; }
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Calms
 
         private bool SLCalm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1016,6 +1134,59 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
+        private bool RKCalm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing")) { return false; }
+
+            if (CalmingSelection.RK != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
+                || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
+
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private bool Calm12Man(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Calm12Man") || !CanCast(spell)) { return false; }
@@ -1037,232 +1208,34 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-        #endregion
+        //private bool CalmSector7(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Buffing")) { return false; }
 
-        #region Buffs
+        //    if (!CanCast(spell)) { return false; }
 
-        #region Auras
+        //    if (!IsSettingEnabled("CalmSector7")) { return false; }
 
-        private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+        //    SimpleChar target = DynelManager.NPCs
+        //        .Where(c => !debuffOSTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+        //        .Where(c => c.IsInLineOfSight)
+        //        .Where(c => c.Name == "Kyr'Ozch Guardian")
+        //        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f) //Is in range for debuff (we assume weapon range == debuff range)
+        //        .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+        //        .Where(c => c.MaxHealth < 1000000)
+        //        .FirstOrDefault();
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
+        //    if (target != null)
+        //    {
+        //        actionTarget.Target = target;
+        //        actionTarget.ShouldSetTarget = true;
+        //        return true;
+        //    }
 
-        private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+        //    return false;
+        //}
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
 
-        private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
-        protected bool PistolSelfOnly(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
-        private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("NanoDeltaTeam"))
-                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
-        private bool PsyIntBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("NeuronalStimulatorTeam"))
-                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        protected bool CutRedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("CutRedTape")) 
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || !IsSettingEnabled("MastersBidding")) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
-                {
-                    if (spell.IsReady)
-                        spell.Cast(pet.Character, true);
-                }
-            }
-
-            return false;
-        }
-
-        public bool Puppeteer(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (CanPerkPuppeteer(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        #region Debuffs
-
-        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Nuking")) { return false; }
-
-            if (Spell.Find(273631, out Spell workplace))
-            {
-                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842) &&
-                    ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000)
-                    || fightingTarget.MaxHealth > 1000000)) { return false; }
-            }
-
-            return true;
-        }
-
-        private bool WorkplaceDepressionTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Nuking")
-                || fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)
-                || (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000)) { return false; }
-
-            return true;
-        }
-
-        private bool IntensifyStress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IntensifyStressSelection.None == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()) { return false; }
-
-            if (IntensifyStressSelection.Boss == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (IntensifyStressSelection.Target == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
-        private bool RedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (RedTapeSelection.None == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()) { return false; }
-
-            if (RedTapeSelection.Boss == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (RedTapeSelection.Area == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (RedTapeSelection.Target == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
-        private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (InitDebuffSelection.None == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()) { return false; }
-
-            if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
 
         #endregion
 
@@ -1316,34 +1289,97 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-            #endregion
+        #endregion
 
-            #region Pets
+        #region Pets
 
-            #region Trimmers
+        #region Spawn Pets
 
-            protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CarloSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
+            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool RobotSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
+            return PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Buffs
+
+        private bool CorporateStrategy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetTargetBuff(NanoLine.PetShortTermDamageBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool PetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool PetSupportTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool DroidMatrixBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
 
-                if (pet.Type == PetType.Attack
-                        && CanDivertOffTrim(pet))
+                if (RobotNeedsBuff(spell, pet))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
-                    petTrimmedOffDiv[PetType.Attack] = true;
-                    _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
-                    _lastTrimTime = Time.NormalTime;
                     return true;
                 }
             }
 
             return false;
         }
+
+        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || !IsSettingEnabled("MastersBidding")) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
+                {
+                    if (spell.IsReady)
+                        spell.Cast(pet.Character, true);
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Warp
+
+        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+
+            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
+        }
+
+        #endregion
+
+        #region Trimmers
 
         protected bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1389,48 +1425,22 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-        #endregion
-
-        #region Warp
-
-        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
-
-            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
-        }
-
-        #endregion
-
-        #region Buffs
-
-        private bool CorporateStrategy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return PetTargetBuff(NanoLine.PetShortTermDamageBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool PetTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool PetSupportTargetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool DroidMatrixBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!IsSettingEnabled("DivertTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
 
-                if (RobotNeedsBuff(spell, pet))
+                if (pet.Type == PetType.Attack
+                        && CanDivertOffTrim(pet))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
+                    petTrimmedOffDiv[PetType.Attack] = true;
+                    _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
+                    _lastTrimTime = Time.NormalTime;
                     return true;
                 }
             }
@@ -1460,11 +1470,6 @@ namespace CombatHandler.Bureaucrat
             return true;
         }
 
-        private bool CanPerkPuppeteer(Pet pet)
-        {
-            return pet.Type == PetType.Attack;
-        }
-
         protected bool FindSpellNanoLineFallbackToId(Spell spell, Buff[] buffs, out Buff buff)
         {
             if (buffs.Find(spell.Nanoline, out Buff buffFromNanoLine))
@@ -1485,20 +1490,6 @@ namespace CombatHandler.Bureaucrat
 
             buff = null;
             return false;
-        }
-
-        protected bool CarloSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool RobotSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget);
         }
 
         protected bool CanTrim()
@@ -1591,7 +1582,6 @@ namespace CombatHandler.Bureaucrat
             public const int MastersBidding = 268171;
             public const int PuissantVoidInertia = 224129;
             public const int ShacklesofObedience = 82463;
-            public const int CompositeAttribute = 223372;
             public const int CompositeMartialProwess = 302158;
             public const int CompositeMelee = 223360;
             public const int PetWarp = 209488;

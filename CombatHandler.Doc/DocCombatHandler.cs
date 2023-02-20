@@ -142,8 +142,6 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
 
-            //RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
-
             //Hots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
@@ -1130,22 +1128,6 @@ namespace CombatHandler.Doctor
 
         #region Items
 
-        //private bool TOTWHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-
-        //    if (HealPercentage == 0) { return false; }
-
-        //    if (IsSettingEnabled("TOTWBooks"))
-
-        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
-
-        //    if (DynelManager.LocalPlayer.HealthPercent < 60)) 
-
-
-        //                    { return false; }
-
-        //}
-
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("TOTWBooks")) { return false; }
@@ -1156,7 +1138,7 @@ namespace CombatHandler.Doctor
             {
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent < 60
+                        && c.HealthPercent < 40
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
@@ -1177,7 +1159,7 @@ namespace CombatHandler.Doctor
             }
 
 
-            if (DynelManager.LocalPlayer.HealthPercent < 60)
+            if (DynelManager.LocalPlayer.HealthPercent < 40)
             {
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
@@ -1243,8 +1225,6 @@ namespace CombatHandler.Doctor
 
                 private static class RelevantNanos
                 {
-                    //public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
-                    //    42399, 43882, 43874, 43880, 42401 };
 
                     public const int ImprovedLC = 275011;
                     public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()

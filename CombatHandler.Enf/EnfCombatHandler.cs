@@ -124,8 +124,8 @@ namespace CombatHandler.Enf
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
             //Taunts
-            RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
 
             //Buffs

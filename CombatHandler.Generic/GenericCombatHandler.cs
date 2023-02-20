@@ -1349,8 +1349,8 @@ namespace CombatHandler.Generic
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
                     .OrderBy(c => c.Profession == Profession.Doctor)
+                    .OrderBy(c => c.Profession == Profession.Enforcer)
                     .OrderBy(c => c.Profession == Profession.Soldier)
                     .FirstOrDefault();
 
@@ -1670,8 +1670,8 @@ namespace CombatHandler.Generic
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
                     .OrderBy(c => c.Profession == Profession.Doctor)
+                    .OrderBy(c => c.Profession == Profession.Enforcer)
                     .OrderBy(c => c.Profession == Profession.Soldier)
                     .FirstOrDefault();
 
@@ -1706,8 +1706,8 @@ namespace CombatHandler.Generic
                     && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                     && c.Health > 0)
                 .OrderBy(c => c.HealthPercent)
-                .OrderBy(c => c.Profession == Profession.Enforcer)
                 .OrderBy(c => c.Profession == Profession.Doctor)
+                .OrderBy(c => c.Profession == Profession.Enforcer)
                 .OrderBy(c => c.Profession == Profession.Soldier)
                 .FirstOrDefault();
 

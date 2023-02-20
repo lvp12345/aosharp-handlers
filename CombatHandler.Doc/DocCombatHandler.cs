@@ -76,20 +76,23 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
-            _settings.AddVariable("SharpObjects", true);
-            _settings.AddVariable("Grenades", true);
+            _settings.AddVariable("SharpObjects", false);
+            _settings.AddVariable("Grenades", false);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+            _settings.AddVariable("TOTWBooks", true);
+
+            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
-            _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.None);
-            _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
+            _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.Self);
+            _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.Self);
 
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
-            _settings.AddVariable("HealSelection", (int)HealSelection.None);
 
+            _settings.AddVariable("HealSelection", (int)HealSelection.SingleTeam);
+
+            _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
             _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.None);
             _settings.AddVariable("DOTB", (int)DOTBDebuffTargetSelection.None);
             _settings.AddVariable("DOTC", (int)DOTCDebuffTargetSelection.None);
@@ -99,14 +102,14 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DangerousCulture);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.MassiveVitaePlan);
 
-            _settings.AddVariable("NanoResistTeam", false);
-            _settings.AddVariable("PistolTeam", false);
-            _settings.AddVariable("HealDeltaBuff", false);
+            _settings.AddVariable("NanoResistTeam", true);
+            _settings.AddVariable("PistolTeam", true);
+            _settings.AddVariable("HealDeltaBuff", true);
 
             _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
             _settings.AddVariable("ShortHOT", false);
 
-            _settings.AddVariable("CH", true);
+            //_settings.AddVariable("CH", true);
 
             _settings.AddVariable("LockCH", false);
 
@@ -139,7 +142,7 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
 
-            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
+            //RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
 
             //Hots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
@@ -167,6 +170,9 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(), DOTBDebuffTarget, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
+
+            //Items
+            RegisterItemProcessor(RelevantItems.Books, TOTWHeal);
 
             PluginDirectory = pluginDir;
 
@@ -817,7 +823,7 @@ namespace CombatHandler.Doctor
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
+            if (IsSettingEnabled("LockCH") || CompleteHealPercentage == 0) { return false; }
 
             return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
         }
@@ -871,7 +877,7 @@ namespace CombatHandler.Doctor
                                 && c.HealthPercent <= 85 && c.HealthPercent >= 50)
                         .ToList();
 
-                    if (dyingTeamMember.Count >= 4)
+                    if (dyingTeamMember.Count >= 3)
                     {
                         return CanCast(spell);
                     }
@@ -881,21 +887,9 @@ namespace CombatHandler.Doctor
             return false;
         }
 
-        private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("LockCH"))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            return false;
-        }
-
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ShortHOT")) { return false; }
+            if (!IsSettingEnabled("ShortHOT")|| !InCombat()) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -1134,83 +1128,150 @@ namespace CombatHandler.Doctor
 
         #endregion
 
-        #region Misc
+        #region Items
 
-        public enum InitBuffSelection
-        {
-            None, Self, Team
-        }
+        //private bool TOTWHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
 
-        public enum TreatmentBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum StrengthBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum HealSelection
-        {
-            None, SingleTeam, SingleArea, Team, ImprovedLifeChanneler
-        }
-        public enum InitDebuffSelection
-        {
-            None, Target, Area, Boss
-        }
+        //    if (HealPercentage == 0) { return false; }
 
-        public enum DOTADebuffTargetSelection
+        //    if (IsSettingEnabled("TOTWBooks"))
+
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+
+        //    if (DynelManager.LocalPlayer.HealthPercent < 60)) 
+
+
+        //                    { return false; }
+
+        //}
+
+        private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            None, Target, Area, Boss
-        }
+            if (!IsSettingEnabled("TOTWBooks")) { return false; }
 
-        public enum DOTBDebuffTargetSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum DOTCDebuffTargetSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum ShortHpSelection
-        {
-            None, Self, Team
-        }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
 
-        public enum ProcType1Selection
-        {
-            DangerousCulture, Antiseptic, MuscleMemory, BloodTransfusion, RestrictiveBandaging
-        }
+            if (Team.IsInTeam)
+            {
+                SimpleChar teamMember = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent < 60
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0)
+                    .OrderBy(c => c.HealthPercent)
+                    .OrderBy(c => c.Profession == Profession.Doctor)
+                    .OrderBy(c => c.Profession == Profession.Enforcer)
+                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .FirstOrDefault();
 
-        public enum ProcType2Selection
-        {
-            MassiveVitaePlan, AnatomicBlight, HealingCare, Pathogen, Anesthetic, Astringent, Inflammation
-        }
+                if (teamMember != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = teamMember;
+                    return true;
+                }
 
-        private static class RelevantNanos
-        {
-            //public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
-            //    42399, 43882, 43874, 43880, 42401 };
+                return false;
+            }
 
-            public const int ImprovedLC = 275011;
-            public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
-                .Where(spell => spell.Id != ImprovedLC).ToArray();
 
-            public const int TiredLimbs = 99578;
-            public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder()
-                .Where(spell => spell.Id != TiredLimbs).ToArray();
+            if (DynelManager.LocalPlayer.HealthPercent < 60)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
 
-            public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
-
-            public const int AlphaAndOmega = 42409;
-            public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
-                43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
-                43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
-                28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
-            public static int[] TeamHeals = new[] { 273312, 273315, 270349, 43891, 223291, 43892, 43893, 43894, 43895, 43896, 43897, 43898, 43899,
-                43900, 43901, 43903, 43902, 42404, 43905, 43904, 42395, 43907, 43908, 43906, 42398, 43910, 43909, 42402,
-                43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408 };
+            return false;
         }
 
         #endregion
+
+        #region Misc
+
+        public enum InitBuffSelection
+                {
+                    None, Self, Team
+                }
+
+                public enum TreatmentBuffSelection
+                {
+                    None, Self, Team
+                }
+                public enum StrengthBuffSelection
+                {
+                    None, Self, Team
+                }
+                public enum HealSelection
+                {
+                    None, SingleTeam, SingleArea, Team, ImprovedLifeChanneler
+                }
+                public enum InitDebuffSelection
+                {
+                    None, Target, Area, Boss
+                }
+
+                public enum DOTADebuffTargetSelection
+                {
+                    None, Target, Area, Boss
+                }
+
+                public enum DOTBDebuffTargetSelection
+                {
+                    None, Target, Area, Boss
+                }
+                public enum DOTCDebuffTargetSelection
+                {
+                    None, Target, Area, Boss
+                }
+                public enum ShortHpSelection
+                {
+                    None, Self, Team
+                }
+
+                public enum ProcType1Selection
+                {
+                    DangerousCulture, Antiseptic, MuscleMemory, BloodTransfusion, RestrictiveBandaging
+                }
+
+                public enum ProcType2Selection
+                {
+                    MassiveVitaePlan, AnatomicBlight, HealingCare, Pathogen, Anesthetic, Astringent, Inflammation
+                }
+
+                private static class RelevantNanos
+                {
+                    //public static int[] IndividualShortHoTs = new[] { 43852, 43868, 43870, 43872, 43873, 43871, 42396, 43869, 43867, 43877, 43876, 43875, 43879,
+                    //    42399, 43882, 43874, 43880, 42401 };
+
+                    public const int ImprovedLC = 275011;
+                    public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
+                        .Where(spell => spell.Id != ImprovedLC).ToArray();
+
+                    public const int TiredLimbs = 99578;
+                    public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder()
+                        .Where(spell => spell.Id != TiredLimbs).ToArray();
+
+                    public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
+
+                    public const int AlphaAndOmega = 42409;
+                    public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
+                        43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
+                        43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
+                        28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
+                    public static int[] TeamHeals = new[] { 273312, 273315, 270349, 43891, 223291, 43892, 43893, 43894, 43895, 43896, 43897, 43898, 43899,
+                        43900, 43901, 43903, 43902, 42404, 43905, 43904, 42395, 43907, 43908, 43906, 42398, 43910, 43909, 42402,
+                        43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408 };
+                }
+
+
+                private static class RelevantItems
+                {
+                        public static readonly int[] Books = { 206242, 305514 };
+                }
+
+                #endregion
     }
 }

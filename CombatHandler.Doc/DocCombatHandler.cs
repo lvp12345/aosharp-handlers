@@ -870,10 +870,10 @@ namespace CombatHandler.Doctor
                         .Where(c => Team.Members
                             .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
                                 .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && c.HealthPercent <= 85 && c.HealthPercent >= 50)
+                                && c.HealthPercent <= 80 && c.HealthPercent >= 40)
                         .ToList();
 
-                    if (dyingTeamMember.Count >= 3)
+                    if (dyingTeamMember.Count >= 2)
                     {
                         return CanCast(spell);
                     }

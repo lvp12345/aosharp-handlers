@@ -193,7 +193,6 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
-            RegisterPerkProcessor(PerkHash.ChannelRage, ChannelRage);
             RegisterPerkProcessor(PerkHash.KenFi, PetPerkCombatBuff);
 
             PluginDirectory = pluginDir;
@@ -980,26 +979,6 @@ namespace CombatHandler.Metaphysicist
 
         #region Perks
 
-        private bool ChannelRage(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null
-                    || pet.Character.Health == 0
-                    || pet.Type != PetType.Attack) continue;
-
-                if (!pet.Character.Buffs.Any(buff => buff.Nanoline == NanoLine.ChannelRage))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
-            }
-
-            return false;
-        }
 
         #endregion
 

@@ -47,7 +47,7 @@ namespace CombatHandler.Generic
                 case PerkType.PetBuff:
                 case PerkType.PetHeal:
                 case PerkType.LEProc:
-                case PerkType.Clease:
+                case PerkType.CLEANSE:
                 case PerkType.Disabled:
                 case PerkType.Unknown:
                     return null;

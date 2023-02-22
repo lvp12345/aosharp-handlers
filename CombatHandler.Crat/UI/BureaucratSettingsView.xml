@@ -8,7 +8,9 @@
     <OptionCheckBox label="(Global) Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GlobalBuffing" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="(Global) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GlobalComposites" layout_borders="Rect(10,1,5,1)"/>
     <!--<OptionCheckBox label="(Global) Debuffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GlobalDebuffing" layout_borders="Rect(10,1,5,1)"/>-->
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Corporate Leadership" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Exoneration" layout_borders="Rect(10,1,5,1)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Nuking" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Nuking" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <!--<OptionCheckBox label="(S7) Guardian Calm" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CalmSector7" layout_borders="Rect(10,1,5,1)"/>-->

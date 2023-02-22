@@ -109,6 +109,7 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
             _settings.AddVariable("ShortHOT", false);
 
+            _settings.AddVariable("CH", true);
             _settings.AddVariable("LockCH", false);
 
             RegisterSettingsWindow("Doctor Handler", "DocSettingsView.xml");
@@ -137,6 +138,7 @@ namespace CombatHandler.Doctor
 
             //Healing
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
 
@@ -819,9 +821,23 @@ namespace CombatHandler.Doctor
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("LockCH") || CompleteHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
+
+            if (IsSettingEnabled("LockCH")) { return false; }
 
             return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
+        }
+
+        private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("LockCH"))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
         }
 
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -47,7 +47,8 @@ namespace CombatHandler.Generic
                 case PerkType.PetBuff:
                 case PerkType.PetHeal:
                 case PerkType.LEProc:
-                case PerkType.CLEANSE:
+                case PerkType.Cleanse:
+                    return CleansePerk;
                 case PerkType.Disabled:
                 case PerkType.Unknown:
                     return null;
@@ -252,6 +253,24 @@ namespace CombatHandler.Generic
             if (perkAction.Name == "Unhallowed Wrath" || perkAction.Name == "Spectator Wrath" || perkAction.Name == "Righteous Wrath")
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Skill2hEdged)) { return false; }
 
+            return true;
+        }
+
+        public static bool CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
+            || !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+            || !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Mezz)
+            || !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DemotivationalSpeeches))
+            { return false; }
+
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            {
+                if (buff.Name == perkAction.Name) { return false; }
+            }
+
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
             return true;
         }
 

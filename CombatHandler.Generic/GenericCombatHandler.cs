@@ -205,7 +205,6 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
-            //RegisterPerkProcessor(PerkHash.KenFi, KenFi, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
             RegisterItemProcessor(RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh, FlowerOfLife);

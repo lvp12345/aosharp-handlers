@@ -88,6 +88,8 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
+            _settings.AddVariable("Exoneration", false);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
             _settings.AddVariable("Kits", true);
@@ -145,6 +147,9 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.LEProcBureaucratDeflation, Deflation, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, InflationAdjustment, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, Papercut, CombatActionPriority.Low);
+
+            // Exonerationon/ AOE Root Reducer
+            RegisterSpellProcessor(RelevantNanos.CorporateLeadership, RootReducer);
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
@@ -828,6 +833,36 @@ namespace CombatHandler.Bureaucrat
             if (ProcType2Selection.WrongWindow != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
 
             return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Exoneration
+
+
+
+        protected bool RootReducer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Exoneration")) { return false; }
+
+            SimpleChar target = DynelManager.Players
+            .Where(c => c.IsInLineOfSight
+            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+            && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
+            && c.Buffs.Contains(NanoLine.Root) 
+            || c.Buffs.Contains(NanoLine.Snare) 
+            || c.Buffs.Contains(305244) //Pause for Reflection
+            && SpellChecksOther(spell, spell.Nanoline, c))
+            .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
         }
 
         #endregion
@@ -1584,6 +1619,7 @@ namespace CombatHandler.Bureaucrat
             public const int ShacklesofObedience = 82463;
             public const int CompositeMartialProwess = 302158;
             public const int CompositeMelee = 223360;
+            public static readonly int[] CorporateLeadership = { 205433, 205435, 205437, 205439 };
             public const int PetWarp = 209488;
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };

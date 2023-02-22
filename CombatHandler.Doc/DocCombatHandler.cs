@@ -138,10 +138,9 @@ namespace CombatHandler.Doctor
 
             //Healing
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
-
-            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
 
             //Hots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
@@ -822,7 +821,9 @@ namespace CombatHandler.Doctor
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
+            if (!IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
+
+            if (IsSettingEnabled("LockCH")) { return false; }
 
             return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
         }

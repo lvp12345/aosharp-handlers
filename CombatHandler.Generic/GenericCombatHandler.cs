@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
+using System.Windows.Media;
 using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
@@ -200,8 +201,6 @@ namespace CombatHandler.Generic
 
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
-            RegisterPerkProcessor(PerkHash.DazzleWithLights, Starfall, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.QuickShot, QuickShot, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
@@ -287,6 +286,7 @@ namespace CombatHandler.Generic
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
             }
 
+            //Game.TeleportEnded += Delay;
             Game.TeleportEnded += OnZoned;
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
@@ -371,110 +371,20 @@ namespace CombatHandler.Generic
             {
                 _lastCombatTime = Time.NormalTime;
             }
+
+           
         }
 
 
         #region Perks
 
-        public bool PetPerkCombatBuff(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || fightingTarget == null) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (CanPerkPet(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static bool SelfHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            //if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
-            //    return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
-
             if (!perk.IsAvailable) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            return false;
-        }
-
-        public static bool SelfNano(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            //if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
-            //    return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
-
-            if (!perk.IsAvailable) { return false; }
-
-            if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
-        public static bool TeamHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                SimpleChar _person = DynelManager.Players
-                    .Where(c => c.Health > 0
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= TeamHealPerkPercentage)
-                    .FirstOrDefault();
-
-                if (_person != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = _person;
-                    return true;
-                }
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= TeamHealPerkPercentage)
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
-        public static bool TeamNano(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                SimpleChar _person = DynelManager.Players
-                    .Where(c => c.Health > 0
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.NanoPercent <= TeamNanoPerkPercentage)
-                    .FirstOrDefault();
-
-                if (_person != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = _person;
-                    return true;
-                }
-            }
-
-            if (DynelManager.LocalPlayer.NanoPercent <= TeamNanoPerkPercentage)
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-
-            return false;
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -672,18 +582,11 @@ namespace CombatHandler.Generic
             return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
-
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
-        }
-
         protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(210159)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
@@ -693,6 +596,8 @@ namespace CombatHandler.Generic
         protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(210158)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
@@ -714,18 +619,6 @@ namespace CombatHandler.Generic
             if (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-        }
-        protected bool Starfall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable || fightingTarget == null) { return false; }
-
-            return StarFallPerk(perk, fightingTarget, ref actionTarget);
-        }
-        protected bool QuickShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable || fightingTarget == null) { return false; }
-
-            return QuickShotPerk(perk, fightingTarget, ref actionTarget);
         }
 
         protected bool WitOfTheAtrox(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1563,7 +1456,7 @@ namespace CombatHandler.Generic
 
             return true;
         }
-
+        
         private bool PetAlreadySpawned(PetType petType)
         {
             return DynelManager.LocalPlayer.Pets.Any(c => (c.Type == PetType.Unknown || c.Type == petType));
@@ -1609,6 +1502,7 @@ namespace CombatHandler.Generic
                 foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
                     SynchronizePetCombatState(_pet);
 
+
                 _lastPetSyncTime = Time.NormalTime;
             }
         }
@@ -1629,13 +1523,11 @@ namespace CombatHandler.Generic
             }
         }
 
+        #endregion
 
+        #region Checks
 
-            #endregion
-
-            #region Checks
-
-            protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
@@ -1822,11 +1714,6 @@ namespace CombatHandler.Generic
             return SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
         }
 
-        private void TeleportEnded(object sender, EventArgs e)
-        {
-            _lastCombatTime = double.MinValue;
-        }
-
         protected void CancelHostileAuras(int[] auras)
         {
             if (Time.NormalTime - _lastCombatTime > 5)
@@ -1896,10 +1783,6 @@ namespace CombatHandler.Generic
             }
         }
 
-        private bool CanPerkPet(Pet pet)
-        {
-            return pet.Type == PetType.Attack;
-        }
 
         //public static void Network_N3MessageSent(object s, N3Message n3Msg)
         //{
@@ -2132,6 +2015,16 @@ namespace CombatHandler.Generic
         private void OnZoned(object s, EventArgs e)
         {
             _lastZonedTime = Time.NormalTime;
+        }
+
+        private void Delay(object s, EventArgs e)
+        {
+            Thread.Sleep(2000);
+        }
+
+        private void TeleportEnded(object sender, EventArgs e)
+        {
+            _lastCombatTime = double.MinValue;
         }
 
         public static void Team_TeamRequest(object s, TeamRequestEventArgs e)

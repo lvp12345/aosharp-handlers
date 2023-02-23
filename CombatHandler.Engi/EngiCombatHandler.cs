@@ -210,7 +210,6 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
             RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
-            RegisterPerkProcessor(PerkHash.OptimizeBotProtocol, PetPerkCombatBuff);
 
             //Pet Items
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
@@ -1334,17 +1333,6 @@ namespace CombatHandler.Engineer
 
             return false;
         }
-
-        #endregion
-
-        #region Follow
-
-        //public void Petfollow(Pet pet)
-        //{
-        //    if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
-        //        pet?.Follow();
-
-        //}
 
         #endregion
 

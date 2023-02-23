@@ -40,12 +40,10 @@ namespace CombatHandler.Generic
             {PerkHash.Bearhug , PerkType.TargetDamage},
             {PerkHash.Beckoning , PerkType.TargetDamage},
             {PerkHash.BigSmash , PerkType.TargetDamage},
-
             {PerkHash.BioShield , PerkType.CombatBuff},
             {PerkHash.BioCocoon , PerkType.Disabled},
             {PerkHash.BioRejuvenation , PerkType.TeamHeal},
             {PerkHash.BioRegrowth , PerkType.Disabled},
-            
             {PerkHash.BladeOfNight , PerkType.TargetDamage},
             {PerkHash.BladeWhirlwind , PerkType.CombatBuff},
             {PerkHash.BlastNano , PerkType.TargetDamage},
@@ -68,7 +66,7 @@ namespace CombatHandler.Generic
             {PerkHash.CaptureVigor , PerkType.Disabled},
             {PerkHash.CaptureVitality , PerkType.Disabled},
             {PerkHash.CauseOfAnger , PerkType.TargetDamage},
-            {PerkHash.ChannelRage , PerkType.PetBuff},
+            {PerkHash.ChannelRage , PerkType.Pet_Buff},
             {PerkHash.ChaosRitual , PerkType.TargetDamage},
             {PerkHash.ChaoticAssumption , PerkType.TargetDamage},
             {PerkHash.ChaoticEnergy , PerkType.Disabled},
@@ -93,11 +91,11 @@ namespace CombatHandler.Generic
             {PerkHash.Crave , PerkType.TargetDamage},
             {PerkHash.Cripple , PerkType.TargetDamage},
             {PerkHash.CrushBone , PerkType.TargetDamage},
-            {PerkHash.Cure1 , PerkType.Cleanse},
-            {PerkHash.Cure2 , PerkType.Cleanse},
+            {PerkHash.Cure1 , PerkType.AAO_Dots_Cleanse}, // aao debuffs and dots
+            {PerkHash.Cure2 , PerkType.AAO_Dots_Cleanse}, // aao debuffs and dots
             {PerkHash.CuringTouch , PerkType.SelfHeal},
             {PerkHash.DanceOfFools , PerkType.Disabled},
-            {PerkHash.DazzleWithLights , PerkType.Disabled},
+            {PerkHash.DazzleWithLights , PerkType.TargetDamage},
             {PerkHash.Deadeye , PerkType.TargetDamage},
             {PerkHash.DeathStrike , PerkType.TargetDamage},
             {PerkHash.Deconstruction , PerkType.TargetDamage},
@@ -123,8 +121,8 @@ namespace CombatHandler.Generic
             {PerkHash.DrawBlood , PerkType.TargetDamage},
             {PerkHash.EasyShot , PerkType.TargetDamage},
             {PerkHash.EatBullets , PerkType.TargetDamage},
-            {PerkHash.ECM1 , PerkType.Cleanse},
-            {PerkHash.ECM2 , PerkType.Cleanse},
+            {PerkHash.ECM1 , PerkType.NanoShutdown_TraderDebuff_Cleanse}, //Nano shutdown, trader debuffs
+            {PerkHash.ECM2 , PerkType.NanoShutdown_TraderDebuff_Cleanse}, //Nano shutdown, trader debuffs
             {PerkHash.ElementaryTeleportation , PerkType.Disabled},
             {PerkHash.EncaseInStone , PerkType.TargetDamage},
             {PerkHash.Energize , PerkType.CombatBuff},
@@ -152,13 +150,13 @@ namespace CombatHandler.Generic
             {PerkHash.Gore , PerkType.Disabled},
             {PerkHash.Governance , PerkType.Disabled},
             {PerkHash.Grasp , PerkType.TargetDamage},
-            {PerkHash.GreatPurge , PerkType.Cleanse},
+            {PerkHash.GreatPurge , PerkType.Root_Snare_Cleanse}, //Root/Snare
             {PerkHash.GripOfColossus , PerkType.TargetDamage},
             {PerkHash.GroinKick , PerkType.TargetDamage},
             {PerkHash.Guardian , PerkType.CombatBuff},
             {PerkHash.Guesstimate , PerkType.TargetDamage},
             {PerkHash.GuttingBlow , PerkType.TargetDamage},
-            {PerkHash.HaleAndHearty , PerkType.Cleanse},
+            {PerkHash.HaleAndHearty , PerkType.AOO_Trader_DOts_Init_Cleanse}, //AAO debuffs, Tradeder debuffs, Dots, Init debuffs
             {PerkHash.HammerAndAnvil , PerkType.DamageBuff},
             {PerkHash.HarmonizeBodyAndMind , PerkType.SelfHeal},
             {PerkHash.Hatred , PerkType.TargetDamage},
@@ -174,12 +172,12 @@ namespace CombatHandler.Generic
             {PerkHash.Incapacitate , PerkType.TargetDamage},
             {PerkHash.InitialStrike , PerkType.TargetDamage},
             {PerkHash.Insight , PerkType.CombatBuff},
-            {PerkHash.InstallExplosiveDevice , PerkType.TargetDamage},
-            {PerkHash.InstallNotumDepletionDevice , PerkType.TargetDamage},
+            {PerkHash.InstallExplosiveDevice , PerkType.Custom},
+            {PerkHash.InstallNotumDepletionDevice , PerkType.Custom},
             {PerkHash.InsuranceClaim , PerkType.Disabled},
             {PerkHash.JarringBurst , PerkType.TargetDamage},
             {PerkHash.KaMon , PerkType.TargetDamage},
-            {PerkHash.KenFi , PerkType.Disabled},
+            {PerkHash.KenFi , PerkType.Combat_PetBuff},
             {PerkHash.KenSi , PerkType.TargetDamage},
             {PerkHash.KnowledgeEnhancer , PerkType.TargetDamage},
             {PerkHash.Lacerate , PerkType.Disabled},
@@ -208,11 +206,9 @@ namespace CombatHandler.Generic
             {PerkHash.LEProcAgentLaserAim , PerkType.LEProc},
             {PerkHash.LEProcAgentMinorNanobotEnhance , PerkType.LEProc},
             {PerkHash.LEProcAgentPlasteelPiercingRounds , PerkType.LEProc},
-
             {PerkHash.LEProcAgentNanoEnhancedTargeting , PerkType.LEProc},
             {PerkHash.LEProcAgentNoEscape , PerkType.LEProc},
             {PerkHash.LEProcAgentNotumChargedRounds , PerkType.LEProc},
-
             {PerkHash.LEProcBureaucratDeflation , PerkType.LEProc},
             {PerkHash.LEProcBureaucratFormsInTriplicate , PerkType.LEProc},
             {PerkHash.LEProcBureaucratInflationAdjustment , PerkType.LEProc},
@@ -385,7 +381,7 @@ namespace CombatHandler.Generic
             {PerkHash.Obliterate , PerkType.TargetDamage},
             {PerkHash.Opening , PerkType.TargetDamage},
             {PerkHash.OpportunityKnocks , PerkType.TargetDamage},
-            {PerkHash.OptimizeBotProtocol , PerkType.Disabled},
+            {PerkHash.OptimizeBotProtocol , PerkType.Combat_PetBuff},
             {PerkHash.Overrule , PerkType.CombatBuff},
             {PerkHash.OverwhelmingMight , PerkType.TargetDamage},
             {PerkHash.PainLance , PerkType.TargetDamage},
@@ -404,9 +400,9 @@ namespace CombatHandler.Generic
             {PerkHash.PowerVolley , PerkType.TargetDamage},
             {PerkHash.ProgramOverload , PerkType.CombatBuff},
             {PerkHash.Pulverize , PerkType.TargetDamage},
-            {PerkHash.Puppeteer , PerkType.Disabled},
-            {PerkHash.Purge1 , PerkType.Cleanse},
-            {PerkHash.Purge2 , PerkType.Cleanse},
+            {PerkHash.Puppeteer , PerkType.Combat_PetBuff},
+            {PerkHash.Purge1 , PerkType.Root_Snare_Cleanse}, //Root/Snare
+            {PerkHash.Purge2 , PerkType.Root_Snare_Cleanse}, //Root/Snare
             {PerkHash.Purify , PerkType.TargetDamage},
             {PerkHash.PurpleHeart , PerkType.Disabled},
             {PerkHash.QuarkContainmentField , PerkType.TargetDamage},
@@ -416,16 +412,16 @@ namespace CombatHandler.Generic
             {PerkHash.ReapLife , PerkType.TargetDamage},
             {PerkHash.Recalibrate , PerkType.TargetDamage},
             {PerkHash.ReconstructDNA , PerkType.SelfHeal},
-            {PerkHash.Reconstruction , PerkType.PetHeal},
+            {PerkHash.Reconstruction , PerkType.Pet_Heal},
             {PerkHash.RedDawn , PerkType.SelfHeal},
             {PerkHash.RedDusk , PerkType.TargetDamage},
             {PerkHash.RedeemLastWish , PerkType.SelfBuff},
             {PerkHash.RegainNano , PerkType.SelfNano},
             {PerkHash.ReinforceSlugs , PerkType.CombatBuff},
             {PerkHash.Reject , PerkType.TargetDamage},
-            {PerkHash.Removal1 , PerkType.Cleanse},
-            {PerkHash.Removal2 , PerkType.Cleanse},
-            {PerkHash.RepairPet , PerkType.PetHeal},
+            {PerkHash.Removal1 , PerkType.Snare_Cleanse}, //Snare
+            {PerkHash.Removal2 , PerkType.Root_Cleanse}, //Root
+            {PerkHash.RepairPet , PerkType.Pet_Heal},
             {PerkHash.RibbonFlesh , PerkType.TargetDamage},
             {PerkHash.RighteousFury , PerkType.TargetDamage},
             {PerkHash.RighteousWrath , PerkType.TargetDamage},
@@ -435,16 +431,16 @@ namespace CombatHandler.Generic
             {PerkHash.RitualOfZeal , PerkType.Disabled},
             {PerkHash.SabotageQuarkField , PerkType.TargetDamage},
             {PerkHash.Sacrifice , PerkType.Disabled},
-            {PerkHash.SealWounds , PerkType.Cleanse},
+            {PerkHash.SealWounds , PerkType.Dot_Cleanse}, //Dots
             {PerkHash.SeismicSmash , PerkType.TargetDamage},
             {PerkHash.SeppukuSlash , PerkType.TargetDamage},
             {PerkHash.ShadowBullet , PerkType.TargetDamage},
             {PerkHash.ShadowKiller , PerkType.TargetDamage},
             {PerkHash.ShadowStab , PerkType.Disabled},
-            {PerkHash.ShutdownRemoval , PerkType.Cleanse},
+            {PerkHash.ShutdownRemoval , PerkType.NanoShutdown_Cleanse}, //Nano shutdown
             {PerkHash.SilentPlague , PerkType.TargetDamage},
             {PerkHash.SiphonBox , PerkType.Disabled},
-            {PerkHash.SkillDrainRemoval , PerkType.Cleanse},
+            {PerkHash.SkillDrainRemoval , PerkType.Trader_Debuff_Cleanse}, //Trader debuffs
             {PerkHash.SliceAndDice , PerkType.TargetDamage},
             {PerkHash.SnipeShot1 , PerkType.TargetDamage},
             {PerkHash.SnipeShot2 , PerkType.TargetDamage},
@@ -473,7 +469,7 @@ namespace CombatHandler.Generic
             {PerkHash.TapVitae , PerkType.TargetDamage},
             {PerkHash.Taunt , PerkType.TargetDamage},
             {PerkHash.TauntBox , PerkType.Disabled},
-            {PerkHash.TeamHaleAndHearty , PerkType.Cleanse},
+            {PerkHash.TeamHaleAndHearty , PerkType.AOO_Trader_DOts_Init_Cleanse}, //AAO debuffs, Tradeder debuffs, Dots, Init debuffs
             {PerkHash.TeamHeal , PerkType.SelfHeal},
             {PerkHash.TheDirector , PerkType.Disabled},
             {PerkHash.ThermalDetonation , PerkType.TargetDamage},
@@ -495,8 +491,8 @@ namespace CombatHandler.Generic
             {PerkHash.UnsealedContagion , PerkType.Disabled},
             {PerkHash.UnsealedPestilence , PerkType.Disabled},
             {PerkHash.Utilize , PerkType.TargetDamage},
-            {PerkHash.Vaccinate1 , PerkType.Cleanse},
-            {PerkHash.Vaccinate2 , PerkType.Cleanse},
+            {PerkHash.Vaccinate1 , PerkType.Trader_Debuff_Cleanse}, //Trader debuff
+            {PerkHash.Vaccinate2 , PerkType.Trader_Debuff_Cleanse}, //Trader debuff
             {PerkHash.Violence , PerkType.TargetDamage},
             {PerkHash.ViralCombination , PerkType.TargetDamage},
             {PerkHash.ViralWipe , PerkType.TargetDamage},
@@ -510,6 +506,8 @@ namespace CombatHandler.Generic
 
     enum PerkType
     {
-        Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, CombatBuff, PetBuff, PetHeal, LEProc, Cleanse, Custom, Disabled, Unknown
+        Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, CombatBuff,
+        Pet_Buff, Pet_Heal, LEProc, Cleanse, Custom, Disabled, Unknown, Dot_Cleanse, NanoShutdown_TraderDebuff_Cleanse, Trader_Debuff_Cleanse,
+        AAO_Dots_Cleanse, Root_Snare_Cleanse, AOO_Trader_DOts_Init_Cleanse, Snare_Cleanse, Root_Cleanse, NanoShutdown_Cleanse, Combat_PetBuff
     }
 }

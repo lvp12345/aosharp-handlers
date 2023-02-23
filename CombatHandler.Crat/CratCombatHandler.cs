@@ -1093,8 +1093,6 @@ namespace CombatHandler.Bureaucrat
 
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) <= 1) { return false; }
-
                     SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
@@ -1200,8 +1198,6 @@ namespace CombatHandler.Bureaucrat
 
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) <= 1) { return false; }
-
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0

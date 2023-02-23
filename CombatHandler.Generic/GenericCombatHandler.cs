@@ -303,6 +303,9 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
+                return;
+          
             base.OnUpdate(deltaTime);
 
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");

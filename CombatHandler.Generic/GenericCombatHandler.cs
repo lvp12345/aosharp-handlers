@@ -303,6 +303,9 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
+                return;
+          
             base.OnUpdate(deltaTime);
 
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
@@ -2012,11 +2015,6 @@ namespace CombatHandler.Generic
         private void OnZoned(object s, EventArgs e)
         {
             _lastZonedTime = Time.NormalTime;
-        }
-
-        private void Delay(object s, EventArgs e)
-        {
-            Thread.Sleep(2000);
         }
 
         private void TeleportEnded(object sender, EventArgs e)

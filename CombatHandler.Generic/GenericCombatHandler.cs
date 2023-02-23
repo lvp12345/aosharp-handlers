@@ -2017,11 +2017,6 @@ namespace CombatHandler.Generic
             _lastZonedTime = Time.NormalTime;
         }
 
-        private void Delay(object s, EventArgs e)
-        {
-            Thread.Sleep(2000);
-        }
-
         private void TeleportEnded(object sender, EventArgs e)
         {
             _lastCombatTime = double.MinValue;

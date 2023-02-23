@@ -285,6 +285,7 @@ namespace CombatHandler.Generic
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
             }
 
+            //Game.TeleportEnded += Delay;
             Game.TeleportEnded += OnZoned;
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
@@ -366,6 +367,8 @@ namespace CombatHandler.Generic
             {
                 _lastCombatTime = Time.NormalTime;
             }
+
+           
         }
 
 
@@ -579,6 +582,8 @@ namespace CombatHandler.Generic
         {
             if (!perk.IsAvailable) { return false; }
 
+            if (DynelManager.LocalPlayer.Buffs.Contains(210159)) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
@@ -587,6 +592,8 @@ namespace CombatHandler.Generic
         protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(210158)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
@@ -1704,11 +1711,6 @@ namespace CombatHandler.Generic
             return SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
         }
 
-        private void TeleportEnded(object sender, EventArgs e)
-        {
-            _lastCombatTime = double.MinValue;
-        }
-
         protected void CancelHostileAuras(int[] auras)
         {
             if (Time.NormalTime - _lastCombatTime > 5)
@@ -2010,6 +2012,16 @@ namespace CombatHandler.Generic
         private void OnZoned(object s, EventArgs e)
         {
             _lastZonedTime = Time.NormalTime;
+        }
+
+        private void Delay(object s, EventArgs e)
+        {
+            Thread.Sleep(2000);
+        }
+
+        private void TeleportEnded(object sender, EventArgs e)
+        {
+            _lastCombatTime = double.MinValue;
         }
 
         public static void Team_TeamRequest(object s, TeamRequestEventArgs e)

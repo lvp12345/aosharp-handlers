@@ -193,7 +193,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
-            RegisterPerkProcessor(PerkHash.KenFi, PetPerkCombatBuff);
+           
 
             PluginDirectory = pluginDir;
 

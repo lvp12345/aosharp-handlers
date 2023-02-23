@@ -210,7 +210,6 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
             RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
-            RegisterPerkProcessor(PerkHash.OptimizeBotProtocol, PetPerkCombatBuff);
 
             //Pet Items
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);

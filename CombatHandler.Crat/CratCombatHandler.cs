@@ -239,7 +239,7 @@ namespace CombatHandler.Bureaucrat
             ResetTrimmers();
 
             //Pet Perks
-            RegisterPerkProcessor(PerkHash.Puppeteer, PetPerkCombatBuff);
+            
 
             PluginDirectory = pluginDir;
 

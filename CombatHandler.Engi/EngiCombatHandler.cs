@@ -1336,17 +1336,6 @@ namespace CombatHandler.Engineer
 
         #endregion
 
-        #region Follow
-
-        //public void Petfollow(Pet pet)
-        //{
-        //    if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
-        //        pet?.Follow();
-
-        //}
-
-        #endregion
-
         #endregion
 
         #region Misc

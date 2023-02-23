@@ -75,7 +75,7 @@ namespace CombatHandler.Fixer
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("ShortHot", false);
+            _settings.AddVariable("ShortHOT", false);
             _settings.AddVariable("LongHOTSelection", (int)LongHOTSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);

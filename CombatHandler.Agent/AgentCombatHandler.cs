@@ -201,8 +201,6 @@ namespace CombatHandler.Agent
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            if (Game.IsZoning)
-                return;
 
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
@@ -483,9 +481,6 @@ namespace CombatHandler.Agent
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning)
-                return;
-
             base.OnUpdate(deltaTime);
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

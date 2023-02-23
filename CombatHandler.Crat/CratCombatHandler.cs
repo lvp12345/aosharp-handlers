@@ -76,8 +76,6 @@ namespace CombatHandler.Bureaucrat
             Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
-            Game.TeleportEnded += OnZoned;
-
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
@@ -265,9 +263,6 @@ namespace CombatHandler.Bureaucrat
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            if (Game.IsZoning)
-                return;
-
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
+using System.Windows.Media;
 using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
@@ -1452,7 +1453,7 @@ namespace CombatHandler.Generic
 
             return true;
         }
-
+        
         private bool PetAlreadySpawned(PetType petType)
         {
             return DynelManager.LocalPlayer.Pets.Any(c => (c.Type == PetType.Unknown || c.Type == petType));
@@ -1498,6 +1499,7 @@ namespace CombatHandler.Generic
                 foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
                     SynchronizePetCombatState(_pet);
 
+
                 _lastPetSyncTime = Time.NormalTime;
             }
         }
@@ -1518,13 +1520,11 @@ namespace CombatHandler.Generic
             }
         }
 
+        #endregion
 
+        #region Checks
 
-            #endregion
-
-            #region Checks
-
-            protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 

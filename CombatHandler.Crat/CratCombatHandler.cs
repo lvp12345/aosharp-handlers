@@ -148,9 +148,6 @@ namespace CombatHandler.Bureaucrat
             RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, InflationAdjustment, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, Papercut, CombatActionPriority.Low);
 
-            // Exonerationon/ AOE Root Reducer
-            RegisterSpellProcessor(RelevantNanos.CorporateLeadership, RootReducer);
-
             //Buffs
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
 
@@ -170,17 +167,8 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, DebuffNanoResistAura);
             RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, DebuffCritAura);
 
-            //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), InitDebuffs, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs, CombatActionPriority.Medium);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(), RedTape, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(), IntensifyStress, CombatActionPriority.High);
-
-            //Nukes
-            RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
+            // Exonerationon/ AOE Root Reducer
+            RegisterSpellProcessor(RelevantNanos.CorporateLeadership, RootReducer);
 
             //Calms
             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalm, CombatActionPriority.High);
@@ -192,6 +180,18 @@ namespace CombatHandler.Bureaucrat
             //Root/Snare
             RegisterSpellProcessor(RelevantNanos.PuissantVoidInertia, Root, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.ShacklesofObedience, Snare, CombatActionPriority.High);
+
+            //Debuffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), InitDebuffs, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs, CombatActionPriority.Medium);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(), RedTape, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(), IntensifyStress, CombatActionPriority.Medium);
+
+            //Nukes
+            RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
+            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
 
             //Perks
             RegisterPerkProcessor(PerkHash.Leadership, Leadership);
@@ -239,7 +239,7 @@ namespace CombatHandler.Bureaucrat
             ResetTrimmers();
 
             //Pet Perks
-            RegisterPerkProcessor(PerkHash.Puppeteer, PetPerkCombatBuff);
+            
 
             PluginDirectory = pluginDir;
 
@@ -1093,7 +1093,9 @@ namespace CombatHandler.Bureaucrat
 
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.NPCs
+                if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) <= 1) { return false; }
+
+                    SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
@@ -1198,6 +1200,8 @@ namespace CombatHandler.Bureaucrat
 
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
+                if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) <= 1) { return false; }
+
                 SimpleChar target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0

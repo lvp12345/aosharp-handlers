@@ -1152,9 +1152,9 @@ namespace CombatHandler.Doctor
             {
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent < 40
+                        && c.HealthPercent < 25
                         && c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
                     .OrderBy(c => c.Profession == Profession.Doctor)

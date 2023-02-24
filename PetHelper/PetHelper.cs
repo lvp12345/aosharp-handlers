@@ -22,6 +22,7 @@ using AOSharp.Core.GMI;
 using Zoltu.IO;
 using System.IO;
 using System.Text;
+using System.Windows.Media;
 
 namespace PetHelper
 {
@@ -71,13 +72,13 @@ namespace PetHelper
 
             Game.OnUpdate += OnUpdate;
 
-            _settings.AddVariable("Wait", false);
-            _settings.AddVariable("Warp", false);
-            _settings.AddVariable("Follow", false);
+            //_settings.AddVariable("PetWait", false);
+            //_settings.AddVariable("Warp", false);
+            //_settings.AddVariable("Follow", false);
 
-            Chat.RegisterCommand("petwait", PetWait);
-            Chat.RegisterCommand("petwarp", Warp);
-            Chat.RegisterCommand("petfollow", PetFollow);
+            //Chat.RegisterCommand("petwait", PetWait);
+            //Chat.RegisterCommand("petwarp", Warp);
+            //Chat.RegisterCommand("petfollow", PetFollow);
 
 
             Chat.WriteLine("PetHelper Loaded!");
@@ -126,6 +127,12 @@ namespace PetHelper
                     }
                 }
 
+                if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
+                {
+                    PetWait.Tag = SettingsController.settingsWindow;
+                    PetWait.Clicked += PetWaitClicked;
+                }
+
                 if (SettingsController.settingsWindow.FindView("PetHelperInfoView", out Button infoView))
                 {
                     infoView.Tag = SettingsController.settingsWindow;
@@ -134,88 +141,99 @@ namespace PetHelper
             }
 
 
-            if (IsSettingEnabled("Wait"))
-                PetWait();
 
-            if (IsSettingEnabled("Warp"))
-                PetWarp();
+            //if (Button_Click("PetWait"))
+            //    PetWaitToggled();
 
-            if (IsSettingEnabled("Follow"))
-                PetFollow();
+            //if (IsSettingEnabled("Warp"))
+            //    PetWarp();
+
+            //if (IsSettingEnabled("Follow"))
+            //    PetFollow();
 
         }
 
-        private void PetWait(string command, string[] param, ChatWindow chatWindow)
+
+        //private void PetWait(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    if (param.Length == 0)
+        //    {
+        //        _settings["PetWait"] = !_settings["PetWait"].AsBool();
+        //        Chat.WriteLine($"pet wait : {_settings["PetWait"].AsBool()}");
+        //    }
+        //}
+
+
+
+        private void PetWaitClicked(object s, ButtonBase button)
         {
-            if (param.Length == 0)
-            {
-                _settings["Wait"] = !_settings["Wait"].AsBool();
-                Chat.WriteLine($"pet wait : {_settings["Wait"].AsBool()}");
-            }
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                pet.Wait();
         }
 
-        private void Warp(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                _settings["Warp"] = !_settings["Warp"].AsBool();
-                Chat.WriteLine($"Warp : {_settings["Warp"].AsBool()}");
-            }
-        }
 
-        private void PetFollow(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                _settings["Follow"] = !_settings["Follow"].AsBool();
-                Chat.WriteLine($"pet follow : {_settings["Follow"].AsBool()}");
-            }
-        }
+        //private void Warp(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    if (param.Length == 0)
+        //    {
+        //        _settings["Warp"] = !_settings["Warp"].AsBool();
+        //        Chat.WriteLine($"Warp : {_settings["Warp"].AsBool()}");
+        //    }
+        //}
 
-        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
+        //private void PetFollow(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    if (param.Length == 0)
+        //    {
+        //        _settings["Follow"] = !_settings["Follow"].AsBool();
+        //        Chat.WriteLine($"pet follow : {_settings["Follow"].AsBool()}");
+        //    }
+        //}
 
-            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
-        }
+        //protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
 
-        protected void PetWait()
-        {
-            if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetWaitTime > 1)
-            {
-                foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
-                    PetWaitState(_pet);
+        //    return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
+        //}
 
-                _lastPetWaitTime = Time.NormalTime;
-            }
-        }
+        //private void petwaittoggled()
+        //{
+        //    if (canlookuppetsafterzone() && time.normaltime - _lastpetwaittime > 0)
+        //    {
+        //        foreach (pet _pet in dynelmanager.localplayer.pets.where(c => c.type == pettype.attack || c.type == pettype.support))
+        //            petwaitstate(_pet);
 
-        protected void PetWarp()
-        {
-            if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetWaitTime > 1) ;
-            {
-            }
-        }
+        //        _lastpetwaittime = time.normaltime;
+        //    }
+        //}
 
-        protected void PetFollow()
-        {
-            if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetWaitTime > 1)
-            {
-                foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
-                    PetFollowState(_pet);
+        //protected void PetWarp()
+        //{
+        //    if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetWaitTime > 1) ;
+        //    {
+        //    }
+        //}
 
-                _lastPetWaitTime = Time.NormalTime;
-            }
-        }
+        //protected void PetFollow()
+        //{
+        //    if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetWaitTime > 1)
+        //    {
+        //        foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
+        //            PetFollowState(_pet);
+
+        //        _lastPetWaitTime = Time.NormalTime;
+        //    }
+        //}
 
         private void PetWaitState(Pet pet)
         {
             pet?.Wait();
         }
 
-        private void PetFollowState(Pet pet)
-        {
-            pet?.Follow();
-        }
+        //private void PetFollowState(Pet pet)
+        //{
+        //    pet?.Follow();
+        //}
 
         protected bool CanLookupPetsAfterZone()
         {
@@ -223,10 +241,15 @@ namespace PetHelper
         }
 
 
-        protected bool IsSettingEnabled(string settingName)
-        {
-            return _settings[settingName].AsBool();
-        }
+        //protected bool IsSettingEnabled(string settingName)
+        //{
+        //    return _settings[settingName].AsBool();
+        //}
+
+        //protected bool Button_Click(string settingName)
+        //{
+        //    return _settings[settingName].AsBool();
+        //}
 
         private static class RelevantNanos
         {

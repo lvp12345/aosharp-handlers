@@ -170,7 +170,7 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
 
             //Items
-            RegisterItemProcessor(RelevantItems.Books, TOTWHeal);
+            RegisterItemProcessor(RelevantItems.Books,  TOTWHeal);
 
             PluginDirectory = pluginDir;
 
@@ -1146,7 +1146,7 @@ namespace CombatHandler.Doctor
             {
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent < 35
+                        && c.HealthPercent < 40
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
                         && c.Health > 0)

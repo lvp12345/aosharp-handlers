@@ -6,29 +6,28 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
 using AOSharp.Common.GameData;
+using SmokeLounge.AOtomation.Messaging.Messages;
 using PetHelper.IPCMessages;
-using AOSharp.Common.GameData.UI;
-using AOSharp.Core.Combat;
-using System.Collections.Generic;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.GameData;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AOSharp.Core.Inventory;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
-using System.Security.Cryptography;
+using AOSharp.Common.GameData.UI;
+using System.Windows.Input;
+using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using AOSharp.Core.GMI;
+using Zoltu.IO;
+using System.IO;
+using System.Text;
 
 namespace PetHelper
 {
     public class PetHelper : AOPluginEntry
     {
         private static IPCChannel IPCChannel;
-
-        private const float PostZonePetCheckBuffer = 5;
-
-        protected double _lastPetWaitTime = Time.NormalTime;
-        protected double _lastZonedTime = Time.NormalTime;
  
         public static Config Config { get; private set; }
 
@@ -38,13 +37,17 @@ namespace PetHelper
 
         public static View _infoView;
 
-
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
         protected Settings _settings;
 
         public static string PluginDir;
+
+        private const float PostZonePetCheckBuffer = 5;
+
+        protected double _lastPetWaitTime = Time.NormalTime;
+        protected double _lastZonedTime = Time.NormalTime;
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
@@ -62,7 +65,7 @@ namespace PetHelper
             //RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
 
 
-            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
+            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed; ;
 
             RegisterSettingsWindow("Pet Helper", "PetHelperSettingWindow.xml");
 
@@ -80,6 +83,7 @@ namespace PetHelper
             Chat.WriteLine("PetHelper Loaded!");
             Chat.WriteLine("/Pethelper for settings.");
 
+            PluginDirectory = pluginDir;
         }
         
         public Window[] _windows => new Window[] { _infoWindow };
@@ -90,20 +94,14 @@ namespace PetHelper
             Config.Save();
         }
 
-        private void HandleInfoViewClick(object s, ButtonBase button)
+        private void InfoView(object s, ButtonBase button)
         {
-            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
-            {
-                if (window.Views.Contains(_infoView)) { return; }
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\PetHelperInfoView.xml",
+                windowSize: new Rect(0, 0, 440, 510),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
-                _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\PetHelperInfoView.xml",
-                    windowSize: new Rect(0, 0, 440, 510),
-                    windowStyle: WindowStyle.Default,
-                    windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-                _infoWindow.Show(true);
-            }
+            _infoWindow.Show(true);
         }
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
@@ -131,7 +129,7 @@ namespace PetHelper
                 if (SettingsController.settingsWindow.FindView("PetHelperInfoView", out Button infoView))
                 {
                     infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = HandleInfoViewClick;
+                    infoView.Clicked = InfoView;
                 }
             }
 

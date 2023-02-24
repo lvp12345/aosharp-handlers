@@ -58,11 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
-    <Compile Include="IPCMessages\ClearBuffsMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
-    <Compile Include="IPCMessages\YalmOffMessage.cs" />
-    <Compile Include="IPCMessages\YalmOnMessage.cs" />
-    <Compile Include="IPCMessages\YalmUseMessage.cs" />
     <Compile Include="PetHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />

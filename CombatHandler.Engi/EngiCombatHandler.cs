@@ -1379,13 +1379,6 @@ namespace CombatHandler.Engineer
             petTrimmedAggDef[PetType.Support] = false;
         }
 
-        private void OnZoned(object s, EventArgs e)
-        {
-            _lastZonedTime = Time.NormalTime;
-            _lastCombatTime = double.MinValue;
-            ResetTrimmers();
-        }
-
         private void CancelBuffs()
         {
             if (BuffingAuraSelection.Shield != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32())

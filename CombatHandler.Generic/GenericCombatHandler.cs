@@ -281,7 +281,6 @@ namespace CombatHandler.Generic
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
             }
 
-            //Game.TeleportEnded += Delay;
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;

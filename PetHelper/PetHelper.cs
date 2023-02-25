@@ -1,28 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Diagnostics;
 using AOSharp.Core;
 using AOSharp.Core.IPC;
-using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
 using AOSharp.Common.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages;
 using PetHelper.IPCMessages;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using SmokeLounge.AOtomation.Messaging.GameData;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
-using System.Windows.Input;
-using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using AOSharp.Core.GMI;
-using Zoltu.IO;
-using System.IO;
-using System.Text;
-using System.Windows.Media;
 
 namespace PetHelper
 {
@@ -45,13 +29,15 @@ namespace PetHelper
 
         public static string PluginDir;
 
-        private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
-
         public override void Run(string pluginDir)
         {
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetHelper\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
 
             PluginDir = pluginDir;
 
@@ -63,10 +49,9 @@ namespace PetHelper
 
             Game.OnUpdate += OnUpdate;
 
-            //Chat.RegisterCommand("petwait", PetWait);
-            //Chat.RegisterCommand("petwarp", PetWarp);
-            //Chat.RegisterCommand("petfollow", PetFollow);
-
+            Chat.RegisterCommand("petwait", PetWaitCommand);
+            Chat.RegisterCommand("petwarp", PetWarpCommand);
+            Chat.RegisterCommand("petfollow", PetFollowCommand);
 
             Chat.WriteLine("PetHelper Loaded!");
             Chat.WriteLine("/Pethelper for settings.");
@@ -114,23 +99,22 @@ namespace PetHelper
 
                 if (SettingsController.settingsWindow.FindView("PetHelperInfoView", out Button infoView))
                 {
-
-                        infoView.Tag = SettingsController.settingsWindow;
-                        infoView.Clicked = InfoView; 
+                    infoView.Tag = SettingsController.settingsWindow;
+                    infoView.Clicked = InfoView; 
                 }
 
                 //wait
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
                 { 
-                        PetWait.Tag = SettingsController.settingsWindow;
-                        PetWait.Clicked = PetWaitClicked;
+                    PetWait.Tag = SettingsController.settingsWindow;
+                    PetWait.Clicked = PetWaitClicked;
                 }
 
                 //follow
                 if (SettingsController.settingsWindow.FindView("PetFollow", out Button PetFollow))
                 {
-                        PetFollow.Tag = SettingsController.settingsWindow;
-                        PetFollow.Clicked = PetFollowClicked;
+                    PetFollow.Tag = SettingsController.settingsWindow;
+                    PetFollow.Clicked = PetFollowClicked;
                 }
 
                 //warp
@@ -142,55 +126,81 @@ namespace PetHelper
             }
         }
 
-
-
-        //private void PetWait(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    if (param.Length == 0)
-        //    {
-        //        _settings["PetWait"] = !_settings["PetWait"].AsBool();
-        //        Chat.WriteLine($"Pet Wait : {_settings["PetWait"].AsBool()}");
-        //    }
-        //}
-
-        //private void PetWarp(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    if (param.Length == 0)
-        //    {
-        //        _settings["PetWarp"] = !_settings["PetWarp"].AsBool();
-        //        Chat.WriteLine($"Pet Warp : {_settings["PetWarp"].AsBool()}");
-        //    }
-        //}
-
-        //private void PetFollow(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    if (param.Length == 0)
-        //    {
-        //        _settings["PetFollow"] = !_settings["PetFollow"].AsBool();
-        //        Chat.WriteLine($"Pet Follow : {_settings["PetFollow"].AsBool()}");
-        //    }
-        //}
         //wait
         private void PetWaitClicked(object s, ButtonBase button)
         {
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                pet.Wait();
+            PetWaitCommand(null, null, null);
+        }
+
+        private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetWaitMessage());
+            OnPetWait(0, null);
+        }
+
+        private static void OnPetWait(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Wait();
+                }
+            }
         }
 
         //warp
         private void PetWarpClicked(object s, ButtonBase button)
         {
-            Spell spell = Spell.List.FirstOrDefault(c => c.Id == 209488);
+            PetWarpCommand(null, null, null);
+        }
 
-            if ((bool)(spell?.IsReady))
-                spell?.Cast(DynelManager.LocalPlayer, false);
+        private static void PetWarpCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetWarpMessage());
+            OnPetWarp(0, null);
+        }
+
+        private static void OnPetWarp(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                Spell warp = Spell.List.FirstOrDefault(x => RelevantNanos.Warps.Contains(x.Id));
+                if (warp != null)
+                {
+                    warp.Cast(DynelManager.LocalPlayer, false);
+                }
+            }
         }
 
         //follow
         private void PetFollowClicked(object s, ButtonBase button)
         {
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                pet.Follow();
+            PetFollowCommand(null, null, null);   
+        }
+
+        private void PetFollowCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetFollowMessage());
+            OnPetFollow(0, null);
+        }
+
+        private static void OnPetFollow(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Follow();
+                }
+            }
+        }
+
+        private static class RelevantNanos
+        {
+            public static readonly int[] Warps = {
+                209488
+            };
         }
     }
 }

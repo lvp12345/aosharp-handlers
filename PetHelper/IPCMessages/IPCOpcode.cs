@@ -8,9 +8,8 @@ namespace PetHelper.IPCMessages
 {
     public enum IPCOpcode
     {
-        YalmOn = 300,
-        YalmUse = 301,
-        YalmOff = 302,
-        ClearBuffs = 303
+        PetWait = 2345,
+        PetWarp = 2346,
+        PetFollow = 2347
     }
 }

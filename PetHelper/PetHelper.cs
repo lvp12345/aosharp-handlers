@@ -119,18 +119,21 @@ namespace PetHelper
                     infoView.Tag = SettingsController.settingsWindow;
                     infoView.Clicked = InfoView;
                 }
+
                 //wait
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
                 {
                     PetWait.Tag = SettingsController.settingsWindow;
                     PetWait.Clicked += PetWaitClicked;
                 }
+
                 //warp
                 if (SettingsController.settingsWindow.FindView("PetWarp", out Button PetWarp))
                 {
                     PetWarp.Tag = SettingsController.settingsWindow;
                     PetWarp.Clicked += PetWarpClicked;
                 }
+
                 //follow
                 if (SettingsController.settingsWindow.FindView("PetFollow", out Button PetFollow))
                 {
@@ -176,6 +179,7 @@ namespace PetHelper
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
                 pet.Wait();
         }
+
         //warp
         private void PetWarpClicked(object s, ButtonBase button)
         {
@@ -184,6 +188,7 @@ namespace PetHelper
             if ((bool)(spell?.IsReady))
                 spell?.Cast(DynelManager.LocalPlayer, false);
         }
+
         //follow
         private void PetFollowClicked(object s, ButtonBase button)
         {

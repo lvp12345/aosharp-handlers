@@ -29,7 +29,7 @@ namespace PetHelper
     public class PetHelper : AOPluginEntry
     {
         private static IPCChannel IPCChannel;
- 
+
         public static Config Config { get; private set; }
 
         public static string PluginDirectory;
@@ -73,7 +73,7 @@ namespace PetHelper
 
             PluginDirectory = pluginDir;
         }
-        
+
         public Window[] _windows => new Window[] { _infoWindow };
 
         public static void IPCChannel_Changed(object s, int e)
@@ -97,30 +97,8 @@ namespace PetHelper
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
 
-        private void PetWaitClicked(object s, ButtonBase button)
-        {
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                pet.Wait();
-        }
-
-        private void PetWarpClicked(object s, ButtonBase button)
-        {
-            Spell spell = Spell.List.FirstOrDefault(c => c.Id == 209488);
-
-            if ((bool)(spell?.IsReady))
-                spell?.Cast(DynelManager.LocalPlayer, false);
-        }
-
-        private void PetFollowClicked(object s, ButtonBase button)
-        {
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                pet.Follow();
-        }
-
-
         private void OnUpdate(object s, float deltaTime)
         {
-
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
@@ -133,6 +111,12 @@ namespace PetHelper
                     {
                         Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
                     }
+                }
+
+                if (SettingsController.settingsWindow.FindView("PetHelperInfoView", out Button infoView))
+                {
+                    infoView.Tag = SettingsController.settingsWindow;
+                    infoView.Clicked = InfoView;
                 }
 
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
@@ -151,12 +135,6 @@ namespace PetHelper
                 {
                     PetFollow.Tag = SettingsController.settingsWindow;
                     PetFollow.Clicked += PetFollowClicked;
-                }
-
-                if (SettingsController.settingsWindow.FindView("PetHelperInfoView", out Button infoView))
-                {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
                 }
             }
         }
@@ -189,9 +167,25 @@ namespace PetHelper
         //    }
         //}
 
-        private static class RelevantNanos
+     
+        private void PetWaitClicked(object s, ButtonBase button)
         {
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                pet.Wait();
+        }
 
+        private void PetWarpClicked(object s, ButtonBase button)
+        {
+            Spell spell = Spell.List.FirstOrDefault(c => c.Id == 209488);
+
+            if ((bool)(spell?.IsReady))
+                spell?.Cast(DynelManager.LocalPlayer, false);
+        }
+
+        private void PetFollowClicked(object s, ButtonBase button)
+        {
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                pet.Follow();
         }
     }
 }

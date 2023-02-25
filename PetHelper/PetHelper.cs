@@ -118,19 +118,19 @@ namespace PetHelper
                     infoView.Tag = SettingsController.settingsWindow;
                     infoView.Clicked = InfoView;
                 }
-
+                //wait
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
                 {
                     PetWait.Tag = SettingsController.settingsWindow;
                     PetWait.Clicked += PetWaitClicked;
                 }
-
+                //warp
                 if (SettingsController.settingsWindow.FindView("PetWarp", out Button PetWarp))
                 {
                     PetWarp.Tag = SettingsController.settingsWindow;
                     PetWarp.Clicked += PetWarpClicked;
                 }
-
+                //follow
                 if (SettingsController.settingsWindow.FindView("PetFollow", out Button PetFollow))
                 {
                     PetFollow.Tag = SettingsController.settingsWindow;
@@ -167,13 +167,13 @@ namespace PetHelper
         //    }
         //}
 
-     
+     //wait
         private void PetWaitClicked(object s, ButtonBase button)
         {
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
                 pet.Wait();
         }
-
+        //warp
         private void PetWarpClicked(object s, ButtonBase button)
         {
             Spell spell = Spell.List.FirstOrDefault(c => c.Id == 209488);
@@ -181,7 +181,7 @@ namespace PetHelper
             if ((bool)(spell?.IsReady))
                 spell?.Cast(DynelManager.LocalPlayer, false);
         }
-
+        //follow
         private void PetFollowClicked(object s, ButtonBase button)
         {
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)

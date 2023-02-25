@@ -1593,12 +1593,6 @@ namespace CombatHandler.Bureaucrat
 
             return target.IsMoving;
         }
-        private void OnZoned(object s, EventArgs e)
-        {
-            _lastZonedTime = Time.NormalTime;
-            _lastCombatTime = double.MinValue;
-            ResetTrimmers();
-        }
 
         private static class RelevantNanos
         {

@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Input;
-using System.Windows.Media;
 using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
@@ -28,7 +23,7 @@ namespace CombatHandler.Generic
         private const float PostZonePetCheckBuffer = 5;
         public int EvadeCycleTimeoutSeconds = 180;
 
-        private double _lastPetSyncTime = Time.NormalTime;
+        protected double _lastPetSyncTime = Time.NormalTime;
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
 
@@ -286,8 +281,6 @@ namespace CombatHandler.Generic
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
             }
 
-            //Game.TeleportEnded += Delay;
-            Game.TeleportEnded += OnZoned;
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
@@ -303,7 +296,7 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 5.0)
                 return;
           
             base.OnUpdate(deltaTime);
@@ -1502,7 +1495,6 @@ namespace CombatHandler.Generic
                 foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
                     SynchronizePetCombatState(_pet);
 
-
                 _lastPetSyncTime = Time.NormalTime;
             }
         }
@@ -2012,13 +2004,10 @@ namespace CombatHandler.Generic
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
         }
-        private void OnZoned(object s, EventArgs e)
-        {
-            _lastZonedTime = Time.NormalTime;
-        }
 
         private void TeleportEnded(object sender, EventArgs e)
         {
+            _lastZonedTime = Time.NormalTime;
             _lastCombatTime = double.MinValue;
         }
 

@@ -99,11 +99,10 @@ namespace PetHelper
 
         private void OnUpdate(object s, float deltaTime)
         {
-
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                { 
+                
                     if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                     {
                         if (int.TryParse(channelInput.Text, out int channelValue)
@@ -112,36 +111,37 @@ namespace PetHelper
                             Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
                         }
                     }
-                }
 
                 if (SettingsController.settingsWindow.FindView("PetHelperInfoView", out Button infoView))
                 {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
+
+                        infoView.Tag = SettingsController.settingsWindow;
+                        infoView.Clicked = InfoView; 
                 }
 
                 //wait
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
+                { 
+                        PetWait.Tag = SettingsController.settingsWindow;
+                        PetWait.Clicked = PetWaitClicked;
+                }
+
+                //follow
+                if (SettingsController.settingsWindow.FindView("PetFollow", out Button PetFollow))
                 {
-                    PetWait.Tag = SettingsController.settingsWindow;
-                    PetWait.Clicked += PetWaitClicked;
+                        PetFollow.Tag = SettingsController.settingsWindow;
+                        PetFollow.Clicked = PetFollowClicked;
                 }
 
                 //warp
                 if (SettingsController.settingsWindow.FindView("PetWarp", out Button PetWarp))
                 {
                     PetWarp.Tag = SettingsController.settingsWindow;
-                    PetWarp.Clicked += PetWarpClicked;
-                }
-
-                //follow
-                if (SettingsController.settingsWindow.FindView("PetFollow", out Button PetFollow))
-                {
-                    PetFollow.Tag = SettingsController.settingsWindow;
-                    PetFollow.Clicked += PetFollowClicked;
+                    PetWarp.Clicked = PetWarpClicked;
                 }
             }
         }
+
 
 
         //private void PetWait(string command, string[] param, ChatWindow chatWindow)
@@ -170,9 +170,6 @@ namespace PetHelper
         //        Chat.WriteLine($"Pet Follow : {_settings["PetFollow"].AsBool()}");
         //    }
         //}
-
-
-
         //wait
         private void PetWaitClicked(object s, ButtonBase button)
         {

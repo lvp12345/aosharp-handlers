@@ -245,6 +245,7 @@ namespace HelpManager
                         Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
                     }
                 }
+
                 if (sitPercentageInput != null && !string.IsNullOrEmpty(sitPercentageInput.Text))
                 {
                     if (int.TryParse(sitPercentageInput.Text, out int sitPercentageValue)

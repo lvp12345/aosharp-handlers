@@ -14,7 +14,7 @@ namespace PetHelper
     {
         public string Name { get; set; }
         public string XmlViewName { get; set; }
-        public Rect WindowSize { get; set; } = new Rect(0, 0, 240, 345);
+        public Rect WindowSize { get; set; } = new Rect(0, 0, 200, 345);
         public WindowStyle Style { get; set; } = WindowStyle.Default;
         public WindowFlags Flags { get; set; } = WindowFlags.AutoScale | WindowFlags.NoFade;
     }

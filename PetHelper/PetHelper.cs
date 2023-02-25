@@ -45,11 +45,6 @@ namespace PetHelper
 
         public static string PluginDir;
 
-        private const float PostZonePetCheckBuffer = 5;
-
-        protected double _lastPetWaitTime = Time.NormalTime;
-        protected double _lastZonedTime = Time.NormalTime;
-
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public override void Run(string pluginDir)
@@ -62,19 +57,14 @@ namespace PetHelper
 
             _settings = new Settings("PetHelper");
 
-
-            //RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
-
-
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed; ;
 
             RegisterSettingsWindow("Pet Helper", "PetHelperSettingWindow.xml");
 
             Game.OnUpdate += OnUpdate;
 
-
             //Chat.RegisterCommand("petwait", PetWait);
-            //Chat.RegisterCommand("petwarp", Warp);
+            //Chat.RegisterCommand("petwarp", PetWarp);
             //Chat.RegisterCommand("petfollow", PetFollow);
 
 
@@ -95,7 +85,7 @@ namespace PetHelper
         private void InfoView(object s, ButtonBase button)
         {
             _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\PetHelperInfoView.xml",
-                windowSize: new Rect(0, 0, 440, 510),
+                windowSize: new Rect(0, 0, 140, 300),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
@@ -106,6 +96,27 @@ namespace PetHelper
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
+
+        private void PetWaitClicked(object s, ButtonBase button)
+        {
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                pet.Wait();
+        }
+
+        private void PetWarpClicked(object s, ButtonBase button)
+        {
+            Spell spell = Spell.List.FirstOrDefault(c => c.Id == 209488);
+
+            if ((bool)(spell?.IsReady))
+                spell?.Cast(DynelManager.LocalPlayer, false);
+        }
+
+        private void PetFollowClicked(object s, ButtonBase button)
+        {
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                pet.Follow();
+        }
+
 
         private void OnUpdate(object s, float deltaTime)
         {
@@ -130,13 +141,13 @@ namespace PetHelper
                     PetWait.Clicked += PetWaitClicked;
                 }
 
-                if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWarp))
+                if (SettingsController.settingsWindow.FindView("PetWarp", out Button PetWarp))
                 {
                     PetWarp.Tag = SettingsController.settingsWindow;
                     PetWarp.Clicked += PetWarpClicked;
                 }
 
-                if (SettingsController.settingsWindow.FindView("PetWait", out Button PetFollow))
+                if (SettingsController.settingsWindow.FindView("PetFollow", out Button PetFollow))
                 {
                     PetFollow.Tag = SettingsController.settingsWindow;
                     PetFollow.Clicked += PetFollowClicked;
@@ -148,28 +159,35 @@ namespace PetHelper
                     infoView.Clicked = InfoView;
                 }
             }
-
         }
 
-        private void PetWaitClicked(object s, ButtonBase button)
-        {
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                pet.Wait();
-        }
 
-        private void PetWarpClicked(object s, ButtonBase button)
-        {
-            Spell spell = Spell.List.FirstOrDefault(c => c.Id == 209488);
+        //private void PetWait(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    if (param.Length == 0)
+        //    {
+        //        _settings["PetWait"] = !_settings["PetWait"].AsBool();
+        //        Chat.WriteLine($"Pet Wait : {_settings["PetWait"].AsBool()}");
+        //    }
+        //}
 
-            if (spell?.IsReady)
-                spell?.Cast(DynelManager.LocalPlayer, false);
-        }
+        //private void PetWarp(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    if (param.Length == 0)
+        //    {
+        //        _settings["PetWarp"] = !_settings["PetWarp"].AsBool();
+        //        Chat.WriteLine($"Pet Warp : {_settings["PetWarp"].AsBool()}");
+        //    }
+        //}
 
-        private void PetFollowClicked(object s, ButtonBase button)
-        {
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                pet.Follow();
-        }
+        //private void PetFollow(string command, string[] param, ChatWindow chatWindow)
+        //{
+        //    if (param.Length == 0)
+        //    {
+        //        _settings["PetFollow"] = !_settings["PetFollow"].AsBool();
+        //        Chat.WriteLine($"Pet Follow : {_settings["PetFollow"].AsBool()}");
+        //    }
+        //}
 
         private static class RelevantNanos
         {

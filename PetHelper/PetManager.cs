@@ -4,13 +4,13 @@ using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using AOSharp.Common.GameData;
-using PetHelper.IPCMessages;
+using PetManager.IPCMessages;
 using System.Runtime.InteropServices;
 using AOSharp.Common.GameData.UI;
 
-namespace PetHelper
+namespace PetManager
 {
-    public class PetHelper : AOPluginEntry
+    public class PetManager : AOPluginEntry
     {
         private static IPCChannel IPCChannel;
 
@@ -32,7 +32,7 @@ namespace PetHelper
         public override void Run(string pluginDir)
         {
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetHelper\\{Game.ClientInst}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
@@ -41,11 +41,11 @@ namespace PetHelper
 
             PluginDir = pluginDir;
 
-            _settings = new Settings("PetHelper");
+            _settings = new Settings("PetManager");
 
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed; ;
 
-            RegisterSettingsWindow("Pet Helper", "PetHelperSettingWindow.xml");
+            RegisterSettingsWindow("Pet Manager", "PetManagerSettingWindow.xml");
 
             Game.OnUpdate += OnUpdate;
 
@@ -53,8 +53,8 @@ namespace PetHelper
             Chat.RegisterCommand("petwarp", PetWarpCommand);
             Chat.RegisterCommand("petfollow", PetFollowCommand);
 
-            Chat.WriteLine("PetHelper Loaded!");
-            Chat.WriteLine("/Pethelper for settings.");
+            Chat.WriteLine("PetManager Loaded!");
+            Chat.WriteLine("/PetManager for settings.");
 
             PluginDirectory = pluginDir;
         }
@@ -69,7 +69,7 @@ namespace PetHelper
 
         private void InfoView(object s, ButtonBase button)
         {
-            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\PetHelperInfoView.xml",
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\PetManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 140, 300),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
@@ -97,7 +97,7 @@ namespace PetHelper
                         }
                     }
 
-                if (SettingsController.settingsWindow.FindView("PetHelperInfoView", out Button infoView))
+                if (SettingsController.settingsWindow.FindView("PetManagerInfoView", out Button infoView))
                 {
                     infoView.Tag = SettingsController.settingsWindow;
                     infoView.Clicked = InfoView; 

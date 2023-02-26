@@ -12,8 +12,10 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using System.Windows.Input;
 using System.Reflection;
 using System.ComponentModel;
+
 
 namespace CombatHandler.Soldier
 {

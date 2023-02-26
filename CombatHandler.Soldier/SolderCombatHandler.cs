@@ -12,9 +12,10 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using System.Windows.Input;
 using System.Reflection;
 using System.ComponentModel;
-using static CombatHandler.Soldier.SoldCombathandler;
+
 
 namespace CombatHandler.Soldier
 {
@@ -185,9 +186,6 @@ namespace CombatHandler.Soldier
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            if (Game.IsZoning)
-                return;
-
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }
@@ -443,9 +441,6 @@ namespace CombatHandler.Soldier
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning)
-                return;
-
             base.OnUpdate(deltaTime);
 
             var window = SettingsController.FindValidWindow(_windows);

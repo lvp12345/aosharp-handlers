@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Input;
 using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
@@ -27,7 +23,7 @@ namespace CombatHandler.Generic
         private const float PostZonePetCheckBuffer = 5;
         public int EvadeCycleTimeoutSeconds = 180;
 
-        private double _lastPetSyncTime = Time.NormalTime;
+        protected double _lastPetSyncTime = Time.NormalTime;
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
 
@@ -285,7 +281,6 @@ namespace CombatHandler.Generic
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
             }
 
-            Game.TeleportEnded += OnZoned;
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
@@ -301,6 +296,9 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 5.0)
+                return;
+          
             base.OnUpdate(deltaTime);
 
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
@@ -366,6 +364,8 @@ namespace CombatHandler.Generic
             {
                 _lastCombatTime = Time.NormalTime;
             }
+
+           
         }
 
 
@@ -579,6 +579,8 @@ namespace CombatHandler.Generic
         {
             if (!perk.IsAvailable) { return false; }
 
+            if (DynelManager.LocalPlayer.Buffs.Contains(210159)) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
@@ -587,6 +589,8 @@ namespace CombatHandler.Generic
         protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(210158)) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
 
@@ -1445,7 +1449,7 @@ namespace CombatHandler.Generic
 
             return true;
         }
-
+        
         private bool PetAlreadySpawned(PetType petType)
         {
             return DynelManager.LocalPlayer.Pets.Any(c => (c.Type == PetType.Unknown || c.Type == petType));
@@ -1511,13 +1515,11 @@ namespace CombatHandler.Generic
             }
         }
 
+        #endregion
 
+        #region Checks
 
-            #endregion
-
-            #region Checks
-
-            protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
@@ -1702,11 +1704,6 @@ namespace CombatHandler.Generic
         protected bool HasNCU(Spell spell, SimpleChar target)
         {
             return SettingsController.GetRemainingNCU(target.Identity) > spell.NCU;
-        }
-
-        private void TeleportEnded(object sender, EventArgs e)
-        {
-            _lastCombatTime = double.MinValue;
         }
 
         protected void CancelHostileAuras(int[] auras)
@@ -2007,9 +2004,11 @@ namespace CombatHandler.Generic
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
         }
-        private void OnZoned(object s, EventArgs e)
+
+        private void TeleportEnded(object sender, EventArgs e)
         {
             _lastZonedTime = Time.NormalTime;
+            _lastCombatTime = double.MinValue;
         }
 
         public static void Team_TeamRequest(object s, TeamRequestEventArgs e)

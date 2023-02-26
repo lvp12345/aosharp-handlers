@@ -186,9 +186,6 @@ namespace CombatHandler.Enf
         #region Callbacks
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            if (Game.IsZoning)
-                return;
-
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }
@@ -456,9 +453,6 @@ namespace CombatHandler.Enf
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning)
-                return;
-
             base.OnUpdate(deltaTime);
 
             var window = SettingsController.FindValidWindow(_windows);

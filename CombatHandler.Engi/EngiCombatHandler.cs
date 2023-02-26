@@ -1441,7 +1441,7 @@ namespace CombatHandler.Engineer
             public static readonly int[] ReflectAura = { 154557, 154558, 154559 };
             public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
-            public static readonly int[] EngineeringBuff = { 227657, 227667, 273346 };
+            public static readonly int[] EngineeringBuff = { 273346, 227667, 227657 };
 
         }
 

@@ -170,7 +170,7 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
 
             //Items
-            RegisterItemProcessor(RelevantItems.Books, TOTWHeal);
+            RegisterItemProcessor(RelevantItems.Books,  TOTWHeal);
 
             PluginDirectory = pluginDir;
 
@@ -201,9 +201,6 @@ namespace CombatHandler.Doctor
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            if (Game.IsZoning)
-                return;
-
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }
@@ -475,9 +472,6 @@ namespace CombatHandler.Doctor
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning)
-                return;
-
             base.OnUpdate(deltaTime);
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
@@ -1152,7 +1146,7 @@ namespace CombatHandler.Doctor
             {
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent < 25
+                        && c.HealthPercent < 40
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
                         && c.Health > 0)

@@ -75,7 +75,7 @@ namespace CombatHandler.Fixer
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("ShortHot", false);
+            _settings.AddVariable("ShortHOT", false);
             _settings.AddVariable("LongHOTSelection", (int)LongHOTSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);
@@ -159,9 +159,6 @@ namespace CombatHandler.Fixer
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            if (Game.IsZoning)
-                return;
-
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }
@@ -370,9 +367,6 @@ namespace CombatHandler.Fixer
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning)
-                return;
-
             base.OnUpdate(deltaTime);
             EquipBackArmor();
 

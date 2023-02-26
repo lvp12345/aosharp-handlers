@@ -14,7 +14,6 @@ using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
 using System.Reflection;
 using System.ComponentModel;
-using static CombatHandler.Soldier.SoldCombathandler;
 
 namespace CombatHandler.Soldier
 {

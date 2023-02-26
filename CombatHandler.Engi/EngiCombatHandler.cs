@@ -80,8 +80,6 @@ namespace CombatHandler.Engineer
             Config.CharSettings[Game.ClientInst].BioRegrowthPercentageChangedEvent += BioRegrowthPercentage_Changed;
             Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelayChangedEvent += CycleBioRegrowthPerkDelay_Changed;
 
-            Game.TeleportEnded += OnZoned;
-
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
@@ -245,9 +243,6 @@ namespace CombatHandler.Engineer
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-            if (Game.IsZoning)
-                return;
-
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }
@@ -471,9 +466,6 @@ namespace CombatHandler.Engineer
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning)
-                return;
-
             base.OnUpdate(deltaTime);
 
             var window = SettingsController.FindValidWindow(_windows);
@@ -1336,17 +1328,6 @@ namespace CombatHandler.Engineer
 
         #endregion
 
-        #region Follow
-
-        //public void Petfollow(Pet pet)
-        //{
-        //    if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
-        //        pet?.Follow();
-
-        //}
-
-        #endregion
-
         #endregion
 
         #region Misc
@@ -1396,13 +1377,6 @@ namespace CombatHandler.Engineer
             petTrimmedHpDiv[PetType.Support] = false;
             petTrimmedAggDef[PetType.Attack] = false;
             petTrimmedAggDef[PetType.Support] = false;
-        }
-
-        private void OnZoned(object s, EventArgs e)
-        {
-            _lastZonedTime = Time.NormalTime;
-            _lastCombatTime = double.MinValue;
-            ResetTrimmers();
         }
 
         private void CancelBuffs()

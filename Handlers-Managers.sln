@@ -52,6 +52,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailManager", "MailManager\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GMIManager", "GMIManager\GMIManager.csproj", "{03364A02-017C-47DD-9C81-4B0DAA561F80}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetManager", "PetHelper\PetManager.csproj", "{AABE6439-5BA6-4E86-86DE-D3BA2AE29237}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -150,6 +152,10 @@ Global
 		{03364A02-017C-47DD-9C81-4B0DAA561F80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03364A02-017C-47DD-9C81-4B0DAA561F80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03364A02-017C-47DD-9C81-4B0DAA561F80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AABE6439-5BA6-4E86-86DE-D3BA2AE29237}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AABE6439-5BA6-4E86-86DE-D3BA2AE29237}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AABE6439-5BA6-4E86-86DE-D3BA2AE29237}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AABE6439-5BA6-4E86-86DE-D3BA2AE29237}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

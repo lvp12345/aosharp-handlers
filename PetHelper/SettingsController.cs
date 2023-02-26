@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AOSharp.Common.GameData.UI;
 
-namespace PetHelper
+namespace PetManager
 {
     public class WindowOptions
     {
@@ -60,17 +60,17 @@ namespace PetHelper
         {
             if (!IsCommandRegistered)
             {
-                Chat.RegisterCommand("pethelper", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("petmanager", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetHelper\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetManager\\{Game.ClientInst}\\Config.json");
 
-                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Pet Helper", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Pet Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
-                            AppendSettingsTab("Pet Helper", settingsWindow);
+                            AppendSettingsTab("Pet Manager", settingsWindow);
 
                             settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 

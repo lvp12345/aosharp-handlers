@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PetHelper.IPCMessages
+namespace PetManager.IPCMessages
 {
     public enum IPCOpcode
     {

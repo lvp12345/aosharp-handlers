@@ -35,11 +35,6 @@ namespace HelpManager
 
         public static string PluginDirectory;
 
-        private static string AssistPlayer;
-        private static string FollowPlayer;
-        private static string NavFollowIdentity;
-        private static int NavFollowDistance;
-
         private static int SitPercentage;
 
         private static bool _init = false;
@@ -49,8 +44,6 @@ namespace HelpManager
         private static double _sitPetUpdateTimer;
         private static double _sitPetUsedTimer;
         private static double _shapeUsedTimer;
-        private static double _followTimer;
-        private static double _assistTimer;
         private static double _morphPathingTimer;
         private static double _bellyPathingTimer;
         private static double _zixMorphTimer;
@@ -108,26 +101,6 @@ namespace HelpManager
             //new Vector3(76.1, 29.0, 28.3)
         };
 
-        private static string _mailName = string.Empty;
-        private static int _mailCreds = 0;
-        private static bool MailBot = false;
-
-
-        private static long EndPrice = 0;
-        private static int QueuedCash = 0;
-        private static bool GMIBot = false;
-        private static bool _initGMIBot = false;
-        private static bool GMIWithdrawBot = false;
-        private static double _gmiBotTimer;
-        private static double _gmiInventoryTimer;
-        private static double _mailBotTimer;
-        private static double _gmiWithdrawBotTimer;
-        private static string _gmiOrder = string.Empty;
-
-        private static int _mailId = 0;
-        private static int _gmiWithdrawEndAmount = 0;
-        private static int _gmiWithdrawAmount = 0;
-
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
         public override void Run(string pluginDir)
@@ -164,26 +137,6 @@ namespace HelpManager
             Chat.RegisterCommand("yalm", YalmCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
 
-            //Chat.RegisterCommand("bags", (string command, string[] param, ChatWindow chatWindow) =>
-            //{
-            //    List<Item> bags = Inventory.Items
-            //    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-            //    .ToList();
-
-            //    Chat.WriteLine($"{bags.Count()}");
-
-            //    foreach (Item bag in bags)
-            //    {
-            //        bag.Use();
-            //        bag.Use();
-            //    }
-            //});
-
-            Chat.RegisterCommand("doc", DocTarget);
-
-            //Game.TeleportEnded += OnZoned;
-
-
             Chat.WriteLine("HelpManager Loaded!");
             Chat.WriteLine("/helpmanager for settings.");
 
@@ -197,10 +150,6 @@ namespace HelpManager
             SettingsController.CleanUp();
         }
 
-        private void OnZoned(object s, EventArgs e)
-        {
-
-        }
         public Window[] _windows => new Window[] { _assistWindow, _followWindow };
 
         public static void IPCChannel_Changed(object s, int e)
@@ -478,71 +427,11 @@ namespace HelpManager
             }
         }
 
-        private void DocTarget(string command, string[] param, ChatWindow chatWindow)
-        {
-            SimpleChar doctor = DynelManager.Characters
-                .Where(c => c.IsAlive)
-                .Where(c => c.Profession == Profession.Doctor)
-                .Where(c => c.IsPlayer)
-                .Where(c => !Team.Members.Contains(c.Identity))
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
-                .FirstOrDefault();
-
-            if (doctor != null)
-                Targeting.SetTarget(doctor);
-        }
-
         private void Rebuff(string command, string[] param, ChatWindow chatWindow)
         {
             CancelAllBuffs();
             IPCChannel.Broadcast(new ClearBuffsMessage());
         }
-
-        //private void HelpCommand(string command, string[] param, ChatWindow chatWindow)
-        //{
-        //    string help = "For team commands;\n" +
-        //                    "\n" +
-        //                    "/form and /form raid\n" +
-        //                    "\n" +
-        //                    "/disband\n" +
-        //                    "\n" +
-        //                    "/convert to convert to raid (must be done from leader)\n" +
-        //                    "\n" +
-        //                    "\n" +
-        //                    "For shortcuts to /aosharp settings;\n" +
-        //                    "\n" +
-        //                    "/syncchat syncs chat from current player to all\n" +
-        //                    "\n" +
-        //                    "/synctrade syncs trade from current player to all\n" +
-        //                    "\n" +
-        //                    "/syncuse for syncing items from current player to all\n" +
-        //                    "\n" +
-        //                    "/sync for syncing trade from current player to all\n" +
-        //                    "\n" +
-        //                    "/autosit auto sits to use kits\n" +
-        //                    "\n" +
-        //                    "/allfollow name then /allfollow to toggle\n" +
-        //                    "\n" +
-        //                    "/yalm all will use yalm then /yalm to toggle\n" +
-        //                    "\n" +
-        //                    "/rebuff to clear buffs\n" +
-        //                    "\n" +
-        //                    "/navfollow name then /navfollow to toggle\n" +
-        //                    "(Follow the npc or player using waypoints)\n" +
-        //                    "\n" +
-        //                    "/assistplayer name then /assistplayer to toggle\n" +
-        //                    "(This is implemented to avoid KSing)\n" +
-        //                    "\n" +
-        //                    "Add clear to the end of each of these to clear the name\n" +
-        //                    "\n" +
-        //                    "\n" +
-        //                    "For IPC Channel;\n" +
-        //                    "\n" +
-        //                    "/mbchannel # or /mbchannelall #\n" +
-        //                    $"Currently: {Config.IPCChannel}";
-
-        //    Chat.WriteLine(help, ChatColor.LightBlue);
-        //}
 
         private void ListenerPetSit()
         {
@@ -614,11 +503,6 @@ namespace HelpManager
 
         public static void CancelAllBuffs()
         {
-            //foreach (Buff buff in DynelManager.LocalPlayer.Buffs.Where(x => !RelevantNanos.DontRemoveNanos.Contains(x.Identity.Instance)))
-            //{
-            //    buff.Remove();
-            //}
-
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs
                 .Where(x => !x.Name.Contains("Valid Pass")
                 && x.Nanoline != NanoLine.BioMetBuff && x.Nanoline != NanoLine.MatCreaBuff
@@ -718,7 +602,6 @@ namespace HelpManager
                 270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 293619,
                 294781, 301669, 301700, 301670, 120499, 82835
             };
-            //public static readonly int[] DontRemoveNanos = {};
         }
 
         private static class RelevantItems

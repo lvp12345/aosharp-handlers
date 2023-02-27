@@ -1140,6 +1140,8 @@ namespace CombatHandler.Doctor
         {
             if (!IsSettingEnabled("TOTWBooks")) { return false; }
 
+            if (fightingTarget == null) { return false; }
+
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
 
             if (Team.IsInTeam)

@@ -634,7 +634,7 @@ namespace CombatHandler.Generic
             {
                 CycleSpherePerk = Time.NormalTime;
 
-                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+                //if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
             }

@@ -188,8 +188,6 @@ namespace CombatHandler.Engineer
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
 
-
-
             //Pet heals
             RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing);
             RegisterSpellProcessor(RelevantNanos.PetHealingGreater, PetHealingGreater);

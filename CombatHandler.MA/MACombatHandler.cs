@@ -78,7 +78,8 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("Grenades", true);
 
             _settings.AddVariable("MASASelection", (int)MASASelection.Sappo);
-            _settings.AddVariable("DimachSelection", (int)DimachSelection.TheWizdomofHuzzum);
+
+            _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);
 
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 

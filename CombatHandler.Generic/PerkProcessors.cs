@@ -51,7 +51,7 @@ namespace CombatHandler.Generic
                     return PetCombatBuffPerk;
                 case PerkType.Pet_Heal:
                     return PetHealPerk;
-                case PerkType.LEProc:
+                case PerkType.Disabled:
                 case PerkType.NanoShutdown_TraderDebuff_Cleanse:
                     return NanoShutdown_TraderDebuff_CleansePerk;
                 case PerkType.Trader_Debuff_Cleanse:

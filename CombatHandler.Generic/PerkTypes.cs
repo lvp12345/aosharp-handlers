@@ -507,7 +507,7 @@ namespace CombatHandler.Generic
     enum PerkType
     {
         Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, CombatBuff,
-        Pet_Buff, Pet_Heal, Disabled, Cleanse, Custom, Disabled, Unknown, Dot_Cleanse, NanoShutdown_TraderDebuff_Cleanse, Trader_Debuff_Cleanse,
+        Pet_Buff, Pet_Heal, LEProc, Cleanse, Custom, Disabled, Unknown, Dot_Cleanse, NanoShutdown_TraderDebuff_Cleanse, Trader_Debuff_Cleanse,
         AAO_Dots_Cleanse, Root_Snare_Cleanse, AOO_Trader_DOts_Init_Cleanse, Snare_Cleanse, Root_Cleanse, NanoShutdown_Cleanse, Combat_PetBuff
     }
 }

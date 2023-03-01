@@ -79,6 +79,8 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("MASASelection", (int)MASASelection.Sappo);
 
+            _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
@@ -167,7 +169,7 @@ namespace CombatHandler.MartialArtist
 
 
             //Items
-            RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, MartialArtsTeamHealAttack);
+            RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, TheWizdomofHuzzum);
             RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
             RegisterItemProcessor(RelevantItems.StingoftheViper, RelevantItems.StingoftheViper, StingoftheViper);
             RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
@@ -815,6 +817,8 @@ namespace CombatHandler.MartialArtist
 
         private bool TouchOfSaiFung(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DimachSelection.TouchOfSaiFung != (DimachSelection)_settings["DimachSelection"].AsInt32()) { return false; }
+
             if (fightingtarget == null) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
@@ -822,13 +826,15 @@ namespace CombatHandler.MartialArtist
             return true;
         }
 
-        private bool MartialArtsTeamHealAttack(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TheWizdomofHuzzum(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DimachSelection.TheWizdomofHuzzum != (DimachSelection)_settings["DimachSelection"].AsInt32()) { return false; }
+
             if (fightingtarget == null) { return false; }
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 85) { return false; }
+            
 
             return true;
         }
@@ -1031,6 +1037,11 @@ namespace CombatHandler.MartialArtist
         public enum MASASelection
         {
             Sappo, StingoftheViper
+        }
+
+        public enum DimachSelection
+        {
+            TouchOfSaiFung, TheWizdomofHuzzum
         }
 
         public enum ProcType1Selection

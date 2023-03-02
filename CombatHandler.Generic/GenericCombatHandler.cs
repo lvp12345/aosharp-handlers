@@ -580,7 +580,7 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 10.0) { return false; }
 
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

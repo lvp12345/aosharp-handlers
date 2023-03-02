@@ -197,7 +197,8 @@ namespace CombatHandler.Generic
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
@@ -575,26 +576,21 @@ namespace CombatHandler.Generic
             return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(210159)) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 10.0) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff limber) && limber.RemainingTime < 10.0) { return true; }
+            {
+                return false;
+            }
 
-            if (DynelManager.LocalPlayer.Buffs.Contains(210158)) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 12.5f) { return false; }
-
-            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+            //return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -620,7 +616,7 @@ namespace CombatHandler.Generic
             {
                 CycleWitOfTheAtroxPerk = Time.NormalTime;
 
-                if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+                //if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
             }
@@ -2258,6 +2254,7 @@ namespace CombatHandler.Generic
             CycleWitOfTheAtroxPerkDelay = e;
             Config.Save();
         }
+
         public static void CycleBioRegrowthPerkDelay_Changed(object s, int e)
         {
             Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay = e;

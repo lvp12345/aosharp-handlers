@@ -70,6 +70,7 @@ namespace CombatHandler.Fixer
 
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
+            _settings.AddVariable("BulletsSelection", (int)BulletsSelection.None);
 
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
@@ -106,8 +107,6 @@ namespace CombatHandler.Fixer
             RegisterPerkProcessor(PerkHash.LEProcFixerUndergroundSutures, UndergroundSutures, CombatActionPriority.Low);
 
             //Perks
-            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
             //Buffs
@@ -136,6 +135,10 @@ namespace CombatHandler.Fixer
             //Root/Snare
             RegisterSpellProcessor(RelevantNanos.SpinNanoweb, AOESnare, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.IntenseAgglutinativeNanoweb, Snare, CombatActionPriority.High);
+
+            //Items
+            RegisterItemProcessor(RelevantItems.ClusterBullets, Cluster);
+            RegisterItemProcessor(RelevantItems.HomingPermorphaBullets, Permorpha);
 
             PluginDirectory = pluginDir;
 
@@ -797,6 +800,32 @@ namespace CombatHandler.Fixer
 
         #endregion
 
+        #region Items
+
+        private bool Cluster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BulletsSelection.Cluster != (BulletsSelection)_settings["BulletsSelection"].AsInt32()) { return false; }
+
+            if (fightingtarget == null) { return false; }
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
+
+            return true;
+        }
+
+        private bool Permorpha(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BulletsSelection.Permorpha != (BulletsSelection)_settings["BulletsSelection"].AsInt32()) { return false; }
+
+            if (fightingtarget == null) { return false; }
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
+
+            return true;
+        }
+
+        #endregion
+
         #region Misc
 
         private static bool IsMoving(SimpleChar target)
@@ -853,6 +882,8 @@ namespace CombatHandler.Fixer
         {
             public static readonly int[] Grid = { 155172, 155173, 155174, 155150 };
             public static readonly int[] ShadowwebSpinner = { 273350, 224400, 224399, 224398, 224397, 224396, 224395, 224394, 224393, 224392, 224390 };
+            public static readonly int[] ClusterBullets = { 300944, 158952, 158951 };
+            public static readonly int[] HomingPermorphaBullets = { 246840, 246839 };
         }
 
         public enum ProcType1Selection
@@ -863,6 +894,11 @@ namespace CombatHandler.Fixer
         public enum ProcType2Selection
         {
             BootlegRemedies, SlipThemAMickey, BendingTheRules, BackyardBandages, FightingChance, ContaminatedBullets, UndergroundSutures
+        }
+
+        public enum BulletsSelection
+        {
+            None, Cluster, Permorpha
         }
 
         public enum ArmorSelection

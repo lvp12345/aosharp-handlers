@@ -197,8 +197,8 @@ namespace CombatHandler.Generic
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
-            //RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
-            //RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
@@ -576,33 +576,22 @@ namespace CombatHandler.Generic
             return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        //protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (Time.NormalTime > CycleLimberPerk + CycleLimberPerkDelay)
-        //    {
-        //        CycleLimberPerk = Time.NormalTime;
+        private bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 10.0) { return false; }
 
-        //        if (!perk.IsAvailable) { return false; }
+            return BuffPerk(perk, fightingTarget, ref actionTarget);
+        }
 
-        //        return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-        //    }
+        private bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff limber) && limber.RemainingTime < 10.0) { return true; }
+            {
+                return false;
+            }
 
-        //    return false;
-        //}
-
-        //protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (Time.NormalTime > CycleDanceOfFoolsPerk + CycleDanceOfFoolsPerkDelay)
-        //    {
-        //        CycleDanceOfFoolsPerk = Time.NormalTime;
-
-        //        if (!perk.IsAvailable) { return false; }
-
-        //        return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-        //    }
-
-        //    return false;
-        //}
+            //return BuffPerk(perk, fightingTarget, ref actionTarget);
+        }
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable) { return false; }
@@ -2095,8 +2084,8 @@ namespace CombatHandler.Generic
         {
             public static int[] HpBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
             public const int FountainOfLife = 302907;
-            //public const int DanceOfFools = 210159;
-            //public const int Limber = 210158;
+            public const int DanceOfFools = 210159;
+            public const int Limber = 210158;
             public const int CompositeAttribute = 223372;
             public const int CompositeNano = 223380;
             public const int CompositeUtility = 287046;

@@ -44,9 +44,6 @@ namespace CombatHandler.Generic
         public static int NullitySpherePercentage = 0;
         public static int IzgimmersWealthPercentage = 0;
 
-        public static int CycleLimberPerkDelay = 0;
-        public static int CycleDanceOfFoolsPerkDelay = 0;
-
         public static int SelfHealPerkPercentage = 0;
         public static int SelfNanoPerkPercentage = 0;
         public static int TeamHealPerkPercentage = 0;
@@ -73,9 +70,6 @@ namespace CombatHandler.Generic
         private double CycleSpherePerk = 0;
         private double CycleWitOfTheAtroxPerk = 0;
         private double CycleBioRegrowthPerk = 0;
-
-        private double CycleLimberPerk = 0;
-        private double CycleDanceOfFoolsPerk = 0;
 
         private static double _updateTick;
 
@@ -204,8 +198,7 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
-
+            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
@@ -583,32 +576,21 @@ namespace CombatHandler.Generic
             return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Time.NormalTime > CycleLimberPerk + CycleLimberPerkDelay)
-            {
-                CycleLimberPerk = Time.NormalTime;
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 10.0) { return false; }
 
-                if (!perk.IsAvailable) { return false; }
-
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-            }
-
-            return false;
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Time.NormalTime > CycleDanceOfFoolsPerk + CycleDanceOfFoolsPerkDelay)
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff limber) && limber.RemainingTime < 10.0) { return true; }
             {
-                CycleDanceOfFoolsPerk = Time.NormalTime;
-
-                if (!perk.IsAvailable) { return false; }
-
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+                return false;
             }
 
-            return false;
+            //return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -2270,21 +2252,6 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = e;
             CycleWitOfTheAtroxPerkDelay = e;
-            Config.Save();
-        }
-
-
-        public static void CycleLimberPerkDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].CycleLimberPerkDelay = e;
-            CycleLimberPerkDelay = e;
-            Config.Save();
-        }
-
-        public static void CycleDanceOfFoolsPerkDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].CycleDanceOfFoolsPerkDelay = e;
-            CycleDanceOfFoolsPerkDelay = e;
             Config.Save();
         }
 

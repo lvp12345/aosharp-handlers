@@ -59,13 +59,6 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int CycleWitOfTheAtroxPerkDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay : 1;
         [JsonIgnore]
-
-        public int CycleLimberPerkDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleLimberPerkDelay : 1;
-        [JsonIgnore]
-
-        public int CycleDanceOfFoolsPerkDelay => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].CycleDanceOfFoolsPerkDelay : 1;
-        [JsonIgnore]
-
         public int SelfHealPerkPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SelfHealPerkPercentage : 75;
         [JsonIgnore]
         public int SelfNanoPerkPercentage => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].SelfNanoPerkPercentage : 75;
@@ -724,44 +717,6 @@ namespace CombatHandler.Generic
                 }
             }
         }
-
-        public event EventHandler<int> CycleLimberPerkDelayChangedEvent;
-        private int _cycleLimberPerkDelay = 1;
-        public int CycleLimberPerkDelay
-        {
-            get
-            {
-                return _cycleLimberPerkDelay;
-            }
-            set
-            {
-                if (_cycleLimberPerkDelay != value)
-                {
-                    _cycleLimberPerkDelay = value;
-                    CycleLimberPerkDelayChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-
-        public event EventHandler<int> CycleDanceOfFoolsPerkDelayChangedEvent;
-        private int _cycleDanceOfFoolsPerkDelay = 1;
-        public int CycleDanceOfFoolsPerkDelay
-        {
-            get
-            {
-                return _cycleDanceOfFoolsPerkDelay;
-            }
-            set
-            {
-                if (_cycleDanceOfFoolsPerkDelay != value)
-                {
-                    _cycleDanceOfFoolsPerkDelay = value;
-                    CycleDanceOfFoolsPerkDelayChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-
-
         #endregion
     }
 }

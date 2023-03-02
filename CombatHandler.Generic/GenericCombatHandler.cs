@@ -44,9 +44,6 @@ namespace CombatHandler.Generic
         public static int NullitySpherePercentage = 0;
         public static int IzgimmersWealthPercentage = 0;
 
-        public static int CycleLimberPerkDelay = 0;
-        public static int CycleDanceOfFoolsPerkDelay = 0;
-
         public static int SelfHealPerkPercentage = 0;
         public static int SelfNanoPerkPercentage = 0;
         public static int TeamHealPerkPercentage = 0;
@@ -73,9 +70,6 @@ namespace CombatHandler.Generic
         private double CycleSpherePerk = 0;
         private double CycleWitOfTheAtroxPerk = 0;
         private double CycleBioRegrowthPerk = 0;
-
-        private double CycleLimberPerk = 0;
-        private double CycleDanceOfFoolsPerk = 0;
 
         private static double _updateTick;
 
@@ -203,9 +197,8 @@ namespace CombatHandler.Generic
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
-
+            //RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+            //RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
@@ -583,33 +576,33 @@ namespace CombatHandler.Generic
             return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Time.NormalTime > CycleLimberPerk + CycleLimberPerkDelay)
-            {
-                CycleLimberPerk = Time.NormalTime;
+        //protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (Time.NormalTime > CycleLimberPerk + CycleLimberPerkDelay)
+        //    {
+        //        CycleLimberPerk = Time.NormalTime;
 
-                if (!perk.IsAvailable) { return false; }
+        //        if (!perk.IsAvailable) { return false; }
 
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-            }
+        //        return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
-        protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Time.NormalTime > CycleDanceOfFoolsPerk + CycleDanceOfFoolsPerkDelay)
-            {
-                CycleDanceOfFoolsPerk = Time.NormalTime;
+        //protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (Time.NormalTime > CycleDanceOfFoolsPerk + CycleDanceOfFoolsPerkDelay)
+        //    {
+        //        CycleDanceOfFoolsPerk = Time.NormalTime;
 
-                if (!perk.IsAvailable) { return false; }
+        //        if (!perk.IsAvailable) { return false; }
 
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-            }
+        //        return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable) { return false; }
@@ -2102,8 +2095,8 @@ namespace CombatHandler.Generic
         {
             public static int[] HpBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
             public const int FountainOfLife = 302907;
-            public const int DanceOfFools = 210159;
-            public const int Limber = 210158;
+            //public const int DanceOfFools = 210159;
+            //public const int Limber = 210158;
             public const int CompositeAttribute = 223372;
             public const int CompositeNano = 223380;
             public const int CompositeUtility = 287046;
@@ -2270,21 +2263,6 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = e;
             CycleWitOfTheAtroxPerkDelay = e;
-            Config.Save();
-        }
-
-
-        public static void CycleLimberPerkDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].CycleLimberPerkDelay = e;
-            CycleLimberPerkDelay = e;
-            Config.Save();
-        }
-
-        public static void CycleDanceOfFoolsPerkDelay_Changed(object s, int e)
-        {
-            Config.CharSettings[Game.ClientInst].CycleDanceOfFoolsPerkDelay = e;
-            CycleDanceOfFoolsPerkDelay = e;
             Config.Save();
         }
 

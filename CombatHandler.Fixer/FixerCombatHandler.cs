@@ -810,6 +810,7 @@ namespace CombatHandler.Fixer
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
 
+            actionTarget.ShouldSetTarget = true;
             return true;
         }
 
@@ -821,6 +822,7 @@ namespace CombatHandler.Fixer
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
 
+            actionTarget.ShouldSetTarget = true;
             return true;
         }
 

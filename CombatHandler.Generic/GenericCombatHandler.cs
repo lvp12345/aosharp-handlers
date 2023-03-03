@@ -585,12 +585,12 @@ namespace CombatHandler.Generic
 
         private bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.Limber, out Buff limber) && limber.RemainingTime < 10.0) { return true; }
             {
                 return false;
             }
-
-            //return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
         protected bool EvasiveStance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

@@ -75,7 +75,7 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("MASASelection", (int)MASASelection.Sappo);
+            _settings.AddVariable("MASASelection", (int)MASASelection.StingoftheViper);
 
             _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);
 
@@ -806,8 +806,6 @@ namespace CombatHandler.MartialArtist
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
-            
-
             return true;
         }
 
@@ -972,6 +970,10 @@ namespace CombatHandler.MartialArtist
 
         #region Misc
 
+        protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
+        {
+            return specialAttack != SpecialAttack.Dimach;
+        }
 
         private static class RelevantNanos
         {

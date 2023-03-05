@@ -117,8 +117,6 @@ namespace CombatHandler.Adventurer
             RegisterPerkProcessor(PerkHash.LEProcAdventurerBasicDressing, BasicDressing, CombatActionPriority.Low);
 
             //Perks
-            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools, CombatActionPriority.High);
 
             //Healing
             RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);

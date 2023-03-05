@@ -1014,12 +1014,23 @@ namespace CombatHandler.Trader
                 return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
 
             if (DepriveSelection.Boss == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+            { 
+                if (fightingTarget?.MaxHealth < 1000000)
+                {
+                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff) && buff.RemainingTime > 25) { return false; }
 
-                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+
+                else
+
+                {
+                    return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                }
             }
-
+                
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32())

@@ -392,6 +392,14 @@ namespace CombatHandler.Generic
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
+        protected bool AOEDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+
+            if (!IsSettingEnabled("AOEDamagePerk")) { return false; }
+
+            return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
+        }
+
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable || !InCombat()

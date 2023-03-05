@@ -103,7 +103,7 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("NotumGrenades", false);
 
             _settings.AddVariable("LegShot", false);
-            _settings.AddVariable("Clipfever", false);
+            _settings.AddVariable("AOEDamagePerk", false);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.GrazeJugularVein);
@@ -127,7 +127,7 @@ namespace CombatHandler.Soldier
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
-            RegisterPerkProcessor(PerkHash.Clipfever, Clipfever);
+            RegisterPerkProcessor(PerkHash.Clipfever, AOEDamagePerk);
 
             //DeTaunt
             RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);
@@ -764,14 +764,6 @@ namespace CombatHandler.Soldier
         #endregion
 
         #region Perks
-
-        protected bool Clipfever(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-
-            if (!IsSettingEnabled("Clipfever")) { return false; }
-
-            return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
-        }
 
         #endregion
 

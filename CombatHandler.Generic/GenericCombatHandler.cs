@@ -387,9 +387,17 @@ namespace CombatHandler.Generic
 
             if (!IsSettingEnabled("LegShot")) { return false; }
 
-            
+            if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
 
             return DamagePerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        protected bool AOEDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+
+            if (!IsSettingEnabled("AOEDamagePerk")) { return false; }
+
+            return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
 
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

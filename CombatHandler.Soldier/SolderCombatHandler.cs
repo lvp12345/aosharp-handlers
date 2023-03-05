@@ -103,6 +103,7 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("NotumGrenades", false);
 
             _settings.AddVariable("LegShot", false);
+            _settings.AddVariable("AOEDamagePerk", false);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.GrazeJugularVein);
@@ -126,6 +127,7 @@ namespace CombatHandler.Soldier
 
             //Perks
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            RegisterPerkProcessor(PerkHash.Clipfever, AOEDamagePerk);
 
             //DeTaunt
             RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);
@@ -758,6 +760,10 @@ namespace CombatHandler.Soldier
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
+
+        #endregion
+
+        #region Perks
 
         #endregion
 

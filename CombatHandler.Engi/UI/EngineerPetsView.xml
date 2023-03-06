@@ -19,9 +19,10 @@
     </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Perks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__PetPerkSelection">
-      <RadioButton label="Taunt Box" value="0"/>
-      <RadioButton label="Chaotic Box" value="1"/>
-      <RadioButton label="Siphon Box" value="2"/>
+	  <RadioButton label="None" value="0"/>
+      <RadioButton label="Taunt Box" value="1"/>
+      <RadioButton label="Chaotic Box" value="2"/>
+      <RadioButton label="Siphon Box" value="3"/>
     </OptionRadioButtonGroup>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Divert to Offense Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertOffTrimmer" layout_borders="Rect(10,1,5,1)"/>

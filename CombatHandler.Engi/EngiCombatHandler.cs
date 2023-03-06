@@ -203,9 +203,9 @@ namespace CombatHandler.Engineer
             //RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
 
             //Pet Perks
+            RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
-            RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
 
             //Pet Items
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
@@ -1128,6 +1128,26 @@ namespace CombatHandler.Engineer
 
         #region Perks
 
+        private bool TauntBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PetPerkSelection.TauntBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
+                || !CanLookupPetsAfterZone()) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(RelevantNanos.PerkTauntBox))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private bool ChaoticBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (PetPerkSelection.ChaoticBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
@@ -1158,26 +1178,6 @@ namespace CombatHandler.Engineer
                 if (pet.Character == null) continue;
 
                 if (!pet.Character.Buffs.Contains(RelevantNanos.PerkSiphonBox))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool TauntBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PetPerkSelection.TauntBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
-                || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(RelevantNanos.PerkTauntBox))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
@@ -1456,7 +1456,7 @@ namespace CombatHandler.Engineer
 
         public enum PetPerkSelection
         {
-            TauntBox, ChaoticBox, SiphonBox
+            None, TauntBox, ChaoticBox, SiphonBox
         }
         public enum PetProcSelection
         {

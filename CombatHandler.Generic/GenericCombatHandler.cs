@@ -2147,6 +2147,7 @@ namespace CombatHandler.Generic
 
         public static void IPCChannel_Changed(object s, int e)
         {
+            SettingsController.RemainingNCU.Clear();
             IPCChannel.SetChannelId(Convert.ToByte(e));
             Config.Save();
         }

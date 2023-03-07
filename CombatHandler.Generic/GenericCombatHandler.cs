@@ -1205,7 +1205,7 @@ namespace CombatHandler.Generic
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!InCombat()) { return false; }
+            
 
             if (StimTargetSelection.Target == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
             {

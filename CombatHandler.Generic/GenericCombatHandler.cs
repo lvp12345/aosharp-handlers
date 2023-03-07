@@ -242,7 +242,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, 
-            RelevantGenericItems.HealthAndNanoStim400, }, HealthAndNanoStim, CombatActionPriority.High);
+            RelevantGenericItems.HealthAndNanoStim400, RelevantGenericItems.DeathsDoor }, HealthAndNanoStim, CombatActionPriority.High);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.PremSitKit, RelevantGenericItems.AreteSitKit, RelevantGenericItems.SitKit1,
             RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
@@ -2078,6 +2078,7 @@ namespace CombatHandler.Generic
             public const int HealthAndNanoStim1 = 291043;
             public const int HealthAndNanoStim200 = 291044;
             public const int HealthAndNanoStim400 = 291045;
+            public const int DeathsDoor  = 303071;
             public const int AmmoBoxEnergy = 303138;
             public const int AmmoBoxShotgun = 303141;
             public const int AmmoBoxBullets = 303137;

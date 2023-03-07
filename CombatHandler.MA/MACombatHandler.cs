@@ -980,7 +980,7 @@ namespace CombatHandler.MartialArtist
             public const int FistsOfTheWinterFlame = 269470;
             public const int LimboMastery = 28894;
             public static int[] PercentEvades = {218060, 218062, 218064, 218066, 218068, 218070 };
-            public static int[] TargetEvades = { 28872, 28878, 28903};
+            public static int[] TargetEvades = { 28903, 28878, 28872 };
             public static int[] TeamCritBuffs = { 160574, 160575, 160576 };
             public static int[] TargetArmorBuffs = { 75350, 75349, 75348, 28905, 75346, 75347, 75345, 75344, 28907, 75343, 75341, 75342, 75340, 75339, 75337, 28869, 75338, 75336, 75351 };
             public static int[] Taunts = { 301936, 100214, 100216, 100215, 100217, 28866 };

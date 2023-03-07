@@ -46,16 +46,6 @@ namespace ResearchManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1))
-            //{
-            //    if (SettingsController.settingsWindow == null)
-            //        SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 280, 280), "Research Manager", "Settings", WindowStyle.Default, WindowFlags.None);
-
-            //    if (SettingsController.settingsWindow != null && SettingsController.settingsWindow?.IsVisible == false)
-            //    {
-            //        SettingsController.AppendSettingsTab("Research Manager", SettingsController.settingsWindow);
-            //    }
-            //}
 
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _tick + 3f)

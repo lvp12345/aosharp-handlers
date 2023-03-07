@@ -1202,6 +1202,7 @@ namespace CombatHandler.Generic
             return true;
         }
 
+
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!InCombat()) { return false; }

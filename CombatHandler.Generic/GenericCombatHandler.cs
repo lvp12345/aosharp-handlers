@@ -1192,7 +1192,7 @@ namespace CombatHandler.Generic
 
         private bool SitKit(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Kits")) { return false; }
+            if (!IsSettingEnabled("Kits") && InCombat()) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
                 || (DynelManager.LocalPlayer.HealthPercent >= KitHealthPercentage && DynelManager.LocalPlayer.NanoPercent >= KitNanoPercentage)) { return false; }
@@ -1204,12 +1204,16 @@ namespace CombatHandler.Generic
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!InCombat()) { return false; }
+
             if (StimTargetSelection.Target == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                     || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                    || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) 
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                    || DynelManager.LocalPlayer.Buffs.Contains(280470) 
+                    || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
                 SimpleChar player = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
@@ -1231,8 +1235,10 @@ namespace CombatHandler.Generic
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                     || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                    || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) 
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                    || DynelManager.LocalPlayer.Buffs.Contains(280470) 
+                    || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
@@ -1261,8 +1267,10 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                 || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) 
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                || DynelManager.LocalPlayer.Buffs.Contains(280470) 
+                || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
             int targetHealing = item.UseModifiers
                     .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)

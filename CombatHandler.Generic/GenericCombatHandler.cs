@@ -1192,20 +1192,22 @@ namespace CombatHandler.Generic
 
         private bool SitKit(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Kits") && InCombat()) { return false; }
+            if (IsSettingEnabled("Kits"))
+            {
+                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
+                    || (DynelManager.LocalPlayer.HealthPercent >= KitHealthPercentage && DynelManager.LocalPlayer.NanoPercent >= KitNanoPercentage)) { return false; }
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
-                || (DynelManager.LocalPlayer.HealthPercent >= KitHealthPercentage && DynelManager.LocalPlayer.NanoPercent >= KitNanoPercentage)) { return false; }
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
 
-            actionTarget.Target = DynelManager.LocalPlayer;
-            actionTarget.ShouldSetTarget = true;
-            return true;
+            return false;
         }
 
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            
 
             if (StimTargetSelection.Target == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
             {
@@ -1266,28 +1268,31 @@ namespace CombatHandler.Generic
 
             if (StimTargetSelection.None == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
 
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
+            if (StimTargetSelection.Self == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
+            {
+                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                 || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) 
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                || DynelManager.LocalPlayer.Buffs.Contains(280470) 
+                || DynelManager.LocalPlayer.Buffs.Contains(280470)
                 || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
-            int targetHealing = item.UseModifiers
-                    .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
-                    .Cast<SpellData.Healing>()
-                    .Sum(x => x.Average);
+                int targetHealing = item.UseModifiers
+                        .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
+                        .Cast<SpellData.Healing>()
+                        .Sum(x => x.Average);
 
-            if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 595f) == null
-                && (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
+                if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 595f) == null
+                    && (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
 
-                return true;
+                    return true;
+                }
+
+                return false;
             }
-
-            return false;
         }
 
         private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)

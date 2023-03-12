@@ -165,8 +165,8 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist);
 
             //Items
-            RegisterItemProcessor(RelevantNotum.NotumItem, NotumItem);
-            RegisterItemProcessor(RelevantWill.WilloftheIllusionist, RelevantWill.WilloftheIllusionist, Illusionist);
+            RegisterItemProcessor(RelevantItems.NotumItem, NotumItem);
+            RegisterItemProcessor(RelevantItems.WilloftheIllusionist, RelevantItems.WilloftheIllusionist, Illusionist);
 
 
             PluginDirectory = pluginDir;
@@ -1014,7 +1014,7 @@ namespace CombatHandler.NanoTechnician
 
         #region Team Buffs
 
-        protected bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("AbsorbACBuff")) 
                      return GenericTeamBuff(spell, ref actionTarget);
@@ -1022,7 +1022,7 @@ namespace CombatHandler.NanoTechnician
             return false;   
         }
 
-        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
 
@@ -1044,21 +1044,24 @@ namespace CombatHandler.NanoTechnician
 
         #region Items
 
-        protected bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NotumGrafttSelection")) { return false; }
-            if (DynelManager.LocalPlayer.NanoPercent < 50) { return true; }
+            if (!IsSettingEnabled("NotumGrafttSelection") && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)) 
+            { return false; }
+
+            if (DynelManager.LocalPlayer.NanoPercent <= 75) 
+            { return true; }
 
             return false;
         }
 
         private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("IllusionistSelection")) { return false; }
+            if (!IsSettingEnabled("IllusionistSelection") && DynelManager.LocalPlayer.Buffs.Contains(274736)) { return false; }
+
             if (fightingtarget?.MaxHealth > 1000000) { return true; }
 
             return false;
-
         }
 
 
@@ -1126,22 +1129,16 @@ namespace CombatHandler.NanoTechnician
 
             
         }
+
         private static class RelevantIgnoreNanos
         {
             public static int[] CompNanoSkills = new[] { 220331, 220333, 220335, 220337, 292299, 220339, 220341, 220343 };
 
-
         }
 
-        private static class RelevantNotum
+        private static class RelevantItems
         {
-            public static readonly int[] NotumItem = { 204649, 305513 };
-
-        }
-
-        private static class RelevantWill
-        {
-
+            public static readonly int[] NotumItem = { 305513, 204649 };
             public const int WilloftheIllusionist = 274717;
 
         }

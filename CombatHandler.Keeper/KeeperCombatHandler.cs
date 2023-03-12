@@ -752,7 +752,7 @@ namespace CombatHandler.Keeper
 
         #region Team Buffs
 
-        protected bool AAOBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AAOBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("AAOBuffs"))
                 return GenericTeamBuff(spell, ref actionTarget);

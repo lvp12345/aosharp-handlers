@@ -20,21 +20,22 @@ namespace CombatHandler.Engineer
         private static bool ToggleComposites = false;
         //private static bool ToggleDebuffing = false;
 
-        private const float DelayBetweenTrims = 1;
+        //private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
 
-        private bool attackPetTrimmedAggressive = false;
+        //private bool petTrimmedAggressive = false;
 
-        private readonly Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
-        private readonly Dictionary<PetType, bool> petTrimmedHpDiv = new Dictionary<PetType, bool>();
-        private readonly Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
+        protected Dictionary<PetType, bool> petTrimmedAggressive = new Dictionary<PetType, bool>();
+        protected Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
+        private Dictionary<PetType, bool> petTrimmedHpDiv = new Dictionary<PetType, bool>();
+        private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
 
-        private readonly Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
+        private  Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
             { PetType.Support, 0 }
         };
-        private readonly Dictionary<PetType, double> _lastPetTrimDivertHpTime = new Dictionary<PetType, double>()
+        private Dictionary<PetType, double> _lastPetTrimDivertHpTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
             { PetType.Support, 0 }
@@ -103,11 +104,13 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("PetDefensiveNanos", false);
             _settings.AddVariable("PetArmorBuff", false);
 
-            _settings.AddVariable("DivertHpTrimmer", false);
-            _settings.AddVariable("DivertOffTrimmer", true);
-            _settings.AddVariable("TauntTrimmer", true);
-            _settings.AddVariable("AggDefTrimmer", true);
+            Game.TeleportEnded += OnZoned;
 
+            _settings.AddVariable("TauntTrimmer", false);
+            _settings.AddVariable("AggDefTrimmer", false);
+            _settings.AddVariable("DivertHpTrimmer", false);
+            _settings.AddVariable("DivertOffTrimmer", false);
+            
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
             _settings.AddVariable("TeamArmorBuff", true);
             _settings.AddVariable("PistolTeam", true);
@@ -207,11 +210,17 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
 
-            //Pet Items
-            RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
-            RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToHitpointsLow, RelevantTrimmers.DivertEnergyToHitpointsHigh }, PetDivertHpTrimmer);
-            RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToOffenseLow, RelevantTrimmers.DivertEnergyToOffenseHigh }, PetDivertOffTrimmer);
-            RegisterItemProcessor(new int[] { RelevantTrimmers.IncreaseAggressivenessLow, RelevantTrimmers.IncreaseAggressivenessHigh }, PetAggressiveTrimmer);
+            ////Pet Items
+            //RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
+            //RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToHitpointsLow, RelevantTrimmers.DivertEnergyToHitpointsHigh }, PetDivertHpTrimmer);
+            //RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToOffenseLow, RelevantTrimmers.DivertEnergyToOffenseHigh }, PetDivertOffTrimmer);
+            //RegisterItemProcessor(new int[] { RelevantTrimmers.IncreaseAggressivenessLow, RelevantTrimmers.IncreaseAggressivenessHigh }, PetAggressiveTrimmer);
+
+            //Pet Trimmers
+            RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness, PetAggressiveTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpoints, PetDivertHpTrimmer);
+            RegisterItemProcessor( RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
 
             ResetTrimmers();
 
@@ -790,7 +799,7 @@ namespace CombatHandler.Engineer
 
         #region Buffs
 
-        protected bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamArmorBuff"))
                     return GenericTeamBuff(spell, ref actionTarget);
@@ -798,7 +807,7 @@ namespace CombatHandler.Engineer
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
@@ -806,7 +815,7 @@ namespace CombatHandler.Engineer
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
-        protected bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam && IsSettingEnabled("GrenadeTeam"))
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
@@ -818,14 +827,14 @@ namespace CombatHandler.Engineer
                     || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
-        protected bool ShadowlandReflectBase(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ShadowlandReflectBase(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("ShadowlandReflectBase")) { return false; }
 
             return GenericBuff(spell, ref actionTarget);
         }
 
-        protected bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("DamageShields"))
                 return GenericTeamBuff(spell, ref actionTarget);
@@ -833,7 +842,7 @@ namespace CombatHandler.Engineer
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
             {
@@ -864,9 +873,9 @@ namespace CombatHandler.Engineer
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool EngineeringBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool EngineeringBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("MEBuff")) { return false; }
+            if (!IsSettingEnabled("MEBuff") || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.EngineeringBuff)) { return false; }
 
             return GenericBuff(spell, ref actionTarget);
         }
@@ -877,7 +886,7 @@ namespace CombatHandler.Engineer
 
         #region Pet Spawners
 
-        protected bool CastPets(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool CastPets(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
 
@@ -896,13 +905,13 @@ namespace CombatHandler.Engineer
 
         #region Buffs
 
-        protected bool PetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
-        protected bool PetArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PetArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("PetArmorBuff")) { return false; }
 
@@ -910,7 +919,7 @@ namespace CombatHandler.Engineer
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
-        protected bool PetDefensiveNanos(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PetDefensiveNanos(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("PetDefensiveNanos")) { return false; }
 
@@ -918,7 +927,7 @@ namespace CombatHandler.Engineer
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
-        protected bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
@@ -984,7 +993,7 @@ namespace CombatHandler.Engineer
 
         #region Warp
 
-        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
 
@@ -1192,30 +1201,33 @@ namespace CombatHandler.Engineer
 
         #region Trimmers
 
-        protected bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //You feel a faint vibration from the trimmer.
+        private bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
         {
-            if (!IsSettingEnabled("AggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
+            if (!IsSettingEnabled("TauntTrimmer")) { return false; } 
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
 
                 if (pet.Type == PetType.Attack
-                        && CanAggDefTrim(pet))
+                    && CanTrim(pet)
+                    && CanTauntTrim(pet))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
-                    petTrimmedAggDef[PetType.Attack] = true;
-                    _lastTrimTime = Time.NormalTime;
+                    petTrimmedAggressive[PetType.Attack] = true;
+                    _lastTrimTime = Time.NormalTime ;
                     return true;
                 }
 
                 if (pet.Type == PetType.Support
-                    && CanAggDefTrim(pet))
+                    && CanTrim(pet)
+                    && CanTauntTrim(pet))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
-                    petTrimmedAggDef[PetType.Support] = true;
+                    petTrimmedAggressive[PetType.Support] = true;
                     _lastTrimTime = Time.NormalTime;
                     return true;
                 }
@@ -1224,16 +1236,64 @@ namespace CombatHandler.Engineer
             return false;
         }
 
-        protected bool PetDivertHpTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //You hear a ring inside the robot.
+        private bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
         {
-            if (!IsSettingEnabled("DivertHpTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
+            if (!IsSettingEnabled("AggDefTrimmer")) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
 
                 if (pet.Type == PetType.Support
-                        && CanDivertHpTrim(pet))
+                    && CanTrim(pet)
+                    && CanAggDefTrim(pet))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    petTrimmedAggDef[PetType.Support] = true;
+                    _lastTrimTime = Time.NormalTime ;
+                    return true;
+                }
+
+                if (pet.Type == PetType.Attack
+                    && CanTrim(pet)
+                    && CanAggDefTrim(pet))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    petTrimmedAggDef[PetType.Attack] = true;
+                    _lastTrimTime = Time.NormalTime ;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        // Lock skill Elec. Engi for 5m. The robot straightens its back.
+        private bool PetDivertHpTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        {
+            if (!IsSettingEnabled("DivertHpTrimmer")) { return false; }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (pet.Type == PetType.Attack
+                    && CanTrim(pet)
+                    && CanDivertHpTrim(pet))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    petTrimmedHpDiv[PetType.Attack] = true;
+                    _lastPetTrimDivertHpTime[PetType.Attack] = Time.NormalTime;
+                    _lastTrimTime = Time.NormalTime;
+                    return true;
+                }
+
+                if (pet.Type == PetType.Support
+                    && CanTrim(pet)
+                    && CanDivertHpTrim(pet))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
@@ -1246,48 +1306,18 @@ namespace CombatHandler.Engineer
 
             return false;
         }
-
-        protected bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        // Lock skill Mech. Engi for 5m. The arms of your robot jerk briefly.
+        private bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
         {
-            if (!IsSettingEnabled("DivertOffTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
+            if (!IsSettingEnabled("DivertOffTrimmer")) { return false; }
 
-            if (IsSettingEnabled("DivertHpTrimmer"))
-            {
                 foreach (Pet pet in DynelManager.LocalPlayer.Pets)
                 {
                     if (pet.Character == null) continue;
-
-                    if (pet.Type == PetType.Attack
-                            && CanDivertOffTrim(pet))
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = pet.Character;
-                        petTrimmedOffDiv[PetType.Attack] = true;
-                        _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
-                        _lastTrimTime = Time.NormalTime;
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                {
-                    if (pet.Character == null) continue;
-
-                    if (pet.Type == PetType.Attack
-                            && CanDivertOffTrim(pet))
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = pet.Character;
-                        petTrimmedOffDiv[PetType.Attack] = true;
-                        _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
-                        _lastTrimTime = Time.NormalTime;
-                        return true;
-                    }
 
                     if (pet.Type == PetType.Support
-                            && CanDivertOffTrim(pet))
+                        && CanTrim(pet)
+                        && CanDivertOffTrim(pet))
                     {
                         actionTarget.ShouldSetTarget = true;
                         actionTarget.Target = pet.Character;
@@ -1295,32 +1325,21 @@ namespace CombatHandler.Engineer
                         _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
                         _lastTrimTime = Time.NormalTime;
                         return true;
+                    };
+
+                    if (pet.Type == PetType.Attack
+                        && CanTrim(pet)
+                        && CanDivertOffTrim(pet))
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = pet.Character;
+                        petTrimmedOffDiv[PetType.Attack] = true;
+                        _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
+                        _lastTrimTime = Time.NormalTime;
+                        return true;
                     }
                 }
-            }
-
-            return false;
-        }
-
-        protected bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (pet.Type == PetType.Attack
-                        && CanTauntTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    attackPetTrimmedAggressive = true;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
-            }
-
+            
             return false;
         }
 
@@ -1340,41 +1359,50 @@ namespace CombatHandler.Engineer
                 .Any();
         }
 
-        protected bool CanTrim()
+        private bool CanTrim(Pet pet)
         {
-            return _lastTrimTime + DelayBetweenTrims < Time.NormalTime;
+            return _lastTrimTime + 1 < Time.NormalTime;
         }
 
-        protected bool CanDivertOffTrim(Pet pet)
+        private bool CanDivertOffTrim(Pet pet)
         {
             return _lastPetTrimDivertOffTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime || !petTrimmedOffDiv[pet.Type];
         }
 
-        protected bool CanDivertHpTrim(Pet pet)
+        private bool CanDivertHpTrim(Pet pet)
         {
             return _lastPetTrimDivertHpTime[pet.Type] + DelayBetweenDiverTrims < Time.NormalTime || !petTrimmedHpDiv[pet.Type];
         }
 
 
-        protected bool CanAggDefTrim(Pet pet)
+        private bool CanAggDefTrim(Pet pet)
         {
+
             return !petTrimmedAggDef[pet.Type];
         }
 
-        protected bool CanTauntTrim(Pet pet)
+        private bool CanTauntTrim(Pet pet)
         {
-            return pet.Type == PetType.Attack && !attackPetTrimmedAggressive;
+            return !petTrimmedAggressive[pet.Type];
         }
 
-        public void ResetTrimmers()
+        private void ResetTrimmers()
         {
-            attackPetTrimmedAggressive = false;
+            petTrimmedAggressive[PetType.Attack] = false;
+            petTrimmedAggressive[PetType.Support] = false;
             petTrimmedOffDiv[PetType.Attack] = false;
             petTrimmedOffDiv[PetType.Support] = false;
             petTrimmedHpDiv[PetType.Attack] = false;
             petTrimmedHpDiv[PetType.Support] = false;
             petTrimmedAggDef[PetType.Attack] = false;
             petTrimmedAggDef[PetType.Support] = false;
+        }
+
+        private void OnZoned(object s, EventArgs e)
+        {
+            _lastZonedTime = Time.NormalTime;
+            _lastCombatTime = double.MinValue;
+            ResetTrimmers();
         }
 
         private void CancelBuffs()
@@ -1403,7 +1431,7 @@ namespace CombatHandler.Engineer
                 ? RelevantNanos.Blinds : RelevantNanos.ShieldRippers);
         }
 
-        protected bool ShouldCancelHostileAuras()
+        private bool ShouldCancelHostileAuras()
         {
             return Time.NormalTime - _lastCombatTime > 5;
         }
@@ -1445,13 +1473,21 @@ namespace CombatHandler.Engineer
 
         private static class RelevantTrimmers
         {
-            public const int IncreaseAggressivenessLow = 154939;
-            public const int IncreaseAggressivenessHigh = 154940;
-            public const int DivertEnergyToOffenseLow = 88377;
-            public const int DivertEnergyToOffenseHigh = 88378;
-            public const int PositiveAggressiveDefensive = 88384;
-            public const int DivertEnergyToHitpointsLow = 88381;
-            public const int DivertEnergyToHitpointsHigh = 88382;
+            public static readonly int[] IncreaseAggressiveness = { 154940, 154939 }; // Mech. Engi
+            public static readonly int[] PositiveAggressiveDefensive = { 88384, 88383 }; // Mech. Engi
+            public static readonly int[] DivertEnergyToHitpoints = { 88382, 88381 }; // Lock skill Elec. Engi for 5m.
+            public static readonly int[] DivertEnergyToOffense = { 88378, 88377 }; // Lock skill Mech. Engi for 5m.
+
+            //public const int IncreaseAggressivenessLow = 154939;
+            //public const int IncreaseAggressivenessHigh = 154940;
+
+            //public const int DivertEnergyToOffenseLow = 88377;
+            //public const int DivertEnergyToOffenseHigh = 88378;
+
+            //public const int PositiveAggressiveDefensiveHigh = 88384;
+
+            //public const int DivertEnergyToHitpointsLow = 88381;
+            //public const int DivertEnergyToHitpointsHigh = 88382;
         }
 
         public enum PetPerkSelection

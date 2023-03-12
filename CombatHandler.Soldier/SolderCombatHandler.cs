@@ -76,20 +76,19 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("GlobalComposites", true);
             _settings.AddVariable("DeTaunt", false);
 
-            _settings.AddVariable("SharpObjects", true);
-            _settings.AddVariable("Grenades", true);
+            _settings.AddVariable("SharpObjects", false);
+            _settings.AddVariable("Grenades", false);
 
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
 
             _settings.AddVariable("ShadowlandReflect", true);
-            _settings.AddVariable("TeamArmorBuff", true);
+            _settings.AddVariable("TeamArmorBuff", false);
             _settings.AddVariable("Evades", false);
             _settings.AddVariable("InitBuff", false);
 
             _settings.AddVariable("LEHealthDrain", false);
-            _settings.AddVariable("CH", true);
 
             _settings.AddVariable("AAO", false);
             _settings.AddVariable("PistolTeam", false);
@@ -98,7 +97,7 @@ namespace CombatHandler.Soldier
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
 
-            _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.RubiKaTeam);
+            _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.None);
 
             _settings.AddVariable("NotumGrenades", false);
 
@@ -896,7 +895,7 @@ namespace CombatHandler.Soldier
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
@@ -931,7 +930,7 @@ namespace CombatHandler.Soldier
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
             if (IsSettingEnabled("InitBuff"))
@@ -1013,7 +1012,7 @@ namespace CombatHandler.Soldier
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamArmorBuff"))
                 return GenericTeamBuff(spell, ref actionTarget);
@@ -1042,7 +1041,7 @@ namespace CombatHandler.Soldier
         #endregion
 
         #region Team Buffs
-        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
 
@@ -1066,7 +1065,7 @@ namespace CombatHandler.Soldier
 
         public enum RKReflectSelection
         {
-            RubiKa, RubiKaTeam
+            None, RubiKa, RubiKaTeam
         }
 
         public enum SingleTauntsSelection

@@ -896,7 +896,7 @@ namespace CombatHandler.Adventurer
 
         #region Team Buffs
 
-        protected bool TeamArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamArmorBuffs"))
                 return TeamBuff(spell, spell.Nanoline, ref actionTarget);
@@ -904,21 +904,21 @@ namespace CombatHandler.Adventurer
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DamageShields")) { return false; }
 
             return GenericTeamBuff(spell, ref actionTarget);
         }
 
-        protected bool XPBonus(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool XPBonus(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("XPBonus")) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool TeamRunSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamRunSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("RunspeedBuffs")) { return false; }
 

@@ -124,7 +124,7 @@ namespace CombatHandler.Generic
             {PerkHash.ECM1 , PerkType.NanoShutdown_TraderDebuff_Cleanse}, //Nano shutdown, trader debuffs
             {PerkHash.ECM2 , PerkType.NanoShutdown_TraderDebuff_Cleanse}, //Nano shutdown, trader debuffs
             {PerkHash.ElementaryTeleportation , PerkType.Disabled},
-            {PerkHash.EncaseInStone , PerkType.TargetDamage},
+            {PerkHash.EncaseInStone , PerkType.CombatBuff},
             {PerkHash.Energize , PerkType.CombatBuff},
             {PerkHash.EnhancedHeal , PerkType.SelfHeal},
             {PerkHash.Escape , PerkType.Disabled},
@@ -494,8 +494,8 @@ namespace CombatHandler.Generic
             {PerkHash.Vaccinate1 , PerkType.Trader_Debuff_Cleanse}, //Trader debuff
             {PerkHash.Vaccinate2 , PerkType.Trader_Debuff_Cleanse}, //Trader debuff
             {PerkHash.Violence , PerkType.TargetDamage},
-            {PerkHash.ViralCombination , PerkType.TargetDamage},
-            {PerkHash.ViralWipe , PerkType.TargetDamage},
+            {PerkHash.ViralCombination , PerkType.TargetDamage}, 
+            {PerkHash.ViralWipe , PerkType.Dot_Cleanse}, //Dots
             {PerkHash.VitalShock , PerkType.TargetDamage},
             {PerkHash.WeaponBash , PerkType.TargetDamage},
             {PerkHash.WitOfTheAtrox , PerkType.Disabled},

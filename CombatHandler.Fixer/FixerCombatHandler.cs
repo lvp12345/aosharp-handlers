@@ -68,6 +68,8 @@ namespace CombatHandler.Fixer
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
+            _settings.AddVariable("EncaseInStone", false);
+
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
             _settings.AddVariable("BulletsSelection", (int)BulletsSelection.None);

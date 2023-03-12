@@ -66,6 +66,8 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
+            _settings.AddVariable("EncaseInStone", false);
+
             _settings.AddVariable("AAOBuffs", true);
 
             _settings.AddVariable("SharpObjects", false);

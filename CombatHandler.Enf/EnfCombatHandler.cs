@@ -100,6 +100,7 @@ namespace CombatHandler.Enf
             _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
 
             _settings.AddVariable("TrollForm", false);
+            _settings.AddVariable("EncaseInStone", false);
 
             _settings.AddVariable("ScorpioTauntTool", false);
 

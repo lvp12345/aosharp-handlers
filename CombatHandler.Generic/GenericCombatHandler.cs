@@ -201,6 +201,7 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
             RegisterItemProcessor(new int[] { RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh }, FlowerOfLife);
@@ -627,6 +628,13 @@ namespace CombatHandler.Generic
             }
 
             return false;
+        }
+
+        private bool EncaseInStone(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("EncaseInStone") || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion

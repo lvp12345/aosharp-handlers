@@ -74,7 +74,10 @@ namespace CombatHandler.Soldier
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
+
             _settings.AddVariable("DeTaunt", false);
+
+            _settings.AddVariable("EncaseInStone", false);
 
             _settings.AddVariable("SharpObjects", false);
             _settings.AddVariable("Grenades", false);

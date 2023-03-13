@@ -9,9 +9,10 @@
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Masters Bidding" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MastersBidding" layout_borders="Rect(10,1,5,1)"/>
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Divert to Offense Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertTrimmer" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Taunt Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TauntTrimmer" layout_borders="Rect(10,1,5,1)"/>
-    <OptionCheckBox label="Aggressive-Defensive Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AggDefTrimmer" layout_borders="Rect(10,1,5,1)"/>
+	  <OptionCheckBox label="Taunt Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TauntTrimmer" layout_borders="Rect(10,1,5,1)"/>
+	  <OptionCheckBox label="Aggressive-Defensive Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AggDefTrimmer" layout_borders="Rect(10,1,5,1)"/>
+	  <OptionCheckBox label="Divert Energy to Hitpoints" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertHpTrimmer" layout_borders="Rect(10,1,5,1)"/>
+	  <OptionCheckBox label="Divert to Offense Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertOffTrimmer" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>
 </root>

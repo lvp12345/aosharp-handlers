@@ -886,7 +886,7 @@ namespace CombatHandler.MartialArtist
             return false;
         }
 
-        protected bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool RunSpeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("RunSpeed")) { return false; }
 
@@ -915,14 +915,14 @@ namespace CombatHandler.MartialArtist
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        protected bool PercentEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PercentEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (SelfEvadeSelection.Percent != (SelfEvadeSelection)_settings["SelfEvadeSelection"].AsInt32()) { return false; }
 
             return GenericBuff(spell, ref actionTarget);
         }
 
-        protected bool TargetEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TargetEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (SelfEvadeSelection.Target != (SelfEvadeSelection)_settings["SelfEvadeSelection"].AsInt32()) { return false; }
 
@@ -933,7 +933,7 @@ namespace CombatHandler.MartialArtist
 
         #region Team Buffs
 
-        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
 
@@ -943,14 +943,14 @@ namespace CombatHandler.MartialArtist
 
         }
 
-        protected bool LimboMastery(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool LimboMastery(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Evades")) { return false; }
 
             return GenericTeamBuff(spell, ref actionTarget);
         }
 
-        protected bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("CritBuff"))
                 return TeamBuff(spell, spell.Nanoline, ref actionTarget);
@@ -958,7 +958,7 @@ namespace CombatHandler.MartialArtist
             return false;
         }
 
-        protected bool TeamArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamArmorBuffs"))
                 return TeamBuff(spell, spell.Nanoline, ref actionTarget);

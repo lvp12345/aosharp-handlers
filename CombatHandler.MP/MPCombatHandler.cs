@@ -1027,7 +1027,7 @@ namespace CombatHandler.Metaphysicist
                 || PetTargetBuff(NanoLine.NPCostBuff, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
-        protected bool InducedApathy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool InducedApathy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
@@ -1055,7 +1055,7 @@ namespace CombatHandler.Metaphysicist
             return false;
         }
 
-        protected bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
@@ -1089,7 +1089,7 @@ namespace CombatHandler.Metaphysicist
 
         #region Warp
 
-        protected bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
 
@@ -1105,7 +1105,7 @@ namespace CombatHandler.Metaphysicist
 
         #region Buffs
 
-        protected bool SelfEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SelfEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
 
@@ -1115,7 +1115,7 @@ namespace CombatHandler.Metaphysicist
         #endregion
 
         #region Team Buffs
-        protected bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
 
@@ -1125,7 +1125,7 @@ namespace CombatHandler.Metaphysicist
             return false;
         }
 
-        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);

@@ -78,7 +78,7 @@ namespace CombatHandler.Generic
             {PerkHash.Clearsight , PerkType.TargetDamage},
             {PerkHash.Cleave , PerkType.TargetDamage},
             {PerkHash.Clipfever , PerkType.Disabled},
-            {PerkHash.CloseCall , PerkType.SelfHeal},
+            {PerkHash.CloseCall , PerkType.Disabled},
             {PerkHash.Collapser , PerkType.TargetDamage},
             {PerkHash.Combust , PerkType.TargetDamage},
             {PerkHash.ConcussiveShot , PerkType.TargetDamage},

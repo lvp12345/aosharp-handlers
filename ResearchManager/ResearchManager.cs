@@ -20,6 +20,8 @@ namespace ResearchManager
 
         public static string PluginDir;
 
+        //private static string _perkName = N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal));
+
         public override void Run(string pluginDir)
         {
             _settings = new Settings("Research");
@@ -39,6 +41,7 @@ namespace ResearchManager
         {
             SettingsController.CleanUp();
         }
+
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
@@ -46,16 +49,6 @@ namespace ResearchManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1))
-            //{
-            //    if (SettingsController.settingsWindow == null)
-            //        SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 280, 280), "Research Manager", "Settings", WindowStyle.Default, WindowFlags.None);
-
-            //    if (SettingsController.settingsWindow != null && SettingsController.settingsWindow?.IsVisible == false)
-            //    {
-            //        SettingsController.AppendSettingsTab("Research Manager", SettingsController.settingsWindow);
-            //    }
-            //}
 
             if (_settings["Toggle"].AsBool() && !Game.IsZoning
                 && Time.NormalTime > _tick + 3f)
@@ -85,8 +78,35 @@ namespace ResearchManager
                             _asyncToggle = false;
                         });
                 }
-
+ 
             }
+
+            //if (_settings["Toggle"].AsBool() && !Game.IsZoning)
+            //{
+
+            //    if (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) > 0
+            //        && _perkName != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
+            //    {
+            //        _perkName = N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal));
+            //    }
+
+            //    if (!Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId) == _perkName)
+            //            .FirstOrDefault().Available
+            //        || (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0
+            //            && !Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId) == _perkName)
+            //                .FirstOrDefault().Available))
+            //    {
+            //        ResearchGoal _next = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
+            //            != _perkName && c.Available)
+            //            .OrderBy(c => c.ResearchId)
+            //            .FirstOrDefault();
+
+            //        Research.Train(_next.ResearchId);
+            //    }
+            //}
+
+
         }
+
     }
 }

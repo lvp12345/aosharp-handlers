@@ -12,7 +12,9 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using System.Collections.Generic;
 using AOSharp.Core.Inventory;
 using CombatHandler.Generic;
+using static CombatHandler.Generic.PerkCondtionProcessors;
 using System.Windows.Input;
+using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Doctor
 {
@@ -90,6 +92,7 @@ namespace CombatHandler.Doctor
 
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
+            _settings.AddVariable("NanoTransmission", false);
             _settings.AddVariable("HealSelection", (int)HealSelection.SingleTeam);
 
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
@@ -135,6 +138,8 @@ namespace CombatHandler.Doctor
             RegisterPerkProcessor(PerkHash.BattlegroupHeal3, BattleGroupHeal3);
             RegisterPerkProcessor(PerkHash.BattlegroupHeal4, BattleGroupHeal4);
 
+            RegisterPerkProcessor(PerkHash.NanoTransmission, NanoTransmission);
+            RegisterPerkProcessor(PerkHash.CloseCall, CloseCall);
 
             //Healing
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
@@ -170,7 +175,7 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
 
             //Items
-            RegisterItemProcessor(RelevantItems.Books,  TOTWHeal);
+            RegisterItemProcessor(RelevantItems.Books, TOTWHeal);
 
             PluginDirectory = pluginDir;
 
@@ -895,7 +900,7 @@ namespace CombatHandler.Doctor
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ShortHOT")|| !InCombat()) { return false; }
+            if (!IsSettingEnabled("ShortHOT") || !InCombat()) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -1134,21 +1139,70 @@ namespace CombatHandler.Doctor
 
         #endregion
 
+        #region Perks
+
+        private bool NanoTransmission(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("NanoTransmission")) { return false; }
+
+            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+
+            {
+                if (Team.IsInTeam)
+                {
+                    SimpleChar teamMember = DynelManager.Players
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.HealthPercent < 50
+                            && c.IsInLineOfSight
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+                            && c.Health > 0)
+                        .OrderBy(c => c.HealthPercent)
+                        .OrderBy(c => c.Profession == Profession.Doctor)
+                        .OrderBy(c => c.Profession == Profession.Enforcer)
+                        .OrderBy(c => c.Profession == Profession.Soldier)
+                        .FirstOrDefault();
+
+                    if (teamMember != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = teamMember;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.HealthPercent < 50)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        #endregion
+
         #region Items
 
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TOTWBooks")) { return false; }
-
-            if (fightingTarget == null) { return false; }
-
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+            if (!IsSettingEnabled("TOTWBooks") 
+                && fightingTarget == null
+                && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
 
             if (Team.IsInTeam)
             {
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent < 40
+                        && c.HealthPercent < 25
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
                         && c.Health > 0)
@@ -1168,8 +1222,7 @@ namespace CombatHandler.Doctor
                 return false;
             }
 
-
-            if (DynelManager.LocalPlayer.HealthPercent < 40)
+            if (DynelManager.LocalPlayer.HealthPercent < 25)
             {
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
@@ -1237,10 +1290,12 @@ namespace CombatHandler.Doctor
                 {
 
                     public const int ImprovedLC = 275011;
+
                     public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
                         .Where(spell => spell.Id != ImprovedLC).ToArray();
 
                     public const int TiredLimbs = 99578;
+
                     public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder()
                         .Where(spell => spell.Id != TiredLimbs).ToArray();
 
@@ -1259,7 +1314,7 @@ namespace CombatHandler.Doctor
 
                 private static class RelevantItems
                 {
-                        public static readonly int[] Books = { 206242, 305514 };
+                    public static readonly int[] Books = { 206242, 305514 };
                 }
 
                 #endregion

@@ -51,12 +51,10 @@ namespace CombatHandler.Bureaucrat
         private Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
-            { PetType.Support, 0 }
         };
         private Dictionary<PetType, double> _lastPetTrimDivertHpTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
-            { PetType.Support, 0 }
         };
 
         private static double _ncuUpdateTime;
@@ -1436,16 +1434,6 @@ namespace CombatHandler.Bureaucrat
                     _lastTrimTime = Time.NormalTime;
                     return true;
                 }
-
-                if (pet.Type == PetType.Support
-                    && CanTauntTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedAggressive[PetType.Support] = true;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
             }
 
             return false;
@@ -1459,17 +1447,6 @@ namespace CombatHandler.Bureaucrat
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
-
-
-                if (pet.Type == PetType.Support
-                    && CanAggDefTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedAggDef[PetType.Support] = true;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
 
                 if (pet.Type == PetType.Attack
                          && CanAggDefTrim(pet))
@@ -1504,16 +1481,6 @@ namespace CombatHandler.Bureaucrat
                     return true;
                 }
 
-                if (pet.Type == PetType.Support
-                         && CanDivertHpTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedHpDiv[PetType.Support] = true;
-                    _lastPetTrimDivertHpTime[PetType.Support] = Time.NormalTime;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
             }
 
             return false;
@@ -1526,17 +1493,6 @@ namespace CombatHandler.Bureaucrat
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
-
-                if (pet.Type == PetType.Support
-                        && CanDivertOffTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedOffDiv[PetType.Support] = true;
-                    _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                };
 
                 if (pet.Type == PetType.Attack
                         && CanDivertOffTrim(pet))

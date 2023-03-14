@@ -197,52 +197,40 @@ namespace CombatHandler.Generic
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
+            RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
-            RegisterItemProcessor(RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh, FlowerOfLife);
-
+            RegisterItemProcessor(new int[] { RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh }, FlowerOfLife);
             RegisterItemProcessor(RelevantGenericItems.ReflectGraft, RelevantGenericItems.ReflectGraft, ReflectGraft);
-
             RegisterItemProcessor(RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, Coffee);
-
-            RegisterItemProcessor(RelevantGenericItems.FlurryOfBlowsHigh, RelevantGenericItems.FlurryOfBlowsHigh, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.FlurryOfBlowsLow, RelevantGenericItems.FlurryOfBlowsLow, DamageItem);
-
+            RegisterItemProcessor(new int[] { RelevantGenericItems.FlurryOfBlowsHigh, RelevantGenericItems.FlurryOfBlowsLow }, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.StrengthOfTheImmortal, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.MightOfTheRevenant, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.BarrowStrength, RelevantGenericItems.BarrowStrength, DamageItem);
-
             RegisterItemProcessor(RelevantGenericItems.GnuffsEternalRiftCrystal, RelevantGenericItems.GnuffsEternalRiftCrystal, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
-
             RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
-
             RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBooster, RelevantGenericItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
             RegisterItemProcessor(RelevantGenericItems.WitheredFlesh, RelevantGenericItems.WitheredFlesh, WithFlesh, CombatActionPriority.High);
             RegisterItemProcessor(RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.DesecratedFlesh, DescFlesh, CombatActionPriority.High);
             RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
-
             RegisterItemProcessor(RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.MeteoriteSpikes, SharpObjects);
             RegisterItemProcessor(RelevantGenericItems.TearOfOedipus, RelevantGenericItems.TearOfOedipus, SharpObjects);
             RegisterItemProcessor(RelevantGenericItems.LavaCapsule, RelevantGenericItems.LavaCapsule, SharpObjects);
             RegisterItemProcessor(RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.KizzermoleGumboil, SharpObjects);
             RegisterItemProcessor(RelevantGenericItems.FallenStar, RelevantGenericItems.FallenStar, SharpObjects);
-
-            RegisterItemProcessor(RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh, Grenades);
-
-            RegisterItemProcessor(RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh, TargetedDamageItem);
-            RegisterItemProcessor(RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh, TargetedDamageItem);
-
+            RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
+            RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
+            RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
             RegisterItemProcessor(new int[] { RelevantGenericItems.RezCan1, RelevantGenericItems.RezCan2 }, RezCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
-
-            RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, 
-            RelevantGenericItems.HealthAndNanoStim400, RelevantGenericItems.DeathsDoor }, HealthAndNanoStim, CombatActionPriority.High);
+            RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, RelevantGenericItems.HealthAndNanoStim400 }, HealthAndNanoStim, CombatActionPriority.High);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.PremSitKit, RelevantGenericItems.AreteSitKit, RelevantGenericItems.SitKit1,
             RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
@@ -584,14 +572,14 @@ namespace CombatHandler.Generic
             return BuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool Limber(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantGenericNanos.DanceOfFools, out Buff dof) && dof.RemainingTime > 10.0) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool DanceOfFools(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
 
@@ -624,8 +612,6 @@ namespace CombatHandler.Generic
             {
                 CycleWitOfTheAtroxPerk = Time.NormalTime;
 
-                //if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
-
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
             }
 
@@ -638,12 +624,17 @@ namespace CombatHandler.Generic
             {
                 CycleSpherePerk = Time.NormalTime;
 
-                //if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
-
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
             }
 
             return false;
+        }
+
+        private bool EncaseInStone(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("EncaseInStone") || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+
+            return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -1209,31 +1200,6 @@ namespace CombatHandler.Generic
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            if (StimTargetSelection.Target == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
-                    || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) 
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                    || DynelManager.LocalPlayer.Buffs.Contains(280470) 
-                    || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
-
-                SimpleChar player = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage)
-                        && c.Name == StimTargetName
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
-                        && c.Health > 0)
-                    .FirstOrDefault();
-
-                if (player != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = player;
-                    return true;
-                }
-            }
-
             if (StimTargetSelection.Team == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
@@ -1266,33 +1232,54 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (StimTargetSelection.None == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
-
-            if (StimTargetSelection.Self == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
+            if (StimTargetSelection.Target == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
-                || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
-                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                || DynelManager.LocalPlayer.Buffs.Contains(280470)
-                || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+                    || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                    || DynelManager.LocalPlayer.Buffs.Contains(280470)
+                    || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
-                int targetHealing = item.UseModifiers
-                        .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
-                        .Cast<SpellData.Healing>()
-                        .Sum(x => x.Average);
+                SimpleChar player = DynelManager.Players
+                    .Where(c => c.IsInLineOfSight
+                        && (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage)
+                        && c.Name == StimTargetName
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
+                        && c.Health > 0)
+                    .FirstOrDefault();
 
-                if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 595f) == null
-                    && (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing))
+                if (player != null)
                 {
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-
+                    actionTarget.Target = player;
                     return true;
                 }
 
                 return false;
             }
+            if (StimTargetSelection.None == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
+                            || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
+                            || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
+                            || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+
+            int targetHealing = item.UseModifiers
+                    .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
+                    .Cast<SpellData.Healing>()
+                    .Sum(x => x.Average);
+
+            if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 595f) == null
+                && (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+
+                return true;
+            }
+
+            return false;
         }
 
         private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)

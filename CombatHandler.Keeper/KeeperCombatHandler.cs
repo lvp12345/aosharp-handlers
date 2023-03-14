@@ -66,6 +66,8 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("GlobalComposites", true);
             //_settings.AddVariable("GlobalDebuffs", true);
 
+            _settings.AddVariable("EncaseInStone", false);
+
             _settings.AddVariable("AAOBuffs", true);
 
             _settings.AddVariable("SharpObjects", false);
@@ -752,7 +754,7 @@ namespace CombatHandler.Keeper
 
         #region Team Buffs
 
-        protected bool AAOBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AAOBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("AAOBuffs"))
                 return GenericTeamBuff(spell, ref actionTarget);

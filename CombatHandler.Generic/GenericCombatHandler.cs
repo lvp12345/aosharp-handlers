@@ -18,6 +18,7 @@ using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterM
 
 namespace CombatHandler.Generic
 {
+    //test
     public class GenericCombatHandler : AOSharp.Core.Combat.CombatHandler
     {
         private const float PostZonePetCheckBuffer = 5;

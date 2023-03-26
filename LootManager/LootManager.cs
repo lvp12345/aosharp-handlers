@@ -144,7 +144,7 @@ namespace LootManager
 
             foreach (Item item in container.Items)
             {
-                if (Inventory.NumFreeSlots >= 1)
+                if (Inventory.NumFreeSlots >= 2)
                 {
                     if (CheckRules(item))
                     {

@@ -1046,7 +1046,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NotumGrafttSelection") && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)) 
+            if (!IsSettingEnabled("NotumGrafttSelection") || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)) 
             { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent <= 75) 

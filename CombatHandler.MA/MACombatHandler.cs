@@ -770,7 +770,7 @@ namespace CombatHandler.MartialArtist
             if (MASASelection.Sappo != (MASASelection)_settings["MASASelection"].AsInt32()) { return false; }
 
             if (fightingtarget == null) { return false; }
-
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
             return true;
@@ -781,7 +781,7 @@ namespace CombatHandler.MartialArtist
             if (MASASelection.StingoftheViper != (MASASelection)_settings["MASASelection"].AsInt32()) { return false; }
 
             if (fightingtarget == null) { return false; }
-
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
             return true;
@@ -792,7 +792,7 @@ namespace CombatHandler.MartialArtist
             if (DimachSelection.TouchOfSaiFung != (DimachSelection)_settings["DimachSelection"].AsInt32()) { return false; }
 
             if (fightingtarget == null) { return false; }
-
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
             return true;
@@ -803,7 +803,7 @@ namespace CombatHandler.MartialArtist
             if (DimachSelection.TheWizdomofHuzzum != (DimachSelection)_settings["DimachSelection"].AsInt32()) { return false; }
 
             if (fightingtarget == null) { return false; }
-
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
             return true;

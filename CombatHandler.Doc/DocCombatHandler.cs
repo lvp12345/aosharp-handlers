@@ -1194,7 +1194,7 @@ namespace CombatHandler.Doctor
 
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TOTWBooks") && fightingTarget == null ) { return false; }
+            if (!IsSettingEnabled("TOTWBooks")) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
 
             if (Team.IsInTeam)

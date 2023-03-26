@@ -165,7 +165,7 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist);
 
             //Items
-            RegisterItemProcessor(RelevantItems.NotumItem, NotumItem);
+            RegisterItemProcessor(new int[] { RelevantItems.NotumGraft, RelevantItems.NotumSplice }, NotumItem);
             RegisterItemProcessor(RelevantItems.WilloftheIllusionist, RelevantItems.WilloftheIllusionist, Illusionist);
 
 
@@ -1138,7 +1138,9 @@ namespace CombatHandler.NanoTechnician
 
         private static class RelevantItems
         {
-            public static readonly int[] NotumItem = { 305513, 204649 };
+            public const int NotumSplice = 204649;
+            public const int NotumGraft = 305513;
+
             public const int WilloftheIllusionist = 274717;
 
         }

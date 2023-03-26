@@ -175,7 +175,7 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
 
             //Items
-            RegisterItemProcessor(RelevantItems.Books, TOTWHeal);
+            RegisterItemProcessor(new int[] { RelevantItems.SacredTextoftheImmortalOne, RelevantItems.TeachingsoftheImmortalOne }, TOTWHeal);
 
             PluginDirectory = pluginDir;
 
@@ -1194,9 +1194,9 @@ namespace CombatHandler.Doctor
 
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TOTWBooks") 
-                && fightingTarget == null
-                && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+            if (!IsSettingEnabled("TOTWBooks")) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
 
             if (Team.IsInTeam)
             {
@@ -1312,11 +1312,12 @@ namespace CombatHandler.Doctor
                 }
 
 
-                private static class RelevantItems
-                {
-                    public static readonly int[] Books = { 206242, 305514 };
-                }
+        private static class RelevantItems
+        {
+            public const int SacredTextoftheImmortalOne = 305514;
+            public const int TeachingsoftheImmortalOne = 206242;
+        }
 
-                #endregion
+        #endregion
     }
 }

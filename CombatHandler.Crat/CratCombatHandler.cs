@@ -27,6 +27,8 @@ namespace CombatHandler.Bureaucrat
 
         //private bool attackPetTrimmedAggressive = false;
 
+        public static bool _syncPets;
+
         private static Window _buffWindow;
         private static Window _debuffWindow;
         private static Window _petWindow;
@@ -65,6 +67,8 @@ namespace CombatHandler.Bureaucrat
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
             Config.CharSettings[Game.ClientInst].CycleXpPerksDelayChangedEvent += CycleXpPerksDelay_Changed;
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
@@ -246,7 +250,7 @@ namespace CombatHandler.Bureaucrat
             ResetTrimmers();
 
             //Pet Perks
-            
+
 
             PluginDirectory = pluginDir;
 
@@ -269,6 +273,15 @@ namespace CombatHandler.Bureaucrat
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
+
+        private void syncPetsOnEnabled()
+        {
+            _syncPets = true;
+        }
+        private void syncPetsOffDisabled()
+        {
+            _syncPets = false;
+        }
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -301,6 +314,18 @@ namespace CombatHandler.Bureaucrat
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //}
+
+        private void SyncPetsOnMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = true;
+            syncPetsOnEnabled();
+        }
+
+        private void SyncPetsOffMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = false;
+            syncPetsOffDisabled();
+        }
 
         #endregion
 
@@ -670,6 +695,20 @@ namespace CombatHandler.Bureaucrat
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                if (!_settings["SyncPets"].AsBool() && _syncPets) // Farming off
+                {
+                    IPCChannel.Broadcast(new PetSyncOffMessage());
+                    Chat.WriteLine("SyncPets disabled");
+                    syncPetsOffDisabled();
+                }
+
+                if (_settings["SyncPets"].AsBool() && !_syncPets) // farming on
+                {
+                    IPCChannel.Broadcast(new PetSyncOnMessag());
+                    Chat.WriteLine("SyncPets enabled.");
+                    syncPetsOnEnabled();
+                }
+
 
                 #region GlobalBuffing
 
@@ -851,8 +890,8 @@ namespace CombatHandler.Bureaucrat
             .Where(c => c.IsInLineOfSight
             && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
             && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
-            && c.Buffs.Contains(NanoLine.Root) 
-            || c.Buffs.Contains(NanoLine.Snare) 
+            && c.Buffs.Contains(NanoLine.Root)
+            || c.Buffs.Contains(NanoLine.Snare)
             || c.Buffs.Contains(305244) //Pause for Reflection
             || c.Buffs.Contains(268174) //Cunning of The Voracious Horror
             && SpellChecksOther(spell, spell.Nanoline, c))
@@ -1092,18 +1131,18 @@ namespace CombatHandler.Bureaucrat
 
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                    SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000
-                        && c.FightingTarget != null
-                        && !AttackingMob(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .FirstOrDefault();
+                SimpleChar target = DynelManager.NPCs
+                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                    && c.Health > 0
+                    && c.IsInLineOfSight
+                    && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                    && c.MaxHealth < 1000000
+                    && c.FightingTarget != null
+                    && !AttackingMob(c)
+                    && AttackingTeam(c))
+                .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                .FirstOrDefault();
 
                 if (target != null)
                 {

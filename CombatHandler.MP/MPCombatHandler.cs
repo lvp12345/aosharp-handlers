@@ -23,6 +23,8 @@ namespace CombatHandler.Metaphysicist
         private static bool ToggleComposites = false;
         //private static bool ToggleDebuffing = false;
 
+        public static bool _syncPets;
+
         private static Window _buffWindow;
         private static Window _debuffWindow;
         private static Window _petWindow;
@@ -48,6 +50,8 @@ namespace CombatHandler.Metaphysicist
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
             Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
@@ -193,7 +197,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
-           
+
 
             PluginDirectory = pluginDir;
 
@@ -215,6 +219,15 @@ namespace CombatHandler.Metaphysicist
         public Window[] _windows => new Window[] { _petWindow, _buffWindow, _debuffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
+
+        private void syncPetsOnEnabled()
+        {
+            _syncPets = true;
+        }
+        private void syncPetsOffDisabled()
+        {
+            _syncPets = false;
+        }
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -247,6 +260,18 @@ namespace CombatHandler.Metaphysicist
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //}
+
+        private void SyncPetsOnMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = true;
+            syncPetsOnEnabled();
+        }
+
+        private void SyncPetsOffMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = false;
+            syncPetsOffDisabled();
+        }
 
         #endregion
 
@@ -599,6 +624,20 @@ namespace CombatHandler.Metaphysicist
                     perkView.Clicked = HandlePerkViewClick;
                 }
 
+                if (!_settings["SyncPets"].AsBool() && _syncPets) // Farming off
+                {
+                    IPCChannel.Broadcast(new PetSyncOffMessage());
+                    Chat.WriteLine("SyncPets disabled");
+                    syncPetsOffDisabled();
+                }
+
+                if (_settings["SyncPets"].AsBool() && !_syncPets) // farming on
+                {
+                    IPCChannel.Broadcast(new PetSyncOnMessag());
+                    Chat.WriteLine("SyncPets enabled.");
+                    syncPetsOnEnabled();
+                }
+
 
                 #region GlobalBuffing
 
@@ -783,7 +822,7 @@ namespace CombatHandler.Metaphysicist
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
             if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-            
+
             return true;
         }
 
@@ -1178,12 +1217,12 @@ namespace CombatHandler.Metaphysicist
         //Ewww
         private SimpleChar GetTargetToHeal()
         {
-           if (DynelManager.LocalPlayer.HealthPercent < 90)
-           {
+            if (DynelManager.LocalPlayer.HealthPercent < 90)
+            {
                 return DynelManager.LocalPlayer;
-           }
-           else if (DynelManager.LocalPlayer.IsInTeam())
-           {
+            }
+            else if (DynelManager.LocalPlayer.IsInTeam())
+            {
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
@@ -1196,9 +1235,9 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingTeamMember;
                 }
-           }
-           else
-           {
+            }
+            else
+            {
                 Pet dyingPet = DynelManager.LocalPlayer.Pets
                      .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
                      .Where(pet => pet.Character.HealthPercent < 80)
@@ -1210,7 +1249,7 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingPet.Character;
                 }
-           }
+            }
 
             return null;
         }

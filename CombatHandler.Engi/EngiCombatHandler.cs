@@ -20,6 +20,8 @@ namespace CombatHandler.Engineer
         private static bool ToggleComposites = false;
         //private static bool ToggleDebuffing = false;
 
+        public static bool _syncPets;
+
         //private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
 
@@ -30,7 +32,7 @@ namespace CombatHandler.Engineer
         private Dictionary<PetType, bool> petTrimmedHpDiv = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
 
-        private  Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
+        private Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
             { PetType.Support, 0 }
@@ -63,6 +65,8 @@ namespace CombatHandler.Engineer
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
             Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
@@ -110,7 +114,7 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("AggDefTrimmer", false);
             _settings.AddVariable("DivertHpTrimmer", false);
             _settings.AddVariable("DivertOffTrimmer", false);
-            
+
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
             _settings.AddVariable("TeamArmorBuff", true);
             _settings.AddVariable("PistolTeam", true);
@@ -220,7 +224,7 @@ namespace CombatHandler.Engineer
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness, PetAggressiveTrimmer);
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpoints, PetDivertHpTrimmer);
-            RegisterItemProcessor( RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
 
             ResetTrimmers();
 
@@ -247,6 +251,15 @@ namespace CombatHandler.Engineer
         public Window[] _windows => new Window[] { _petWindow, _buffWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
+
+        private void syncPetsOnEnabled()
+        {
+            _syncPets = true;
+        }
+        private void syncPetsOffDisabled()
+        {
+            _syncPets = false;
+        }
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
@@ -279,6 +292,18 @@ namespace CombatHandler.Engineer
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //}
+
+        private void SyncPetsOnMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = true;
+            syncPetsOnEnabled();
+        }
+
+        private void SyncPetsOffMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = false;
+            syncPetsOffDisabled();
+        }
 
         #endregion
 
@@ -623,6 +648,20 @@ namespace CombatHandler.Engineer
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                if (!_settings["SyncPets"].AsBool() && _syncPets) // Farming off
+                {
+                    IPCChannel.Broadcast(new PetSyncOffMessage());
+                    Chat.WriteLine("SyncPets disabled");
+                    syncPetsOffDisabled();
+                }
+
+                if (_settings["SyncPets"].AsBool() && !_syncPets) // farming on
+                {
+                    IPCChannel.Broadcast(new PetSyncOnMessag());
+                    Chat.WriteLine("SyncPets enabled.");
+                    syncPetsOnEnabled();
+                }
+
                 #region GlobalBuffing
 
                 if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
@@ -802,7 +841,7 @@ namespace CombatHandler.Engineer
         private bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamArmorBuff"))
-                    return GenericTeamBuff(spell, ref actionTarget);
+                return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -1202,9 +1241,9 @@ namespace CombatHandler.Engineer
         #region Trimmers
 
         //You feel a faint vibration from the trimmer.
-        private bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        private bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TauntTrimmer")) { return false; } 
+            if (!IsSettingEnabled("TauntTrimmer")) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
@@ -1217,7 +1256,7 @@ namespace CombatHandler.Engineer
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
                     petTrimmedAggressive[PetType.Attack] = true;
-                    _lastTrimTime = Time.NormalTime ;
+                    _lastTrimTime = Time.NormalTime;
                     return true;
                 }
 
@@ -1237,7 +1276,7 @@ namespace CombatHandler.Engineer
         }
 
         //You hear a ring inside the robot.
-        private bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        private bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("AggDefTrimmer")) { return false; }
 
@@ -1252,7 +1291,7 @@ namespace CombatHandler.Engineer
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
                     petTrimmedAggDef[PetType.Support] = true;
-                    _lastTrimTime = Time.NormalTime ;
+                    _lastTrimTime = Time.NormalTime;
                     return true;
                 }
 
@@ -1263,7 +1302,7 @@ namespace CombatHandler.Engineer
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
                     petTrimmedAggDef[PetType.Attack] = true;
-                    _lastTrimTime = Time.NormalTime ;
+                    _lastTrimTime = Time.NormalTime;
                     return true;
                 }
             }
@@ -1271,7 +1310,7 @@ namespace CombatHandler.Engineer
             return false;
         }
         // Lock skill Elec. Engi for 5m. The robot straightens its back.
-        private bool PetDivertHpTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        private bool PetDivertHpTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DivertHpTrimmer")) { return false; }
 
@@ -1307,39 +1346,39 @@ namespace CombatHandler.Engineer
             return false;
         }
         // Lock skill Mech. Engi for 5m. The arms of your robot jerk briefly.
-        private bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        private bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("DivertOffTrimmer")) { return false; }
 
-                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (pet.Type == PetType.Support
+                    && CanTrim(pet)
+                    && CanDivertOffTrim(pet))
                 {
-                    if (pet.Character == null) continue;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    petTrimmedOffDiv[PetType.Support] = true;
+                    _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
+                    _lastTrimTime = Time.NormalTime;
+                    return true;
+                };
 
-                    if (pet.Type == PetType.Support
-                        && CanTrim(pet)
-                        && CanDivertOffTrim(pet))
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = pet.Character;
-                        petTrimmedOffDiv[PetType.Support] = true;
-                        _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
-                        _lastTrimTime = Time.NormalTime;
-                        return true;
-                    };
-
-                    if (pet.Type == PetType.Attack
-                        && CanTrim(pet)
-                        && CanDivertOffTrim(pet))
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = pet.Character;
-                        petTrimmedOffDiv[PetType.Attack] = true;
-                        _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
-                        _lastTrimTime = Time.NormalTime;
-                        return true;
-                    }
+                if (pet.Type == PetType.Attack
+                    && CanTrim(pet)
+                    && CanDivertOffTrim(pet))
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    petTrimmedOffDiv[PetType.Attack] = true;
+                    _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
+                    _lastTrimTime = Time.NormalTime;
+                    return true;
                 }
-            
+            }
+
             return false;
         }
 
@@ -1521,6 +1560,6 @@ namespace CombatHandler.Engineer
         }
 
         #endregion
- 
+
     }
 }

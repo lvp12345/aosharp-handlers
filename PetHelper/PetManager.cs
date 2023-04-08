@@ -18,6 +18,8 @@ namespace PetManager
 
         public static string PluginDirectory;
 
+        public static bool _syncPets;
+
         public static Window _infoWindow;
 
         public static View _infoView;
@@ -38,6 +40,8 @@ namespace PetManager
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
             PluginDir = pluginDir;
 
@@ -46,6 +50,8 @@ namespace PetManager
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed; ;
 
             RegisterSettingsWindow("Pet Manager", "PetManagerSettingWindow.xml");
+
+            _settings.AddVariable("SyncPets", true);
 
             Game.OnUpdate += OnUpdate;
 
@@ -123,7 +129,42 @@ namespace PetManager
                     PetWarp.Tag = SettingsController.settingsWindow;
                     PetWarp.Clicked = PetWarpClicked;
                 }
+
+                if (!_settings["SyncPets"].AsBool() && _syncPets) // Farming off
+                {
+                    IPCChannel.Broadcast(new PetSyncOffMessage());
+                    Chat.WriteLine("SyncPets disabled");
+                    syncPetsOffDisabled();
+                }
+
+                if (_settings["SyncPets"].AsBool() && !_syncPets) // farming on
+                {
+                    IPCChannel.Broadcast(new PetSyncOnMessag());
+                    Chat.WriteLine("SyncPets enabled.");
+                    syncPetsOnEnabled();
+                }
             }
+        }
+
+        private void syncPetsOnEnabled()
+        {
+            _syncPets = true;
+        }
+        private void syncPetsOffDisabled()
+        {
+            _syncPets = false;
+        }
+
+        private void SyncPetsOnMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = true;
+            syncPetsOnEnabled();
+        }
+
+        private void SyncPetsOffMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = false;
+            syncPetsOffDisabled();
         }
 
         //wait

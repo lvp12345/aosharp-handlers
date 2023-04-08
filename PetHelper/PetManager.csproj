@@ -59,6 +59,8 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
+    <Compile Include="IPCMessages\PetSyncOffMessage.cs" />
+    <Compile Include="IPCMessages\PetSyncOnMessage.cs" />
     <Compile Include="IPCMessages\PetFollowMessage.cs" />
     <Compile Include="IPCMessages\PetWaitMessage.cs" />
     <Compile Include="IPCMessages\PetWarpMessage.cs" />

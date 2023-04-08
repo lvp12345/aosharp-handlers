@@ -179,7 +179,12 @@ namespace CombatHandler.Generic
                     "Punishment",
                     "Flaming Chaos",
                     "Flaming Punishment",
-                    "Flaming Vengeance"
+                    "Flaming Vengeance",
+                    "Male Lieutenant",
+                    "Omni-AF Urban Trooper",
+                    "Unicorn Commander",
+                    "Unicorn Specialist",
+                    "Unicorn Squadleader"
         };
 
         public static IPCChannel IPCChannel;

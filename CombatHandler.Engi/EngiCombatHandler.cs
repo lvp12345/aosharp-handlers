@@ -20,6 +20,8 @@ namespace CombatHandler.Engineer
         private static bool ToggleComposites = false;
         //private static bool ToggleDebuffing = false;
 
+        public static bool _syncPets;
+
         //private const float DelayBetweenTrims = 1;
         private const float DelayBetweenDiverTrims = 305;
 
@@ -63,6 +65,8 @@ namespace CombatHandler.Engineer
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
             Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
@@ -248,6 +252,15 @@ namespace CombatHandler.Engineer
 
         #region Callbacks
 
+        private void syncPetsOnEnabled()
+        {
+            _syncPets = true;
+        }
+        private void syncPetsOffDisabled()
+        {
+            _syncPets = false;
+        }
+
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
@@ -279,6 +292,18 @@ namespace CombatHandler.Engineer
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //}
+
+        private void SyncPetsOnMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = true;
+            syncPetsOnEnabled();
+        }
+
+        private void SyncPetsOffMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = false;
+            syncPetsOffDisabled();
+        }
 
         #endregion
 
@@ -621,6 +646,20 @@ namespace CombatHandler.Engineer
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+                if (!_settings["SyncPets"].AsBool() && _syncPets) // Farming off
+                {
+                    IPCChannel.Broadcast(new PetSyncOffMessage());
+                    Chat.WriteLine("SyncPets disabled");
+                    syncPetsOffDisabled();
+                }
+
+                if (_settings["SyncPets"].AsBool() && !_syncPets) // farming on
+                {
+                    IPCChannel.Broadcast(new PetSyncOnMessag());
+                    Chat.WriteLine("SyncPets enabled.");
+                    syncPetsOnEnabled();
                 }
 
                 #region GlobalBuffing

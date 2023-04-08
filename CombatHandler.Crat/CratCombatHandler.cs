@@ -27,6 +27,8 @@ namespace CombatHandler.Bureaucrat
 
         //private bool attackPetTrimmedAggressive = false;
 
+        public static bool _syncPets;
+
         private static Window _buffWindow;
         private static Window _debuffWindow;
         private static Window _petWindow;
@@ -65,6 +67,8 @@ namespace CombatHandler.Bureaucrat
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
             Config.CharSettings[Game.ClientInst].CycleXpPerksDelayChangedEvent += CycleXpPerksDelay_Changed;
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
@@ -270,6 +274,15 @@ namespace CombatHandler.Bureaucrat
 
         #region Callbacks
 
+        private void syncPetsOnEnabled()
+        {
+            _syncPets = true;
+        }
+        private void syncPetsOffDisabled()
+        {
+            _syncPets = false;
+        }
+
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
@@ -301,6 +314,18 @@ namespace CombatHandler.Bureaucrat
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //    _settings[$"Debuffing"] = debuffMsg.Switch;
         //}
+
+        private void SyncPetsOnMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = true;
+            syncPetsOnEnabled();
+        }
+
+        private void SyncPetsOffMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = false;
+            syncPetsOffDisabled();
+        }
 
         #endregion
 
@@ -668,6 +693,20 @@ namespace CombatHandler.Bureaucrat
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
+                }
+
+                if (!_settings["SyncPets"].AsBool() && _syncPets) // Farming off
+                {
+                    IPCChannel.Broadcast(new PetSyncOffMessage());
+                    Chat.WriteLine("SyncPets disabled");
+                    syncPetsOffDisabled();
+                }
+
+                if (_settings["SyncPets"].AsBool() && !_syncPets) // farming on
+                {
+                    IPCChannel.Broadcast(new PetSyncOnMessag());
+                    Chat.WriteLine("SyncPets enabled.");
+                    syncPetsOnEnabled();
                 }
 
 

@@ -165,7 +165,7 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist);
 
             //Items
-            RegisterItemProcessor(RelevantItems.NotumItem, NotumItem);
+            RegisterItemProcessor(new int[] { RelevantItems.NotumGraft, RelevantItems.NotumSplice }, NotumItem);
             RegisterItemProcessor(RelevantItems.WilloftheIllusionist, RelevantItems.WilloftheIllusionist, Illusionist);
 
 
@@ -1046,8 +1046,9 @@ namespace CombatHandler.NanoTechnician
 
         private bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NotumGrafttSelection") && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)) 
-            { return false; }
+            if (!IsSettingEnabled("NotumGrafttSelection")) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent <= 75) 
             { return true; }
@@ -1138,7 +1139,8 @@ namespace CombatHandler.NanoTechnician
 
         private static class RelevantItems
         {
-            public static readonly int[] NotumItem = { 305513, 204649 };
+            public const int NotumSplice = 204649;
+            public const int NotumGraft = 305513;
             public const int WilloftheIllusionist = 274717;
 
         }

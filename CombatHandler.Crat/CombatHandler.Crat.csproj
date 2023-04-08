@@ -47,6 +47,8 @@
     <Compile Include="IPCMessages\GlobalDebuffingMessage.cs" />
     <Compile Include="IPCMessages\GloballCompositesMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
+    <Compile Include="IPCMessages\PetSyncOffMessage.cs" />
+    <Compile Include="IPCMessages\PetSyncOnMessage.cs" />
     <Compile Include="IPCMessages\RemaingNCUMessage.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="PetsList.cs" />

@@ -9,10 +9,9 @@
 	  <OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Evades" layout_borders="Rect(10,1,5,1)"/>
 	  <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-      <OptionRadioButtonGroup label="Nano Heal" layout_borders="Rect(7,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoHealSelection">
+      <OptionRadioButtonGroup label="Nano Point Heal (Team only)" layout_borders="Rect(7,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoHealSelection">
         <RadioButton label="None" value="0"/>
-        <RadioButton label="Self" value="1"/>
-        <RadioButton label="Combat" value="2"/>
+        <RadioButton label="Combat" value="1"/>
       </OptionRadioButtonGroup>
     </View>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

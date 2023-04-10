@@ -149,8 +149,6 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderTeamSkillWranglerBuff).OrderByStackingOrder(), UmbralWrangler);
             
-
-
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
 
@@ -857,14 +855,9 @@ namespace CombatHandler.Trader
 
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoHealSelection.None == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32()) { return false; }
-
             if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
                 if (InCombat())
                     return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-            if (NanoHealSelection.Self == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
-                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -1344,7 +1337,7 @@ namespace CombatHandler.Trader
         }
         public enum NanoHealSelection
         {
-            None, Self, Combat
+            None, Combat
         }
         public enum NanoDrainSelection
         {

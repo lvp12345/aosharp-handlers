@@ -13,6 +13,7 @@
 		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<Button name="PetAttack" label="Attack" layout_borders="Rect(5,5,3,5)"/>
 		<Button name="PetWait" label="Wait" layout_borders="Rect(5,5,3,5)"/>
 		<Button name="PetWarp" label="Warp" layout_borders="Rect(5,5,3,5)"/>
 		<Button name="PetFollow" label="Follow" layout_borders="Rect(5,5,3,5)"/>

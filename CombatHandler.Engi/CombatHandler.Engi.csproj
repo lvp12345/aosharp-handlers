@@ -54,8 +54,12 @@
     <Compile Include="IPCMessages\GlobalDebuffingMessage.cs" />
     <Compile Include="IPCMessages\GloballCompositesMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
+    <Compile Include="IPCMessages\PetAttackMessage.cs" />
+    <Compile Include="IPCMessages\PetFollowMessage.cs" />
     <Compile Include="IPCMessages\PetSyncOffMessage.cs" />
     <Compile Include="IPCMessages\PetSyncOnMessage.cs" />
+    <Compile Include="IPCMessages\PetWaitMessage.cs" />
+    <Compile Include="IPCMessages\PetWarpMessage.cs" />
     <Compile Include="IPCMessages\RemaingNCUMessage.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="PetsList.cs" />
@@ -68,6 +72,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\EngineerPetCommandView.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\EngineerPerksView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

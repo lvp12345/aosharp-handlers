@@ -1815,8 +1815,6 @@ namespace CombatHandler.Bureaucrat
 
         private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
         {
-            
-
             IPCChannel.Broadcast(new PetAttackMessage());
             OnPetAttack(0, null);
         }

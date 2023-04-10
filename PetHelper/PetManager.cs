@@ -7,6 +7,7 @@ using AOSharp.Common.GameData;
 using PetManager.IPCMessages;
 using System.Runtime.InteropServices;
 using AOSharp.Common.GameData.UI;
+using System.Windows.Media;
 
 namespace PetManager
 {
@@ -37,6 +38,7 @@ namespace PetManager
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
@@ -55,6 +57,7 @@ namespace PetManager
 
             Game.OnUpdate += OnUpdate;
 
+            //Chat.RegisterCommand("petattack", PetAttackCommand);
             Chat.RegisterCommand("petwait", PetWaitCommand);
             Chat.RegisterCommand("petwarp", PetWarpCommand);
             Chat.RegisterCommand("petfollow", PetFollowCommand);
@@ -107,6 +110,13 @@ namespace PetManager
                 {
                     infoView.Tag = SettingsController.settingsWindow;
                     infoView.Clicked = InfoView; 
+                }
+
+                //attack
+                if (SettingsController.settingsWindow.FindView("PetAttack", out Button PetAttack))
+                {
+                    PetAttack.Tag = SettingsController.settingsWindow;
+                    PetAttack.Clicked = PetAttackClicked;
                 }
 
                 //wait
@@ -167,6 +177,34 @@ namespace PetManager
             syncPetsOffDisabled();
         }
 
+        //attack
+        private void PetAttackClicked(object s, ButtonBase button)
+        {
+            PetAttackCommand(null, null, null);
+        }
+
+        private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetAttackMessage()
+            {
+                Target = (Identity)Targeting.Target?.Identity
+            }) ;
+            OnPetAttack(0, null);
+        }
+
+        private static void OnPetAttack(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Attack((Identity)Targeting.Target?.Identity);
+                }
+            }
+
+            
+        }
+        
         //wait
         private void PetWaitClicked(object s, ButtonBase button)
         {

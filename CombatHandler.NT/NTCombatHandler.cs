@@ -779,6 +779,13 @@ namespace CombatHandler.NanoTechnician
 
         #region Nukes
 
+        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (AOESelection.Normal != (AOESelection)_settings["AOESelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            return true;
+        }
         private bool VolcanicEruption(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AOESelection.VE != (AOESelection)_settings["AOESelection"].AsInt32()
@@ -790,14 +797,6 @@ namespace CombatHandler.NanoTechnician
         private bool PierceNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Pierce") || fightingTarget == null || !CanCast(spell)) { return false; }
-
-            return true;
-        }
-
-        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (AOESelection.Normal != (AOESelection)_settings["AOESelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return true;
         }

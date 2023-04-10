@@ -87,7 +87,7 @@ namespace HelpManager
         List<Vector3> OutBellyPath = new List<Vector3>
         {
             new Vector3(214.8f, 100.6f, 126.5f),
-            new Vector3(210.6f, 100.2f, 129.7f)
+            new Vector3(211.0f, 100.3f, 135.1f)
         };
 
         List<Vector3> MorphHorse = new List<Vector3>

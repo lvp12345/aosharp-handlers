@@ -858,7 +858,6 @@ namespace CombatHandler.Trader
             if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
                 if (InCombat())
                     return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
             return false;
         }
 

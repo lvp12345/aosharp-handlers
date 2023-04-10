@@ -6,6 +6,8 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.GameData;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -91,6 +93,7 @@ namespace CombatHandler.Bureaucrat
             Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
             Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -334,6 +337,8 @@ namespace CombatHandler.Bureaucrat
             syncPetsOffDisabled();
         }
 
+        
+
         public static void OnPetAttack(int sender, IPCMessage msg)
         {
             if (DynelManager.LocalPlayer.Pets.Length > 0)
@@ -343,10 +348,7 @@ namespace CombatHandler.Bureaucrat
                     pet.Attack((Identity)Targeting.Target?.Identity);
                 }
             }
-
         }
-
-        
 
         private static void OnPetWait(int sender, IPCMessage msg)
         {
@@ -386,7 +388,7 @@ namespace CombatHandler.Bureaucrat
 
         #region Handles
 
-        private void PetAttackClicked(object s, ButtonBase button)
+        private void PetAttackClicked(object s, ButtonBase button)//
         {
             PetAttackCommand(null, null, null);
         }
@@ -728,7 +730,7 @@ namespace CombatHandler.Bureaucrat
                             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
 
                 //attack
-                if (window.FindView("CombatHandlerPetAttack", out Button PetAttack))
+                if (window.FindView("CombatHandlerPetAttack", out Button PetAttack))//
                 {
                     PetAttack.Tag = window;
                     PetAttack.Clicked = PetAttackClicked;
@@ -1813,10 +1815,9 @@ namespace CombatHandler.Bureaucrat
 
         private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
         {
-            IPCChannel.Broadcast(new PetAttackMessage()
-            {
-                Target = (Identity)Targeting.Target?.Identity
-            });
+            
+
+            IPCChannel.Broadcast(new PetAttackMessage());
             OnPetAttack(0, null);
         }
 

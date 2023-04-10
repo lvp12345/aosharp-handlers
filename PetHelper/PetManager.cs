@@ -8,6 +8,9 @@ using PetManager.IPCMessages;
 using System.Runtime.InteropServices;
 using AOSharp.Common.GameData.UI;
 using System.Windows.Media;
+using AOSharp.Core.Movement;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using System.Windows.Interop;
 
 namespace PetManager
 {
@@ -185,15 +188,14 @@ namespace PetManager
 
         private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
         {
-            IPCChannel.Broadcast(new PetAttackMessage()
-            {
-                Target = (Identity)Targeting.Target?.Identity
-            }) ;
+            IPCChannel.Broadcast(new PetAttackMessage());
             OnPetAttack(0, null);
         }
 
-        private static void OnPetAttack(int sender, IPCMessage msg)
+
+        public static void OnPetAttack(int sender, IPCMessage msg)
         {
+
             if (DynelManager.LocalPlayer.Pets.Length > 0)
             {
                 foreach (Pet pet in DynelManager.LocalPlayer.Pets)
@@ -202,9 +204,9 @@ namespace PetManager
                 }
             }
 
-            
+
         }
-        
+
         //wait
         private void PetWaitClicked(object s, ButtonBase button)
         {

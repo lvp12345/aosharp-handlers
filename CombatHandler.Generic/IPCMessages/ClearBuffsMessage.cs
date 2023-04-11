@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HelpManager.IPCMessages
+namespace CombatHandler.Generic.IPCMessages
 {
     [AoContract((int)IPCOpcode.ClearBuffs)]
     public class ClearBuffsMessage : IPCMessage

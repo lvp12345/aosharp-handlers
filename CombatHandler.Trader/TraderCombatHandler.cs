@@ -75,7 +75,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
             _settings.AddVariable("Kits", true);
 
@@ -853,14 +853,6 @@ namespace CombatHandler.Trader
             return false;
         }
 
-        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
-                if (InCombat())
-                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            return false;
-        }
-
         #endregion
 
         #region Buffs
@@ -875,6 +867,14 @@ namespace CombatHandler.Trader
         #endregion
 
         #region Team Buffs
+
+        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
+                if (InCombat())
+                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return false;
+        }
 
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

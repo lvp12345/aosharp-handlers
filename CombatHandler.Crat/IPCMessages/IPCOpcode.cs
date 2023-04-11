@@ -17,6 +17,8 @@ namespace CombatHandler.Bureaucrat
         PetWarp = 2346,
         PetFollow = 2347,
         PetSyncOn = 2348,
-        PetSyncOff = 2349
+        PetSyncOff = 2349,
+        Disband = 2100,
+        ClearBuffs = 2101
     }
 }

@@ -12,7 +12,7 @@
     <TextView value="% Health" layout_borders="Rect(5,5,5,5)"/>
     <TextInputView name="SitPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
     </View>
-    <OptionCheckBox label="Auto sit" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__AutoSit" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Auto sit (AFK)" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__AutoSit" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="(12man) Morph Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__MorphPathing" layout_borders="Rect(10,1,5,1)"/>
     <OptionCheckBox label="(DB3) Shapes" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__Db3Shapes" layout_borders="Rect(10,1,5,1)"/>

@@ -43,6 +43,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CratCombatHandler.cs" />
+    <Compile Include="IPCMessages\PetWarpMessage.cs" />
+    <Compile Include="IPCMessages\PetWaitMessage.cs" />
+    <Compile Include="IPCMessages\PetFollowMessage.cs" />
+    <Compile Include="IPCMessages\PetAttackMessage.cs" />
     <Compile Include="IPCMessages\GlobalBuffingMessage.cs" />
     <Compile Include="IPCMessages\GlobalDebuffingMessage.cs" />
     <Compile Include="IPCMessages\GloballCompositesMessage.cs" />
@@ -94,6 +98,7 @@
     <Content Include="UI\BureaucratItemsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="UI\BureaucratPetCommandView.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

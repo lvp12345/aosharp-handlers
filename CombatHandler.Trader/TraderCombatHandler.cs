@@ -105,7 +105,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
-            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Self);
+            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Combat);
 
             _settings.AddVariable("Root", false);
 
@@ -853,21 +853,7 @@ namespace CombatHandler.Trader
             return false;
         }
 
-        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            switch ((NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
-            {
-                case NanoHealSelection.None:
-                case NanoHealSelection.Self:
-                    return false;
-                case NanoHealSelection.Combat:
-                    if (InCombat())
-                        return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    return false;
-                default:
-                    return false;
-            }
-        }
+       
 
         #endregion
 
@@ -883,6 +869,14 @@ namespace CombatHandler.Trader
         #endregion
 
         #region Team Buffs
+
+        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
+                if (InCombat())
+                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return false;
+        }
 
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

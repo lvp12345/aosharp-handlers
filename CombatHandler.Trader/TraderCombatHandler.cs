@@ -105,7 +105,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
-            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Self);
+            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Combat);
 
             _settings.AddVariable("Root", false);
 

@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="GenericCombatHandler.cs" />
+    <Compile Include="IPCMessages\ClearBuffsMessage.cs" />
     <Compile Include="IPCMessages\DisbandMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="PerkProcessors.cs" />

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CombatHandler.Generic
+namespace CombatHandler.Generic.IPCMessages
 {
     [AoContract((int)IPCOpcode.Disband)]
     public class DisbandMessage : IPCMessage

@@ -10,7 +10,6 @@ namespace HelpManager.IPCMessages
     {
         YalmOn = 300,
         YalmUse = 301,
-        YalmOff = 302,
-        ClearBuffs = 303
+        YalmOff = 302
     }
 }

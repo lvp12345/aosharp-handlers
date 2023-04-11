@@ -105,7 +105,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
-            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Self);
+            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Combat);
 
             _settings.AddVariable("Root", false);
 
@@ -148,8 +148,6 @@ namespace CombatHandler.Trader
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderTeamSkillWranglerBuff).OrderByStackingOrder(), UmbralWrangler);
-            
-
 
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
@@ -160,7 +158,7 @@ namespace CombatHandler.Trader
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAADDrain).OrderByStackingOrder(), AADDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAAODrain).OrderByStackingOrder(), AAODrain, CombatActionPriority.Medium);
-            
+
             RegisterSpellProcessor(RelevantNanos.DivestDamage, DamageDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderShutdownSkillDebuff).OrderByStackingOrder(), DamageDrain, CombatActionPriority.Medium);
 
@@ -857,15 +855,9 @@ namespace CombatHandler.Trader
 
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoHealSelection.None == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32()) { return false; }
-
             if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
                 if (InCombat())
                     return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-            if (NanoHealSelection.Self == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
-                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
             return false;
         }
 
@@ -886,7 +878,7 @@ namespace CombatHandler.Trader
 
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() ) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             if (Team.IsInTeam && IsSettingEnabled("Evades"))
                 return TeamBuff(spell, spell.Nanoline, ref actionTarget)
@@ -915,7 +907,7 @@ namespace CombatHandler.Trader
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-             }
+            }
 
             return false;
         }
@@ -1026,7 +1018,7 @@ namespace CombatHandler.Trader
                 return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
 
             if (DepriveSelection.Boss == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-            { 
+            {
                 if (fightingTarget?.MaxHealth < 1000000)
                 {
                     if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff) && buff.RemainingTime > 25) { return false; }
@@ -1042,7 +1034,7 @@ namespace CombatHandler.Trader
                     return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
                 }
             }
-                
+
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
@@ -1336,7 +1328,7 @@ namespace CombatHandler.Trader
 
         public enum PerkSelection
         {
-           None, Sacrifice, PurpleHeart
+            None, Sacrifice, PurpleHeart
         }
         public enum HealSelection
         {
@@ -1344,7 +1336,7 @@ namespace CombatHandler.Trader
         }
         public enum NanoHealSelection
         {
-            None, Self, Combat
+            None, Combat
         }
         public enum NanoDrainSelection
         {

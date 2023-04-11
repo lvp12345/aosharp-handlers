@@ -5,6 +5,9 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.GameData;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -32,6 +35,7 @@ namespace CombatHandler.Bureaucrat
         private static Window _buffWindow;
         private static Window _debuffWindow;
         private static Window _petWindow;
+        private static Window _petCommandWindow;
         private static Window _calmingWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
@@ -41,6 +45,7 @@ namespace CombatHandler.Bureaucrat
         private static View _debuffView;
         private static View _calmView;
         private static View _petView;
+        private static View _petCommandView;
         private static View _procView;
         private static View _itemView;
         private static View _perkView;
@@ -67,6 +72,10 @@ namespace CombatHandler.Bureaucrat
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
@@ -84,6 +93,7 @@ namespace CombatHandler.Bureaucrat
             Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
             Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
@@ -270,7 +280,7 @@ namespace CombatHandler.Bureaucrat
             StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
         }
 
-        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _petCommandWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -327,9 +337,76 @@ namespace CombatHandler.Bureaucrat
             syncPetsOffDisabled();
         }
 
+
+
+        public static void OnPetAttack(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Attack((Identity)Targeting.Target?.Identity);
+                }
+            }
+        }
+
+        private static void OnPetWait(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Wait();
+                }
+            }
+        }
+
+        private static void OnPetWarp(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                Spell warp = Spell.List.FirstOrDefault(x => RelevantNanos.Warps.Contains(x.Id));
+                if (warp != null)
+                {
+                    warp.Cast(DynelManager.LocalPlayer, false);
+                }
+            }
+        }
+
+        private static void OnPetFollow(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Follow();
+                }
+            }
+        }
+
         #endregion
 
         #region Handles
+
+        private void PetAttackClicked(object s, ButtonBase button)//
+        {
+            PetAttackCommand(null, null, null);
+        }
+
+        private void PetWaitClicked(object s, ButtonBase button)
+        {
+            PetWaitCommand(null, null, null);
+        }
+
+        private void PetWarpClicked(object s, ButtonBase button)
+        {
+            PetWarpCommand(null, null, null);
+        }
+
+        private void PetFollowClicked(object s, ButtonBase button)
+        {
+            PetFollowCommand(null, null, null);
+        }
 
         private void HandlePetViewClick(object s, ButtonBase button)
         {
@@ -345,6 +422,23 @@ namespace CombatHandler.Bureaucrat
             {
                 SettingsController.CreateSettingsTab(_petWindow, PluginDir, new WindowOptions() { Name = "Pets", XmlViewName = "BureaucratPetsView" }, _petView, out var container);
                 _petWindow = container;
+            }
+        }
+
+        private void HandlePetCommandViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_petCommandView)) { return; }
+
+                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetCommandView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView);
+            }
+            else if (_petCommandWindow == null || (_petCommandWindow != null && !_petCommandWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView, out var container);
+                _petCommandWindow = container;
             }
         }
 
@@ -634,6 +728,35 @@ namespace CombatHandler.Bureaucrat
                     if (int.TryParse(strengthInput.Text, out int strengthValue))
                         if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
                             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
+
+                //attack
+                if (window.FindView("CombatHandlerPetAttack", out Button PetAttack))//
+                {
+                    PetAttack.Tag = window;
+                    PetAttack.Clicked = PetAttackClicked;
+                }
+
+                //wait
+                if (window.FindView("CombatHandlerPetWait", out Button PetWait))
+                {
+                    PetWait.Tag = window;
+                    PetWait.Clicked = PetWaitClicked;
+                }
+
+                //warp
+                if (window.FindView("CombatHandlerPetWarp", out Button PetWarp))
+                {
+                    PetWarp.Tag = window;
+                    PetWarp.Clicked = PetWarpClicked;
+                }
+
+                //follow
+                if (window.FindView("CombatHandlertPetFollow", out Button PetFollow))
+                {
+                    PetFollow.Tag = window;
+                    PetFollow.Clicked = PetFollowClicked;
+                }
+
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
@@ -671,6 +794,12 @@ namespace CombatHandler.Bureaucrat
                     petView.Clicked = HandlePetViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("PetCommandView", out Button petCommandView))
+                {
+                    petCommandView.Tag = SettingsController.settingsWindow;
+                    petCommandView.Clicked = HandlePetCommandViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
@@ -695,17 +824,15 @@ namespace CombatHandler.Bureaucrat
                     procView.Clicked = HandleProcViewClick;
                 }
 
-                if (!_settings["SyncPets"].AsBool() && _syncPets) // Farming off
+                if (!_settings["SyncPets"].AsBool() && _syncPets)
                 {
                     IPCChannel.Broadcast(new PetSyncOffMessage());
-                    Chat.WriteLine("SyncPets disabled");
                     syncPetsOffDisabled();
                 }
 
-                if (_settings["SyncPets"].AsBool() && !_syncPets) // farming on
+                if (_settings["SyncPets"].AsBool() && !_syncPets)
                 {
                     IPCChannel.Broadcast(new PetSyncOnMessag());
-                    Chat.WriteLine("SyncPets enabled.");
                     syncPetsOnEnabled();
                 }
 
@@ -1684,6 +1811,32 @@ namespace CombatHandler.Bureaucrat
             return target.IsMoving;
         }
 
+
+
+        private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetAttackMessage());
+            OnPetAttack(0, null);
+        }
+
+        private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetWaitMessage());
+            OnPetWait(0, null);
+        }
+
+        private static void PetWarpCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetWarpMessage());
+            OnPetWarp(0, null);
+        }
+
+        private void PetFollowCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetFollowMessage());
+            OnPetFollow(0, null);
+        }
+
         private static class RelevantNanos
         {
             public const int WorkplaceDepression = 273631;
@@ -1700,6 +1853,9 @@ namespace CombatHandler.Bureaucrat
             public const int CompositeMelee = 223360;
             public static readonly int[] CorporateLeadership = { 205433, 205435, 205437, 205439 };
             public const int PetWarp = 209488;
+            public static readonly int[] Warps = {
+                209488
+            };
 
             public static readonly int[] PistolBuffsSelf = { 263250, 263251 };
             public static readonly Spell[] PistolBuffs = Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder().Where(spell => spell.Id != GreaterGunSlinger && spell.Id != SkilledGunSlinger).ToArray();

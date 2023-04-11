@@ -293,6 +293,18 @@ namespace CombatHandler.Generic
 
         public static Window[] _window => new Window[] { _perkWindow };
 
+        public void OnDisband(int sender, IPCMessage msg)
+        {
+            Chat.WriteLine("Leaving team");
+            Team.Leave();
+        }
+
+        public void OnClearBuffs(int sender, IPCMessage msg)
+        {
+            Chat.WriteLine("Rebuffing");
+            CancelAllBuffs();
+        }
+
         protected override void OnUpdate(float deltaTime)
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 5.0)
@@ -1672,6 +1684,20 @@ namespace CombatHandler.Generic
             return spell.Cost < DynelManager.LocalPlayer.Nano;
         }
 
+        public static void CancelAllBuffs()
+        {
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs
+                .Where(x => !x.Name.Contains("Valid Pass")
+                && x.Nanoline != NanoLine.BioMetBuff && x.Nanoline != NanoLine.MatCreaBuff
+                && x.Nanoline != NanoLine.MatLocBuff && x.Nanoline != NanoLine.MatMetBuff
+                && x.Nanoline != NanoLine.PsyModBuff && x.Nanoline != NanoLine.SenseImpBuff
+                && x.Nanoline != NanoLine.TraderTeamSkillWranglerBuff
+                && x.Nanoline != NanoLine.FixerNCUBuff))
+            {
+                buff.Remove();
+            }
+        }
+
         public static void CancelBuffs(int[] buffsToCancel)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
@@ -1758,16 +1784,6 @@ namespace CombatHandler.Generic
             {
                 RegisterPerkProcessor(perkAction.Hash, ToPerkConditionProcessor(perkConditionProcessor));
             }
-        }
-
-        public static void OnDisband(int sender, IPCMessage msg)
-        {
-            Team.Leave();
-        }
-
-        private void OnClearBuffs(int sender, IPCMessage msg)
-        {
-            CancelAllBuffs();
         }
 
         //public static void Network_N3MessageSent(object s, N3Message n3Msg)
@@ -1920,7 +1936,7 @@ namespace CombatHandler.Generic
                 Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
             }
         }
-        private void Rebuff(string command, string[] param, ChatWindow chatWindow)
+        public void Rebuff(string command, string[] param, ChatWindow chatWindow)
         {
             CancelAllBuffs();
             IPCChannel.Broadcast(new ClearBuffsMessage());
@@ -1998,20 +2014,6 @@ namespace CombatHandler.Generic
                     return Stat.Grenade;
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
-            }
-        }
-
-        public static void CancelAllBuffs()
-        {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs
-                .Where(x => !x.Name.Contains("Valid Pass")
-                && x.Nanoline != NanoLine.BioMetBuff && x.Nanoline != NanoLine.MatCreaBuff
-                && x.Nanoline != NanoLine.MatLocBuff && x.Nanoline != NanoLine.MatMetBuff
-                && x.Nanoline != NanoLine.PsyModBuff && x.Nanoline != NanoLine.SenseImpBuff
-                && x.Nanoline != NanoLine.TraderTeamSkillWranglerBuff
-                && x.Nanoline != NanoLine.FixerNCUBuff))
-            {
-                buff.Remove();
             }
         }
 

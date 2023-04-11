@@ -105,7 +105,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
-            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Combat);
+            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Self);
 
             _settings.AddVariable("Root", false);
 
@@ -148,7 +148,7 @@ namespace CombatHandler.Trader
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderTeamSkillWranglerBuff).OrderByStackingOrder(), UmbralWrangler);
-
+            
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
 
@@ -855,10 +855,18 @@ namespace CombatHandler.Trader
 
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
-                if (InCombat())
-                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            return false;
+            switch ((NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
+            {
+                case NanoHealSelection.None:
+                case NanoHealSelection.Self:
+                    return false;
+                case NanoHealSelection.Combat:
+                    if (InCombat())
+                        return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    return false;
+                default:
+                    return false;
+            }
         }
 
         #endregion

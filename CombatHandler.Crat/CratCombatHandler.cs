@@ -6,7 +6,8 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 using SmokeLounge.AOtomation.Messaging.GameData;
 using System;
 using System.Collections.Generic;
@@ -72,12 +73,16 @@ namespace CombatHandler.Bureaucrat
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+
             IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].CycleXpPerksDelayChangedEvent += CycleXpPerksDelay_Changed;
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
@@ -278,6 +283,8 @@ namespace CombatHandler.Bureaucrat
             TeamNanoPerkPercentage = Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage;
             BodyDevAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage;
             StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
+
+            //Network.N3MessageSent += Network_N3MessageSent;
         }
 
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _petCommandWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };
@@ -337,8 +344,6 @@ namespace CombatHandler.Bureaucrat
             syncPetsOffDisabled();
         }
 
-
-
         public static void OnPetAttack(int sender, IPCMessage msg)
         {
             if (DynelManager.LocalPlayer.Pets.Length > 0)
@@ -349,6 +354,7 @@ namespace CombatHandler.Bureaucrat
                 }
             }
         }
+        
 
         private static void OnPetWait(int sender, IPCMessage msg)
         {
@@ -383,6 +389,30 @@ namespace CombatHandler.Bureaucrat
                 }
             }
         }
+
+        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
+        //{
+        //    if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+        //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
+
+        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
+        //    {
+        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
+        //        IPCChannel.Broadcast(new TargetMessage()
+        //        {
+        //            Target = lookAtMsg.Target
+        //        });
+        //    }
+        //    else if (n3Msg.N3MessageType == N3MessageType.PetCommand)
+        //    {
+        //        AttackMessage attackMsg = (AttackMessage)n3Msg;
+        //        IPCChannel.Broadcast(new PetAttackMessage()
+        //        {
+        //            Target = attackMsg.Target
+        //        });
+        //    }
+        //}
 
         #endregion
 
@@ -1815,7 +1845,11 @@ namespace CombatHandler.Bureaucrat
 
         private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
         {
-            IPCChannel.Broadcast(new PetAttackMessage());
+            
+                IPCChannel.Broadcast(new PetAttackMessage()
+                {
+                    Target = Targeting.Target.Identity
+                });
             OnPetAttack(0, null);
         }
 

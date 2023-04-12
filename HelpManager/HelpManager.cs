@@ -87,7 +87,7 @@ namespace HelpManager
         List<Vector3> OutBellyPath = new List<Vector3>
         {
             new Vector3(214.8f, 100.6f, 126.5f),
-            new Vector3(210.6f, 100.2f, 129.7f)
+            new Vector3(211.0f, 100.3f, 135.1f)
         };
 
         List<Vector3> MorphHorse = new List<Vector3>
@@ -117,8 +117,6 @@ namespace HelpManager
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
-
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
             Config.CharSettings[Game.ClientInst].SitPercentageChangedEvent += SitPercentage_Changed;
 
@@ -135,7 +133,6 @@ namespace HelpManager
             Chat.RegisterCommand("autosit", AutoSitSwitch);
 
             Chat.RegisterCommand("yalm", YalmCommand);
-            Chat.RegisterCommand("rebuff", Rebuff);
 
             Chat.WriteLine("HelpManager Loaded!");
             Chat.WriteLine("/helpmanager for settings.");
@@ -302,11 +299,6 @@ namespace HelpManager
             }
         }
 
-        private void OnClearBuffs(int sender, IPCMessage msg)
-        {
-            CancelAllBuffs();
-        }
-
         private void OnYalmCast(int sender, IPCMessage msg)
         {
             YalmOnMessage yalmMsg = (YalmOnMessage)msg;
@@ -427,12 +419,6 @@ namespace HelpManager
             }
         }
 
-        private void Rebuff(string command, string[] param, ChatWindow chatWindow)
-        {
-            CancelAllBuffs();
-            IPCChannel.Broadcast(new ClearBuffsMessage());
-        }
-
         private void ListenerPetSit()
         {
             healpet = DynelManager.LocalPlayer.Pets.Where(x => x.Type == PetType.Heal).FirstOrDefault();
@@ -501,21 +487,7 @@ namespace HelpManager
             }
         }
 
-        public static void CancelAllBuffs()
-        {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs
-                .Where(x => !x.Name.Contains("Valid Pass")
-                && x.Nanoline != NanoLine.BioMetBuff && x.Nanoline != NanoLine.MatCreaBuff
-                && x.Nanoline != NanoLine.MatLocBuff && x.Nanoline != NanoLine.MatMetBuff
-                && x.Nanoline != NanoLine.PsyModBuff && x.Nanoline != NanoLine.SenseImpBuff
-                && x.Nanoline != NanoLine.TraderTeamSkillWranglerBuff
-                && x.Nanoline != NanoLine.FixerNCUBuff))
-            {
-                buff.Remove();
-            }
-        }
-
-        public static void CancelBuffs(int[] buffsToCancel)
+            public static void CancelBuffs(int[] buffsToCancel)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {

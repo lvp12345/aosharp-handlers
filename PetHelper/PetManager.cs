@@ -11,6 +11,8 @@ using System.Windows.Media;
 using AOSharp.Core.Movement;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System.Windows.Interop;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using CombatHandler.Generic;
 
 namespace PetManager
 {
@@ -69,6 +71,8 @@ namespace PetManager
             Chat.WriteLine("/PetManager for settings.");
 
             PluginDirectory = pluginDir;
+
+            //Network.N3MessageSent += Network_N3MessageSent;
         }
 
         public Window[] _windows => new Window[] { _infoWindow };
@@ -99,20 +103,20 @@ namespace PetManager
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-
-                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
-                {
-                    if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                
+                    if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                     {
-                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                        if (int.TryParse(channelInput.Text, out int channelValue)
+                            && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                        }
                     }
-                }
 
                 if (SettingsController.settingsWindow.FindView("PetManagerInfoView", out Button infoView))
                 {
                     infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
+                    infoView.Clicked = InfoView; 
                 }
 
                 //attack
@@ -124,7 +128,7 @@ namespace PetManager
 
                 //wait
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
-                {
+                { 
                     PetWait.Tag = SettingsController.settingsWindow;
                     PetWait.Clicked = PetWaitClicked;
                 }
@@ -183,12 +187,33 @@ namespace PetManager
         //attack
         private void PetAttackClicked(object s, ButtonBase button)
         {
+
             PetAttackCommand(null, null, null);
         }
 
+        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
+        //{
+        //    //if (!GenericCombatHandler.IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
+        //    {
+        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
+        //        IPCChannel.Broadcast(new TargetMessage()
+        //        {
+        //            Target = lookAtMsg.Target
+        //        });
+        //    }
+        //}
+
         private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
         {
-            IPCChannel.Broadcast(new PetAttackMessage());
+            
+                IPCChannel.Broadcast(new PetAttackMessage()
+                {
+                    Target = Targeting.Target.Identity
+                });
+
+
             OnPetAttack(0, null);
         }
 
@@ -203,9 +228,10 @@ namespace PetManager
                     pet.Attack((Identity)Targeting.Target?.Identity);
                 }
             }
-
-
         }
+        //PetAttackMessage attackMsg = (PetAttackMessage)msg;
+        //Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
+        //pet.Attack(targetDynel.Identity)
 
         //wait
         private void PetWaitClicked(object s, ButtonBase button)
@@ -257,7 +283,7 @@ namespace PetManager
         //follow
         private void PetFollowClicked(object s, ButtonBase button)
         {
-            PetFollowCommand(null, null, null);
+            PetFollowCommand(null, null, null);   
         }
 
         private void PetFollowCommand(string command, string[] param, ChatWindow chatWindow)

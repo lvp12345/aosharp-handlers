@@ -48,6 +48,8 @@ namespace CombatHandler.Trader
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].HealthDrainPercentageChangedEvent += HealthDrainPercentage_Changed;
@@ -75,7 +77,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
             _settings.AddVariable("Kits", true);
 
@@ -158,7 +160,7 @@ namespace CombatHandler.Trader
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAADDrain).OrderByStackingOrder(), AADDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAAODrain).OrderByStackingOrder(), AAODrain, CombatActionPriority.Medium);
-
+            
             RegisterSpellProcessor(RelevantNanos.DivestDamage, DamageDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderShutdownSkillDebuff).OrderByStackingOrder(), DamageDrain, CombatActionPriority.Medium);
 
@@ -853,8 +855,6 @@ namespace CombatHandler.Trader
             return false;
         }
 
-       
-
         #endregion
 
         #region Buffs
@@ -880,7 +880,7 @@ namespace CombatHandler.Trader
 
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum()) { return false; }
+            if (IsInsideInnerSanctum() ) { return false; }
 
             if (Team.IsInTeam && IsSettingEnabled("Evades"))
                 return TeamBuff(spell, spell.Nanoline, ref actionTarget)
@@ -909,7 +909,7 @@ namespace CombatHandler.Trader
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+             }
 
             return false;
         }
@@ -1020,7 +1020,7 @@ namespace CombatHandler.Trader
                 return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
 
             if (DepriveSelection.Boss == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-            {
+            { 
                 if (fightingTarget?.MaxHealth < 1000000)
                 {
                     if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff) && buff.RemainingTime > 25) { return false; }
@@ -1036,7 +1036,7 @@ namespace CombatHandler.Trader
                     return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
                 }
             }
-
+                
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
@@ -1330,7 +1330,7 @@ namespace CombatHandler.Trader
 
         public enum PerkSelection
         {
-            None, Sacrifice, PurpleHeart
+           None, Sacrifice, PurpleHeart
         }
         public enum HealSelection
         {

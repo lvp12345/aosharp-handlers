@@ -50,6 +50,8 @@ namespace CombatHandler.Doctor
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
@@ -1312,12 +1314,12 @@ namespace CombatHandler.Doctor
                 }
 
 
-        private static class RelevantItems
-        {
-            public const int SacredTextoftheImmortalOne = 305514;
-            public const int TeachingsoftheImmortalOne = 206242;
-        }
+                private static class RelevantItems
+                {
+                    public const int SacredTextoftheImmortalOne = 305514;
+                    public const int TeachingsoftheImmortalOne = 206242;
+                }
 
-        #endregion
+                #endregion
     }
 }

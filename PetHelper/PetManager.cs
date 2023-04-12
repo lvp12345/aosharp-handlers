@@ -7,6 +7,12 @@ using AOSharp.Common.GameData;
 using PetManager.IPCMessages;
 using System.Runtime.InteropServices;
 using AOSharp.Common.GameData.UI;
+using System.Windows.Media;
+using AOSharp.Core.Movement;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using System.Windows.Interop;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using CombatHandler.Generic;
 
 namespace PetManager
 {
@@ -37,6 +43,7 @@ namespace PetManager
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
@@ -55,6 +62,7 @@ namespace PetManager
 
             Game.OnUpdate += OnUpdate;
 
+            //Chat.RegisterCommand("petattack", PetAttackCommand);
             Chat.RegisterCommand("petwait", PetWaitCommand);
             Chat.RegisterCommand("petwarp", PetWarpCommand);
             Chat.RegisterCommand("petfollow", PetFollowCommand);
@@ -63,6 +71,8 @@ namespace PetManager
             Chat.WriteLine("/PetManager for settings.");
 
             PluginDirectory = pluginDir;
+
+            //Network.N3MessageSent += Network_N3MessageSent;
         }
 
         public Window[] _windows => new Window[] { _infoWindow };
@@ -93,25 +103,32 @@ namespace PetManager
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-
-                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
-                {
-                    if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                
+                    if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                     {
-                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                        if (int.TryParse(channelInput.Text, out int channelValue)
+                            && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        {
+                            Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                        }
                     }
-                }
 
                 if (SettingsController.settingsWindow.FindView("PetManagerInfoView", out Button infoView))
                 {
                     infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
+                    infoView.Clicked = InfoView; 
+                }
+
+                //attack
+                if (SettingsController.settingsWindow.FindView("PetAttack", out Button PetAttack))
+                {
+                    PetAttack.Tag = SettingsController.settingsWindow;
+                    PetAttack.Clicked = PetAttackClicked;
                 }
 
                 //wait
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
-                {
+                { 
                     PetWait.Tag = SettingsController.settingsWindow;
                     PetWait.Clicked = PetWaitClicked;
                 }
@@ -167,6 +184,55 @@ namespace PetManager
             syncPetsOffDisabled();
         }
 
+        //attack
+        private void PetAttackClicked(object s, ButtonBase button)
+        {
+
+            PetAttackCommand(null, null, null);
+        }
+
+        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
+        //{
+        //    //if (!GenericCombatHandler.IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
+        //    {
+        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
+        //        IPCChannel.Broadcast(new TargetMessage()
+        //        {
+        //            Target = lookAtMsg.Target
+        //        });
+        //    }
+        //}
+
+        private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            
+                IPCChannel.Broadcast(new PetAttackMessage()
+                {
+                    Target = Targeting.Target.Identity
+                });
+
+
+            OnPetAttack(0, null);
+        }
+
+
+        public static void OnPetAttack(int sender, IPCMessage msg)
+        {
+
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Attack((Identity)Targeting.Target?.Identity);
+                }
+            }
+        }
+        //PetAttackMessage attackMsg = (PetAttackMessage)msg;
+        //Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
+        //pet.Attack(targetDynel.Identity)
+
         //wait
         private void PetWaitClicked(object s, ButtonBase button)
         {
@@ -217,7 +283,7 @@ namespace PetManager
         //follow
         private void PetFollowClicked(object s, ButtonBase button)
         {
-            PetFollowCommand(null, null, null);
+            PetFollowCommand(null, null, null);   
         }
 
         private void PetFollowCommand(string command, string[] param, ChatWindow chatWindow)

@@ -50,6 +50,8 @@ namespace CombatHandler.NanoTechnician
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
             Config.CharSettings[Game.ClientInst].NanoAegisPercentageChangedEvent += NanoAegisPercentage_Changed;
@@ -779,6 +781,13 @@ namespace CombatHandler.NanoTechnician
 
         #region Nukes
 
+        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (AOESelection.Normal != (AOESelection)_settings["AOESelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            return true;
+        }
         private bool VolcanicEruption(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AOESelection.VE != (AOESelection)_settings["AOESelection"].AsInt32()
@@ -790,14 +799,6 @@ namespace CombatHandler.NanoTechnician
         private bool PierceNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Pierce") || fightingTarget == null || !CanCast(spell)) { return false; }
-
-            return true;
-        }
-
-        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (AOESelection.Normal != (AOESelection)_settings["AOESelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return true;
         }
@@ -1049,6 +1050,7 @@ namespace CombatHandler.NanoTechnician
             if (!IsSettingEnabled("NotumGrafttSelection")) { return false; }
             if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)) { return false; }
+            
 
             if (DynelManager.LocalPlayer.NanoPercent <= 75) 
             { return true; }
@@ -1058,8 +1060,9 @@ namespace CombatHandler.NanoTechnician
 
         private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("IllusionistSelection") && DynelManager.LocalPlayer.Buffs.Contains(274736)) { return false; }
-
+            if (!IsSettingEnabled("IllusionistSelection")) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(274736)) { return false; }
+            if (Item.HasPendingUse) { return false; }
             if (fightingtarget?.MaxHealth > 1000000) { return true; }
 
             return false;
@@ -1141,6 +1144,7 @@ namespace CombatHandler.NanoTechnician
         {
             public const int NotumSplice = 204649;
             public const int NotumGraft = 305513;
+
             public const int WilloftheIllusionist = 274717;
 
         }

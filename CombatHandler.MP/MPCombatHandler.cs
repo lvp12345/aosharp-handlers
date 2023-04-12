@@ -28,6 +28,7 @@ namespace CombatHandler.Metaphysicist
         private static Window _buffWindow;
         private static Window _debuffWindow;
         private static Window _petWindow;
+        private static Window _petCommandWindow;
         private static Window _procWindow;
         private static Window _itemWindow;
         private static Window _perkWindow;
@@ -35,6 +36,7 @@ namespace CombatHandler.Metaphysicist
         private static View _buffView;
         private static View _debuffView;
         private static View _petView;
+        private static View _petCommandView;
         private static View _procView;
         private static View _itemView;
         private static View _perkView;
@@ -50,8 +52,14 @@ namespace CombatHandler.Metaphysicist
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
+            IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
             Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
@@ -197,7 +205,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
-
+           
 
             PluginDirectory = pluginDir;
 
@@ -216,7 +224,7 @@ namespace CombatHandler.Metaphysicist
             StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _buffWindow, _debuffWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _debuffWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -273,9 +281,79 @@ namespace CombatHandler.Metaphysicist
             syncPetsOffDisabled();
         }
 
+        public static void OnPetAttack(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Attack((Identity)Targeting.Target?.Identity);
+                }
+            }
+        }
+
+        private static void OnPetWait(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Wait();
+                }
+            }
+        }
+
+        private static void OnPetWarp(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                Spell warp = Spell.List.FirstOrDefault(x => RelevantNanos.Warps.Contains(x.Id));
+                if (warp != null)
+                {
+                    warp.Cast(DynelManager.LocalPlayer, false);
+                }
+            }
+        }
+
+        private static void OnPetFollow(int sender, IPCMessage msg)
+        {
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+                {
+                    pet.Follow();
+                }
+            }
+        }
+
         #endregion
 
         #region Handles
+
+        private void SyncPetsChecked(object s, Checkbox checkbox)
+        {
+            
+        }
+
+        private void PetAttackClicked(object s, ButtonBase button)
+        {
+            PetAttackCommand(null, null, null);
+        }
+
+        private void PetWaitClicked(object s, ButtonBase button)
+        {
+            PetWaitCommand(null, null, null);
+        }
+
+        private void PetWarpClicked(object s, ButtonBase button)
+        {
+            PetWarpCommand(null, null, null);
+        }
+
+        private void PetFollowClicked(object s, ButtonBase button)
+        {
+            PetFollowCommand(null, null, null);
+        }
         private void HandlePetViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -294,6 +372,24 @@ namespace CombatHandler.Metaphysicist
                 _petWindow = container;
             }
         }
+
+        private void HandlePetCommandViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_petCommandView)) { return; }
+
+                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetCommandView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView);
+            }
+            else if (_petCommandWindow == null || (_petCommandWindow != null && !_petCommandWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView, out var container);
+                _petCommandWindow = container;
+            }
+        }
+
         private void HandlePerkViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -556,6 +652,34 @@ namespace CombatHandler.Metaphysicist
                     if (int.TryParse(strengthInput.Text, out int strengthValue))
                         if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
                             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
+
+                //attack
+                if (window.FindView("CombatHandlerPetAttack", out Button PetAttack))
+                {
+                    PetAttack.Tag = window;
+                    PetAttack.Clicked = PetAttackClicked;
+                }
+
+                //wait
+                if (window.FindView("CombatHandlerPetWait", out Button PetWait))
+                {
+                    PetWait.Tag = window;
+                    PetWait.Clicked = PetWaitClicked;
+                }
+
+                //warp
+                if (window.FindView("CombatHandlerPetWarp", out Button PetWarp))
+                {
+                    PetWarp.Tag = window;
+                    PetWarp.Clicked = PetWarpClicked;
+                }
+
+                //follow
+                if (window.FindView("CombatHandlertPetFollow", out Button PetFollow))
+                {
+                    PetFollow.Tag = window;
+                    PetFollow.Clicked = PetFollowClicked;
+                }
             }
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)
@@ -594,6 +718,12 @@ namespace CombatHandler.Metaphysicist
                     petView.Clicked = HandlePetViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("PetCommandView", out Button petCommandView))
+                {
+                    petCommandView.Tag = SettingsController.settingsWindow;
+                    petCommandView.Clicked = HandlePetCommandViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
@@ -624,14 +754,14 @@ namespace CombatHandler.Metaphysicist
                     perkView.Clicked = HandlePerkViewClick;
                 }
 
-                if (!_settings["SyncPets"].AsBool() && _syncPets) // Farming off
+                if (!_settings["SyncPets"].AsBool() && _syncPets)
                 {
                     IPCChannel.Broadcast(new PetSyncOffMessage());
                     Chat.WriteLine("SyncPets disabled");
                     syncPetsOffDisabled();
                 }
 
-                if (_settings["SyncPets"].AsBool() && !_syncPets) // farming on
+                if (_settings["SyncPets"].AsBool() && !_syncPets)
                 {
                     IPCChannel.Broadcast(new PetSyncOnMessag());
                     Chat.WriteLine("SyncPets enabled.");
@@ -822,7 +952,7 @@ namespace CombatHandler.Metaphysicist
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
             if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-
+            
             return true;
         }
 
@@ -1217,12 +1347,12 @@ namespace CombatHandler.Metaphysicist
         //Ewww
         private SimpleChar GetTargetToHeal()
         {
-            if (DynelManager.LocalPlayer.HealthPercent < 90)
-            {
+           if (DynelManager.LocalPlayer.HealthPercent < 90)
+           {
                 return DynelManager.LocalPlayer;
-            }
-            else if (DynelManager.LocalPlayer.IsInTeam())
-            {
+           }
+           else if (DynelManager.LocalPlayer.IsInTeam())
+           {
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
@@ -1235,9 +1365,9 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingTeamMember;
                 }
-            }
-            else
-            {
+           }
+           else
+           {
                 Pet dyingPet = DynelManager.LocalPlayer.Pets
                      .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
                      .Where(pet => pet.Character.HealthPercent < 80)
@@ -1249,7 +1379,7 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingPet.Character;
                 }
-            }
+           }
 
             return null;
         }
@@ -1309,6 +1439,34 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
+        private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetAttackMessage()
+            {
+                Target = (Identity)Targeting.Target?.Identity
+            });
+
+            OnPetAttack(0, null);
+        }
+
+        private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetWaitMessage());
+            OnPetWait(0, null);
+        }
+
+        private static void PetWarpCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetWarpMessage());
+            OnPetWarp(0, null);
+        }
+
+        private void PetFollowCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            IPCChannel.Broadcast(new PetFollowMessage());
+            OnPetFollow(0, null);
+        }
+
         private static class RelevantNanos
         {
             public const int MastersBidding = 268171;
@@ -1316,6 +1474,10 @@ namespace CombatHandler.Metaphysicist
             public const int AnticipationofRetaliation = 29272;
             public const int ImprovedAnticipationofRetaliation = 302188;
             public const int PetWarp = 209488;
+            public static readonly int[] Warps = {
+                209488
+            };
+
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
             public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };

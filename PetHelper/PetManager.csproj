@@ -65,6 +65,7 @@
     <Compile Include="IPCMessages\PetSyncOnMessage.cs" />
     <Compile Include="IPCMessages\PetWaitMessage.cs" />
     <Compile Include="IPCMessages\PetWarpMessage.cs" />
+    <Compile Include="IPCMessages\TargetMessage.cs" />
     <Compile Include="PetManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />

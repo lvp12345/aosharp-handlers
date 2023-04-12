@@ -60,6 +60,7 @@
     <Compile Include="IPCMessages\PetWaitMessage.cs" />
     <Compile Include="IPCMessages\PetWarpMessage.cs" />
     <Compile Include="IPCMessages\RemaingNCUMessage.cs" />
+    <Compile Include="IPCMessages\TargetMessage.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="PetsList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -19,6 +19,7 @@ namespace CombatHandler.Bureaucrat
         PetSyncOn = 2348,
         PetSyncOff = 2349,
         Disband = 2100,
-        ClearBuffs = 2101
+        ClearBuffs = 2101,
+        Target =2350
     }
 }

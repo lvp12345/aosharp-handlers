@@ -191,18 +191,6 @@ namespace PetManager
             {
                 Target = (Identity)Targeting.Target?.Identity
             });
-
-            //if (DynelManager.LocalPlayer.Pets.Length > 0)
-            //{
-            //    foreach (Pet pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type != PetType.Heal))
-            //    {
-            //        pet.Attack((Identity)Targeting.Target?.Identity);
-            //        IPCChannel.Broadcast(new PetAttackMessage()
-            //        {
-            //            Target = (Identity)Targeting.Target?.Identity
-            //        });
-            //    }
-            //}
         }
 
         public static void OnPetAttack(int sender, IPCMessage msg)

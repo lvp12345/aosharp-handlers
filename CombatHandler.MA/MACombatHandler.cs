@@ -49,6 +49,8 @@ namespace CombatHandler.MartialArtist
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
@@ -770,7 +772,7 @@ namespace CombatHandler.MartialArtist
             if (MASASelection.Sappo != (MASASelection)_settings["MASASelection"].AsInt32()) { return false; }
 
             if (fightingtarget == null) { return false; }
-
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
             return true;
@@ -781,7 +783,7 @@ namespace CombatHandler.MartialArtist
             if (MASASelection.StingoftheViper != (MASASelection)_settings["MASASelection"].AsInt32()) { return false; }
 
             if (fightingtarget == null) { return false; }
-
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
             return true;
@@ -792,7 +794,7 @@ namespace CombatHandler.MartialArtist
             if (DimachSelection.TouchOfSaiFung != (DimachSelection)_settings["DimachSelection"].AsInt32()) { return false; }
 
             if (fightingtarget == null) { return false; }
-
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
             return true;
@@ -803,7 +805,7 @@ namespace CombatHandler.MartialArtist
             if (DimachSelection.TheWizdomofHuzzum != (DimachSelection)_settings["DimachSelection"].AsInt32()) { return false; }
 
             if (fightingtarget == null) { return false; }
-
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
             return true;

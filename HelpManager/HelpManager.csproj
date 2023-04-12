@@ -58,7 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
-    <Compile Include="IPCMessages\ClearBuffsMessage.cs" />
     <Compile Include="IPCMessages\YalmUseMessage.cs" />
     <Compile Include="IPCMessages\YalmOnMessage.cs" />
     <Compile Include="IPCMessages\YalmOffMessage.cs" />
@@ -76,6 +75,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

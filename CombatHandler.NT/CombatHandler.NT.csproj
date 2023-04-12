@@ -49,6 +49,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPCMessages\ClearBuffsMessage.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="IPCMessages\DisbandMessage.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="IPCMessages\GlobalBuffingMessage.cs" />
     <Compile Include="IPCMessages\GlobalDebuffingMessage.cs" />
     <Compile Include="IPCMessages\GloballCompositesMessage.cs" />

@@ -48,6 +48,8 @@ namespace CombatHandler.Trader
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].HealthDrainPercentageChangedEvent += HealthDrainPercentage_Changed;
@@ -75,7 +77,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
             _settings.AddVariable("Kits", true);
 
@@ -105,7 +107,7 @@ namespace CombatHandler.Trader
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
-            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Self);
+            _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Combat);
 
             _settings.AddVariable("Root", false);
 
@@ -149,8 +151,6 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderTeamSkillWranglerBuff).OrderByStackingOrder(), UmbralWrangler);
             
-
-
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
 
@@ -855,20 +855,6 @@ namespace CombatHandler.Trader
             return false;
         }
 
-        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (NanoHealSelection.None == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32()) { return false; }
-
-            if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
-                if (InCombat())
-                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-            if (NanoHealSelection.Self == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
-                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
         #endregion
 
         #region Buffs
@@ -883,6 +869,14 @@ namespace CombatHandler.Trader
         #endregion
 
         #region Team Buffs
+
+        private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
+                if (InCombat())
+                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return false;
+        }
 
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1344,7 +1338,7 @@ namespace CombatHandler.Trader
         }
         public enum NanoHealSelection
         {
-            None, Self, Combat
+            None, Combat
         }
         public enum NanoDrainSelection
         {

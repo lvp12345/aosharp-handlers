@@ -104,7 +104,8 @@ namespace CombatHandler.Generic
                     "Awakened Xan",
                     "Fanatic",
                     "Harbinger of Pestilence",
-                    "Pandemonium Idol"
+                    "Pandemonium Idol",
+                    "Otacustes"
         };
 
         protected static HashSet<string> debuffAreaTargetsToIgnore = new HashSet<string>
@@ -180,7 +181,8 @@ namespace CombatHandler.Generic
                     "Punishment",
                     "Flaming Chaos",
                     "Flaming Punishment",
-                    "Flaming Vengeance"
+                    "Flaming Vengeance",
+                    "Otacustes"
         };
 
         public static IPCChannel IPCChannel;

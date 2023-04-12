@@ -346,15 +346,9 @@ namespace CombatHandler.Bureaucrat
 
         public static void OnPetAttack(int sender, IPCMessage msg)
         {
-            if (DynelManager.LocalPlayer.Pets.Length > 0)
-            {
-                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                {
-                    pet.Attack((Identity)Targeting.Target?.Identity);
-                }
-            }
+            PetAttackMessage attackMsg = (PetAttackMessage)msg;
+            DynelManager.LocalPlayer.Pets.Attack(attackMsg.Target);
         }
-        
 
         private static void OnPetWait(int sender, IPCMessage msg)
         {
@@ -390,37 +384,23 @@ namespace CombatHandler.Bureaucrat
             }
         }
 
-        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
-        //{
-        //    if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
-
-        //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
-
-        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
-        //    {
-        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
-        //        IPCChannel.Broadcast(new TargetMessage()
-        //        {
-        //            Target = lookAtMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.PetCommand)
-        //    {
-        //        AttackMessage attackMsg = (AttackMessage)n3Msg;
-        //        IPCChannel.Broadcast(new PetAttackMessage()
-        //        {
-        //            Target = attackMsg.Target
-        //        });
-        //    }
-        //}
-
         #endregion
 
         #region Handles
 
-        private void PetAttackClicked(object s, ButtonBase button)//
+        private void PetAttackClicked(object s, ButtonBase button)
         {
-            PetAttackCommand(null, null, null);
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type != PetType.Heal))
+                {
+                    pet.Attack((Identity)Targeting.Target?.Identity);
+                    IPCChannel.Broadcast(new PetAttackMessage()
+                    {
+                        Target = (Identity)Targeting.Target?.Identity
+                    });
+                }
+            }
         }
 
         private void PetWaitClicked(object s, ButtonBase button)
@@ -1839,18 +1819,6 @@ namespace CombatHandler.Bureaucrat
             }
 
             return target.IsMoving;
-        }
-
-
-
-        private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            
-                IPCChannel.Broadcast(new PetAttackMessage()
-                {
-                    Target = Targeting.Target.Identity
-                });
-            OnPetAttack(0, null);
         }
 
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)

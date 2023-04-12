@@ -315,13 +315,8 @@ namespace CombatHandler.Engineer
 
         public static void OnPetAttack(int sender, IPCMessage msg)
         {
-            if (DynelManager.LocalPlayer.Pets.Length > 0)
-            {
-                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                {
-                    pet.Attack((Identity)Targeting.Target?.Identity);
-                }
-            }
+            PetAttackMessage attackMsg = (PetAttackMessage)msg;
+            DynelManager.LocalPlayer.Pets.Attack(attackMsg.Target);
         }
 
         private static void OnPetWait(int sender, IPCMessage msg)
@@ -364,7 +359,17 @@ namespace CombatHandler.Engineer
 
         private void PetAttackClicked(object s, ButtonBase button)
         {
-            PetAttackCommand(null, null, null);
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type != PetType.Heal))
+                {
+                    pet.Attack((Identity)Targeting.Target?.Identity);
+                    IPCChannel.Broadcast(new PetAttackMessage()
+                    {
+                        Target = (Identity)Targeting.Target?.Identity
+                    });
+                }
+            }
         }
 
         private void PetWaitClicked(object s, ButtonBase button)
@@ -1601,14 +1606,6 @@ namespace CombatHandler.Engineer
             return Time.NormalTime - _lastCombatTime > 5;
         }
 
-        private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            IPCChannel.Broadcast(new PetAttackMessage()
-            {
-                Target = (Identity)Targeting.Target?.Identity
-            });
-            OnPetAttack(0, null);
-        }
 
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
         {

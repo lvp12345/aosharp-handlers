@@ -14,7 +14,8 @@ namespace PetManager.IPCMessages
         PetWarp = 2346,
         PetFollow = 2347,
         PetSyncOn = 2348,
-        PetSyncOff = 2349
-            
+        PetSyncOff = 2349,
+        Target = 2350
+
     }
 }

@@ -11,6 +11,8 @@ using System.Windows.Media;
 using AOSharp.Core.Movement;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System.Windows.Interop;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using CombatHandler.Generic;
 
 namespace PetManager
 {
@@ -69,6 +71,8 @@ namespace PetManager
             Chat.WriteLine("/PetManager for settings.");
 
             PluginDirectory = pluginDir;
+
+            //Network.N3MessageSent += Network_N3MessageSent;
         }
 
         public Window[] _windows => new Window[] { _infoWindow };
@@ -183,28 +187,28 @@ namespace PetManager
         //attack
         private void PetAttackClicked(object s, ButtonBase button)
         {
-            PetAttackCommand(null, null, null);
-        }
+            IPCChannel.Broadcast(new PetAttackMessage()
+            {
+                Target = (Identity)Targeting.Target?.Identity
+            });
 
-        private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            IPCChannel.Broadcast(new PetAttackMessage());
-            OnPetAttack(0, null);
+            //if (DynelManager.LocalPlayer.Pets.Length > 0)
+            //{
+            //    foreach (Pet pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type != PetType.Heal))
+            //    {
+            //        pet.Attack((Identity)Targeting.Target?.Identity);
+            //        IPCChannel.Broadcast(new PetAttackMessage()
+            //        {
+            //            Target = (Identity)Targeting.Target?.Identity
+            //        });
+            //    }
+            //}
         }
-
 
         public static void OnPetAttack(int sender, IPCMessage msg)
         {
-
-            if (DynelManager.LocalPlayer.Pets.Length > 0)
-            {
-                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                {
-                    pet.Attack((Identity)Targeting.Target?.Identity);
-                }
-            }
-
-
+            PetAttackMessage attackMsg = (PetAttackMessage)msg;
+            DynelManager.LocalPlayer.Pets.Attack(attackMsg.Target);
         }
 
         //wait

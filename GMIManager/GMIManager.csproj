@@ -53,7 +53,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
     <Reference Include="Zoltu.EndianAwareBinaryReaderWriter, Version=0.0.6.0, Culture=neutral, PublicKeyToken=1d5722c0db664e4d, processorArchitecture=MSIL">
-      <HintPath>packages\Zoltu.EndianAwareBinaryReaderWriter.0.0.6.0\lib\net45\Zoltu.EndianAwareBinaryReaderWriter.dll</HintPath>
+      <HintPath>..\packages\Zoltu.EndianAwareBinaryReaderWriter.0.0.6.0\lib\net45\Zoltu.EndianAwareBinaryReaderWriter.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +64,7 @@
     <Compile Include="SettingsController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

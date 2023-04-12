@@ -38,6 +38,12 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="IPCMessages\ClearBuffsMessage.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="IPCMessages\DisbandMessage.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="IPCMessages\GlobalBuffingMessage.cs" />
     <Compile Include="IPCMessages\GlobalDebuffingMessage.cs" />
     <Compile Include="IPCMessages\GloballCompositesMessage.cs" />
@@ -69,7 +75,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="UI\MPPetCommandView.xml" />
+    <Content Include="UI\MPPetCommandView.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\MPPerksView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

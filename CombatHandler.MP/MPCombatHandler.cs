@@ -205,7 +205,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
-           
+
 
             PluginDirectory = pluginDir;
 
@@ -283,13 +283,8 @@ namespace CombatHandler.Metaphysicist
 
         public static void OnPetAttack(int sender, IPCMessage msg)
         {
-            if (DynelManager.LocalPlayer.Pets.Length > 0)
-            {
-                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                {
-                    pet.Attack((Identity)Targeting.Target?.Identity);
-                }
-            }
+            PetAttackMessage attackMsg = (PetAttackMessage)msg;
+            DynelManager.LocalPlayer.Pets.Attack(attackMsg.Target);
         }
 
         private static void OnPetWait(int sender, IPCMessage msg)
@@ -332,12 +327,22 @@ namespace CombatHandler.Metaphysicist
 
         private void SyncPetsChecked(object s, Checkbox checkbox)
         {
-            
+
         }
 
         private void PetAttackClicked(object s, ButtonBase button)
         {
-            PetAttackCommand(null, null, null);
+            if (DynelManager.LocalPlayer.Pets.Length > 0)
+            {
+                foreach (Pet pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type != PetType.Heal))
+                {
+                    pet.Attack((Identity)Targeting.Target?.Identity);
+                    IPCChannel.Broadcast(new PetAttackMessage()
+                    {
+                        Target = (Identity)Targeting.Target?.Identity
+                    });
+                }
+            }
         }
 
         private void PetWaitClicked(object s, ButtonBase button)
@@ -702,10 +707,11 @@ namespace CombatHandler.Metaphysicist
                 Chat.WriteLine("Only activate one option.");
             }
 
-            if (CanLookupPetsAfterZone())
-            {
+            if (IsSettingEnabled("SyncPets"))
                 SynchronizePetCombatStateWithOwner();
 
+            if (CanLookupPetsAfterZone())
+            {
                 AssignTargetToHealPet();
                 AssignTargetToMezzPet();
             }
@@ -952,7 +958,7 @@ namespace CombatHandler.Metaphysicist
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
             if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-            
+
             return true;
         }
 
@@ -1347,12 +1353,12 @@ namespace CombatHandler.Metaphysicist
         //Ewww
         private SimpleChar GetTargetToHeal()
         {
-           if (DynelManager.LocalPlayer.HealthPercent < 90)
-           {
+            if (DynelManager.LocalPlayer.HealthPercent < 90)
+            {
                 return DynelManager.LocalPlayer;
-           }
-           else if (DynelManager.LocalPlayer.IsInTeam())
-           {
+            }
+            else if (DynelManager.LocalPlayer.IsInTeam())
+            {
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
@@ -1365,9 +1371,9 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingTeamMember;
                 }
-           }
-           else
-           {
+            }
+            else
+            {
                 Pet dyingPet = DynelManager.LocalPlayer.Pets
                      .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
                      .Where(pet => pet.Character.HealthPercent < 80)
@@ -1379,7 +1385,7 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingPet.Character;
                 }
-           }
+            }
 
             return null;
         }
@@ -1437,16 +1443,6 @@ namespace CombatHandler.Metaphysicist
                     }
                 }
             }
-        }
-
-        private static void PetAttackCommand(string command, string[] param, ChatWindow chatWindow)
-        {
-            IPCChannel.Broadcast(new PetAttackMessage()
-            {
-                Target = (Identity)Targeting.Target?.Identity
-            });
-
-            OnPetAttack(0, null);
         }
 
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)

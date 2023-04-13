@@ -110,22 +110,22 @@ namespace LootManager
             SettingsController.CleanUp();
         }
 
-        private bool ItemExists(Item item)
-        {
-            if (Inventory.Items.Contains(item)) { return true; }
+        //private bool ItemExists(Item item)
+        //{
+        //    if (Inventory.Items.Contains(item)) { return true; }
 
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot") || c.Name.Contains("#")))
-            {
-                if (backpack.Items.Contains(item))
-                    return true;
-            }
+        //    foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+        //    {
+        //        if (backpack.Items.Contains(item))
+        //            return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private static Backpack FindBagWithSpace()
         {
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot") || c.Name.Contains("#")))
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Count < 21)
                     return backpack;
@@ -144,7 +144,7 @@ namespace LootManager
 
             foreach (Item item in container.Items)
             {
-                if (Inventory.NumFreeSlots >= 2)
+                if (Inventory.NumFreeSlots >= 1)
                 {
                     if (CheckRules(item))
                     {
@@ -158,7 +158,7 @@ namespace LootManager
                     //else if (!_ignores.Contains(item.Name))
                     //    item.MoveToInventory();
                 }
-                else
+                if (Inventory.NumFreeSlots < 30)
                 {
                     Backpack _bag = FindBagWithSpace();
 

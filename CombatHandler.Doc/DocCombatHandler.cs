@@ -50,6 +50,8 @@ namespace CombatHandler.Doctor
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
@@ -175,7 +177,7 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
 
             //Items
-            RegisterItemProcessor(RelevantItems.Books, TOTWHeal);
+            RegisterItemProcessor(new int[] { RelevantItems.SacredTextoftheImmortalOne, RelevantItems.TeachingsoftheImmortalOne }, TOTWHeal);
 
             PluginDirectory = pluginDir;
 
@@ -1194,9 +1196,9 @@ namespace CombatHandler.Doctor
 
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TOTWBooks") 
-                && fightingTarget == null
-                && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+            if (!IsSettingEnabled("TOTWBooks")) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
 
             if (Team.IsInTeam)
             {
@@ -1314,7 +1316,8 @@ namespace CombatHandler.Doctor
 
                 private static class RelevantItems
                 {
-                    public static readonly int[] Books = { 206242, 305514 };
+                    public const int SacredTextoftheImmortalOne = 305514;
+                    public const int TeachingsoftheImmortalOne = 206242;
                 }
 
                 #endregion

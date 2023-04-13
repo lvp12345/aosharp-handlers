@@ -9,6 +9,7 @@ using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
+using CombatHandler.Generic.IPCMessages;
 using AOSharp.Core.UI;
 using SmokeLounge.AOtomation.Messaging.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
@@ -194,6 +195,9 @@ namespace CombatHandler.Generic
 
             _settings = new Settings("CombatHandler");
 
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
@@ -204,26 +208,29 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
+
             RegisterItemProcessor(new int[] { RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh }, FlowerOfLife);
             RegisterItemProcessor(RelevantGenericItems.ReflectGraft, RelevantGenericItems.ReflectGraft, ReflectGraft);
             RegisterItemProcessor(RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, Coffee);
+
             RegisterItemProcessor(new int[] { RelevantGenericItems.FlurryOfBlowsHigh, RelevantGenericItems.FlurryOfBlowsLow }, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.StrengthOfTheImmortal, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.MightOfTheRevenant, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.BarrowStrength, RelevantGenericItems.BarrowStrength, DamageItem);
+
+            RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, EnforcerEnduranceBooster, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, NanomageEnduranceBooster, CombatActionPriority.High);
+
+            RegisterItemProcessor(new int[] { RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.BarrowStrength }, TotwDmgShoulder);
+
             RegisterItemProcessor(RelevantGenericItems.GnuffsEternalRiftCrystal, RelevantGenericItems.GnuffsEternalRiftCrystal, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBooster, RelevantGenericItems.DreadlochEnduranceBooster, EnduranceBooster, CombatActionPriority.High);
-            RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, EnduranceBooster, CombatActionPriority.High);
-            RegisterItemProcessor(RelevantGenericItems.WitheredFlesh, RelevantGenericItems.WitheredFlesh, WithFlesh, CombatActionPriority.High);
-            RegisterItemProcessor(RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.DesecratedFlesh, DescFlesh, CombatActionPriority.High);
+
+            RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
+
             RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
-            RegisterItemProcessor(RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.MeteoriteSpikes, SharpObjects);
-            RegisterItemProcessor(RelevantGenericItems.TearOfOedipus, RelevantGenericItems.TearOfOedipus, SharpObjects);
-            RegisterItemProcessor(RelevantGenericItems.LavaCapsule, RelevantGenericItems.LavaCapsule, SharpObjects);
-            RegisterItemProcessor(RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.KizzermoleGumboil, SharpObjects);
-            RegisterItemProcessor(RelevantGenericItems.FallenStar, RelevantGenericItems.FallenStar, SharpObjects);
+
+            RegisterItemProcessor(new int[] {RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.TearOfOedipus,
+                RelevantGenericItems.LavaCapsule, RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.FallenStar}, SharpObjects);
+
             RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
             RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
             RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
@@ -273,15 +280,30 @@ namespace CombatHandler.Generic
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
+
+
             //Network.N3MessageSent += Network_N3MessageSent;
 
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
             Chat.RegisterCommand("convert", RaidCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
+            Chat.RegisterCommand("rebuff", Rebuff);
         }
 
         public static Window[] _window => new Window[] { _perkWindow };
+
+        public void OnDisband(int sender, IPCMessage msg)
+        {
+            Chat.WriteLine("Leaving team");
+            Team.Leave();
+        }
+
+        public void OnClearBuffs(int sender, IPCMessage msg)
+        {
+            Chat.WriteLine("Rebuffing");
+            CancelAllBuffs();
+        }
 
         protected override void OnUpdate(float deltaTime)
         {
@@ -1105,7 +1127,15 @@ namespace CombatHandler.Generic
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null && fightingTarget.IsInAttackRange();
+        }
+
+        protected bool TotwDmgShoulder(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!Team.IsInTeam) { return false; }
+
+            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength) && fightingTarget != null && fightingTarget.IsInAttackRange();
         }
 
         protected virtual bool TargetedDamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1116,7 +1146,7 @@ namespace CombatHandler.Generic
 
         protected virtual bool ReflectGraft(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ReflectShield);
+            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.SpaceTime) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ReflectShield);
         }
 
         private bool RezCan(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -1174,7 +1204,7 @@ namespace CombatHandler.Generic
 
         private bool FlowerOfLife(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (fightingtarget == null || DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))) { return false; }
+            if (fightingtarget == null || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
             int approximateHealing = item.QualityLevel * 10;
 
@@ -1326,24 +1356,25 @@ namespace CombatHandler.Generic
                 .Any();
         }
 
-        private bool EnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        private bool EnforcerEnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            //if (Inventory.Find(305476, 305476, out Item absorbdesflesh))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
-            //}
-            //if (Inventory.Find(204698, 204698, out Item absorbwithflesh))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)) { return false; }
-            //}
-            //if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
-            //}
 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)
+                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
+                //|| Item.HasPendingUse
+                || DynelManager.LocalPlayer.HealthPercent > StrengthAbsorbsItemPercentage
+                || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+
+            return item != null;
+        }
+
+        private bool NanomageEnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        {
+          
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength) 
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
-                || Item.HasPendingUse
+                || Team.IsInTeam
+                //|| Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > StrengthAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
@@ -1354,57 +1385,18 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp) 
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
-                || Item.HasPendingUse
+                //|| Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > DuckAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return item != null;
         }
 
-        private bool DescFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        protected bool TotwShieldShoulder(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            //if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
-            //}
-            //if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
-            //}
-            //if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
-            //}
-
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
-                || Item.HasPendingUse
-                || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
-                || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            return item != null;
-        }
-
-        private bool WithFlesh(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            //Inventory.Find(305476, 305476, out Item absorbdesflesh);
-
-            //if (Inventory.Find(267168, 267168, out Item enduranceabsorbenf))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
-            //}
-            //if (Inventory.Find(267167, 267167, out Item enduranceabsorbnanomage))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
-            //}
-            //if (Inventory.Find(156576, 156576, out Item absorbassaultclass))
-            //{
-            //    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)) { return false; }
-            //}
-
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
-                || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
-                || Item.HasPendingUse
+                //|| Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
@@ -1692,6 +1684,20 @@ namespace CombatHandler.Generic
             return spell.Cost < DynelManager.LocalPlayer.Nano;
         }
 
+        public static void CancelAllBuffs()
+        {
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs
+                .Where(x => !x.Name.Contains("Valid Pass")
+                && x.Nanoline != NanoLine.BioMetBuff && x.Nanoline != NanoLine.MatCreaBuff
+                && x.Nanoline != NanoLine.MatLocBuff && x.Nanoline != NanoLine.MatMetBuff
+                && x.Nanoline != NanoLine.PsyModBuff && x.Nanoline != NanoLine.SenseImpBuff
+                && x.Nanoline != NanoLine.TraderTeamSkillWranglerBuff
+                && x.Nanoline != NanoLine.FixerNCUBuff))
+            {
+                buff.Remove();
+            }
+        }
+
         public static void CancelBuffs(int[] buffsToCancel)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
@@ -1779,7 +1785,6 @@ namespace CombatHandler.Generic
                 RegisterPerkProcessor(perkAction.Hash, ToPerkConditionProcessor(perkConditionProcessor));
             }
         }
-
 
         //public static void Network_N3MessageSent(object s, N3Message n3Msg)
         //{
@@ -1881,11 +1886,6 @@ namespace CombatHandler.Generic
             }
         }
 
-        public static void OnDisband(int sender, IPCMessage msg)
-        {
-            Team.Leave();
-        }
-
         public static void DisbandCommand(string command, string[] param, ChatWindow chatWindow)
         {
             Team.Disband();
@@ -1936,6 +1936,11 @@ namespace CombatHandler.Generic
                 Chat.WriteLine("Cannot form a team. Character already in team. Disband first.");
             }
         }
+        public void Rebuff(string command, string[] param, ChatWindow chatWindow)
+        {
+            CancelAllBuffs();
+            IPCChannel.Broadcast(new ClearBuffsMessage());
+        }
 
         [Flags]
         public enum CharacterWieldedWeapon
@@ -1968,40 +1973,42 @@ namespace CombatHandler.Generic
         {
             switch (item.HighId)
             {
-                case RelevantGenericItems.ReflectGraft:
-                    return Stat.SpaceTime;
                 case RelevantGenericItems.UponAWaveOfSummerLow:
                 case RelevantGenericItems.UponAWaveOfSummerHigh:
                     return Stat.Riposte;
-                case RelevantGenericItems.FlowerOfLifeLow:
-                case RelevantGenericItems.FlowerOfLifeHigh:
+
+                
                 case RelevantGenericItems.BlessedWithThunderLow:
                 case RelevantGenericItems.BlessedWithThunderHigh:
                     return Stat.MartialArts;
+
                 case RelevantGenericItems.FlurryOfBlowsLow:
                 case RelevantGenericItems.FlurryOfBlowsHigh:
                     return Stat.AggDef;
-                case RelevantGenericItems.StrengthOfTheImmortal:
-                case RelevantGenericItems.MightOfTheRevenant:
-                case RelevantGenericItems.BarrowStrength:
-                    return Stat.Strength;
+
                 case RelevantGenericItems.MeteoriteSpikes:
                 case RelevantGenericItems.LavaCapsule:
                 case RelevantGenericItems.KizzermoleGumboil:
                 case RelevantGenericItems.FallenStar:
                 case RelevantGenericItems.TearOfOedipus:
                     return Stat.SharpObject;
+
                 case RelevantGenericItems.SteamingHotCupOfEnhancedCoffee:
                     return Stat.RunSpeed;
+
                 case RelevantGenericItems.GnuffsEternalRiftCrystal:
                     return Stat.MapNavigation;
+
                 case RelevantGenericItems.Drone:
                     return Stat.MaterialCreation;
+
                 case RelevantGenericItems.WenWen:
                     return Stat.RangedEnergy;
+
                 case RelevantGenericItems.DaTaunterLow:
                 case RelevantGenericItems.DaTaunterHigh:
                     return Stat.Psychology;
+
                 case RelevantGenericItems.HSRLow:
                 case RelevantGenericItems.HSRHigh:
                     return Stat.Grenade;
@@ -2031,39 +2038,58 @@ namespace CombatHandler.Generic
 
         private static class RelevantGenericItems
         {
-            public const int ReflectGraft = 95225;
+            public const int ReflectGraft = 95225; //Hacked Boosted-Graft: Lesser Deflection Shield (Extended) 
+
             public const int FlurryOfBlowsLow = 85907;
             public const int FlurryOfBlowsHigh = 85908;
+
+            public const int DreadlochEnduranceBoosterEnforcerSpecial = 267168; //Dreadloch Endurance Booster - Enforcer Special
+            public const int DreadlochEnduranceBoosterNanomageEdition = 267167; //Dreadloch Endurance Booster - Nanomage Edition
+
             public const int StrengthOfTheImmortal = 305478;
             public const int MightOfTheRevenant = 206013;
             public const int BarrowStrength = 204653;
+
             public const int LavaCapsule = 245990;
+
             public const int WitheredFlesh = 204698;
+            public const int CorruptedFlesh = 206015;
             public const int DesecratedFlesh = 305476;
+
             public const int AssaultClassTank = 156576;
+
             public const int HSRLow = 164780;
             public const int HSRHigh = 164781;
+
+            public const int MeteoriteSpikes = 244204;
             public const int KizzermoleGumboil = 245323;
             public const int FallenStar = 244214;
             public const int TearOfOedipus = 244216;
+
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
-            public const int DreadlochEnduranceBooster = 267168;
-            public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
-            public const int MeteoriteSpikes = 244204;
+            
             public const int FlowerOfLifeLow = 70614;
             public const int FlowerOfLifeHigh = 204326;
+
             public const int UponAWaveOfSummerLow = 205405;
             public const int UponAWaveOfSummerHigh = 205406;
+
             public const int BlessedWithThunderLow = 70612;
             public const int BlessedWithThunderHigh = 204327;
+
+            public const int DaTaunterLow = 158045;
+            public const int DaTaunterHigh = 158046;
+
             public const int GnuffsEternalRiftCrystal = 303179;
-            public const int Drone = 303188;
+
             public const int RezCan1 = 301070;
             public const int RezCan2 = 303390;
             public const int ExpCan1 = 288769;
             public const int ExpCan2 = 303376;
+
             public const int InsuranceCan1 = 300728;
             public const int InsuranceCan2 = 303389;
+
             public const int PremSitKit = 297274;
             public const int AreteSitKit = 292256;
             public const int SitKit1 = 291082;
@@ -2071,23 +2097,27 @@ namespace CombatHandler.Generic
             public const int SitKit200 = 291084;
             public const int SitKit300 = 293296;
             public const int SitKit400 = 293297;
+
             public const int FreeStim1 = 204103;
             public const int FreeStim50 = 204104;
             public const int FreeStim100 = 204105;
             public const int FreeStim200 = 204106;
             public const int FreeStim300 = 204107;
+
             public const int HealthAndNanoStim1 = 291043;
             public const int HealthAndNanoStim200 = 291044;
             public const int HealthAndNanoStim400 = 291045;
             public const int DeathsDoor  = 303071;
+
             public const int AmmoBoxEnergy = 303138;
             public const int AmmoBoxShotgun = 303141;
             public const int AmmoBoxBullets = 303137;
             public const int AmmoBoxGrenade = 303140;
             public const int AmmoBoxArrows = 303136;
-            public const int DaTaunterLow = 158045;
-            public const int DaTaunterHigh = 158046;
+
             public const int WenWen = 129656;
+
+            public const int Drone = 303188;
         };
 
         public static class RelevantGenericNanos

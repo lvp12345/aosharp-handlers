@@ -248,8 +248,8 @@ namespace GMIManager
             reader.ReadByte();
 
 
-            //Chat.WriteLine($"ID: {messageId} / From: {fromTitle} / Subject: {subjectTitle}");
-            //Chat.WriteLine($"Mail populated.");
+            Chat.WriteLine($"ID: {messageId} / From: {fromTitle} / Subject: {subjectTitle}");
+            Chat.WriteLine($"Mail populated.");
 
             if (_mailId == 0)
                 _mailId = messageId;
@@ -416,7 +416,7 @@ namespace GMIManager
                 }
 
                 if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                    && Time.NormalTime > _gmiWithdrawTimer + 3)
+                    && Time.NormalTime > _gmiWithdrawTimer + 9)
                 {
                     if ((_gmiWithdrawAmount < GMIWithdrawAmount) || GMIWithdrawAmount == 0)
                     {

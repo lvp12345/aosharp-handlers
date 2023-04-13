@@ -49,6 +49,8 @@ namespace CombatHandler.Adventurer
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
             //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
             Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
             Config.CharSettings[Game.ClientInst].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;

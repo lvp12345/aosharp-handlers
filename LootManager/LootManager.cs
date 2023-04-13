@@ -114,7 +114,7 @@ namespace LootManager
         {
             if (Inventory.Items.Contains(item)) { return true; }
 
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot") || c.Name.Contains("#")))
             {
                 if (backpack.Items.Contains(item))
                     return true;
@@ -125,7 +125,7 @@ namespace LootManager
 
         private static Backpack FindBagWithSpace()
         {
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot") || c.Name.Contains("#")))
             {
                 if (backpack.Items.Count < 21)
                     return backpack;
@@ -144,7 +144,7 @@ namespace LootManager
 
             foreach (Item item in container.Items)
             {
-                if (Inventory.NumFreeSlots >= 1)
+                if (Inventory.NumFreeSlots >= 2)
                 {
                     if (CheckRules(item))
                     {

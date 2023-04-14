@@ -11,6 +11,7 @@
         <CheckBox name="chkDel" label="" layout_borders="Rect(5,5,5,5)"/>
         <HLayoutSpacer/>
         <Button name="buttonSet" label="Set Inventory" h_alignment="LEFT" layout_borders="Rect(5,5,5,5)"  />
+		  <Button name="LootManagerInfoView" label="Info" layout_borders="Rect(5,5,5,5)"/>
         <!--<TextView  name="tvbags" value="Move to bag(s)" layout_borders="Rect(5,5,5,5)"/>
         <CheckBox name="chkBags" label="" layout_borders="Rect(5,5,5,5)"/>-->
       </View>

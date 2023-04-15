@@ -151,6 +151,10 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
             RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
 
+            //Debuffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
+            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind);
+
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDOTNuke, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke, CombatActionPriority.Medium);
@@ -158,10 +162,6 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
             RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
-
-            //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
-            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist);

@@ -118,8 +118,11 @@ namespace LootManager
         {
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
-                if (backpack.Items.Count <= 21)
+                if (backpack.Items.Count < 21)
+                // The return was being executed every time, not just when less than 21 items were being found, also should be checking for less than 21 items not less than or equal to
+                {                        
                     return backpack;
+                }
             }
 
             return null;

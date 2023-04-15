@@ -36,6 +36,8 @@ namespace LootManager
         private static int ItemIdValue;
         private static string ItemNameValue;
 
+        
+
         public static List<Rule> Rules;
 
         protected Settings _settings;
@@ -73,6 +75,7 @@ namespace LootManager
 
                 Game.OnUpdate += OnUpdate;
                 Inventory.ContainerOpened += OnContainerOpened;
+                PluginDir = pluginDir;
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
@@ -110,22 +113,22 @@ namespace LootManager
             SettingsController.CleanUp();
         }
 
-        private bool ItemExists(Item item)
-        {
-            if (Inventory.Items.Contains(item)) { return true; }
+        //private bool ItemExists(Item item)
+        //{
+        //    if (Inventory.Items.Contains(item)) { return true; }
 
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot") || c.Name.Contains("#")))
-            {
-                if (backpack.Items.Contains(item))
-                    return true;
-            }
+        //    foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+        //    {
+        //        if (backpack.Items.Contains(item))
+        //            return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private static Backpack FindBagWithSpace()
         {
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot") || c.Name.Contains("#")))
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Count < 21)
                     return backpack;
@@ -144,7 +147,7 @@ namespace LootManager
 
             foreach (Item item in container.Items)
             {
-                if (Inventory.NumFreeSlots >= 2)
+                if (Inventory.NumFreeSlots >= 1)
                 {
                     if (CheckRules(item))
                     {
@@ -158,7 +161,7 @@ namespace LootManager
                     //else if (!_ignores.Contains(item.Name))
                     //    item.MoveToInventory();
                 }
-                else
+                if (Inventory.NumFreeSlots < 30)
                 {
                     Backpack _bag = FindBagWithSpace();
 
@@ -196,7 +199,7 @@ namespace LootManager
 
         private void OnUpdate(object sender, float deltaTime)
         {
-            if (Looting)
+                if (Looting)
             {
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
                 if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 2f)
@@ -291,6 +294,12 @@ namespace LootManager
                     if (setbut.Clicked == null)
                         setbut.Clicked += setButtonClicked;
                 }
+
+                if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
+                {
+                    infoView.Tag = SettingsController.settingsWindow;
+                    infoView.Clicked = InfoView;
+                }
             }
         }
 
@@ -312,7 +321,19 @@ namespace LootManager
             Looting = e;
         }
 
-        private void setButtonClicked(object sender, ButtonBase e)
+        private void InfoView(object s, ButtonBase button)
+        {
+
+            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\LootManagerInfoView.xml",
+                windowSize: new Rect(0, 0, 440, 510),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            _infoWindow.Show(true);
+        }
+
+
+    private void setButtonClicked(object sender, ButtonBase e)
         {
             SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
 

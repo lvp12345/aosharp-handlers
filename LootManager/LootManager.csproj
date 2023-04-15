@@ -74,9 +74,6 @@
     <Content Include="UI\ItemEntry.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\LootManagerSettingWindow - Copy.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="UI\LootManagerSettingWindow.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

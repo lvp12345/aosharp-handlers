@@ -43,6 +43,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResearchManager", "ResearchManager\ResearchManager.csproj", "{B6560BBE-C49A-4ACD-98CC-4E194AF089F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LootManager", "LootManager\LootManager.csproj", "{27A33CD9-DB27-4DD3-AB91-B9B5A187A56E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8CB8419F-3914-49C1-ABA3-78C5D26E8E48} = {8CB8419F-3914-49C1-ABA3-78C5D26E8E48}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssistManager", "AssistManager\AssistManager.csproj", "{7BA48E7E-64B3-4FD4-ACF2-AF5C956B6694}"
 EndProject

@@ -47,6 +47,7 @@ namespace LootManager
         private static bool _internalOpen = false;
         private static bool _weAreDoingThings = false;
         private static bool _currentlyLooting = false;
+        private static bool _looted = true;
 
         private static bool Looting = false;
         private static bool Bags = false;
@@ -60,7 +61,7 @@ namespace LootManager
 
         private static List<Item> _invItems = new List<Item>();
 
-        private static List<string> _ignores = new List<string>();
+        public static List<Item> _lootList = new List<Item>();
 
         public static string PluginDir;
         private static bool _toggle = false;
@@ -113,19 +114,6 @@ namespace LootManager
             SettingsController.CleanUp();
         }
 
-        //private bool ItemExists(Item item)
-        //{
-        //    if (Inventory.Items.Contains(item)) { return true; }
-
-        //    foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
-        //    {
-        //        if (backpack.Items.Contains(item))
-        //            return true;
-        //    }
-
-        //    return false;
-        //}
-
         private static Backpack FindBagWithSpace()
         {
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
@@ -158,31 +146,6 @@ namespace LootManager
                     }
                     else if (Delete)
                         item.Delete();
-                    //else if (!_ignores.Contains(item.Name))
-                    //    item.MoveToInventory();
-                }
-                if (Inventory.NumFreeSlots < 30)
-                {
-                    Backpack _bag = FindBagWithSpace();
-
-                    if (_bag == null) { return; }
-
-                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                    {
-                        if (_invItems.Contains(itemtomove)) { continue; }
-
-                        itemtomove.MoveToContainer(_bag);
-                    }
-
-                    if (CheckRules(item))
-                    {
-                        if (!_toggle)
-                            item.MoveToInventory();
-                        else if (_toggle)
-                            _initCheck = true;
-                    }
-                    else if (Delete)
-                        item.Delete();
                 }
             }
 
@@ -195,14 +158,34 @@ namespace LootManager
             _internalOpen = false;
             _weAreDoingThings = false;
             _initCheck = false;
+            _corpseIdList.Clear();
         }
 
         private void OnUpdate(object sender, float deltaTime)
         {
-                if (Looting)
+            
+            if (Looting)
             {
+                Backpack _bag = FindBagWithSpace();
+
+                if (_bag == null) { return; }
+
+                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                {
+                    if (CheckRules(itemtomove))
+                    {
+                        itemtomove.MoveToContainer(_bag);
+                    }
+                }
+            }
+
+            if (Looting)
+            {
+                
+
+
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
-                if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 2f)
+                if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 3f)
                 {
                     if (_currentlyLooting) { return; }
 
@@ -234,24 +217,29 @@ namespace LootManager
                 foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
                     && !_corpsePosList.Contains(c.Position)
                     && !_corpseIdList.Contains(c.Identity)).Take(3))
-                {
-                    Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
-                        c.Identity != corpse.Identity
-                        && c.Position.DistanceFrom(corpse.Position) <= 1f);
+                    {
+                        Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
+                            c.Identity != corpse.Identity
+                            && c.Position.DistanceFrom(corpse.Position) <= 1f);
 
-                    if (_corpse != null || _weAreDoingThings) { continue; }
+                        if (_corpse != null || _weAreDoingThings) { continue; }
 
-                    //Chat.WriteLine($"Opening");
-                    //This is so we can open ourselves without the event auto closing
-                    _internalOpen = true;
-                    //Sigh
-                    _weAreDoingThings = true;
-                    _nowTimer = Time.NormalTime;
-                    corpse.Open();
+                        //Chat.WriteLine($"Opening");
+                        //This is so we can open ourselves without the event auto closing
+                        _internalOpen = true;
+                        //Sigh
+                        _weAreDoingThings = true;
+                        _nowTimer = Time.NormalTime;
 
-                    //This is so we can pass the vector to the event
-                    _currentPos = corpse.Position;
-                }
+                    if(Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
+                    {
+                        corpse.Open();
+                    }
+                        
+
+                        //This is so we can pass the vector to the event
+                        _currentPos = corpse.Position;
+                    }
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

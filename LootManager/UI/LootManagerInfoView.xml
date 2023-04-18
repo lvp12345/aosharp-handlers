@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-	  <TextView value="Set inventory before enabling!" layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="Rename bags to 'loot'(without '', case sensitive) " layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="Items will move to bags on each loot cycle." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="/setinv - Sets each item in your inventory to ignore when moving loot to bags." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="/leaveopen - Leaves loot window open." layout_borders="Rect(0,0,0,2)"/>
-    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-  </BorderView>
+	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Set inventory before enabling!" layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Rename bags to anything containing 'loot' (without '', case sensitive); " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Items will move to any bag with 'loot' in the name eg 'loot1', 'loot2', etc." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/setinv - Sets each item in your inventory to ignore when moving loot to bags." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/leaveopen - Leaves loot window open." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+	</BorderView>
 </root>

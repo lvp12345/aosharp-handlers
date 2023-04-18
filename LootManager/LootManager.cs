@@ -119,7 +119,6 @@ namespace LootManager
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Count < 21)
-                // The return was being executed every time, not just when less than 21 items were being found, also should be checking for less than 21 items not less than or equal to
                 {                        
                     return backpack;
                 }
@@ -185,8 +184,6 @@ namespace LootManager
             if (Looting)
             {
                 
-
-
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
                 if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 3f)
                 {

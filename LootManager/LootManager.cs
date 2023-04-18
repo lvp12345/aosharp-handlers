@@ -118,8 +118,10 @@ namespace LootManager
         {
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
-                if (backpack.Items.Count <= 21)
+                if (backpack.Items.Count < 21)
+                {
                     return backpack;
+                }
             }
 
             return null;
@@ -181,9 +183,6 @@ namespace LootManager
 
             if (Looting)
             {
-
-
-
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
                 if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 3f)
                 {

@@ -170,7 +170,7 @@ namespace LootManager
             {
                 Backpack _bag = FindBagWithSpace();
 
-                //if (_bag == null) { return; }
+                if (_bag == null) { return; }
 
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {

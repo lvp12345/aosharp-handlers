@@ -152,8 +152,8 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
 
             //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind);
-            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
 
             //Nukes and DoTs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDOTNuke, CombatActionPriority.High);

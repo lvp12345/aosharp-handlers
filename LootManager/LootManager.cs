@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using System.Data;
 using System.IO;
 using AOSharp.Core.Movement;
+using System.Net.Http;
 
 namespace LootManager
 {
@@ -36,7 +37,7 @@ namespace LootManager
         private static int ItemIdValue;
         private static string ItemNameValue;
 
-        
+
 
         public static List<Rule> Rules;
 
@@ -66,6 +67,8 @@ namespace LootManager
         public static string PluginDir;
         private static bool _toggle = false;
         private static bool _initCheck = false;
+        //Stop error message spam
+        public static string PrevMessage;
 
         public override void Run(string pluginDir)
         {
@@ -103,8 +106,13 @@ namespace LootManager
                 Chat.WriteLine("/lootmanager for settings.");
             }
             catch (Exception e)
+            // Stop error message spam (unless more than one error message)
             {
-                Chat.WriteLine(e.Message);
+                if (e.Message != PrevMessage)
+                {
+                    Chat.WriteLine(e.Message);
+                    PrevMessage = e.Message;
+                }
             }
         }
 
@@ -118,7 +126,8 @@ namespace LootManager
         {
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
-                if (backpack.Items.Count < 21)
+                // For some reason <container>.ItemsCount is returning 0 when bag is full
+                if (backpack.Items.Count > 0 && backpack.Items.Count < 21)
                 {                        
                     return backpack;
                 }

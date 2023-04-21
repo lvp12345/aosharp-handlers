@@ -38,19 +38,14 @@ namespace LootManager
         private static int ItemIdValue;
         private static string ItemNameValue;
 
-
-
         public static List<Rule> Rules;
 
         protected Settings _settings;
         public static Settings _settingsItems;
 
-        private static bool _init = false;
         private static bool _internalOpen = false;
         private static bool _weAreDoingThings = false;
         private static bool _currentlyLooting = false;
-        private static bool _looted = true;
-        private static bool _zoned = false;
 
         private static bool Looting = false;
         private static bool Bags = false;
@@ -72,6 +67,8 @@ namespace LootManager
         //Stop error message spam
         public static string PrevMessage;
 
+        public bool IsOpen { get; private set; }
+
         public override void Run(string pluginDir)
         {
             try
@@ -88,14 +85,14 @@ namespace LootManager
 
                 LoadRules();
 
-                Chat.RegisterCommand("setinv", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                        if (!_invItems.Contains(item))
-                            _invItems.Add(item);
+                //Chat.RegisterCommand("setinv", (string command, string[] param, ChatWindow chatWindow) =>
+                //{
+                //    foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                //        if (!_invItems.Contains(item))
+                //            _invItems.Add(item);
 
-                    Chat.WriteLine("Set inventory list, items will be ignored.");
-                });
+                //    Chat.WriteLine("Set inventory list, items will be ignored.");
+                //});
 
                 Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
                 {
@@ -153,14 +150,14 @@ namespace LootManager
         private void OnContainerOpened(object sender, Container container)
         {
             if (container.Identity.Type != IdentityType.Corpse
-                || !_internalOpen
-                || !_weAreDoingThings) { return; }
+            || !_internalOpen
+            || !_weAreDoingThings) { return; }
 
             _currentlyLooting = true;
 
             foreach (Item item in container.Items)
             {
-                if (Inventory.NumFreeSlots >= 1)
+                if (Inventory.NumFreeSlots > 1)
                 {
                     if (CheckRules(item))
                     {
@@ -172,23 +169,25 @@ namespace LootManager
                     else if (Delete)
                         item.Delete();
                 }
+
             }
 
             _corpsePosList.Add(_currentPos);
             _corpseIdList.Add(container.Identity);
+
             //Chat.WriteLine($"Adding bits");
             if (!_toggle && !_initCheck)
                 Item.Use(container.Identity);
+
             _currentlyLooting = false;
             _internalOpen = false;
             _weAreDoingThings = false;
             _initCheck = false;
-            _corpseIdList.Clear();
         }
 
         private void OnUpdate(object sender, float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 10.0)
+            if (Game.IsZoning) //|| Time.NormalTime < _lastZonedTime + 10.0)
                 return;
 
 
@@ -207,31 +206,7 @@ namespace LootManager
                 }
             }
 
-            //if (Looting && Delete)
-            //{
-            //    foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
-            //        && !_corpseIdList.Contains(c.Identity)).Take(3))
-            //    {
-            //        Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
-            //            c.Identity != corpse.Identity
-            //            && c.Position.DistanceFrom(corpse.Position) <= 1f);
-
-            //        if (_corpse != null) { continue; }
-
-            //        _internalOpen = true;
-            //        _weAreDoingThings = true;
-
-            //        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
-            //        {
-            //            corpse.Open();
-
-            //        }
-
-            //    }
-            //}
-
             if (Looting)
-            //&& !Delete)
             {
 
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
@@ -239,7 +214,7 @@ namespace LootManager
                 {
                     if (_currentlyLooting) { return; }
 
-                    Chat.WriteLine($"Resetting");
+                    //Chat.WriteLine($"Resetting");
                     //Sigh
                     _internalOpen = false;
                     _weAreDoingThings = false;
@@ -252,7 +227,7 @@ namespace LootManager
                     if (DynelManager.Corpses.Where(c => c.Position == corpsePos).ToList().Count == 0)
                     {
                         _corpsePosList.Remove(corpsePos);
-                        Chat.WriteLine($"Removing vector3");
+                        //Chat.WriteLine($"Removing vector3");
                         return;
                     }
 
@@ -260,7 +235,7 @@ namespace LootManager
                     if (DynelManager.Corpses.Where(c => c.Identity == corpseId).ToList().Count == 0)
                     {
                         _corpseIdList.Remove(corpseId);
-                        Chat.WriteLine($"Removing identity");
+                        //Chat.WriteLine($"Removing identity");
                         return;
                     }
 
@@ -274,7 +249,6 @@ namespace LootManager
 
                     if (_corpse != null || _weAreDoingThings) { continue; }
 
-                    Chat.WriteLine($"Opening");
                     //This is so we can open ourselves without the event auto closing
                     _internalOpen = true;
                     //Sigh
@@ -284,6 +258,7 @@ namespace LootManager
                     if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                     {
                         corpse.Open();
+                        //Chat.WriteLine($"Opening");
                     }
 
                     //This is so we can pass the vector to the event
@@ -307,13 +282,6 @@ namespace LootManager
                         chkDel.Toggled += chkDel_Toggled;
                 }
 
-                //if (SettingsController.settingsWindow.FindView("chkBags", out Checkbox chkBags))
-                //{
-                //    chkBags.SetValue(Bags);
-                //    if (chkBags.Toggled == null)
-                //        chkBags.Toggled += chkBags_Toggled;
-                //}
-
                 if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
                 {
                     if (addbut.Clicked == null)
@@ -324,12 +292,6 @@ namespace LootManager
                 {
                     if (rembut.Clicked == null)
                         rembut.Clicked += remButtonClicked;
-                }
-
-                if (SettingsController.settingsWindow.FindView("buttonSet", out Button setbut))
-                {
-                    if (setbut.Clicked == null)
-                        setbut.Clicked += setButtonClicked;
                 }
 
                 if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))

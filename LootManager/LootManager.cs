@@ -24,6 +24,7 @@ namespace LootManager
     public class LootManager : AOPluginEntry
     {
         private double _lastCheckTime = Time.NormalTime;
+        private double _lastZonedTime = Time.NormalTime;
 
         public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
         public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
@@ -49,6 +50,7 @@ namespace LootManager
         private static bool _weAreDoingThings = false;
         private static bool _currentlyLooting = false;
         private static bool _looted = true;
+        private static bool _zoned = false;
 
         private static bool Looting = false;
         private static bool Bags = false;
@@ -132,11 +134,11 @@ namespace LootManager
                     //In this case backpacks must be opened and closed first to set the item count
                     //As we cant identify a specific bag by name (yet) for the Use method, open them all .. this should only happen once
                     List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
-                    foreach (Item bag in bags)
-                    {
-                        bag.Use();
-                        bag.Use();
-                    }
+                        foreach (Item bag in bags)
+                        {
+                            bag.Use();
+                            bag.Use();
+                        }
                 }
                 if (backpack.Items.Count < 21)
                 {                        
@@ -185,6 +187,10 @@ namespace LootManager
 
         private void OnUpdate(object sender, float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 10.0)
+                return; 
+            
+
             if (Looting)
             {
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))

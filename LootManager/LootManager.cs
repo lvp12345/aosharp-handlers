@@ -80,6 +80,7 @@ namespace LootManager
                 PluginDir = pluginDir;
 
                 Game.OnUpdate += OnUpdate;
+                Game.TeleportEnded += TeleportEnded;
                 Inventory.ContainerOpened += OnContainerOpened;
                 PluginDir = pluginDir;
 
@@ -134,14 +135,14 @@ namespace LootManager
                     //In this case backpacks must be opened and closed first to set the item count
                     //As we cant identify a specific bag by name (yet) for the Use method, open them all .. this should only happen once
                     List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
-                        foreach (Item bag in bags)
-                        {
-                            bag.Use();
-                            bag.Use();
-                        }
+                    foreach (Item bag in bags)
+                    {
+                        bag.Use();
+                        bag.Use();
+                    }
                 }
                 if (backpack.Items.Count < 21)
-                {                        
+                {
                     return backpack;
                 }
             }
@@ -188,8 +189,8 @@ namespace LootManager
         private void OnUpdate(object sender, float deltaTime)
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 10.0)
-                return; 
-            
+                return;
+
 
             if (Looting)
             {
@@ -223,16 +224,16 @@ namespace LootManager
             //        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
             //        {
             //            corpse.Open();
-                        
+
             //        }
 
             //    }
             //}
 
             if (Looting)
-                //&& !Delete)
+            //&& !Delete)
             {
-                
+
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
                 if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 3f)
                 {
@@ -267,26 +268,26 @@ namespace LootManager
                     && !_corpsePosList.Contains(c.Position)
                     && !_corpseIdList.Contains(c.Identity)).Take(3))
                 {
-                        Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
-                            c.Identity != corpse.Identity
-                            && c.Position.DistanceFrom(corpse.Position) <= 1f);
+                    Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
+                        c.Identity != corpse.Identity
+                        && c.Position.DistanceFrom(corpse.Position) <= 1f);
 
-                        if (_corpse != null || _weAreDoingThings) { continue; }
+                    if (_corpse != null || _weAreDoingThings) { continue; }
 
-                        Chat.WriteLine($"Opening");
-                        //This is so we can open ourselves without the event auto closing
-                        _internalOpen = true;
-                        //Sigh
-                        _weAreDoingThings = true;
-                        _nowTimer = Time.NormalTime;
+                    Chat.WriteLine($"Opening");
+                    //This is so we can open ourselves without the event auto closing
+                    _internalOpen = true;
+                    //Sigh
+                    _weAreDoingThings = true;
+                    _nowTimer = Time.NormalTime;
 
-                    if(Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
+                    if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                     {
                         corpse.Open();
                     }
-                        
-                        //This is so we can pass the vector to the event
-                        _currentPos = corpse.Position;
+
+                    //This is so we can pass the vector to the event
+                    _currentPos = corpse.Position;
                 }
             }
 
@@ -339,6 +340,11 @@ namespace LootManager
             }
         }
 
+        private void TeleportEnded(object sender, EventArgs e)
+        {
+            _lastZonedTime = Time.NormalTime;
+        }
+
         private void chkBags_Toggled(object sender, bool e)
         {
             Checkbox chk = (Checkbox)sender;
@@ -369,7 +375,7 @@ namespace LootManager
         }
 
 
-    private void setButtonClicked(object sender, ButtonBase e)
+        private void setButtonClicked(object sender, ButtonBase e)
         {
             SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
 

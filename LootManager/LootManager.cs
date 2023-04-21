@@ -126,8 +126,19 @@ namespace LootManager
         {
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
-                // For some reason <container>.ItemsCount is returning 0 when bag is full
-                if (backpack.Items.Count > 0 && backpack.Items.Count < 21)
+                // For some reason <container>.ItemsCount is returning 0 on initially starting the handler or on zoning
+                if (backpack.Items.Count == 0)
+                {
+                    //In this case backpacks must be opened and closed first to set the item count
+                    //As we cant identify a specific bag by name (yet) for the Use method, open them all .. this should only happen once
+                    List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
+                    foreach (Item bag in bags)
+                    {
+                        bag.Use();
+                        bag.Use();
+                    }
+                }
+                if (backpack.Items.Count < 21)
                 {                        
                     return backpack;
                 }
@@ -177,14 +188,14 @@ namespace LootManager
             
             if (Looting)
             {
-                Backpack _bag = FindBagWithSpace();
-
-                //if (_bag == null) { return; }
-
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
                     if (CheckRules(itemtomove))
                     {
+                        //Only check to move if there is something to move
+                        Backpack _bag = FindBagWithSpace();
+                        //Dont move if no eligible bag (name or space)
+                        if (_bag == null) { return; }
                         itemtomove.MoveToContainer(_bag);
                     }
                 }

@@ -185,13 +185,8 @@ namespace LootManager
 
         private void OnUpdate(object sender, float deltaTime)
         {
-            
             if (Looting)
             {
-                Backpack _bag = FindBagWithSpace();
-
-                //if (_bag == null) { return; }
-
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
                     if (CheckRules(itemtomove))

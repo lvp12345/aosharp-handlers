@@ -4,7 +4,7 @@
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 	  <TextView value="Set inventory before enabling!" layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Rename bags to anything containing 'loot' (without '', case sensitive); " layout_borders="Rect(0,0,0,2)"/>
-    <TextView value="Items will move to any bag with 'loot' in the name eg 'loot1', 'loot2', etc." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Items will move to any bag with 'loot' in the name eg 'loot1', 'loot2', etc. You may notice bags opening and closing, this is expected." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="" layout_borders="Rect(0,0,0,2)"/>
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>

@@ -188,6 +188,10 @@ namespace LootManager
             
             if (Looting)
             {
+                Backpack _bag = FindBagWithSpace();
+
+                //if (_bag == null) { return; }
+
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
                     if (CheckRules(itemtomove))
@@ -201,7 +205,31 @@ namespace LootManager
                 }
             }
 
+            //if (Looting && Delete)
+            //{
+            //    foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
+            //        && !_corpseIdList.Contains(c.Identity)).Take(3))
+            //    {
+            //        Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
+            //            c.Identity != corpse.Identity
+            //            && c.Position.DistanceFrom(corpse.Position) <= 1f);
+
+            //        if (_corpse != null) { continue; }
+
+            //        _internalOpen = true;
+            //        _weAreDoingThings = true;
+
+            //        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
+            //        {
+            //            corpse.Open();
+                        
+            //        }
+
+            //    }
+            //}
+
             if (Looting)
+                //&& !Delete)
             {
                 
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
@@ -209,7 +237,7 @@ namespace LootManager
                 {
                     if (_currentlyLooting) { return; }
 
-                    //Chat.WriteLine($"Resetting");
+                    Chat.WriteLine($"Resetting");
                     //Sigh
                     _internalOpen = false;
                     _weAreDoingThings = false;
@@ -222,7 +250,7 @@ namespace LootManager
                     if (DynelManager.Corpses.Where(c => c.Position == corpsePos).ToList().Count == 0)
                     {
                         _corpsePosList.Remove(corpsePos);
-                        //Chat.WriteLine($"Removing vector3");
+                        Chat.WriteLine($"Removing vector3");
                         return;
                     }
 
@@ -230,21 +258,21 @@ namespace LootManager
                     if (DynelManager.Corpses.Where(c => c.Identity == corpseId).ToList().Count == 0)
                     {
                         _corpseIdList.Remove(corpseId);
-                        //Chat.WriteLine($"Removing identity");
+                        Chat.WriteLine($"Removing identity");
                         return;
                     }
 
                 foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
                     && !_corpsePosList.Contains(c.Position)
                     && !_corpseIdList.Contains(c.Identity)).Take(3))
-                    {
+                {
                         Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
                             c.Identity != corpse.Identity
                             && c.Position.DistanceFrom(corpse.Position) <= 1f);
 
                         if (_corpse != null || _weAreDoingThings) { continue; }
 
-                        //Chat.WriteLine($"Opening");
+                        Chat.WriteLine($"Opening");
                         //This is so we can open ourselves without the event auto closing
                         _internalOpen = true;
                         //Sigh
@@ -256,10 +284,9 @@ namespace LootManager
                         corpse.Open();
                     }
                         
-
                         //This is so we can pass the vector to the event
                         _currentPos = corpse.Position;
-                    }
+                }
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

@@ -129,7 +129,7 @@ namespace CombatHandler.NanoTechnician
             RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
 
             //DeTaunt
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt, CombatActionPriority.High);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
@@ -166,8 +166,6 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
             RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
-
-            
 
             //Items
             RegisterItemProcessor(new int[] { RelevantItems.NotumGraft, RelevantItems.NotumSplice }, NotumItem);
@@ -1051,24 +1049,19 @@ namespace CombatHandler.NanoTechnician
         private bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("NotumGrafttSelection")) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)) { return false; }
-            
+            if (Item.HasPendingUse || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)
+            || DynelManager.LocalPlayer.NanoPercent >= 75) { return false; }
 
-            if (DynelManager.LocalPlayer.NanoPercent <= 75) 
-            { return true; }
+            return item != null;
 
-            return false;
         }
 
         private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("IllusionistSelection")) { return false; }
-            if (DynelManager.LocalPlayer.Buffs.Contains(274736)) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (fightingtarget?.MaxHealth > 1000000) { return true; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(274736) || Item.HasPendingUse || fightingtarget?.MaxHealth < 1000000) { return false; }
 
-            return false;
+            return item != null;
         }
 
 

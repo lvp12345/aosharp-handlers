@@ -1058,8 +1058,8 @@ namespace CombatHandler.NanoTechnician
 
         private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("IllusionistSelection")) { return false; }
-            if (DynelManager.LocalPlayer.Buffs.Contains(274736) || Item.HasPendingUse || fightingtarget?.MaxHealth < 1000000) { return false; }
+            if (!IsSettingEnabled("IllusionistSelection") && fightingtarget?.MaxHealth < 1000000) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(274736) || Item.HasPendingUse) { return false; }
 
             return item != null;
         }

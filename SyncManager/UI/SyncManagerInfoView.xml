@@ -15,6 +15,7 @@
     <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
     <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
     <TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
+	  <TextView value="/sync - toggles enable/disable." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/syncmove - toggles sync movement." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/syncbags - toggles sync bags." layout_borders="Rect(0,0,0,2)"/>
     <TextView value="/syncuse - toggles sync use." layout_borders="Rect(0,0,0,2)"/>

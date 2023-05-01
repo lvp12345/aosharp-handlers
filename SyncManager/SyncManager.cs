@@ -63,14 +63,15 @@ namespace SyncManager
             Network.N3MessageReceived += Network_N3MessageReceived;
             Game.TeleportEnded += OnZoned;
 
-            _settings.AddVariable("Toggle", false);
+            _settings.AddVariable("Toggle", true);
+            _settings.AddVariable("SyncAttack", false);
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
             _settings.AddVariable("SyncChat", false);
             _settings.AddVariable("SyncTrade", false);
 
-            _settings["Toggle"] = false;
+            _settings["Toggle"] = true;
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Start, OnStartMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Stop, OnStopMessage);
@@ -93,6 +94,7 @@ namespace SyncManager
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
             Chat.RegisterCommand("sync", SyncManagerCommand);
+            Chat.RegisterCommand("syncattack", SyncAttackSwitch);
             Chat.RegisterCommand("syncmove", SyncSwitch);
             Chat.RegisterCommand("syncbags", SyncBagsSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
@@ -564,6 +566,9 @@ namespace SyncManager
             if (IsActiveWindow)
                 return;
 
+            if (!_settings["SyncAttack"].AsBool())
+                return;
+
             if (!_settings["Toggle"].AsBool())
                 return;
 
@@ -578,6 +583,9 @@ namespace SyncManager
         private void OnStopAttackMessage(int sender, IPCMessage msg)
         {
             if (IsActiveWindow)
+                return;
+
+            if (!_settings["SyncAttack"].AsBool())
                 return;
 
             if (!_settings["Toggle"].AsBool())
@@ -945,6 +953,15 @@ namespace SyncManager
             {
                 _settings["SyncTrade"] = !_settings["SyncTrade"].AsBool();
                 Chat.WriteLine($"Sync trading : {_settings["SyncTrade"].AsBool()}");
+            }
+        }
+
+        private void SyncAttackSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["SyncAttack"] = !_settings["SyncAttack"].AsBool();
+                Chat.WriteLine($"Sync attack : {_settings["SyncAttack"].AsBool()}");
             }
         }
 

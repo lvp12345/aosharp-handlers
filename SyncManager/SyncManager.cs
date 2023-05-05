@@ -38,6 +38,7 @@ namespace SyncManager
         public static bool _openBags = false;
         private static bool _init = false;
         public static bool Toggle = false;
+        public static bool SyncAttack = false;
 
         private static double _useTimer;
 
@@ -72,6 +73,7 @@ namespace SyncManager
             _settings.AddVariable("SyncTrade", false);
 
             _settings["Toggle"] = true;
+            _settings["SyncAttack"] = false;
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Start, OnStartMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Stop, OnStopMessage);
@@ -81,6 +83,9 @@ namespace SyncManager
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.AttackToggleOn, OnAttackToggleMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.AttackToggleOff, OffAttackToggleMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
@@ -183,14 +188,29 @@ namespace SyncManager
                
                     IPCChannel.Broadcast(new StartMessage());
 
-                Chat.WriteLine("AttackBuddy enabled.");
+                Chat.WriteLine("SyncManager enabled.");
                 Start();
             }
             if (!_settings["Toggle"].AsBool() && Toggle)
             {
                 Stop();
-                Chat.WriteLine("AttackBuddy disabled.");
+                Chat.WriteLine("SyncManager disabled.");
                 IPCChannel.Broadcast(new StopMessage());
+            }
+
+            if (_settings["SyncAttack"].AsBool() && !SyncAttack)
+            {
+
+                IPCChannel.Broadcast(new AttackToggleOnMessage());
+
+                Chat.WriteLine("SyncAttack enabled.");
+                On();
+            }
+            if (!_settings["SyncAttack"].AsBool() && SyncAttack)
+            {
+                Off();
+                Chat.WriteLine("SyncAttack disabled.");
+                IPCChannel.Broadcast(new AttackToggleOffMessage());
             }
         }
 
@@ -211,6 +231,22 @@ namespace SyncManager
 
         }
 
+        private void OnAttackToggleMessage(int sender, IPCMessage msg)
+        {
+            SyncAttack = true;
+            _settings["SyncAttack"] = true;
+        }
+
+        private void OffAttackToggleMessage(int sender, IPCMessage msg)
+        {
+            AttackToggleOffMessage stopMsg = (AttackToggleOffMessage)msg;
+
+            SyncAttack = false;
+
+            _settings["SyncAttack"] = false;
+
+        }
+
         private void Start()
         {
             Toggle = true;
@@ -221,6 +257,18 @@ namespace SyncManager
             Toggle = false;
 
             _settings["Toggle"] = false;
+        }
+
+        private void On()
+        {
+            SyncAttack = true;
+        }
+
+        private void Off()
+        {
+            SyncAttack = false;
+
+            _settings["SyncAttack"] = false;
         }
 
         private void OnJumpMessage(int sender, IPCMessage msg)

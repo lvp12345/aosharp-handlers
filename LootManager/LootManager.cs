@@ -17,12 +17,14 @@ using Newtonsoft.Json;
 using System.Data;
 using System.IO;
 using AOSharp.Core.Movement;
+using System.Net.Http;
 
 namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
         private double _lastCheckTime = Time.NormalTime;
+        private double _lastZonedTime = Time.NormalTime;
 
         public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
         public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
@@ -36,18 +38,14 @@ namespace LootManager
         private static int ItemIdValue;
         private static string ItemNameValue;
 
-
-
         public static List<Rule> Rules;
 
         protected Settings _settings;
         public static Settings _settingsItems;
 
-        private static bool _init = false;
         private static bool _internalOpen = false;
         private static bool _weAreDoingThings = false;
         private static bool _currentlyLooting = false;
-        private static bool _looted = true;
 
         private static bool Looting = false;
         private static bool Bags = false;
@@ -66,6 +64,10 @@ namespace LootManager
         public static string PluginDir;
         private static bool _toggle = false;
         private static bool _initCheck = false;
+        //Stop error message spam
+        public static string PrevMessage;
+
+        public bool IsOpen { get; private set; }
 
         public override void Run(string pluginDir)
         {
@@ -75,6 +77,7 @@ namespace LootManager
                 PluginDir = pluginDir;
 
                 Game.OnUpdate += OnUpdate;
+                Game.TeleportEnded += TeleportEnded;
                 Inventory.ContainerOpened += OnContainerOpened;
                 PluginDir = pluginDir;
 
@@ -82,14 +85,14 @@ namespace LootManager
 
                 LoadRules();
 
-                Chat.RegisterCommand("setinv", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                        if (!_invItems.Contains(item))
-                            _invItems.Add(item);
+                //Chat.RegisterCommand("setinv", (string command, string[] param, ChatWindow chatWindow) =>
+                //{
+                //    foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                //        if (!_invItems.Contains(item))
+                //            _invItems.Add(item);
 
-                    Chat.WriteLine("Set inventory list, items will be ignored.");
-                });
+                //    Chat.WriteLine("Set inventory list, items will be ignored.");
+                //});
 
                 Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
                 {
@@ -103,8 +106,13 @@ namespace LootManager
                 Chat.WriteLine("/lootmanager for settings.");
             }
             catch (Exception e)
+            // Stop error message spam (unless more than one error message)
             {
-                Chat.WriteLine(e.Message);
+                if (e.Message != PrevMessage)
+                {
+                    Chat.WriteLine(e.Message);
+                    PrevMessage = e.Message;
+                }
             }
         }
 
@@ -118,6 +126,18 @@ namespace LootManager
         {
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
+                // For some reason <container>.ItemsCount is returning 0 on initially starting the handler or on zoning
+                if (backpack.Items.Count == 0)
+                {
+                    //In this case backpacks must be opened and closed first to set the item count
+                    //As we cant identify a specific bag by name (yet) for the Use method, open them all .. this should only happen once
+                    List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
+                    foreach (Item bag in bags)
+                    {
+                        bag.Use();
+                        bag.Use();
+                    }
+                }
                 if (backpack.Items.Count < 21)
                 {
                     return backpack;
@@ -130,14 +150,14 @@ namespace LootManager
         private void OnContainerOpened(object sender, Container container)
         {
             if (container.Identity.Type != IdentityType.Corpse
-                || !_internalOpen
-                || !_weAreDoingThings) { return; }
+            || !_internalOpen
+            || !_weAreDoingThings) { return; }
 
             _currentlyLooting = true;
 
             foreach (Item item in container.Items)
             {
-                if (Inventory.NumFreeSlots >= 1)
+                if (Inventory.NumFreeSlots > 1)
                 {
                     if (CheckRules(item))
                     {
@@ -149,33 +169,38 @@ namespace LootManager
                     else if (Delete)
                         item.Delete();
                 }
+
             }
 
             _corpsePosList.Add(_currentPos);
             _corpseIdList.Add(container.Identity);
+
             //Chat.WriteLine($"Adding bits");
             if (!_toggle && !_initCheck)
                 Item.Use(container.Identity);
+
             _currentlyLooting = false;
             _internalOpen = false;
             _weAreDoingThings = false;
             _initCheck = false;
-            _corpseIdList.Clear();
         }
 
         private void OnUpdate(object sender, float deltaTime)
         {
+            if (Game.IsZoning) //|| Time.NormalTime < _lastZonedTime + 10.0)
+                return;
+
 
             if (Looting)
             {
-                Backpack _bag = FindBagWithSpace();
-
-                //if (_bag == null) { return; }
-
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
                     if (CheckRules(itemtomove))
                     {
+                        //Only check to move if there is something to move
+                        Backpack _bag = FindBagWithSpace();
+                        //Dont move if no eligible bag (name or space)
+                        if (_bag == null) { return; }
                         itemtomove.MoveToContainer(_bag);
                     }
                 }
@@ -183,6 +208,7 @@ namespace LootManager
 
             if (Looting)
             {
+
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
                 if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 3f)
                 {
@@ -223,7 +249,6 @@ namespace LootManager
 
                     if (_corpse != null || _weAreDoingThings) { continue; }
 
-                    //Chat.WriteLine($"Opening");
                     //This is so we can open ourselves without the event auto closing
                     _internalOpen = true;
                     //Sigh
@@ -233,8 +258,8 @@ namespace LootManager
                     if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                     {
                         corpse.Open();
+                        //Chat.WriteLine($"Opening");
                     }
-
 
                     //This is so we can pass the vector to the event
                     _currentPos = corpse.Position;
@@ -257,13 +282,6 @@ namespace LootManager
                         chkDel.Toggled += chkDel_Toggled;
                 }
 
-                //if (SettingsController.settingsWindow.FindView("chkBags", out Checkbox chkBags))
-                //{
-                //    chkBags.SetValue(Bags);
-                //    if (chkBags.Toggled == null)
-                //        chkBags.Toggled += chkBags_Toggled;
-                //}
-
                 if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
                 {
                     if (addbut.Clicked == null)
@@ -276,18 +294,17 @@ namespace LootManager
                         rembut.Clicked += remButtonClicked;
                 }
 
-                if (SettingsController.settingsWindow.FindView("buttonSet", out Button setbut))
-                {
-                    if (setbut.Clicked == null)
-                        setbut.Clicked += setButtonClicked;
-                }
-
                 if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
                 {
                     infoView.Tag = SettingsController.settingsWindow;
                     infoView.Clicked = InfoView;
                 }
             }
+        }
+
+        private void TeleportEnded(object sender, EventArgs e)
+        {
+            _lastZonedTime = Time.NormalTime;
         }
 
         private void chkBags_Toggled(object sender, bool e)

@@ -41,6 +41,7 @@ namespace SyncManager
         public static bool SyncAttack = false;
 
         private static double _useTimer;
+        private static double _openBagsTimer = Time.NormalTime;
 
         public static Window _infoWindow;
 
@@ -159,20 +160,29 @@ namespace SyncManager
                 }
             }
 
+
             if (!_openBags && _settings["SyncBags"].AsBool())
             {
-                List<Item> bags = Inventory.Items
-                    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                    .ToList();
+                Task.Factory.StartNew(
+                   async () =>
+                   {
+                       await Task.Delay(10000);
 
-                foreach (Item bag in bags)
-                {
-                    bag.Use();
-                    bag.Use();
-                }
+                       List<Item> bags = Inventory.Items
+                           .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                           .ToList();
+
+                       foreach (Item bag in bags)
+                       {
+                           bag.Use();
+                           bag.Use();
+                       }
+                   });
 
                 _openBags = true;
             }
+
+
 
             if (Time.NormalTime > _useTimer + 0.1)
             {
@@ -361,7 +371,7 @@ namespace SyncManager
                 Task.Factory.StartNew(
                     async () =>
                     {
-                        await Task.Delay(100);
+                        await Task.Delay(10000);
 
                         List<Item> bags = Inventory.Items
                             .Where(c => c.UniqueIdentity.Type == IdentityType.Container)

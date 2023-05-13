@@ -435,9 +435,9 @@ namespace CombatHandler.Generic
                     .Where(c => c.Health > 70 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()
@@ -686,9 +686,9 @@ namespace CombatHandler.Generic
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1248,9 +1248,9 @@ namespace CombatHandler.Generic
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1555,9 +1555,9 @@ namespace CombatHandler.Generic
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1591,10 +1591,10 @@ namespace CombatHandler.Generic
                     && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                     && c.Health > 0)
                 .OrderBy(c => c.HealthPercent)
-                .OrderBy(c => c.Profession == Profession.Doctor)
-                .OrderBy(c => c.Profession == Profession.Enforcer)
-                .OrderBy(c => c.Profession == Profession.Soldier)
-                .FirstOrDefault();
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
+                    .FirstOrDefault();
 
             if (player != null)
             {

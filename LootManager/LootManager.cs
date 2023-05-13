@@ -307,11 +307,11 @@ namespace LootManager
             _lastZonedTime = Time.NormalTime;
         }
 
-        private void chkBags_Toggled(object sender, bool e)
-        {
-            Checkbox chk = (Checkbox)sender;
-            Bags = e;
-        }
+        //private void chkBags_Toggled(object sender, bool e)
+        //{
+        //    Checkbox chk = (Checkbox)sender;
+        //    Bags = e;
+        //}
 
         private void chkDel_Toggled(object sender, bool e)
         {
@@ -509,8 +509,8 @@ namespace LootManager
         {
             Rules = new List<Rule>();
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager");
+            //if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager"))
+            //    Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager");
 
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager");
@@ -548,8 +548,8 @@ namespace LootManager
             List<Rule> GlobalRules = new List<Rule>();
             List<Rule> ScopeRules = new List<Rule>();
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager");
+            //if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager"))
+            //    Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager");
 
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager");

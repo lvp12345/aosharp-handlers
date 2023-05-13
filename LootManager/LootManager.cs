@@ -85,15 +85,6 @@ namespace LootManager
 
                 LoadRules();
 
-                //Chat.RegisterCommand("setinv", (string command, string[] param, ChatWindow chatWindow) =>
-                //{
-                //    foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                //        if (!_invItems.Contains(item))
-                //            _invItems.Add(item);
-
-                //    Chat.WriteLine("Set inventory list, items will be ignored.");
-                //});
-
                 Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     _toggle = !_toggle;
@@ -307,12 +298,6 @@ namespace LootManager
             _lastZonedTime = Time.NormalTime;
         }
 
-        //private void chkBags_Toggled(object sender, bool e)
-        //{
-        //    Checkbox chk = (Checkbox)sender;
-        //    Bags = e;
-        //}
-
         private void chkDel_Toggled(object sender, bool e)
         {
             Checkbox chk = (Checkbox)sender;
@@ -334,18 +319,6 @@ namespace LootManager
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
 
             _infoWindow.Show(true);
-        }
-
-
-        private void setButtonClicked(object sender, ButtonBase e)
-        {
-            SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
-
-            txErr.Text = "Inventory set.";
-
-            foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                if (!_invItems.Contains(item))
-                    _invItems.Add(item);
         }
 
         private void addButtonClicked(object sender, ButtonBase e)
@@ -399,7 +372,6 @@ namespace LootManager
 
 
             mlv.DeleteAllChildren();
-
 
 
             Rules.Add(new Rule(tivname.Text, tivminql.Text, tivmaxql.Text, GlobalScope));
@@ -509,9 +481,6 @@ namespace LootManager
         {
             Rules = new List<Rule>();
 
-            //if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager"))
-            //    Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager");
-
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager");
 
@@ -547,9 +516,6 @@ namespace LootManager
         {
             List<Rule> GlobalRules = new List<Rule>();
             List<Rule> ScopeRules = new List<Rule>();
-
-            //if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager"))
-            //    Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\LootManager");
 
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager");

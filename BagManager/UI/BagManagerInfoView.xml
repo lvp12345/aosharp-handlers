@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="BagManagerInfoView" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Swap - shift click a bag onto another bag to swap contents." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Sort - sorts items from bags named 'Sort' to bags that" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="names contain part of the items name." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Trade - moves items from bag named 'Trade' to inventory" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="then to trade window item by item." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Delete - deletes all items in bags named 'Delete'." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="/manager - Toggles your selection." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="/delete - Deletes all items in bags named 'Delete'." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="NOTE: Swapping contents requires the bag to have had been opened after zone." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="NOTE: Trade will move items to a players trade window aswell as a vendor." layout_borders="Rect(0,0,0,2)"/>
+    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+  </BorderView>
+</root>

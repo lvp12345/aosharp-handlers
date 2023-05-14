@@ -24,7 +24,6 @@ namespace LootManager
     public class LootManager : AOPluginEntry
     {
         private double _lastCheckTime = Time.NormalTime;
-        private double _lastZonedTime = Time.NormalTime;
 
         public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
         public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
@@ -59,15 +58,15 @@ namespace LootManager
 
         private static List<Item> _invItems = new List<Item>();
 
-        public static List<Item> _lootList = new List<Item>();
+        //public static List<Item> _lootList = new List<Item>();
 
         public static string PluginDir;
         private static bool _toggle = false;
         private static bool _initCheck = false;
         //Stop error message spam
-        public static string PrevMessage;
+        //public static string PrevMessage;
 
-        public bool IsOpen { get; private set; }
+        //public bool IsOpen { get; private set; }
 
         public override void Run(string pluginDir)
         {
@@ -77,9 +76,7 @@ namespace LootManager
                 PluginDir = pluginDir;
 
                 Game.OnUpdate += OnUpdate;
-                Game.TeleportEnded += TeleportEnded;
                 Inventory.ContainerOpened += OnContainerOpened;
-                PluginDir = pluginDir;
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
@@ -92,18 +89,17 @@ namespace LootManager
                     Chat.WriteLine("Leaving loot open now.");
                 });
 
-
                 Chat.WriteLine("Loot Manager loaded!");
                 Chat.WriteLine("/lootmanager for settings.");
             }
             catch (Exception e)
             // Stop error message spam (unless more than one error message)
             {
-                if (e.Message != PrevMessage)
-                {
+                //if (e.Message != PrevMessage)
+                //{
                     Chat.WriteLine(e.Message);
-                    PrevMessage = e.Message;
-                }
+                    //PrevMessage = e.Message;
+                //}
             }
         }
 
@@ -115,7 +111,7 @@ namespace LootManager
 
         private static Backpack FindBagWithSpace()
         {
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+            foreach (Backpack backpack in Inventory.Backpacks)
             {
                 // For some reason <container>.ItemsCount is returning 0 on initially starting the handler or on zoning
                 if (backpack.Items.Count == 0)
@@ -129,10 +125,12 @@ namespace LootManager
                         bag.Use();
                     }
                 }
+            }
+
+                foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+            {
                 if (backpack.Items.Count < 21)
-                {
                     return backpack;
-                }
             }
 
             return null;
@@ -293,10 +291,10 @@ namespace LootManager
             }
         }
 
-        private void TeleportEnded(object sender, EventArgs e)
-        {
-            _lastZonedTime = Time.NormalTime;
-        }
+        //private void TeleportEnded(object sender, EventArgs e)
+        //{
+        //    _lastZonedTime = Time.NormalTime;
+        //}
 
         private void chkDel_Toggled(object sender, bool e)
         {
@@ -481,6 +479,9 @@ namespace LootManager
         {
             Rules = new List<Rule>();
 
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp");
+
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager");
 
@@ -516,6 +517,9 @@ namespace LootManager
         {
             List<Rule> GlobalRules = new List<Rule>();
             List<Rule> ScopeRules = new List<Rule>();
+
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp");
 
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager");

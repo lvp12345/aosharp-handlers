@@ -10,6 +10,7 @@ using AOSharp.Core.Inventory;
 using SmokeLounge.AOtomation.Messaging.GameData;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace BagManager
 {
@@ -25,6 +26,9 @@ namespace BagManager
 
         public static string PluginDir;
 
+        private CancellationTokenSource _cancellationToken1 = new CancellationTokenSource();
+        private CancellationTokenSource _cancellationToken2 = new CancellationTokenSource();
+
         public override void Run(string pluginDir)
         {
             _settings = new Settings("BagManager");
@@ -39,7 +43,7 @@ namespace BagManager
             Chat.RegisterCommand("manager", (string command, string[] param, ChatWindow chatWindow) =>
             {
                 _settings["Toggle"] = !_settings["Toggle"].AsBool();
-                Chat.WriteLine($"Toggle : {_settings["Toggle"]}");
+                Chat.WriteLine($"Bag : {_settings["Toggle"]}");
             });
 
             Chat.RegisterCommand("delete", (string command, string[] param, ChatWindow chatWindow) =>
@@ -168,6 +172,39 @@ namespace BagManager
 
                 Chat.WriteLine("Trading..");
 
+                //Task.Delay(2 * 1000).ContinueWith(x =>
+                //{
+                //    Task.Delay(150);
+
+                //    foreach (Item bagItem in bag?.Items)
+                //    {
+                //        Task.Delay(50);
+
+                //        bagItem.MoveToInventory();
+
+                //        Task.Delay(1000);
+
+                //        foreach (Item invItem in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory && c.Name == bagItem.Name))
+                //        {
+                //            Network.Send(new TradeMessage()
+                //            {
+                //                Unknown1 = 2,
+                //                Action = (TradeAction)5,
+                //                Param1 = (int)DynelManager.LocalPlayer.Identity.Type,
+                //                Param2 = DynelManager.LocalPlayer.Identity.Instance,
+                //                Param3 = (int)IdentityType.Inventory,
+                //                Param4 = invItem.Slot.Instance
+                //            });
+                //        }
+                //    }
+
+                //    Task.Delay(200);
+                //    _init = false;
+                //    _settings["Toggle"] = false;
+                //    Chat.WriteLine("Traded.");
+                //    Chat.WriteLine("Toggle : False");
+                //}, _cancellationToken1.Token);
+
                 Task.Factory.StartNew(
                 async () =>
                 {
@@ -181,7 +218,7 @@ namespace BagManager
 
                         await Task.Delay(1000);
 
-                        foreach (Item invItem in Inventory.Items.Where(x => x.Slot.Type == IdentityType.Inventory && x.Name == bagItem.Name))
+                        foreach (Item invItem in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory && c.Name == bagItem.Name))
                         {
                             Network.Send(new TradeMessage()
                             {
@@ -200,7 +237,7 @@ namespace BagManager
                     _settings["Toggle"] = false;
                     Chat.WriteLine("Traded.");
                     Chat.WriteLine("Toggle : False");
-                });
+                }, _cancellationToken1.Token);
             }
 
             if (ModeSelection.Sort == (ModeSelection)_settings["ModeSelection"].AsInt32()
@@ -212,6 +249,32 @@ namespace BagManager
                 List<Backpack> bags = Inventory.Backpacks.Where(c => c.Name.Contains("Sort")).ToList();
 
                 Chat.WriteLine("Sorting..");
+
+                //Task.Delay(1 * 100).ContinueWith(x =>
+                //{
+                //    foreach (Backpack bag in bags)
+                //    {
+                //        Task.Delay(50);
+                //        foreach (Item item in bag.Items)
+                //        {
+                //            Task.Delay(50);
+                //            Backpack backpack = Inventory.Backpacks.Where(c => item.Name.Contains(c.Name)).FirstOrDefault();
+                //            Task.Delay(50);
+
+                //            if (backpack != null)
+                //                item.MoveToContainer(backpack);
+                //            Chat.WriteLine("Item moved.");
+                //            Task.Delay(50);
+                //        }
+                //        Task.Delay(50);
+                //    }
+
+                //    Task.Delay(50);
+                //    _init = false;
+                //    _settings["Toggle"] = false;
+                //    Chat.WriteLine("Sorted.");
+                //    Chat.WriteLine("Toggle : False");
+                //}, _cancellationToken2.Token);
 
                 Task.Factory.StartNew(
                 async () =>
@@ -238,7 +301,7 @@ namespace BagManager
                     _settings["Toggle"] = false;
                     Chat.WriteLine("Sorted.");
                     Chat.WriteLine("Toggle : False");
-                });
+                }, _cancellationToken2.Token);
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

@@ -208,6 +208,7 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
+            RegisterPerkProcessor(PerkHash.CrushBone, CrushBonePerk);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
 
@@ -408,6 +409,14 @@ namespace CombatHandler.Generic
         {
 
             if (!IsSettingEnabled("AOEDamagePerk")) { return false; }
+
+            return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
+        }
+
+        protected bool CrushBonePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+
+            if (!IsSettingEnabled("CrushBone")) { return false; }
 
             return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }

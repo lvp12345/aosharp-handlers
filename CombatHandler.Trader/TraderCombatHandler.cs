@@ -129,7 +129,7 @@ namespace CombatHandler.Trader
             RegisterPerkProcessor(PerkHash.LEProcTraderPaymentPlan, PaymentPlan, CombatActionPriority.Low);
 
             //Perks
-            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            //RegisterPerkProcessor(PerkHash.LegShot, LegShot);
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
             RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
 

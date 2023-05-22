@@ -208,7 +208,9 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
-            RegisterPerkProcessor(PerkHash.CrushBone, CrushBonePerk);
+            RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
+            RegisterPerkProcessor(PerkHash.Clipfever, ToggledDamagePerk); 
+            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
 
@@ -405,18 +407,10 @@ namespace CombatHandler.Generic
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool AOEDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool ToggledDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            if (!IsSettingEnabled("AOEDamagePerk")) { return false; }
-
-            return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
-        }
-
-        protected bool CrushBonePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-
-            if (!IsSettingEnabled("CrushBone")) { return false; }
+            if (!IsSettingEnabled("DamagePerk")) { return false; }
 
             return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }

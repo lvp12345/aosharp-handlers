@@ -160,7 +160,7 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.LEProcEngineerPersonalProtection, PersonalProtection, CombatActionPriority.Low);
 
             //Perks
-            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            //RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamArmorBuff);

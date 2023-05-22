@@ -111,7 +111,7 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("CompositesNanoSkills", false);
             _settings.AddVariable("CompositesNanoSkillsTeam", false);
 
-            _settings.AddVariable("CrushBone", false);
+            _settings.AddVariable("DamagePerk", false);
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AnticipatedEvasion);

@@ -218,7 +218,8 @@ namespace BagManager
 
                         await Task.Delay(1000);
 
-                        foreach (Item invItem in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory && c.Name == bagItem.Name))
+                        foreach (Item invItem in Inventory.Items
+                                                    .Where(c => c.Slot.Type == IdentityType.Inventory && c.Name == bagItem.Name && c.QualityLevel == bagItem.QualityLevel))
                         {
                             Network.Send(new TradeMessage()
                             {

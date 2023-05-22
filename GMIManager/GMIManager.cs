@@ -87,7 +87,7 @@ namespace GMIManager
                 else if (param.Length == 0)
                 {
                     _queuedCash -= 4345454;
-                    Chat.WriteLine($"{_queuedCash}");
+                    //Chat.WriteLine($"{_queuedCash}");
 
                     //if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32())
                     //{
@@ -248,8 +248,8 @@ namespace GMIManager
             reader.ReadByte();
 
 
-            Chat.WriteLine($"ID: {messageId} / From: {fromTitle} / Subject: {subjectTitle}");
-            Chat.WriteLine($"Mail populated.");
+            //Chat.WriteLine($"ID: {messageId} / From: {fromTitle} / Subject: {subjectTitle}");
+            //Chat.WriteLine($"Mail populated.");
 
             if (_mailId == 0)
                 _mailId = messageId;

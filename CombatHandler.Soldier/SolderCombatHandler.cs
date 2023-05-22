@@ -45,7 +45,6 @@ namespace CombatHandler.Soldier
 
         private static double _ncuUpdateTime;
 
-
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);

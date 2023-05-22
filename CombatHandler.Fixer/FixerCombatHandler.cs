@@ -374,6 +374,9 @@ namespace CombatHandler.Fixer
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.4)
+                return;
+
             base.OnUpdate(deltaTime);
             EquipBackArmor();
 

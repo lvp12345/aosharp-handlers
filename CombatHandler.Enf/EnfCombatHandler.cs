@@ -103,6 +103,7 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("TrollForm", false);
             _settings.AddVariable("EncaseInStone", false);
+            _settings.AddVariable("CrushBone", false);
 
             _settings.AddVariable("ScorpioTauntTool", false);
 

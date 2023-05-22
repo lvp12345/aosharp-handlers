@@ -90,7 +90,7 @@ namespace CombatHandler.Generic
             {PerkHash.ConvulsiveTremor , PerkType.TargetDamage},
             {PerkHash.Crave , PerkType.TargetDamage},
             {PerkHash.Cripple , PerkType.TargetDamage},
-            {PerkHash.CrushBone , PerkType.TargetDamage},
+            {PerkHash.CrushBone , PerkType.Disabled},
             {PerkHash.Cure1 , PerkType.AAO_Dots_Cleanse}, // aao debuffs and dots
             {PerkHash.Cure2 , PerkType.AAO_Dots_Cleanse}, // aao debuffs and dots
             {PerkHash.CuringTouch , PerkType.SelfHeal},

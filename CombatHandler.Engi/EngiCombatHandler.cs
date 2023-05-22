@@ -595,6 +595,9 @@ namespace CombatHandler.Engineer
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 1.6)
+                return;
+
             base.OnUpdate(deltaTime);
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

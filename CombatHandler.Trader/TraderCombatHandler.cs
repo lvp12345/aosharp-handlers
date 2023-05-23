@@ -129,7 +129,7 @@ namespace CombatHandler.Trader
             RegisterPerkProcessor(PerkHash.LEProcTraderPaymentPlan, PaymentPlan, CombatActionPriority.Low);
 
             //Perks
-            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+            //RegisterPerkProcessor(PerkHash.LegShot, LegShot);
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
             RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
 
@@ -440,6 +440,9 @@ namespace CombatHandler.Trader
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.1)
+                return;
+
             base.OnUpdate(deltaTime);
 
             if (Time.NormalTime > _ncuUpdateTime + 0.5f)

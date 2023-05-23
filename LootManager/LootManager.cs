@@ -97,8 +97,8 @@ namespace LootManager
             {
                 //if (e.Message != PrevMessage)
                 //{
-                Chat.WriteLine(e.Message);
-                //PrevMessage = e.Message;
+                    Chat.WriteLine(e.Message);
+                    //PrevMessage = e.Message;
                 //}
             }
         }
@@ -127,7 +127,7 @@ namespace LootManager
                 }
             }
 
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+                foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Count < 21)
                     return backpack;

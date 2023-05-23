@@ -111,6 +111,8 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("CompositesNanoSkills", false);
             _settings.AddVariable("CompositesNanoSkillsTeam", false);
 
+            _settings.AddVariable("DamagePerk", false);
+
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AnticipatedEvasion);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DiffuseRage);
@@ -205,7 +207,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
-
+           
 
             PluginDirectory = pluginDir;
 
@@ -327,7 +329,7 @@ namespace CombatHandler.Metaphysicist
 
         private void SyncPetsChecked(object s, Checkbox checkbox)
         {
-
+            
         }
 
         private void PetAttackClicked(object s, ButtonBase button)
@@ -574,7 +576,21 @@ namespace CombatHandler.Metaphysicist
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.8)
+                return;
+
             base.OnUpdate(deltaTime);
+
+            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            {
+                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+                IPCChannel.Broadcast(ncuMessage);
+
+                OnRemainingNCUMessage(0, ncuMessage);
+
+                _ncuUpdateTime = Time.NormalTime;
+            }
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -685,17 +701,6 @@ namespace CombatHandler.Metaphysicist
                     PetFollow.Tag = window;
                     PetFollow.Clicked = PetFollowClicked;
                 }
-            }
-
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
-            {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
-
-                IPCChannel.Broadcast(ncuMessage);
-
-                OnRemainingNCUMessage(0, ncuMessage);
-
-                _ncuUpdateTime = Time.NormalTime;
             }
 
             if (_settings["Replenish"].AsBool() && (_settings["CompositesNanoSkills"].AsBool() || _settings["CompositesNanoSkillsTeam"].AsBool()))
@@ -958,7 +963,7 @@ namespace CombatHandler.Metaphysicist
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
             if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-
+            
             return true;
         }
 
@@ -1353,12 +1358,12 @@ namespace CombatHandler.Metaphysicist
         //Ewww
         private SimpleChar GetTargetToHeal()
         {
-            if (DynelManager.LocalPlayer.HealthPercent < 90)
-            {
+           if (DynelManager.LocalPlayer.HealthPercent < 90)
+           {
                 return DynelManager.LocalPlayer;
-            }
-            else if (DynelManager.LocalPlayer.IsInTeam())
-            {
+           }
+           else if (DynelManager.LocalPlayer.IsInTeam())
+           {
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
@@ -1371,9 +1376,9 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingTeamMember;
                 }
-            }
-            else
-            {
+           }
+           else
+           {
                 Pet dyingPet = DynelManager.LocalPlayer.Pets
                      .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
                      .Where(pet => pet.Character.HealthPercent < 80)
@@ -1385,7 +1390,7 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingPet.Character;
                 }
-            }
+           }
 
             return null;
         }

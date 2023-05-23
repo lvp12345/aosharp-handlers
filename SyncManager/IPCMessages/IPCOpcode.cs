@@ -19,5 +19,9 @@ namespace SyncManager.IPCMessages
         NpcChatAnswer = 208,
         UseItem = 209,
         Trade = 210,
+        Start = 211,
+        Stop = 212,
+        AttackToggleOn = 213,
+        AttackToggleOff = 214
     }
 }

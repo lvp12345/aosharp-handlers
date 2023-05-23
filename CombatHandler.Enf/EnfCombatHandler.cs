@@ -103,6 +103,7 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("TrollForm", false);
             _settings.AddVariable("EncaseInStone", false);
+            _settings.AddVariable("DamagePerk", false);
 
             _settings.AddVariable("ScorpioTauntTool", false);
 
@@ -456,7 +457,21 @@ namespace CombatHandler.Enf
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 0.5)
+                return;
+
             base.OnUpdate(deltaTime);
+
+            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            {
+                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+                IPCChannel.Broadcast(ncuMessage);
+
+                OnRemainingNCUMessage(0, ncuMessage);
+
+                _ncuUpdateTime = Time.NormalTime;
+            }
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -593,17 +608,6 @@ namespace CombatHandler.Enf
                     if (int.TryParse(bioRegrowthDelayInput.Text, out int bioRegrowthDelayValue))
                         if (Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay != bioRegrowthDelayValue)
                             Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay = bioRegrowthDelayValue;
-            }
-
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
-            {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
-
-                IPCChannel.Broadcast(ncuMessage);
-
-                OnRemainingNCUMessage(0, ncuMessage);
-
-                _ncuUpdateTime = Time.NormalTime;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

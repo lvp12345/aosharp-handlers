@@ -377,7 +377,21 @@ namespace CombatHandler.Shade
 
         protected override void OnUpdate(float deltaTime)
         {
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.3)
+                return;
+
             base.OnUpdate(deltaTime);
+
+            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            {
+                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+                IPCChannel.Broadcast(ncuMessage);
+
+                OnRemainingNCUMessage(0, ncuMessage);
+
+                _ncuUpdateTime = Time.NormalTime;
+            }
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -461,17 +475,6 @@ namespace CombatHandler.Shade
                         if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
                             Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
 
-            }
-
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
-            {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
-
-                IPCChannel.Broadcast(ncuMessage);
-
-                OnRemainingNCUMessage(0, ncuMessage);
-
-                _ncuUpdateTime = Time.NormalTime;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

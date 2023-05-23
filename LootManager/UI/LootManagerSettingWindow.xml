@@ -1,70 +1,70 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <root>
-	<View>
+  <View>
 
-		<BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
+    <BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
 
-			<View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT" >
-				<TextView name="tvonoff" value="Enabled" layout_borders="Rect(5,5,5,5)"/>
-				<CheckBox name="chkOnOff" label="" layout_borders="Rect(5,5,5,5)"/>
-				<TextView  name="tvdel" value="Delete leftovers" layout_borders="Rect(5,5,5,5)"/>
-				<CheckBox name="chkDel" label="" layout_borders="Rect(5,5,5,5)"/>
-				<HLayoutSpacer/>
-				<Button name="LootManagerInfoView" label="Info" layout_borders="Rect(5,5,5,5)"/>
-			</View>
-		</BorderView>
+      <View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT" >
+        <TextView name="tvonoff" value="Enabled" layout_borders="Rect(5,5,5,5)"/>
+        <CheckBox name="chkOnOff" label="" layout_borders="Rect(5,5,5,5)"/>
+        <TextView  name="tvdel" value="Delete leftovers" layout_borders="Rect(5,5,5,5)"/>
+        <CheckBox name="chkDel" label="" layout_borders="Rect(5,5,5,5)"/>
+        <HLayoutSpacer/>
+		  <Button name="LootManagerInfoView" label="Info" layout_borders="Rect(5,5,5,5)"/>
+      </View>
+    </BorderView>
 
-		<BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
-			<View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT" >
-				<TextView name="tvName" value="Name" layout_borders="Rect(5,5,5,5)"/>
-				<TextInputView name="tivName" max_size="Point(300,13)" min_size="Point(300,13)"  layout_borders="Rect(5,5,5,0)" />
-			</View>
+    <BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
+      <View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT" >
+        <TextView name="tvName" value="Name" layout_borders="Rect(5,5,5,5)"/>
+        <TextInputView name="tivName" max_size="Point(300,13)" min_size="Point(300,13)"  layout_borders="Rect(5,5,5,0)" />
+      </View>
 
-			<View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT">
-				<TextView name="tvminq" value="Min QL" layout_borders="Rect(5,5,5,0)" />
-				<TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="tivminql" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" />
-				<TextView  name="tvmaxq" value="Max QL" layout_borders="Rect(5,5,5,0)" />
-				<TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="tivmaxql" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" />
+      <View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT">
+        <TextView name="tvminq" value="Min QL" layout_borders="Rect(5,5,5,0)" />
+        <TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="tivminql" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" />
+        <TextView  name="tvmaxq" value="Max QL" layout_borders="Rect(5,5,5,0)" />
+        <TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="tivmaxql" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" />
 
-				<TextView  name="tvGlobal" value="Global Scope" layout_borders="Rect(5,5,5,5)"/>
-				<CheckBox name="chkGlobal" label="" layout_borders="Rect(5,5,5,5)"/>
+        <TextView  name="tvGlobal" value="Global Scope" layout_borders="Rect(5,5,5,5)"/>
+        <CheckBox name="chkGlobal" label="" layout_borders="Rect(5,5,5,5)"/>
 
-				<HLayoutSpacer/>
-				<Button name="buttonAdd" label="Add" h_alignment="LEFT" layout_borders="Rect(5,5,5,5)"  />
-			</View>
+        <HLayoutSpacer/>
+        <Button name="buttonAdd" label="Add" h_alignment="LEFT" layout_borders="Rect(5,5,5,5)"  />
+      </View>
 
-		</BorderView>
+    </BorderView>
 
-		<BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings1" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
+    <BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings1" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
 
-			<View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT">
-				<TextView  name="tvIndex" value="Remove" layout_borders="Rect(5,5,5,0)" />
-				<TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="tivindex" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" />
-				<HLayoutSpacer/>
-				<Button name="buttonDel" label="Del" h_alignment="LEFT" layout_borders="Rect(5,5,5,5)"  />
-			</View>
+      <View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT">
+        <TextView  name="tvIndex" value="Remove" layout_borders="Rect(5,5,5,0)" />
+        <TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="tivindex" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" />
+        <HLayoutSpacer/>
+        <Button name="buttonDel" label="Del" h_alignment="LEFT" layout_borders="Rect(5,5,5,5)"  />
+      </View>
 
-		</BorderView>
+    </BorderView>
 
-		<BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings1" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
-			<View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT">
-				<TextView  name="tvErr" value="" layout_borders="Rect(5,5,5,5)" />
-			</View>
-		</BorderView>
+    <BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings1" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
+      <View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT">
+        <TextView  name="tvErr" value="" layout_borders="Rect(5,5,5,5)" />
+      </View>
+    </BorderView>
 
 
-		<BorderView v_alignment="TOP" h_alignment="LEFT"  view_layout="vertical" name="Settings2" layout_borders="Rect(5,5,5,0)" max_size="Point(16000,-1)">
-			<View layout_borders="Rect(0,3,0,2)">
-				<ScrollView h_alignment="LEFT" label="#Behaviour/s" v_scrollbar_mode="auto" scroll_client="behaviour_s_scroll">
-					<ScrollViewChild name="behaviour_s_scroll"  max_size="Point(235,50)">
-						<View name="ScrollListRoot">
-							<Haxxor/>
-						</View>
-						<VLayoutSpacer/>
-					</ScrollViewChild>
-				</ScrollView>
-			</View>
-		</BorderView>
+    <BorderView v_alignment="TOP" h_alignment="LEFT"  view_layout="vertical" name="Settings2" layout_borders="Rect(5,5,5,0)" max_size="Point(16000,-1)">
+      <View layout_borders="Rect(0,3,0,2)">
+        <ScrollView h_alignment="LEFT" label="#Behaviour/s" v_scrollbar_mode="auto" scroll_client="behaviour_s_scroll">
+          <ScrollViewChild name="behaviour_s_scroll"  max_size="Point(235,50)">
+            <View name="ScrollListRoot">
+              <Haxxor/>
+            </View>
+            <VLayoutSpacer/>
+          </ScrollViewChild>
+        </ScrollView>
+      </View>
+    </BorderView>
 
-	</View>
+  </View>
 </root>

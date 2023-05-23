@@ -126,13 +126,6 @@ namespace PetManager
                     PetAttack.Clicked = PetAttackClicked;
                 }
 
-                //attack
-                if (SettingsController.settingsWindow.FindView("PetAttack", out Button PetAttack))
-                {
-                    PetAttack.Tag = SettingsController.settingsWindow;
-                    PetAttack.Clicked = PetAttackClicked;
-                }
-
                 //wait
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
                 {

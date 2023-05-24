@@ -78,8 +78,8 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("GlobalComposites", true);
             _settings.AddVariable("DeTaunt", false);
 
-            _settings.AddVariable("IllusionistSelection", false);
-            _settings.AddVariable("NotumGrafttSelection", false);
+            _settings.AddVariable("Illusionist", false);
+            _settings.AddVariable("NotumGraft", false);
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
@@ -1105,17 +1105,17 @@ namespace CombatHandler.NanoTechnician
 
         private bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NotumGrafttSelection")) { return false; }
+            if (!IsSettingEnabled("NotumGraft")) { return false; }
             if (Item.HasPendingUse || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)
             || DynelManager.LocalPlayer.NanoPercent >= 75) { return false; }
 
             return item != null;
-
         }
 
         private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("IllusionistSelection") && fightingtarget?.MaxHealth < 1000000) { return false; }
+            if (!IsSettingEnabled("Illusionist") ) { return false; }
+            if (fightingtarget?.MaxHealth < 1000000) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Contains(274736) || Item.HasPendingUse) { return false; }
 
             return item != null;

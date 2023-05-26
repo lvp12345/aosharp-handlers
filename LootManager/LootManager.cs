@@ -64,8 +64,8 @@ namespace LootManager
         //public static List<Item> _lootList = new List<Item>();
 
         public static string PluginDir;
-        //private static bool _toggle = false;
-        //private static bool _initCheck = false;
+        private static bool _toggle = false;
+        private static bool _initCheck = false;
         //Stop error message spam
         //public static string PrevMessage;
 
@@ -86,12 +86,12 @@ namespace LootManager
 
                 LoadRules();
 
-                //Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
-                //{
-                //    _toggle = !_toggle;
+                Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    _toggle = !_toggle;
 
-                //    Chat.WriteLine("Leaving loot open now.");
-                //});
+                    Chat.WriteLine("Leaving loot open now.");
+                });
 
                 Chat.WriteLine("Loot Manager loaded!");
                 Chat.WriteLine("/lootmanager for settings.");
@@ -167,10 +167,10 @@ namespace LootManager
                 {
                     if (CheckRules(item))
                     {
-                        //if (!_toggle)
-                        item.MoveToInventory();
-                        //else if (_toggle)
-                        //_initCheck = true;
+                        if (!_toggle)
+                            item.MoveToInventory();
+                        else if (_toggle)
+                            _initCheck = true;
                     }
                     else if (Delete)
                         item.Delete();
@@ -182,13 +182,13 @@ namespace LootManager
             _corpseIdList.Add(container.Identity);
             Chat.WriteLine($"Looted {container.Identity} at {_currentPos}");
 
-            //if (!_toggle && !_initCheck)
-            Item.Use(container.Identity);
+            if (!_toggle && !_initCheck)
+                Item.Use(container.Identity);
 
             _internalOpen = false;
             _weAreDoingThings = false;
             _currentlyLooting = false;
-            //_initCheck = false;
+            _initCheck = false;
         }
 
         private void OnZoning(object sender, EventArgs e)
@@ -210,11 +210,12 @@ namespace LootManager
             {
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
+                    //Only check to move if there is something to move
                     if (CheckRules(itemtomove))
                     {
                         if (!_initiliaseBags)
                         {
-                            //Only check to move if there is something to move
+                            //Initialise bags again if the flag is false (after injecting or zoning)
                             FindBagWithSpace();
                         }
                         //Dont move if no eligible bag (name or space)
@@ -262,12 +263,13 @@ namespace LootManager
                 {
                     Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity != corpse.Identity && c.Position.DistanceFrom(corpse.Position) <= 1f);
 
+                    //This check prevents it from opening every body in a large pile, i don't know why, removing it is the only solution i found
                     //if (_corpse != null || _weAreDoingThings) { continue; }
 
-                    //This is so we can open ourselves without the event auto closing
-
+                    //A different but hopefully still effective way of doing the above check.
                     if (_currentlyLooting) { return; }
 
+                    //This is so we can open ourselves without the event auto closing
                     _internalOpen = true;
                     _weAreDoingThings = true;
                     _nowTimer = Time.NormalTime;

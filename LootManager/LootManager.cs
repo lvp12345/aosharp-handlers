@@ -148,8 +148,9 @@ namespace LootManager
             {
                 if (backpack.Items.Count < 21)
                     return backpack;
-            }
-
+                else
+                    return null;
+            } 
             return null;
         }
 
@@ -205,27 +206,6 @@ namespace LootManager
             if (Game.IsZoning) //|| Time.NormalTime < _lastZonedTime + 10.0)
                 return;
 
-
-            if (Looting)
-            {
-                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                {
-                    //Only check to move if there is something to move
-                    if (CheckRules(itemtomove))
-                    {
-                        if (!_initiliaseBags)
-                        {
-                            //Initialise bags again if the flag is false (after injecting or zoning)
-                            FindBagWithSpace();
-                        }
-                        //Dont move if no eligible bag (name or space)
-                        Backpack _bag = BagWithSpace();
-                        if (_bag == null) { return; }
-                        itemtomove.MoveToContainer(_bag);
-                    }
-                }
-            }
-
             if (Looting)
             {
 
@@ -258,15 +238,15 @@ namespace LootManager
                         return;
                     }
 
+                //I think the changes to this is what fixed the looting; stopping the check for identity and only taking 1 result.
                 foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
                     && !_corpsePosList.Contains(c.Position)).Take(1))
                 {
                     Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity != corpse.Identity && c.Position.DistanceFrom(corpse.Position) <= 1f);
 
-                    //This check prevents it from opening every body in a large pile, i don't know why, removing it is the only solution i found
+                    //This check prevents it from opening every body in a large pile, i still don't know why, changing it is the only solution i found
                     //if (_corpse != null || _weAreDoingThings) { continue; }
 
-                    //A different but hopefully still effective way of doing the above check.
                     if (_currentlyLooting) { return; }
 
                     //This is so we can open ourselves without the event auto closing
@@ -282,6 +262,27 @@ namespace LootManager
 
                     //This is so we can pass the vector to the event
                     _currentPos = corpse.Position;
+                }
+
+                //Moving this loop below the container opening loop allows us to loot without a bag named loot again
+                if (Looting)
+                {
+                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                    {
+                        //Only check to move if there is something to move
+                        if (CheckRules(itemtomove))
+                        {
+                            if (!_initiliaseBags)
+                            {
+                                //Initialise bags again if the flag is false (after injecting or zoning)
+                                FindBagWithSpace();
+                            }
+                            //Dont move if no eligible bag (name or space)
+                            Backpack _bag = BagWithSpace();
+                            if (_bag == null) { return; }
+                            itemtomove.MoveToContainer(_bag);
+                        }
+                    }
                 }
             }
 

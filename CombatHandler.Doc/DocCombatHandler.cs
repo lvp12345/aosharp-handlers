@@ -107,9 +107,10 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DangerousCulture);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.MassiveVitaePlan);
 
-            _settings.AddVariable("NanoResistTeam", true);
             _settings.AddVariable("PistolTeam", true);
-            _settings.AddVariable("HealDeltaBuff", true);
+
+            _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
+            _settings.AddVariable("HealDeltaBuffSelection", (int)HealDeltaBuffSelection.None);
 
             _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
             _settings.AddVariable("ShortHOT", false);
@@ -155,13 +156,12 @@ namespace CombatHandler.Doctor
             //Buffs
             RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
-
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), HealDeltaBuff);
 
             RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
@@ -931,8 +931,20 @@ namespace CombatHandler.Doctor
 
         private bool NanoResistance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NanoResistTeam"))
+            if (NanoResistSelection.Team == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
                 return GenericTeamBuff(spell, ref actionTarget);
+
+            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool HealDeltaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HealDeltaBuffSelection.Team == (HealDeltaBuffSelection)_settings["HealDeltaBuffSelection"].AsInt32())
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            if (HealDeltaBuffSelection.None == (HealDeltaBuffSelection)_settings["HealDeltaBuffSelection"].AsInt32()) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -963,14 +975,6 @@ namespace CombatHandler.Doctor
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
-        private bool HealDeltaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("HealDeltaBuff"))
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1242,87 +1246,101 @@ namespace CombatHandler.Doctor
         #region Misc
 
         public enum InitBuffSelection
-                {
-                    None, Self, Team
-                }
+        {
+            None, Self, Team
+        }
 
-                public enum TreatmentBuffSelection
-                {
-                    None, Self, Team
-                }
-                public enum StrengthBuffSelection
-                {
-                    None, Self, Team
-                }
-                public enum HealSelection
-                {
-                    None, SingleTeam, SingleArea, Team, ImprovedLifeChanneler
-                }
-                public enum InitDebuffSelection
-                {
-                    None, Target, Area, Boss
-                }
+        public enum TreatmentBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum StrengthBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum HealSelection
+        {
+            None, SingleTeam, SingleArea, Team, ImprovedLifeChanneler
+        }
+        public enum InitDebuffSelection
+        {
+            None, Target, Area, Boss
+        }
 
-                public enum DOTADebuffTargetSelection
-                {
-                    None, Target, Area, Boss
-                }
+        public enum DOTADebuffTargetSelection
+        {
+            None, Target, Area, Boss
+        }
 
-                public enum DOTBDebuffTargetSelection
-                {
-                    None, Target, Area, Boss
-                }
-                public enum DOTCDebuffTargetSelection
-                {
-                    None, Target, Area, Boss
-                }
-                public enum ShortHpSelection
-                {
-                    None, Self, Team
-                }
+        public enum DOTBDebuffTargetSelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum DOTCDebuffTargetSelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum ShortHpSelection
+        {
+            None, Self, Team
+        }
 
-                public enum ProcType1Selection
-                {
-                    DangerousCulture, Antiseptic, MuscleMemory, BloodTransfusion, RestrictiveBandaging
-                }
+        public enum NanoResistSelection
+        {
+            None, Self, Team
+        }
 
-                public enum ProcType2Selection
-                {
-                    MassiveVitaePlan, AnatomicBlight, HealingCare, Pathogen, Anesthetic, Astringent, Inflammation
-                }
+        public enum HealDeltaBuffSelection
+        {
+            None, Self, Team
+        }
 
-                private static class RelevantNanos
-                {
+        public enum ProcType1Selection
+        {
+            DangerousCulture, Antiseptic, MuscleMemory, BloodTransfusion, RestrictiveBandaging
+        }
 
-                    public const int ImprovedLC = 275011;
+        public enum ProcType2Selection
+        {
+            MassiveVitaePlan, AnatomicBlight, HealingCare, Pathogen, Anesthetic, Astringent, Inflammation
+        }
 
-                    public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
-                        .Where(spell => spell.Id != ImprovedLC).ToArray();
+        private static class RelevantNanos
+        {
 
-                    public const int TiredLimbs = 99578;
+            public const int ImprovedLC = 275011;
 
-                    public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder()
-                        .Where(spell => spell.Id != TiredLimbs).ToArray();
+            public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
+                .Where(spell => spell.Id != ImprovedLC).ToArray();
 
-                    public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
+            public const int TiredLimbs = 99578;
 
-                    public const int AlphaAndOmega = 42409;
-                    public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
+            public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder()
+                .Where(spell => spell.Id != TiredLimbs).ToArray();
+
+            public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
+
+            public const int AlphaAndOmega = 42409;
+            public static int[] Heals = new[] 
+            { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
                         43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                         43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
-                        28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
-                    public static int[] TeamHeals = new[] { 273312, 273315, 270349, 43891, 223291, 43892, 43893, 43894, 43895, 43896, 43897, 43898, 43899,
+                        28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 
+            };
+            public static int[] TeamHeals = new[] 
+            { 273312, 273315, 270349, 43891, 223291, 43892, 43893, 43894, 43895, 43896, 43897, 43898, 43899,
                         43900, 43901, 43903, 43902, 42404, 43905, 43904, 42395, 43907, 43908, 43906, 42398, 43910, 43909, 42402,
-                        43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408 };
-                }
+                        43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408 
+            };
+        }
 
 
-                private static class RelevantItems
-                {
-                    public const int SacredTextoftheImmortalOne = 305514;
-                    public const int TeachingsoftheImmortalOne = 206242;
-                }
+        private static class RelevantItems
+        {
+            public const int SacredTextoftheImmortalOne = 305514;
+            public const int TeachingsoftheImmortalOne = 206242;
+        }
 
-                #endregion
+        #endregion
     }
 }

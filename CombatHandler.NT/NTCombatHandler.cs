@@ -78,8 +78,8 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("GlobalComposites", true);
             _settings.AddVariable("DeTaunt", false);
 
-            _settings.AddVariable("IllusionistSelection", false);
-            _settings.AddVariable("NotumGrafttSelection", false);
+            _settings.AddVariable("Illusionist", false);
+            _settings.AddVariable("NotumGraft", false);
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
@@ -89,7 +89,7 @@ namespace CombatHandler.NanoTechnician
 
             _settings.AddVariable("CycleAbsorbs", false);
 
-            _settings.AddVariable("AIDot", false);
+            _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.None);
 
             _settings.AddVariable("Pierce", false);
             _settings.AddVariable("FlimFocus", false);
@@ -99,7 +99,6 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("AbsorbACBuff", false);
             _settings.AddVariable("Evades", false);
             _settings.AddVariable("NFRangeBuff", false);
-
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ThermalReprieve);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.OptimizedLibrary);
@@ -159,10 +158,12 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
 
-            //Nukes and DoTs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), AIDOTNuke, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke, CombatActionPriority.Medium);
+            //Dots
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Medium);
+
+            //Nukes
+            RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
             RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
@@ -829,15 +830,68 @@ namespace CombatHandler.NanoTechnician
             return true;
         }
 
-        private bool AIDOTNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //private bool AIDOTNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("AIDot") || fightingTarget == null || !CanCast(spell)) { return false; }
+
+        //    if (fightingTarget.Health < 80000) { return false; }
+
+        //    if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
+
+        //    return true;
+        //}
+
+        //private bool AIDOTNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (AIDotSelection.None == (AIDotSelection)_settings["AIDot"].AsInt32()) { return false; }
+
+        //    if (AIDotSelection.Target == (AIDotSelection)_settings["AIDot"].AsInt32()
+        //        && fightingTarget != null)
+        //    {
+                
+        //        if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
+
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
+
+        //    if (AIDotSelection.Boss == (AIDotSelection)_settings["AIDot"].AsInt32())
+        //    {
+        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+        //        if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
+
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
+
+        //    return false;
+        //}
+
+        private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AIDot") || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
 
-            if (fightingTarget.Health < 80000) { return false; }
+            if (DOTADebuffTargetSelection.None == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()) { return false; }
 
-            if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
+            if (DOTADebuffTargetSelection.Target == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
-            return true;
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (DOTADebuffTargetSelection.Boss == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
+                 && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+
         }
 
         #endregion
@@ -1051,17 +1105,17 @@ namespace CombatHandler.NanoTechnician
 
         private bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NotumGrafttSelection")) { return false; }
+            if (!IsSettingEnabled("NotumGraft")) { return false; }
             if (Item.HasPendingUse || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)
             || DynelManager.LocalPlayer.NanoPercent >= 75) { return false; }
 
             return item != null;
-
         }
 
         private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("IllusionistSelection") && fightingtarget?.MaxHealth < 1000000) { return false; }
+            if (!IsSettingEnabled("Illusionist") ) { return false; }
+            if (fightingtarget?.MaxHealth < 1000000) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Contains(274736) || Item.HasPendingUse) { return false; }
 
             return item != null;
@@ -1097,6 +1151,12 @@ namespace CombatHandler.NanoTechnician
         {
             None, Normal, VE
         }
+
+        public enum DOTADebuffTargetSelection
+        {
+            None, Target, Boss
+        }
+
         private static class RelevantNanos
         {
             public const int NanobotAegis = 302074;

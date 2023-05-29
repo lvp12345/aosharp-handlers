@@ -113,7 +113,6 @@ namespace LootManager
             SettingsController.CleanUp();
         }
 
-        //private static Backpack FindBagWithSpace()
         private void FindBagWithSpace()
         {
             foreach (Backpack backpack in Inventory.Backpacks)
@@ -132,14 +131,6 @@ namespace LootManager
                     _initiliaseBags = true;
                 }
             }
-
-            //foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
-            //{
-            //    if (backpack.Items.Count < 21)
-            //        return backpack;
-            //}
-
-            //return null;
         }
 
         private static Backpack BagWithSpace()
@@ -181,7 +172,7 @@ namespace LootManager
 
             _corpsePosList.Add(_currentPos);
             _corpseIdList.Add(container.Identity);
-            Chat.WriteLine($"Looted {container.Identity} at {_currentPos}");
+            //Chat.WriteLine($"Looted {container.Identity} at {_currentPos}");
 
             if (!_toggle && !_initCheck)
                 Item.Use(container.Identity);
@@ -194,6 +185,7 @@ namespace LootManager
 
         private void OnZoning(object sender, EventArgs e)
         {
+            //Lets the bag check know it needs to scan again after zoning
             if (_initiliaseBags || Time.NormalTime < _lastZonedTime + 3.0)
             {
                 _initiliaseBags = false;
@@ -238,13 +230,13 @@ namespace LootManager
                         return;
                     }
 
-                //I think the changes to this is what fixed the looting; stopping the check for identity and only taking 1 result.
                 foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
                     && !_corpsePosList.Contains(c.Position)).Take(1))
                 {
                     Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity != corpse.Identity && c.Position.DistanceFrom(corpse.Position) <= 1f);
 
                     //This check prevents it from opening every body in a large pile, i still don't know why, changing it is the only solution i found
+                    //I've left it here in case some brave adventurer in the future wants to figure out why
                     //if (_corpse != null || _weAreDoingThings) { continue; }
 
                     if (_currentlyLooting) { return; }
@@ -257,7 +249,7 @@ namespace LootManager
                     if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                     {
                         corpse.Open();
-                        Chat.WriteLine($"Opening {corpse.Identity}");
+                        //Chat.WriteLine($"Opening {corpse.Identity}");
                     }
 
                     //This is so we can pass the vector to the event

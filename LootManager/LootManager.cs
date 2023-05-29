@@ -32,6 +32,8 @@ namespace LootManager
         private static Vector3 _currentPos = Vector3.Zero;
         private static List<Identity> _corpseIdList = new List<Identity>();
 
+        protected double _lastZonedTime = Time.NormalTime;
+
         private static int MinQlValue;
         private static int MaxQlValue;
         private static int ItemIdValue;
@@ -45,6 +47,7 @@ namespace LootManager
         private static bool _internalOpen = false;
         private static bool _weAreDoingThings = false;
         private static bool _currentlyLooting = false;
+        private static bool _initiliaseBags = false;
 
         private static bool Looting = false;
         private static bool Bags = false;
@@ -76,6 +79,7 @@ namespace LootManager
                 PluginDir = pluginDir;
 
                 Game.OnUpdate += OnUpdate;
+                Game.TeleportEnded += OnZoning;
                 Inventory.ContainerOpened += OnContainerOpened;
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
@@ -89,16 +93,22 @@ namespace LootManager
                     Chat.WriteLine("Leaving loot open now.");
                 });
 
+                Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    Looting = !Looting;
+                    Chat.WriteLine($"Looting : {Looting}.");
+                });
+
                 Chat.WriteLine("Loot Manager loaded!");
-                Chat.WriteLine("/lootmanager for settings.");
+                Chat.WriteLine("/lootmanager for settings. /lm to enable/disable");
             }
             catch (Exception e)
             // Stop error message spam (unless more than one error message)
             {
                 //if (e.Message != PrevMessage)
                 //{
-                    Chat.WriteLine(e.Message);
-                    //PrevMessage = e.Message;
+                Chat.WriteLine(e.Message);
+                //PrevMessage = e.Message;
                 //}
             }
         }
@@ -109,7 +119,7 @@ namespace LootManager
             SettingsController.CleanUp();
         }
 
-        private static Backpack FindBagWithSpace()
+        private void FindBagWithSpace()
         {
             foreach (Backpack backpack in Inventory.Backpacks)
             {
@@ -124,15 +134,20 @@ namespace LootManager
                         bag.Use();
                         bag.Use();
                     }
+                    _initiliaseBags = true;
                 }
             }
+        }
 
-                foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+        private static Backpack BagWithSpace()
+        {
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Count < 21)
                     return backpack;
-            }
-
+                else
+                    return null;
+            } 
             return null;
         }
 
@@ -163,37 +178,31 @@ namespace LootManager
 
             _corpsePosList.Add(_currentPos);
             _corpseIdList.Add(container.Identity);
+            //Chat.WriteLine($"Looted {container.Identity} at {_currentPos}");
 
-            //Chat.WriteLine($"Adding bits");
             if (!_toggle && !_initCheck)
                 Item.Use(container.Identity);
 
-            _currentlyLooting = false;
             _internalOpen = false;
             _weAreDoingThings = false;
+            _currentlyLooting = false;
             _initCheck = false;
         }
+
+        private void OnZoning(object sender, EventArgs e)
+        {
+            //Lets the bag check know it needs to scan again after zoning
+            if (_initiliaseBags || Time.NormalTime < _lastZonedTime + 3.0)
+            {
+                _initiliaseBags = false;
+            }
+        }
+
 
         private void OnUpdate(object sender, float deltaTime)
         {
             if (Game.IsZoning) //|| Time.NormalTime < _lastZonedTime + 10.0)
                 return;
-
-
-            if (Looting)
-            {
-                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                {
-                    if (CheckRules(itemtomove))
-                    {
-                        //Only check to move if there is something to move
-                        Backpack _bag = FindBagWithSpace();
-                        //Dont move if no eligible bag (name or space)
-                        if (_bag == null) { return; }
-                        itemtomove.MoveToContainer(_bag);
-                    }
-                }
-            }
 
             if (Looting)
             {
@@ -204,7 +213,6 @@ namespace LootManager
                     if (_currentlyLooting) { return; }
 
                     //Chat.WriteLine($"Resetting");
-                    //Sigh
                     _internalOpen = false;
                     _weAreDoingThings = false;
                 }
@@ -229,29 +237,50 @@ namespace LootManager
                     }
 
                 foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
-                    && !_corpsePosList.Contains(c.Position)
-                    && !_corpseIdList.Contains(c.Identity)).Take(3))
+                    && !_corpsePosList.Contains(c.Position)).Take(1))
                 {
-                    Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c =>
-                        c.Identity != corpse.Identity
-                        && c.Position.DistanceFrom(corpse.Position) <= 1f);
+                    Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity != corpse.Identity && c.Position.DistanceFrom(corpse.Position) <= 1f);
 
-                    if (_corpse != null || _weAreDoingThings) { continue; }
+                    //This check prevents it from opening every body in a large pile, i still don't know why, changing it is the only solution i found
+                    //I've left it here in case some brave adventurer in the future wants to figure out why
+                    //if (_corpse != null || _weAreDoingThings) { continue; }
+
+                    if (_currentlyLooting) { return; }
 
                     //This is so we can open ourselves without the event auto closing
                     _internalOpen = true;
-                    //Sigh
                     _weAreDoingThings = true;
                     _nowTimer = Time.NormalTime;
 
                     if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                     {
                         corpse.Open();
-                        //Chat.WriteLine($"Opening");
+                        //Chat.WriteLine($"Opening {corpse.Identity}");
                     }
 
                     //This is so we can pass the vector to the event
                     _currentPos = corpse.Position;
+                }
+
+                //Moving this loop below the container opening loop allows us to loot without a bag named loot again
+                if (Looting)
+                {
+                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                    {
+                        //Only check to move if there is something to move
+                        if (CheckRules(itemtomove))
+                        {
+                            if (!_initiliaseBags)
+                            {
+                                //Initialise bags again if the flag is false (after injecting or zoning)
+                                FindBagWithSpace();
+                            }
+                            //Dont move if no eligible bag (name or space)
+                            Backpack _bag = BagWithSpace();
+                            if (_bag == null) { return; }
+                            itemtomove.MoveToContainer(_bag);
+                        }
+                    }
                 }
             }
 

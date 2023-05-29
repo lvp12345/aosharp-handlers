@@ -294,6 +294,11 @@ namespace CombatHandler.Generic
             Chat.RegisterCommand("convert", RaidCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
+            // This command will clear the character cache allowing you to form a team with a newly logged in toon on an account you previously had a toon logged in on and grouped
+            Chat.RegisterCommand("cleancache", (c, p, cw) =>
+            {
+                SettingsController.RemainingNCU.Clear();
+            });
         }
 
         public static Window[] _window => new Window[] { _perkWindow };

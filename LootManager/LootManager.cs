@@ -93,8 +93,14 @@ namespace LootManager
                     Chat.WriteLine("Leaving loot open now.");
                 });
 
+                Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    Looting = !Looting;
+                    Chat.WriteLine($"Looting : {Looting}.");
+                });
+
                 Chat.WriteLine("Loot Manager loaded!");
-                Chat.WriteLine("/lootmanager for settings.");
+                Chat.WriteLine("/lootmanager for settings. /lm to enable/disable");
             }
             catch (Exception e)
             // Stop error message spam (unless more than one error message)

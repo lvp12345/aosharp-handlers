@@ -145,8 +145,6 @@ namespace LootManager
             {
                 if (backpack.Items.Count < 21)
                     return backpack;
-                else
-                    return null;
             } 
             return null;
         }

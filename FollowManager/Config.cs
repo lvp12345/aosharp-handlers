@@ -15,7 +15,7 @@ namespace FollowManager
         protected string _path;
 
         [JsonIgnore]
-        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
+        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 1;
         [JsonIgnore]
         public string FollowPlayer => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].FollowPlayer : string.Empty;
         [JsonIgnore]
@@ -72,7 +72,7 @@ namespace FollowManager
     public class CharacterSettings
     {
         public event EventHandler<int> IPCChannelChangedEvent;
-        private int _ipcChannel = 3;
+        private int _ipcChannel = 1;
 
         public int IPCChannel
         {

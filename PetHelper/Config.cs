@@ -15,7 +15,7 @@ namespace PetManager
         protected string _path;
 
         [JsonIgnore]
-        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 7;
+        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 3;
 
 
 
@@ -68,7 +68,7 @@ namespace PetManager
     public class CharacterSettings
     {
         public event EventHandler<int> IPCChannelChangedEvent;
-        private int _ipcChannel = 7;
+        private int _ipcChannel = 3;
 
         //Breaking out auto-property
         public int IPCChannel

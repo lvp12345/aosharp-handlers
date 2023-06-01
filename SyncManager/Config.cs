@@ -15,7 +15,7 @@ namespace SyncManager
         protected string _path;
 
         [JsonIgnore]
-        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 0;
+        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 4;
 
         public static Config Load(string path)
         {
@@ -66,7 +66,7 @@ namespace SyncManager
     public class CharacterSettings
     {
         public event EventHandler<int> IPCChannelChangedEvent;
-        private int _ipcChannel = 1;
+        private int _ipcChannel = 4;
 
         //Breaking out auto-property
         public int IPCChannel

@@ -43,7 +43,7 @@ namespace BagManager
             Chat.RegisterCommand("manager", (string command, string[] param, ChatWindow chatWindow) =>
             {
                 _settings["Toggle"] = !_settings["Toggle"].AsBool();
-                Chat.WriteLine($"Bag : {_settings["Toggle"]}");
+                Chat.WriteLine($"Bag : {_settings["Toggle"].AsBool()}");
             });
 
             Chat.RegisterCommand("delete", (string command, string[] param, ChatWindow chatWindow) =>
@@ -57,7 +57,7 @@ namespace BagManager
                         item?.Delete();
                     }
 
-                    Chat.WriteLine("Items deleted.");
+                    Chat.WriteLine("Deleted.");
                 }
             });
 
@@ -95,7 +95,7 @@ namespace BagManager
                     item?.Delete();
                 }
 
-                Chat.WriteLine("Items deleted.");
+                Chat.WriteLine("Deleted.");
             }
         }
 
@@ -170,7 +170,7 @@ namespace BagManager
 
                 Backpack bag = Inventory.Backpacks.Where(c => c.Name.Contains("Trade") && c.IsOpen && c.Items.Count > 0).FirstOrDefault();
 
-                Chat.WriteLine("Trading..");
+                Chat.WriteLine("Started.");
 
                 //Task.Delay(2 * 1000).ContinueWith(x =>
                 //{
@@ -236,7 +236,7 @@ namespace BagManager
                     await Task.Delay(200);
                     _init = false;
                     _settings["Toggle"] = false;
-                    Chat.WriteLine("Traded.");
+                    Chat.WriteLine("Finished.");
                     Chat.WriteLine("Toggle : False");
                 }, _cancellationToken1.Token);
             }
@@ -249,7 +249,7 @@ namespace BagManager
 
                 List<Backpack> bags = Inventory.Backpacks.Where(c => c.Name.Contains("Sort")).ToList();
 
-                Chat.WriteLine("Sorting..");
+                Chat.WriteLine("Started.");
 
                 //Task.Delay(1 * 100).ContinueWith(x =>
                 //{
@@ -291,7 +291,6 @@ namespace BagManager
 
                             if (backpack != null)
                                 item.MoveToContainer(backpack);
-                            Chat.WriteLine("Item moved.");
                             await Task.Delay(50);
                         }
                         await Task.Delay(50);
@@ -300,7 +299,7 @@ namespace BagManager
                     await Task.Delay(50);
                     _init = false;
                     _settings["Toggle"] = false;
-                    Chat.WriteLine("Sorted.");
+                    Chat.WriteLine("Finished.");
                     Chat.WriteLine("Toggle : False");
                 }, _cancellationToken2.Token);
             }

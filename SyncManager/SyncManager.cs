@@ -17,6 +17,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Common.GameData.UI;
 using SyncManager.IPCMessages;
 using System.Windows.Input;
+using System.Runtime.Remoting.Messaging;
 
 namespace SyncManager
 {
@@ -36,8 +37,11 @@ namespace SyncManager
 
         public static bool _openBags = false;
         private static bool _init = false;
+        public static bool Toggle = false;
+        public static bool SyncAttack = false;
 
         private static double _useTimer;
+        private static double _openBagsTimer = Time.NormalTime;
 
         public static Window _infoWindow;
 
@@ -61,17 +65,28 @@ namespace SyncManager
             Network.N3MessageReceived += Network_N3MessageReceived;
             Game.TeleportEnded += OnZoned;
 
+            _settings.AddVariable("Toggle", true);
+            _settings.AddVariable("SyncAttack", false);
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
             _settings.AddVariable("SyncChat", false);
             _settings.AddVariable("SyncTrade", false);
 
+            _settings["Toggle"] = true;
+            _settings["SyncAttack"] = false;
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.Start, OnStartMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Stop, OnStopMessage);
+
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.AttackToggleOn, OnAttackToggleMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.AttackToggleOff, OffAttackToggleMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
@@ -84,6 +99,8 @@ namespace SyncManager
 
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
+            Chat.RegisterCommand("sync", SyncManagerCommand);
+            Chat.RegisterCommand("syncattack", SyncAttackSwitch);
             Chat.RegisterCommand("syncmove", SyncSwitch);
             Chat.RegisterCommand("syncbags", SyncBagsSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
@@ -121,6 +138,8 @@ namespace SyncManager
             //    _init = false;
             //}
 
+
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
@@ -141,20 +160,29 @@ namespace SyncManager
                 }
             }
 
+
             if (!_openBags && _settings["SyncBags"].AsBool())
             {
-                List<Item> bags = Inventory.Items
-                    .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                    .ToList();
+                Task.Factory.StartNew(
+                   async () =>
+                   {
+                       await Task.Delay(10000);
 
-                foreach (Item bag in bags)
-                {
-                    bag.Use();
-                    bag.Use();
-                }
+                       List<Item> bags = Inventory.Items
+                           .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                           .ToList();
+
+                       foreach (Item bag in bags)
+                       {
+                           bag.Use();
+                           bag.Use();
+                       }
+                   });
 
                 _openBags = true;
             }
+
+
 
             if (Time.NormalTime > _useTimer + 0.1)
             {
@@ -164,15 +192,104 @@ namespace SyncManager
                 }
                 _useTimer = Time.NormalTime;
             }
+
+            if (_settings["Toggle"].AsBool() && !Toggle)
+            {
+               
+                    IPCChannel.Broadcast(new StartMessage());
+
+                Chat.WriteLine("SyncManager enabled.");
+                Start();
+            }
+            if (!_settings["Toggle"].AsBool() && Toggle)
+            {
+                Stop();
+                Chat.WriteLine("SyncManager disabled.");
+                IPCChannel.Broadcast(new StopMessage());
+            }
+
+            if (_settings["SyncAttack"].AsBool() && !SyncAttack)
+            {
+
+                IPCChannel.Broadcast(new AttackToggleOnMessage());
+
+                Chat.WriteLine("SyncAttack enabled.");
+                On();
+            }
+            if (!_settings["SyncAttack"].AsBool() && SyncAttack)
+            {
+                Off();
+                Chat.WriteLine("SyncAttack disabled.");
+                IPCChannel.Broadcast(new AttackToggleOffMessage());
+            }
         }
 
         #region Callbacks
+        private void OnStartMessage(int sender, IPCMessage msg)
+        {
+            Toggle = true;
+            _settings["Toggle"] = true;
+        }
+
+        private void OnStopMessage(int sender, IPCMessage msg)
+        {
+            StopMessage stopMsg = (StopMessage)msg;
+
+            Toggle = false;
+
+            _settings["Toggle"] = false;
+
+        }
+
+        private void OnAttackToggleMessage(int sender, IPCMessage msg)
+        {
+            SyncAttack = true;
+            _settings["SyncAttack"] = true;
+        }
+
+        private void OffAttackToggleMessage(int sender, IPCMessage msg)
+        {
+            AttackToggleOffMessage stopMsg = (AttackToggleOffMessage)msg;
+
+            SyncAttack = false;
+
+            _settings["SyncAttack"] = false;
+
+        }
+
+        private void Start()
+        {
+            Toggle = true;
+        }
+
+        private void Stop()
+        {
+            Toggle = false;
+
+            _settings["Toggle"] = false;
+        }
+
+        private void On()
+        {
+            SyncAttack = true;
+        }
+
+        private void Off()
+        {
+            SyncAttack = false;
+
+            _settings["SyncAttack"] = false;
+        }
+
         private void OnJumpMessage(int sender, IPCMessage msg)
         {
             if (IsActiveWindow)
                 return;
 
             if (Game.IsZoning)
+                return;
+
+            if (!_settings["Toggle"].AsBool())
                 return;
 
             JumpMessage jumpMsg = (JumpMessage)msg;
@@ -191,6 +308,9 @@ namespace SyncManager
             if (Game.IsZoning)
                 return;
 
+            if (!_settings["Toggle"].AsBool())
+                return;
+
             MoveMessage moveMsg = (MoveMessage)msg;
 
             if (Playfield.Identity.Instance != moveMsg.PlayfieldId)
@@ -204,6 +324,9 @@ namespace SyncManager
         private void OnTradeMessage(int sender, IPCMessage msg)
         {
             if (Game.IsZoning)
+                return;
+
+            if (!_settings["Toggle"].AsBool())
                 return;
 
             TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
@@ -235,14 +358,20 @@ namespace SyncManager
             //};
             //Network.Send(charTradeMsg);
         }
+
+
         private void OnZoned(object s, EventArgs e)
         {
+
+            if (!_settings["Toggle"].AsBool())
+                return;
+
             if (_settings["SyncBags"].AsBool())
             {
                 Task.Factory.StartNew(
                     async () =>
                     {
-                        await Task.Delay(100);
+                        await Task.Delay(10000);
 
                         List<Item> bags = Inventory.Items
                             .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
@@ -259,6 +388,9 @@ namespace SyncManager
         private void Network_N3MessageReceived(object s, N3Message n3Msg)
         {
             if (!_settings["SyncTrade"].AsBool()) { return; }
+
+            if (!_settings["Toggle"].AsBool())
+                return;
 
             if (n3Msg.N3MessageType == N3MessageType.Trade)
             {
@@ -285,6 +417,9 @@ namespace SyncManager
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
             if (!IsActiveCharacter() || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+            if (!_settings["Toggle"].AsBool())
+                return;
 
             if (n3Msg.N3MessageType == N3MessageType.CharDCMove)
             {
@@ -489,6 +624,12 @@ namespace SyncManager
             if (IsActiveWindow)
                 return;
 
+            if (!_settings["SyncAttack"].AsBool())
+                return;
+
+            if (!_settings["Toggle"].AsBool())
+                return;
+
             if (Game.IsZoning)
                 return;
 
@@ -502,6 +643,12 @@ namespace SyncManager
             if (IsActiveWindow)
                 return;
 
+            if (!_settings["SyncAttack"].AsBool())
+                return;
+
+            if (!_settings["Toggle"].AsBool())
+                return;
+
             if (Game.IsZoning)
                 return;
 
@@ -511,6 +658,9 @@ namespace SyncManager
         private void OnUseItemMessage(int sender, IPCMessage msg)
         {
             if (!_settings["SyncUse"].AsBool() || IsActiveWindow || Game.IsZoning) { return; }
+
+            if (!_settings["Toggle"].AsBool())
+                return;
 
             UsableMessage usableMsg = (UsableMessage)msg;
 
@@ -804,7 +954,40 @@ namespace SyncManager
             SettingsController.CleanUp();
         }
 
-        private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
+        private void SyncManagerCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            try
+            {
+                if (param.Length < 1)
+                {
+                    if (!_settings["Toggle"].AsBool() && !Toggle)
+                    {
+                        
+                            IPCChannel.Broadcast(new StartMessage());
+
+                        _settings["Toggle"] = true;
+                        Chat.WriteLine("SyncManager enabled.");
+                        Start();
+
+                    }
+                    else
+                    {
+                        Stop();
+                        Chat.WriteLine("SyncManager disabled.");
+                        IPCChannel.Broadcast(new StopMessage());
+                    }
+                }
+
+                Config.Save();
+            }
+            catch (Exception e)
+            {
+                Chat.WriteLine(e.Message);
+            }
+        }
+    
+
+    private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -828,6 +1011,15 @@ namespace SyncManager
             {
                 _settings["SyncTrade"] = !_settings["SyncTrade"].AsBool();
                 Chat.WriteLine($"Sync trading : {_settings["SyncTrade"].AsBool()}");
+            }
+        }
+
+        private void SyncAttackSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["SyncAttack"] = !_settings["SyncAttack"].AsBool();
+                Chat.WriteLine($"Sync attack : {_settings["SyncAttack"].AsBool()}");
             }
         }
 

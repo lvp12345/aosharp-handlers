@@ -7,11 +7,13 @@
       <RadioButton label="Target" value="1"/>
       <RadioButton label="AOE" value="2"/>
     </OptionRadioButtonGroup>
+	  <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 	  <OptionRadioButtonGroup label="Halo Nano Debuff" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__HaloSelection">
 		  <RadioButton label="None" value="0"/>
 		  <RadioButton label="Target" value="1"/>
 		  <RadioButton label="Boss" value="2"/>
 	  </OptionRadioButtonGroup>
+	  <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 	  <OptionRadioButtonGroup label="NR Debuff" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoResistSelection">
 		  <RadioButton label="None" value="0"/>
 		  <RadioButton label="Target" value="1"/>

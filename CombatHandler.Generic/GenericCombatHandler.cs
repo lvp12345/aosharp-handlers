@@ -104,7 +104,8 @@ namespace CombatHandler.Generic
                     "Awakened Xan",
                     "Fanatic",
                     "Harbinger of Pestilence",
-                    "Pandemonium Idol"
+                    "Pandemonium Idol",
+                    "Otacustes"
         };
 
         protected static HashSet<string> debuffAreaTargetsToIgnore = new HashSet<string>
@@ -180,7 +181,8 @@ namespace CombatHandler.Generic
                     "Punishment",
                     "Flaming Chaos",
                     "Flaming Punishment",
-                    "Flaming Vengeance"
+                    "Flaming Vengeance",
+                    "Otacustes"
         };
 
         public static IPCChannel IPCChannel;
@@ -206,6 +208,9 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
+            RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
+            RegisterPerkProcessor(PerkHash.Clipfever, ToggledDamagePerk); 
+            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
 
@@ -289,6 +294,11 @@ namespace CombatHandler.Generic
             Chat.RegisterCommand("convert", RaidCommand);
             Chat.RegisterCommand("disband", DisbandCommand);
             Chat.RegisterCommand("rebuff", Rebuff);
+            // This command will clear the character cache allowing you to form a team with a newly logged in toon on an account you previously had a toon logged in on and grouped
+            Chat.RegisterCommand("cleancache", (c, p, cw) =>
+            {
+                SettingsController.RemainingNCU.Clear();
+            });
         }
 
         public static Window[] _window => new Window[] { _perkWindow };
@@ -307,7 +317,7 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 5.0)
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
                 return;
           
             base.OnUpdate(deltaTime);
@@ -402,10 +412,10 @@ namespace CombatHandler.Generic
             return DamagePerk(perk, fightingTarget, ref actionTarget);
         }
 
-        protected bool AOEDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool ToggledDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            if (!IsSettingEnabled("AOEDamagePerk")) { return false; }
+            if (!IsSettingEnabled("DamagePerk")) { return false; }
 
             return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
@@ -433,9 +443,9 @@ namespace CombatHandler.Generic
                     .Where(c => c.Health > 70 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()
@@ -684,9 +694,9 @@ namespace CombatHandler.Generic
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1246,9 +1256,9 @@ namespace CombatHandler.Generic
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1553,9 +1563,9 @@ namespace CombatHandler.Generic
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .OrderBy(c => c.Profession == Profession.Doctor)
-                    .OrderBy(c => c.Profession == Profession.Enforcer)
-                    .OrderBy(c => c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -1589,10 +1599,10 @@ namespace CombatHandler.Generic
                     && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                     && c.Health > 0)
                 .OrderBy(c => c.HealthPercent)
-                .OrderBy(c => c.Profession == Profession.Doctor)
-                .OrderBy(c => c.Profession == Profession.Enforcer)
-                .OrderBy(c => c.Profession == Profession.Soldier)
-                .FirstOrDefault();
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
+                    .FirstOrDefault();
 
             if (player != null)
             {

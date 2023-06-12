@@ -474,7 +474,7 @@ namespace LootManager
                     View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
                     entry.FindChild("ItemName", out TextView tx);
 
-                    //entry.Tag = iEntry;
+                    entry.Tag = iEntry;
 
                     string scope = "";
                     if (r.Global)

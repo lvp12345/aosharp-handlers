@@ -66,7 +66,7 @@ namespace SyncManager
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("Toggle", true);
-            _settings.AddVariable("SyncAttack", false);
+            _settings.AddVariable("SyncAttack", true);
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
@@ -74,7 +74,7 @@ namespace SyncManager
             _settings.AddVariable("SyncTrade", false);
 
             _settings["Toggle"] = true;
-            _settings["SyncAttack"] = false;
+            _settings["SyncAttack"] = true;
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Start, OnStartMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Stop, OnStopMessage);

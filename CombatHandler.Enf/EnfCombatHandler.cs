@@ -90,6 +90,7 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("Mongo", true);
             _settings.AddVariable("CycleAbsorbs", false);
+            _settings.AddVariable("SelfAbsorb", false);
             _settings.AddVariable("CycleChallenger", false);
             _settings.AddVariable("CycleRage", false);
             _settings.AddVariable("TauntProc", true);
@@ -904,18 +905,23 @@ namespace CombatHandler.Enf
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
-
-            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + CycleAbsorbsDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+            if (IsSettingEnabled("SelfAbsorb"))
             {
-                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+                if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
 
-                _absorbs = Time.NormalTime;
-                return true;
+                if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + CycleAbsorbsDelay
+                    && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+                {
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+                    _absorbs = Time.NormalTime;
+                    return true;
+                }
+
+                return Buff(spell, spell.Nanoline, ref actionTarget);
             }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return false;
         }
 
         private bool CycleRage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

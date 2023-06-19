@@ -73,10 +73,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AOSharp.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AOSharpSDK.1.0.28\lib\net48\AOSharp.Common.dll</HintPath>
+      <HintPath>..\packages\AOSharpSDK.1.0.30\lib\net48\AOSharp.Common.dll</HintPath>
     </Reference>
     <Reference Include="AOSharp.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AOSharpSDK.1.0.28\lib\net48\AOSharp.Core.dll</HintPath>
+      <HintPath>..\packages\AOSharpSDK.1.0.30\lib\net48\AOSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

@@ -38,7 +38,6 @@ namespace SyncManager
         public static bool _openBags = false;
         private static bool _init = false;
         public static bool Toggle = false;
-        public static bool SyncAttack = false;
 
         private static double _useTimer;
         private static double _openBagsTimer = Time.NormalTime;
@@ -56,7 +55,7 @@ namespace SyncManager
             _settings = new Settings("SyncManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\SyncManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
@@ -66,7 +65,6 @@ namespace SyncManager
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("Toggle", true);
-            _settings.AddVariable("SyncAttack", true);
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
@@ -74,7 +72,6 @@ namespace SyncManager
             _settings.AddVariable("SyncTrade", false);
 
             _settings["Toggle"] = true;
-            _settings["SyncAttack"] = true;
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Start, OnStartMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Stop, OnStopMessage);
@@ -84,9 +81,6 @@ namespace SyncManager
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.AttackToggleOn, OnAttackToggleMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.AttackToggleOff, OffAttackToggleMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
@@ -100,7 +94,6 @@ namespace SyncManager
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
             Chat.RegisterCommand("sync", SyncManagerCommand);
-            Chat.RegisterCommand("syncattack", SyncAttackSwitch);
             Chat.RegisterCommand("syncmove", SyncSwitch);
             Chat.RegisterCommand("syncbags", SyncBagsSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
@@ -118,7 +111,7 @@ namespace SyncManager
             //{
             //    _init = true;
 
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{Game.ClientInst}\\Config.json");
+            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\SyncManager\\{Game.ClientInst}\\Config.json");
 
             //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Sync Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -195,8 +188,8 @@ namespace SyncManager
 
             if (_settings["Toggle"].AsBool() && !Toggle)
             {
-               
-                    IPCChannel.Broadcast(new StartMessage());
+
+                IPCChannel.Broadcast(new StartMessage());
 
                 Chat.WriteLine("SyncManager enabled.");
                 Start();
@@ -208,20 +201,6 @@ namespace SyncManager
                 IPCChannel.Broadcast(new StopMessage());
             }
 
-            if (_settings["SyncAttack"].AsBool() && !SyncAttack)
-            {
-
-                IPCChannel.Broadcast(new AttackToggleOnMessage());
-
-                Chat.WriteLine("SyncAttack enabled.");
-                On();
-            }
-            if (!_settings["SyncAttack"].AsBool() && SyncAttack)
-            {
-                Off();
-                Chat.WriteLine("SyncAttack disabled.");
-                IPCChannel.Broadcast(new AttackToggleOffMessage());
-            }
         }
 
         #region Callbacks
@@ -241,22 +220,6 @@ namespace SyncManager
 
         }
 
-        private void OnAttackToggleMessage(int sender, IPCMessage msg)
-        {
-            SyncAttack = true;
-            _settings["SyncAttack"] = true;
-        }
-
-        private void OffAttackToggleMessage(int sender, IPCMessage msg)
-        {
-            AttackToggleOffMessage stopMsg = (AttackToggleOffMessage)msg;
-
-            SyncAttack = false;
-
-            _settings["SyncAttack"] = false;
-
-        }
-
         private void Start()
         {
             Toggle = true;
@@ -269,17 +232,6 @@ namespace SyncManager
             _settings["Toggle"] = false;
         }
 
-        private void On()
-        {
-            SyncAttack = true;
-        }
-
-        private void Off()
-        {
-            SyncAttack = false;
-
-            _settings["SyncAttack"] = false;
-        }
 
         private void OnJumpMessage(int sender, IPCMessage msg)
         {
@@ -401,7 +353,7 @@ namespace SyncManager
                     Network.Send(new TradeMessage()
                     {
                         Unknown1 = 2,
-                        Action = (TradeAction) 3,
+                        Action = (TradeAction)3,
                     });
                 }
                 if (tradeMsg.Action == TradeAction.Confirm)
@@ -624,9 +576,6 @@ namespace SyncManager
             if (IsActiveWindow)
                 return;
 
-            if (!_settings["SyncAttack"].AsBool())
-                return;
-
             if (!_settings["Toggle"].AsBool())
                 return;
 
@@ -643,11 +592,8 @@ namespace SyncManager
             if (IsActiveWindow)
                 return;
 
-            if (!_settings["SyncAttack"].AsBool())
-                return;
-
-            if (!_settings["Toggle"].AsBool())
-                return;
+            //if (!_settings["Toggle"].AsBool())
+            //    return;
 
             if (Game.IsZoning)
                 return;
@@ -962,8 +908,8 @@ namespace SyncManager
                 {
                     if (!_settings["Toggle"].AsBool() && !Toggle)
                     {
-                        
-                            IPCChannel.Broadcast(new StartMessage());
+
+                        IPCChannel.Broadcast(new StartMessage());
 
                         _settings["Toggle"] = true;
                         Chat.WriteLine("SyncManager enabled.");
@@ -985,9 +931,9 @@ namespace SyncManager
                 Chat.WriteLine(e.Message);
             }
         }
-    
 
-    private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
+
+        private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -1011,15 +957,6 @@ namespace SyncManager
             {
                 _settings["SyncTrade"] = !_settings["SyncTrade"].AsBool();
                 Chat.WriteLine($"Sync trading : {_settings["SyncTrade"].AsBool()}");
-            }
-        }
-
-        private void SyncAttackSwitch(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                _settings["SyncAttack"] = !_settings["SyncAttack"].AsBool();
-                Chat.WriteLine($"Sync attack : {_settings["SyncAttack"].AsBool()}");
             }
         }
 

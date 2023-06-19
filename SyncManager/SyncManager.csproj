@@ -56,13 +56,11 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="IPCMessages\AttackIPCMessage.cs" />
-    <Compile Include="IPCMessages\AttackToggleOffMessage.cs" />
     <Compile Include="IPCMessages\JumpMessage.cs" />
     <Compile Include="IPCMessages\NpcChatAnswerMessage.cs" />
     <Compile Include="IPCMessages\NpcChatCloseMessage.cs" />
     <Compile Include="IPCMessages\NpcChatOpenMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
-    <Compile Include="IPCMessages\AttackToggleOnMessage.cs" />
     <Compile Include="IPCMessages\StartMessage.cs" />
     <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
     <Compile Include="IPCMessages\StopMessage.cs" />

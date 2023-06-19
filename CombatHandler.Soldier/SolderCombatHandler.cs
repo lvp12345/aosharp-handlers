@@ -42,6 +42,7 @@ namespace CombatHandler.Soldier
         private static View _perkView;
 
         private static double _singleTaunt;
+        private static double _timedTaunt;
 
         private static double _ncuUpdateTime;
 
@@ -56,6 +57,7 @@ namespace CombatHandler.Soldier
 
             Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
             Config.CharSettings[Game.ClientInst].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
+            Config.CharSettings[Game.ClientInst].TimedTauntDelayChangedEvent += TimedTauntDelay_Changed;
             Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
             Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
             Config.CharSettings[Game.ClientInst].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
@@ -100,6 +102,7 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("RiotControl", false);
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
+            _settings.AddVariable("TimedTauntsSelection", (int)TimedTauntsSelection.None);
 
             _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.None);
 
@@ -137,12 +140,15 @@ namespace CombatHandler.Soldier
             //Heals
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal);
 
+            //Taunts
+            RegisterSpellProcessor(RelevantNanos.TimedTauntBuffs, TimedTargetTaunt, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.SingleTauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
+
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => !c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflects);
 
-            RegisterSpellProcessor(RelevantNanos.TauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.Phalanx, Phalanx);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
@@ -171,6 +177,7 @@ namespace CombatHandler.Soldier
 
             BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
             SingleTauntDelay = Config.CharSettings[Game.ClientInst].SingleTauntDelay;
+            TimedTauntDelay = Config.CharSettings[Game.ClientInst].TimedTauntDelay;
             StimTargetName = Config.CharSettings[Game.ClientInst].StimTargetName;
             StimHealthPercentage = Config.CharSettings[Game.ClientInst].StimHealthPercentage;
             StimNanoPercentage = Config.CharSettings[Game.ClientInst].StimNanoPercentage;
@@ -347,9 +354,12 @@ namespace CombatHandler.Soldier
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Taunts", XmlViewName = "SoldierTauntsView" }, _tauntView);
 
                 window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+                window.FindView("TimedTauntDelayBox", out TextInputView timedInput);
 
                 if (singleInput != null)
                     singleInput.Text = $"{SingleTauntDelay}";
+                if (timedInput != null)
+                    timedInput.Text = $"{TimedTauntDelay}";
             }
             else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
             {
@@ -357,9 +367,12 @@ namespace CombatHandler.Soldier
                 _tauntWindow = container;
 
                 container.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+                container.FindView("TimedTauntDelayBox", out TextInputView timedInput);
 
                 if (singleInput != null)
                     singleInput.Text = $"{SingleTauntDelay}";
+                if (timedInput != null)
+                    timedInput.Text = $"{TimedTauntDelay}";
             }
         }
 
@@ -467,6 +480,7 @@ namespace CombatHandler.Soldier
             if (window != null && window.IsValid)
             {
                 window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+                window.FindView("TimedTauntDelayBox", out TextInputView timedInput);
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
                 window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                 window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
@@ -491,6 +505,11 @@ namespace CombatHandler.Soldier
                     if (int.TryParse(singleInput.Text, out int singleValue))
                         if (Config.CharSettings[Game.ClientInst].SingleTauntDelay != singleValue)
                             Config.CharSettings[Game.ClientInst].SingleTauntDelay = singleValue;
+
+                if (timedInput != null && !string.IsNullOrEmpty(timedInput.Text))
+                    if (int.TryParse(timedInput.Text, out int timedValue))
+                        if (Config.CharSettings[Game.ClientInst].TimedTauntDelay != timedValue)
+                            Config.CharSettings[Game.ClientInst].TimedTauntDelay = timedValue;
 
                 if (stimTargetInput != null)
                     if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
@@ -809,6 +828,30 @@ namespace CombatHandler.Soldier
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+            {
+                if (fightingTarget != null)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            if (SingleTauntsSelection.Boss == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+            {
+                if (fightingTarget != null && fightingTarget?.MaxHealth > 1000000)
+                {
+                    _singleTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
             if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
@@ -840,12 +883,62 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+            return false;
+        }
+
+        private bool TimedTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (TimedTauntsSelection.Target == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
+                && Time.NormalTime > _timedTaunt + TimedTauntDelay)
             {
                 if (fightingTarget != null)
                 {
-                    _singleTaunt = Time.NormalTime;
+                    _timedTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            if (TimedTauntsSelection.Boss == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
+                && Time.NormalTime > _timedTaunt + TimedTauntDelay)
+            {
+                if (fightingTarget != null && fightingTarget?.MaxHealth > 1000000)
+                {
+                    _timedTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
+
+            if (TimedTauntsSelection.Area == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
+                && Time.NormalTime > _timedTaunt + TimedTauntDelay)
+            {
+                SimpleChar mob = DynelManager.NPCs
+                    .Where(c => c.IsAttacking && c.FightingTarget != null
+                        && c.FightingTarget?.Profession != Profession.Enforcer
+                        && c.IsInLineOfSight
+                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                        && c.Name != "Alien Heavy Patroller"
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.MaxHealth)
+                    .FirstOrDefault();
+
+                if (mob != null)
+                {
+                    _timedTaunt = Time.NormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
+                    return true;
+                }
+                else if (fightingTarget != null)
+                {
+                    _timedTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;
@@ -1076,7 +1169,12 @@ namespace CombatHandler.Soldier
 
         public enum SingleTauntsSelection
         {
-            None, Target, Area
+            None, Target, Boss, Area
+        }
+
+        public enum TimedTauntsSelection
+        {
+            None, Target, Boss, Area
         }
 
         public enum ProcType1Selection
@@ -1091,9 +1189,11 @@ namespace CombatHandler.Soldier
 
         private static class RelevantNanos
         {
-            public static readonly int[] TauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
+            public static readonly int[] SingleTauntBuffs = { 223209, 223207, 223205, 223203, 223201, 29242, 100207,
             29218, 100205, 100206, 100208, 29228};
-            public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211};
+            public static readonly int[] TimedTauntBuffs = { 229104, 229102, 229100, 229098, 229096, 229094, 229092,
+            229090};
+            public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211 };
             public const int CompositeHeavyArtillery = 269482;
             public const int Phalanx = 29245;
             public const int Precognition = 29247;

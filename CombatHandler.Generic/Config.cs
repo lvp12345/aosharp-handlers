@@ -512,6 +512,23 @@ namespace CombatHandler.Generic
                 }
             }
         }
+        public event EventHandler<int> TimedTauntDelayChangedEvent;
+        private int _TimedTauntDelay = 1;
+        public int TimedTauntDelay
+        {
+            get
+            {
+                return _TimedTauntDelay;
+            }
+            set
+            {
+                if (_TimedTauntDelay != value)
+                {
+                    _TimedTauntDelay = value;
+                    TimedTauntDelayChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> CycleAbsorbsDelayChangedEvent;
         private int _cycleAbsorbsDelay = 1;
         public int CycleAbsorbsDelay

@@ -30,6 +30,7 @@ namespace CombatHandler.Generic
 
         public static int BioCocoonPercentage = 0;
         public static int SingleTauntDelay = 0;
+        public static int TimedTauntDelay = 0;
         public static int MongoDelay = 0;
         public static int CycleXpPerksDelay = 0;
         public static int CycleSpherePerkDelay = 0;
@@ -2194,6 +2195,13 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[Game.ClientInst].SingleTauntDelay = e;
             SingleTauntDelay = e;
+            Config.Save();
+        }
+
+        public static void TimedTauntDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].TimedTauntDelay = e;
+            TimedTauntDelay = e;
             Config.Save();
         }
 

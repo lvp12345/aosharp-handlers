@@ -44,7 +44,7 @@ namespace MailManager
             _settings = new Settings("MailManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\MailManager\\{Game.ClientInst}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\MailManager\\{Game.ClientInst}\\Config.json");
 
             Config.CharSettings[Game.ClientInst].MailCharacterNameChangedEvent += MailCharacterName_Changed;
             Config.CharSettings[Game.ClientInst].MailAmountChangedEvent += MailAmount_Changed;

@@ -62,7 +62,7 @@ namespace SyncManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\SyncManager\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\SyncManager\\{Game.ClientInst}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Sync Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 

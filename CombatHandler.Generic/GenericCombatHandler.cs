@@ -30,6 +30,7 @@ namespace CombatHandler.Generic
 
         public static int BioCocoonPercentage = 0;
         public static int SingleTauntDelay = 0;
+        public static int TimedTauntDelay = 0;
         public static int MongoDelay = 0;
         public static int CycleXpPerksDelay = 0;
         public static int CycleSpherePerkDelay = 0;
@@ -190,7 +191,7 @@ namespace CombatHandler.Generic
 
         public GenericCombatHandler(string pluginDir)
         {
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{Game.ClientInst}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\Generic\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             PluginDir = pluginDir;
@@ -331,7 +332,7 @@ namespace CombatHandler.Generic
             //{
             //    _init = true;
 
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{Game.ClientInst}\\Config.json");
+            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\Generic\\{Game.ClientInst}\\Config.json");
 
             //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -2194,6 +2195,13 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[Game.ClientInst].SingleTauntDelay = e;
             SingleTauntDelay = e;
+            Config.Save();
+        }
+
+        public static void TimedTauntDelay_Changed(object s, int e)
+        {
+            Config.CharSettings[Game.ClientInst].TimedTauntDelay = e;
+            TimedTauntDelay = e;
             Config.Save();
         }
 

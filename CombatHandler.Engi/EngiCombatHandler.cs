@@ -1375,144 +1375,132 @@ namespace CombatHandler.Engineer
         #region Trimmers
 
         //You feel a faint vibration from the trimmer.
-        private bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        private bool PetAggressiveTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TauntTrimmer")) { return false; } 
+            if (!IsSettingEnabled("TauntTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            Pet _attackPet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c.Character != null && c.Type == PetType.Attack && CanTauntTrim(c));
+
+            Pet _supportPet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c.Character != null && c.Type == PetType.Support && CanTauntTrim(c));
+
+            if (_attackPet != null)
             {
-                if (pet.Character == null) continue;
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _attackPet.Character;
+                petTrimmedAggressive[PetType.Attack] = true;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
 
-                if (pet.Type == PetType.Attack
-                    && CanTrim(pet)
-                    && CanTauntTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedAggressive[PetType.Attack] = true;
-                    _lastTrimTime = Time.NormalTime ;
-                    return true;
-                }
-
-                if (pet.Type == PetType.Support
-                    && CanTrim(pet)
-                    && CanTauntTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedAggressive[PetType.Support] = true;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
+            if (_supportPet != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _supportPet.Character;
+                petTrimmedAggressive[PetType.Support] = true;
+                _lastTrimTime = Time.NormalTime;
+                return true;
             }
 
             return false;
         }
 
         //You hear a ring inside the robot.
-        private bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        private bool PetAggDefTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AggDefTrimmer")) { return false; }
+            if (!IsSettingEnabled("AggDefTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            Pet _attackPet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c.Character != null && c.Type == PetType.Attack && CanAggDefTrim(c));
+
+            Pet _supportPet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c.Character != null && c.Type == PetType.Support && CanAggDefTrim(c));
+
+            if (_attackPet != null)
             {
-                if (pet.Character == null) continue;
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _attackPet.Character;
+                petTrimmedAggDef[PetType.Attack] = true;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
 
-                if (pet.Type == PetType.Support
-                    && CanTrim(pet)
-                    && CanAggDefTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedAggDef[PetType.Support] = true;
-                    _lastTrimTime = Time.NormalTime ;
-                    return true;
-                }
-
-                if (pet.Type == PetType.Attack
-                    && CanTrim(pet)
-                    && CanAggDefTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedAggDef[PetType.Attack] = true;
-                    _lastTrimTime = Time.NormalTime ;
-                    return true;
-                }
+            if (_supportPet != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _supportPet.Character;
+                petTrimmedAggDef[PetType.Support] = true;
+                _lastTrimTime = Time.NormalTime;
+                return true;
             }
 
             return false;
         }
         // Lock skill Elec. Engi for 5m. The robot straightens its back.
-        private bool PetDivertHpTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        private bool PetDivertHpTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DivertHpTrimmer")) { return false; }
+            if (!IsSettingEnabled("DivertHpTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            Pet _attackPet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c.Character != null && c.Type == PetType.Attack && CanDivertHpTrim(c));
+
+            Pet _supportPet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c.Character != null && c.Type == PetType.Support && CanDivertHpTrim(c));
+
+            if (_attackPet != null)
             {
-                if (pet.Character == null) continue;
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _attackPet.Character;
+                petTrimmedHpDiv[PetType.Attack] = true;
+                _lastPetTrimDivertHpTime[PetType.Attack] = Time.NormalTime;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
 
-                if (pet.Type == PetType.Attack
-                    && CanTrim(pet)
-                    && CanDivertHpTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedHpDiv[PetType.Attack] = true;
-                    _lastPetTrimDivertHpTime[PetType.Attack] = Time.NormalTime;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
-
-                if (pet.Type == PetType.Support
-                    && CanTrim(pet)
-                    && CanDivertHpTrim(pet))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    petTrimmedHpDiv[PetType.Support] = true;
-                    _lastPetTrimDivertHpTime[PetType.Support] = Time.NormalTime;
-                    _lastTrimTime = Time.NormalTime;
-                    return true;
-                }
+            if (_supportPet != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _supportPet.Character;
+                petTrimmedHpDiv[PetType.Support] = true;
+                _lastPetTrimDivertHpTime[PetType.Support] = Time.NormalTime;
+                _lastTrimTime = Time.NormalTime;
+                return true;
             }
 
             return false;
         }
         // Lock skill Mech. Engi for 5m. The arms of your robot jerk briefly.
-        private bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+        private bool PetDivertOffTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DivertOffTrimmer")) { return false; }
+            if (!IsSettingEnabled("DivertOffTrimmer") || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
-                foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-                {
-                    if (pet.Character == null) continue;
+            Pet _attackPet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c.Character != null && c.Type == PetType.Attack && CanDivertOffTrim(c));
 
-                    if (pet.Type == PetType.Support
-                        && CanTrim(pet)
-                        && CanDivertOffTrim(pet))
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = pet.Character;
-                        petTrimmedOffDiv[PetType.Support] = true;
-                        _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
-                        _lastTrimTime = Time.NormalTime;
-                        return true;
-                    };
+            Pet _supportPet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c.Character != null && c.Type == PetType.Support && CanDivertOffTrim(c));
 
-                    if (pet.Type == PetType.Attack
-                        && CanTrim(pet)
-                        && CanDivertOffTrim(pet))
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = pet.Character;
-                        petTrimmedOffDiv[PetType.Attack] = true;
-                        _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
-                        _lastTrimTime = Time.NormalTime;
-                        return true;
-                    }
-                }
-            
+            if (_attackPet != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _attackPet.Character;
+                petTrimmedOffDiv[PetType.Attack] = true;
+                _lastPetTrimDivertOffTime[PetType.Attack] = Time.NormalTime;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            };
+
+            if (_supportPet != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _supportPet.Character;
+                petTrimmedOffDiv[PetType.Support] = true;
+                _lastPetTrimDivertOffTime[PetType.Support] = Time.NormalTime;
+                _lastTrimTime = Time.NormalTime;
+                return true;
+            }
+
             return false;
         }
 
@@ -1532,7 +1520,7 @@ namespace CombatHandler.Engineer
                 .Any();
         }
 
-        private bool CanTrim(Pet pet)
+        private bool CanTrim()
         {
             return _lastTrimTime + 1 < Time.NormalTime;
         }

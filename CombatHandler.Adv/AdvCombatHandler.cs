@@ -25,7 +25,7 @@ namespace CombatHandler.Adventurer
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         private static Window _morphWindow;
         private static Window _healingWindow;
@@ -48,7 +48,7 @@ namespace CombatHandler.Adventurer
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
@@ -76,7 +76,7 @@ namespace CombatHandler.Adventurer
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("GlobalRez", true);
 
             _settings.AddVariable("EncaseInStone", false);
 
@@ -189,7 +189,7 @@ namespace CombatHandler.Adventurer
 
         private void OnGlobalBuffingMessage(int sender, IPCMessage msg)
         {
-            GlobalBuffingMessage buffMsg =  (GlobalBuffingMessage)msg;
+            GlobalBuffingMessage buffMsg = (GlobalBuffingMessage)msg;
 
             if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
 
@@ -206,13 +206,16 @@ namespace CombatHandler.Adventurer
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
+
+            _settings[$"GlobalRez"] = rezMsg.Switch; 
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            
+        }
 
         #endregion
 
@@ -572,7 +575,7 @@ namespace CombatHandler.Adventurer
                             Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay = bioRegrowthDelayValue;
             }
 
-            
+
 
             if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32())
             {
@@ -683,29 +686,28 @@ namespace CombatHandler.Adventurer
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = false
+                    });
 
-                //        Switch = false
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
-
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }
@@ -953,7 +955,7 @@ namespace CombatHandler.Adventurer
                 136678, 136679, 136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
                 82064, 26695 };
 
-            public static readonly int[] ArmorBuffs = { 74173, 74174, 74175 , 74176, 74177, 74178 };
+            public static readonly int[] ArmorBuffs = { 74173, 74174, 74175, 74176, 74177, 74178 };
             public static readonly int[] DragonMorph = { 217670, 25994 };
             public static readonly int[] LeetMorph = { 263278, 82834 };
             public static readonly int[] WolfMorph = { 275005, 85062 };

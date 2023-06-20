@@ -1692,7 +1692,12 @@ namespace CombatHandler.Generic
 
         protected bool CanCast(Spell spell)
         {
-            return spell.Cost < DynelManager.LocalPlayer.Nano;
+            if (IsSettingEnabled("GlobalRez"))
+            { 
+                if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 1) return false;
+            }
+
+                return spell.Cost < DynelManager.LocalPlayer.Nano;
         }
 
         public static void CancelAllBuffs()

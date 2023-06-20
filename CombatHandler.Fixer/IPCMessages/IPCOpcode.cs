@@ -11,7 +11,7 @@ namespace CombatHandler.Fixer
         RemainingNCU = 2000,
         GlobalBuffing = 2001,
         GlobalComposites = 2002,
-        GlobalDebuffing = 2003,
+        GlobalRez = 2003,
         Disband = 2100,
         ClearBuffs = 2101
     }

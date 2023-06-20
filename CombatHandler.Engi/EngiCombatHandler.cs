@@ -18,7 +18,7 @@ namespace CombatHandler.Engineer
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         public static bool _syncPets;
 
@@ -32,7 +32,7 @@ namespace CombatHandler.Engineer
         private Dictionary<PetType, bool> petTrimmedHpDiv = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
 
-        private  Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
+        private Dictionary<PetType, double> _lastPetTrimDivertOffTime = new Dictionary<PetType, double>()
         {
             { PetType.Attack, 0 },
             { PetType.Support, 0 }
@@ -66,7 +66,7 @@ namespace CombatHandler.Engineer
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
@@ -98,7 +98,7 @@ namespace CombatHandler.Engineer
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("GlobalRez", true);
 
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
@@ -122,7 +122,7 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("AggDefTrimmer", false);
             _settings.AddVariable("DivertHpTrimmer", false);
             _settings.AddVariable("DivertOffTrimmer", false);
-            
+
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
             _settings.AddVariable("TeamArmorBuff", true);
             _settings.AddVariable("PistolTeam", true);
@@ -232,8 +232,7 @@ namespace CombatHandler.Engineer
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness, PetAggressiveTrimmer);
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpoints, PetDivertHpTrimmer);
-            RegisterItemProcessor( RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
-
+            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense, PetDivertOffTrimmer);
             ResetTrimmers();
 
             PluginDirectory = pluginDir;
@@ -293,13 +292,16 @@ namespace CombatHandler.Engineer
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
+
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         private void SyncPetsOnMessage(int sender, IPCMessage msg)
         {
@@ -851,29 +853,29 @@ namespace CombatHandler.Engineer
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
 
@@ -975,7 +977,7 @@ namespace CombatHandler.Engineer
         private bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("TeamArmorBuff"))
-                    return GenericTeamBuff(spell, ref actionTarget);
+                return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
@@ -1704,6 +1706,6 @@ namespace CombatHandler.Engineer
         }
 
         #endregion
- 
+
     }
 }

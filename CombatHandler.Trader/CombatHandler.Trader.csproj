@@ -45,8 +45,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
     <Compile Include="IPCMessages\GlobalBuffingMessage.cs" />
-    <Compile Include="IPCMessages\GlobalDebuffingMessage.cs" />
-    <Compile Include="IPCMessages\GloballCompositesMessage.cs" />
+    <Compile Include="IPCMessages\GlobalCompositesMessage.cs" />
+    <Compile Include="IPCMessages\GlobalRezMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\RemaingNCUMessage.cs" />
     <Compile Include="Main.cs" />

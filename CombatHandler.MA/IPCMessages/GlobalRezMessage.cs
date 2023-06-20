@@ -9,12 +9,12 @@ using AOSharp.Core.IPC;
 using SmokeLounge.AOtomation.Messaging.Serialization;
 using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
 
-namespace CombatHandler.Keeper
+namespace CombatHandler.MartialArtist
 {
-    [AoContract((int)IPCOpcode.GlobalDebuffing)]
-    public class GlobalDebuffingMessage : IPCMessage
+    [AoContract((int)IPCOpcode.GlobalRez)]
+    public class GlobalRezMessage : IPCMessage
     {
-        public override short Opcode => (short)IPCOpcode.GlobalDebuffing;
+        public override short Opcode => (short)IPCOpcode.GlobalRez;
 
         [AoMember(0)]
         public bool Switch { get; set; }

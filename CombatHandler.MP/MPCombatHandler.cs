@@ -21,7 +21,7 @@ namespace CombatHandler.Metaphysicist
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         public static bool _syncPets;
 
@@ -51,7 +51,7 @@ namespace CombatHandler.Metaphysicist
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
@@ -80,7 +80,7 @@ namespace CombatHandler.Metaphysicist
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("GlobalRez", true);
 
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
@@ -207,7 +207,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
-           
+
 
             PluginDirectory = pluginDir;
 
@@ -262,14 +262,16 @@ namespace CombatHandler.Metaphysicist
             _settings[$"Composites"] = compMsg.Switch;
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         private void SyncPetsOnMessage(int sender, IPCMessage msg)
         {
@@ -329,7 +331,7 @@ namespace CombatHandler.Metaphysicist
 
         private void SyncPetsChecked(object s, Checkbox checkbox)
         {
-            
+
         }
 
         private void PetAttackClicked(object s, ButtonBase button)
@@ -835,29 +837,29 @@ namespace CombatHandler.Metaphysicist
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }
@@ -963,7 +965,7 @@ namespace CombatHandler.Metaphysicist
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
             if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
-            
+
             return true;
         }
 
@@ -1358,12 +1360,12 @@ namespace CombatHandler.Metaphysicist
         //Ewww
         private SimpleChar GetTargetToHeal()
         {
-           if (DynelManager.LocalPlayer.HealthPercent < 90)
-           {
+            if (DynelManager.LocalPlayer.HealthPercent < 90)
+            {
                 return DynelManager.LocalPlayer;
-           }
-           else if (DynelManager.LocalPlayer.IsInTeam())
-           {
+            }
+            else if (DynelManager.LocalPlayer.IsInTeam())
+            {
                 SimpleChar dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
@@ -1376,9 +1378,9 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingTeamMember;
                 }
-           }
-           else
-           {
+            }
+            else
+            {
                 Pet dyingPet = DynelManager.LocalPlayer.Pets
                      .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
                      .Where(pet => pet.Character.HealthPercent < 80)
@@ -1390,7 +1392,7 @@ namespace CombatHandler.Metaphysicist
                 {
                     return dyingPet.Character;
                 }
-           }
+            }
 
             return null;
         }

@@ -10,12 +10,12 @@ using System.Diagnostics;
 namespace CombatHandler.Enf
 {
     class EnfCombatHandler : GenericCombatHandler
-    { 
+    {
         private static string PluginDirectory;
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         private static Window _buffWindow;
         private static Window _tauntWindow;
@@ -42,7 +42,7 @@ namespace CombatHandler.Enf
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
@@ -74,6 +74,8 @@ namespace CombatHandler.Enf
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
+            _settings.AddVariable("GlobalRez", true);
+
             _settings.AddVariable("Ost", false);
 
             _settings.AddVariable("SharpObjects", true);
@@ -213,13 +215,16 @@ namespace CombatHandler.Enf
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
+
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         #endregion
 
@@ -532,8 +537,8 @@ namespace CombatHandler.Enf
                             Config.CharSettings[Game.ClientInst].CycleRageDelay = rageValue;
 
                 if (stimTargetInput != null)
-                        if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
-                            Config.CharSettings[Game.ClientInst].StimTargetName = stimTargetInput.Text;
+                    if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
+                        Config.CharSettings[Game.ClientInst].StimTargetName = stimTargetInput.Text;
 
                 if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
                     if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
@@ -698,29 +703,29 @@ namespace CombatHandler.Enf
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }
@@ -1030,7 +1035,7 @@ namespace CombatHandler.Enf
         {
             if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
 
-           if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
+            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
                 return TeamBuff(spell, spell.Nanoline, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
@@ -1040,7 +1045,7 @@ namespace CombatHandler.Enf
 
         #region Misc
 
-    private static class RelevantNanos
+        private static class RelevantNanos
         {
             public static readonly int[] SingleTargetTaunt = { 275014, 223123, 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
             public static readonly int[] Melee1HB = { 202846, 202844, 202842, 29630, 202840, 29644 };

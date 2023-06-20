@@ -22,7 +22,7 @@ namespace CombatHandler.MartialArtist
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         private static Window _buffWindow;
         private static Window _tauntWindow;
@@ -48,7 +48,7 @@ namespace CombatHandler.MartialArtist
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
@@ -72,7 +72,7 @@ namespace CombatHandler.MartialArtist
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("GlobalRez", true);
 
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
@@ -219,14 +219,16 @@ namespace CombatHandler.MartialArtist
             _settings[$"Composites"] = compMsg.Switch;
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         #endregion
 
@@ -636,29 +638,29 @@ namespace CombatHandler.MartialArtist
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }
@@ -982,7 +984,7 @@ namespace CombatHandler.MartialArtist
         {
             public const int FistsOfTheWinterFlame = 269470;
             public const int LimboMastery = 28894;
-            public static int[] PercentEvades = {218060, 218062, 218064, 218066, 218068, 218070 };
+            public static int[] PercentEvades = { 218060, 218062, 218064, 218066, 218068, 218070 };
             public static int[] TargetEvades = { 28903, 28878, 28872 };
             public static int[] TeamCritBuffs = { 160574, 160575, 160576 };
             public static int[] TargetArmorBuffs = { 75350, 75349, 75348, 28905, 75346, 75347, 75345, 75344, 28907, 75343, 75341, 75342, 75340, 75339, 75337, 28869, 75338, 75336, 75351 };
@@ -1037,7 +1039,7 @@ namespace CombatHandler.MartialArtist
         public enum SelfEvadeSelection
         {
             Percent, Target
-    }
+        }
 
         public enum ArmorBuffSelection
         {
@@ -1048,7 +1050,7 @@ namespace CombatHandler.MartialArtist
         {
             None, Self, Team
         }
-        
+
 
         #endregion
     }

@@ -22,7 +22,7 @@ namespace CombatHandler.Agent
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-       //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         private double _lastSwitchedHealTime = 0;
 
@@ -54,7 +54,7 @@ namespace CombatHandler.Agent
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
@@ -79,7 +79,7 @@ namespace CombatHandler.Agent
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("GlobalRez", true);
 
             _settings.AddVariable("EncaseInStone", false);
 
@@ -228,13 +228,16 @@ namespace CombatHandler.Agent
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
+
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         #endregion
 
@@ -399,7 +402,7 @@ namespace CombatHandler.Agent
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                
+
                 if (window.Views.Contains(_mpView)) { return; }
 
                 _mpView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentMPView.xml");
@@ -703,29 +706,29 @@ namespace CombatHandler.Agent
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }
@@ -984,7 +987,7 @@ namespace CombatHandler.Agent
         {
             if (FalseProfSelection.Trader != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
 
-            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget); 
+            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
         }
         #endregion
 
@@ -1005,7 +1008,7 @@ namespace CombatHandler.Agent
         }
         private bool DamageA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-        return GenericTeamBuff(spell, ref actionTarget);
+            return GenericTeamBuff(spell, ref actionTarget);
         }
 
         private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

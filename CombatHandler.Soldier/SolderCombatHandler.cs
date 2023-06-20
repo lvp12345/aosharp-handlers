@@ -25,7 +25,7 @@ namespace CombatHandler.Soldier
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         private static Window _buffWindow;
         private static Window _healingWindow;
@@ -51,7 +51,7 @@ namespace CombatHandler.Soldier
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
@@ -77,6 +77,7 @@ namespace CombatHandler.Soldier
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
+            _settings.AddVariable("GlobalRez", true);
 
             _settings.AddVariable("DeTaunt", false);
 
@@ -219,14 +220,16 @@ namespace CombatHandler.Soldier
             _settings[$"Composites"] = compMsg.Switch;
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         #endregion
 
@@ -669,29 +672,29 @@ namespace CombatHandler.Soldier
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }

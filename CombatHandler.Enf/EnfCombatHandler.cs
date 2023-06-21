@@ -838,14 +838,14 @@ namespace CombatHandler.Enf
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
 
-                if (mob != null)
+                if (mob != null && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
                     _singleTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = mob;
                     return true;
                 }
-                else if (fightingTarget != null)
+                else if (fightingTarget != null && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
                     _singleTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
@@ -857,7 +857,8 @@ namespace CombatHandler.Enf
             if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
-                if (fightingTarget != null)
+                if (fightingTarget != null
+                    && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
                     _singleTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
@@ -875,10 +876,10 @@ namespace CombatHandler.Enf
 
             if (DynelManager.NPCs.Any(c => c.Health > 0
                 && c.Name == "Alien Heavy Patroller"
-                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
+                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f)) { return false; }
 
             if (Time.NormalTime > _mongo + MongoDelay
-            && fightingTarget != null)
+            && fightingTarget != null && DynelManager.LocalPlayer.HealthPercent >= 30)
             {
                 _mongo = Time.NormalTime;
                 return true;

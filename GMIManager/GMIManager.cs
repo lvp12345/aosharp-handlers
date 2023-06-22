@@ -14,6 +14,7 @@ using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using Zoltu.IO;
 using System;
 using AOSharp.Core.GMI;
+using AOSharp.Core.Inventory;
 
 namespace GMIManager
 {
@@ -24,6 +25,7 @@ namespace GMIManager
         private static string GMIBuyOrderName;
         private static long GMIBuyOrderEndPrice;
         private static int GMIWithdrawAmount;
+        private static string GMIItemName;
 
         protected Settings _settings;
 
@@ -46,6 +48,9 @@ namespace GMIManager
 
         public static string PluginDir;
         private static ulong _queuedCash = 0;
+
+        private static ulong _queuedItem = 0;
+
         private static ulong _maxCredits = 999999999;
         private static ulong _maxMarketCredits = 3999999999;
         private static bool _initStart = true;
@@ -69,6 +74,7 @@ namespace GMIManager
             Config.CharSettings[Game.ClientInst].GMIBuyOrderNameChangedEventChangedEvent += GMIBuyOrderName_Changed;
             Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPriceChangedEvent += GMIBuyOrderEndPrice_Changed;
             Config.CharSettings[Game.ClientInst].GMIWithdrawAmountChangedEvent += GMIWithdrawAmount_Changed;
+            Config.CharSettings[Game.ClientInst].GMIItemNameChangedEventChangedEvent += GMIItemName_Changed;
             Network.PacketReceived += HandleMail;
 
             Game.OnUpdate += OnUpdate;
@@ -119,6 +125,7 @@ namespace GMIManager
             GMIWithdrawAmount = Config.CharSettings[Game.ClientInst].GMIWithdrawAmount;
             GMIBuyOrderName = Config.CharSettings[Game.ClientInst].GMIBuyOrderName;
             GMIBuyOrderEndPrice = Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice;
+            GMIItemName = Config.CharSettings[Game.ClientInst].GMIItemName;
         }
 
         private void HandleInfoViewClick(object s, ButtonBase button)
@@ -148,6 +155,13 @@ namespace GMIManager
         {
             Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice = e;
             GMIBuyOrderEndPrice = e;
+            Config.Save();
+        }
+
+        public static void GMIItemName_Changed(object s, string e)
+        {
+            Config.CharSettings[Game.ClientInst].GMIItemName = e;
+            GMIItemName = e;
             Config.Save();
         }
 
@@ -257,7 +271,7 @@ namespace GMIManager
 
         public enum ModeSelection
         {
-            Withdraw, Modify, Refresh
+            Withdraw, Modify, Refresh, Item
         }
 
         private void RequestGMIInventory()
@@ -385,6 +399,7 @@ namespace GMIManager
                     }
                 });
             }
+
         }
 
 
@@ -508,6 +523,58 @@ namespace GMIManager
 
                     _mailOpenTimer = Time.NormalTime;
                 }
+
+                if (ModeSelection.Item == (ModeSelection)_settings["ModeSelection"].AsInt32() && Time.NormalTime > _mailOpenTimer + 7)
+                {
+                    Task.Factory.StartNew(
+                        async () =>
+                        {
+                            if (!_init)
+                            {
+                                Dynel _mailTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
+                                Dynel _marketTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Market Terminal");
+                                await Task.Delay(500);
+                                _mailTerminal?.Use();
+                                _marketTerminal?.Use();
+                                await Task.Delay(500);
+                                _marketTerminal?.Use();
+                                _init = true;
+                            }
+
+                            if (_mailId > 0)
+                            {
+                                Chat.WriteLine("Handling mail..");
+                                _timeOut = Time.NormalTime;
+                                await Task.Delay(500);
+                                ReadMail(_mailId);
+                                await Task.Delay(500);
+                                TakeAllMail(_mailId);
+                                await Task.Delay(500);
+                                DeleteMail(_mailId);
+                                await Task.Delay(500);
+
+                               
+
+                                _mailId = 0;
+                                ReadMail(0);
+                            }
+
+                            if (GMIItemName != null)
+                            {
+                                Item _item = Inventory.Items
+                               .Where(c => c.Name.Contains(GMIItemName))
+                               .FirstOrDefault();
+
+                                GMI.Deposit(_item);
+                            }
+                            else
+                            {
+                                ReadMail(0);
+                            }
+                        });
+
+                    _mailOpenTimer = Time.NormalTime;
+                }
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -515,6 +582,7 @@ namespace GMIManager
                 SettingsController.settingsWindow.FindView("GMIWithdrawAmount", out TextInputView gMIWithdrawAmountInput);
                 SettingsController.settingsWindow.FindView("GMIBuyOrdersName", out TextInputView gMIBuyOrdersNameInput);
                 SettingsController.settingsWindow.FindView("GMIBuyOrdersEndPrice", out TextInputView gMIBuyOrdersEndPriceInput);
+                SettingsController.settingsWindow.FindView("GMIItemName", out TextInputView gMIItemNameInput);
 
                 if (gMIBuyOrdersNameInput != null && !string.IsNullOrEmpty(gMIBuyOrdersNameInput.Text))
                 {
@@ -540,6 +608,14 @@ namespace GMIManager
                         && Config.CharSettings[Game.ClientInst].GMIWithdrawAmount != gMIWithdrawAmountValue)
                     {
                         Config.CharSettings[Game.ClientInst].GMIWithdrawAmount = gMIWithdrawAmountValue;
+                    }
+                }
+
+                if (gMIItemNameInput != null && !string.IsNullOrEmpty(gMIItemNameInput.Text))
+                {
+                    if (Config.CharSettings[Game.ClientInst].GMIItemName != gMIItemNameInput.Text)
+                    {
+                        Config.CharSettings[Game.ClientInst].GMIItemName = gMIItemNameInput.Text;
                     }
                 }
 

@@ -74,6 +74,8 @@ namespace GMIManager
     {
         public event EventHandler<string> GMIBuyOrderNameChangedEventChangedEvent;
         private string _gMIBuyOrderName = string.Empty;
+        public event EventHandler<string> GMIItemNameChangedEventChangedEvent;
+        private string _gMIItemName = string.Empty;
 
         public string GMIBuyOrderName
         {
@@ -125,6 +127,22 @@ namespace GMIManager
                 {
                     _gMIBuyOrderEndPrice = value;
                     GMIBuyOrderEndPriceChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
+        public string GMIItemName
+        {
+            get
+            {
+                return _gMIItemName;
+            }
+            set
+            {
+                if (_gMIItemName != value)
+                {
+                    _gMIItemName = value;
+                    GMIItemNameChangedEventChangedEvent?.Invoke(this, value);
                 }
             }
         }

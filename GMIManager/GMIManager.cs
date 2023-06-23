@@ -524,54 +524,53 @@ namespace GMIManager
                     _mailOpenTimer = Time.NormalTime;
                 }
 
-                if (ModeSelection.Item == (ModeSelection)_settings["ModeSelection"].AsInt32() && Time.NormalTime > _mailOpenTimer + 7)
+                if (ModeSelection.Item == (ModeSelection)_settings["ModeSelection"].AsInt32() && Time.NormalTime > _mailOpenTimer + 1)
                 {
+                    Item _item = Inventory.Items
+                                   .Where(c => c.Name.Contains(GMIItemName))
+                                   .FirstOrDefault();
+
                     Task.Factory.StartNew(
                         async () =>
                         {
-                            if (!_init)
-                            {
-                                Dynel _mailTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
-                                Dynel _marketTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Market Terminal");
-                                await Task.Delay(500);
-                                _mailTerminal?.Use();
-                                _marketTerminal?.Use();
-                                await Task.Delay(500);
-                                _marketTerminal?.Use();
-                                _init = true;
-                            }
+                            //if (!_init)
+                            //{
+                            //    Dynel _mailTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
+                            //    Dynel _marketTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Market Terminal");
+                            //    await Task.Delay(500);
+                            //    _mailTerminal?.Use();
+                            //    _marketTerminal?.Use();
+                            //    await Task.Delay(500);
+                            //    _marketTerminal?.Use();
+                            //    _init = true;
+                            //}
 
                             if (_mailId > 0)
                             {
-                                Chat.WriteLine("Handling mail..");
-                                _timeOut = Time.NormalTime;
-                                await Task.Delay(500);
+                                //Chat.WriteLine("Handling mail..");
+                                //_timeOut = Time.NormalTime;
+                                await Task.Delay(200);
                                 ReadMail(_mailId);
-                                await Task.Delay(500);
+                                await Task.Delay(200);
                                 TakeAllMail(_mailId);
-                                await Task.Delay(500);
+                                await Task.Delay(200);
                                 DeleteMail(_mailId);
-                                await Task.Delay(500);
-
-                               
-
+                                await Task.Delay(200);
+                                
                                 _mailId = 0;
                                 ReadMail(0);
-                            }
-
-                            if (GMIItemName != null)
-                            {
-                                Item _item = Inventory.Items
-                               .Where(c => c.Name.Contains(GMIItemName))
-                               .FirstOrDefault();
-
-                                GMI.Deposit(_item);
                             }
                             else
                             {
                                 ReadMail(0);
                             }
                         });
+
+                    if (_item != null)
+                    {
+
+                        GMI.Deposit(_item);
+                    }
 
                     _mailOpenTimer = Time.NormalTime;
                 }

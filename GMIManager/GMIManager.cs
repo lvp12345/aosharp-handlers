@@ -533,22 +533,9 @@ namespace GMIManager
                     Task.Factory.StartNew(
                         async () =>
                         {
-                            //if (!_init)
-                            //{
-                            //    Dynel _mailTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
-                            //    Dynel _marketTerminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Market Terminal");
-                            //    await Task.Delay(500);
-                            //    _mailTerminal?.Use();
-                            //    _marketTerminal?.Use();
-                            //    await Task.Delay(500);
-                            //    _marketTerminal?.Use();
-                            //    _init = true;
-                            //}
-
                             if (_mailId > 0)
                             {
-                                //Chat.WriteLine("Handling mail..");
-                                //_timeOut = Time.NormalTime;
+
                                 await Task.Delay(200);
                                 ReadMail(_mailId);
                                 await Task.Delay(200);

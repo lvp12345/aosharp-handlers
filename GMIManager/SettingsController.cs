@@ -60,6 +60,7 @@ namespace GMIManager
                             settingsWindow.FindView("GMIWithdrawAmount", out TextInputView gMIWithdrawAmount);
                             settingsWindow.FindView("GMIBuyOrdersName", out TextInputView gMIBuyOrdersName);
                             settingsWindow.FindView("GMIBuyOrdersEndPrice", out TextInputView gMIBuyOrdersEndPrice);
+                            settingsWindow.FindView("GMIItemName", out TextInputView gMIItemName);
 
                             if (gMIBuyOrdersName != null)
                                 gMIBuyOrdersName.Text = $"{Config.CharSettings[Game.ClientInst].GMIBuyOrderName}";
@@ -67,6 +68,8 @@ namespace GMIManager
                                 gMIBuyOrdersEndPrice.Text = $"{Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice}";
                             if (gMIWithdrawAmount != null)
                                 gMIWithdrawAmount.Text = $"{Config.CharSettings[Game.ClientInst].GMIWithdrawAmount}";
+                            if (gMIItemName != null)
+                                gMIItemName.Text = $"{Config.CharSettings[Game.ClientInst].GMIItemName}";
                         }
                     }
                     catch (Exception e)

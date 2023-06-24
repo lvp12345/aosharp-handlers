@@ -31,6 +31,8 @@ namespace GMIManager
 
         public static bool Toggle = false;
 
+        private static bool openBags = false;
+
         private static double _timeOut = Time.NormalTime;
 
         private static double _mailOpenTimer;
@@ -421,7 +423,7 @@ namespace GMIManager
 
                 if (!_initStart
                     && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                    && Time.NormalTime > _timeOut + 340)
+                    && Time.NormalTime > _timeOut + 9999999999)
                 {
                     _init = false;
                     _initStart = true;
@@ -557,6 +559,27 @@ namespace GMIManager
                     {
 
                         GMI.Deposit(_item);
+                    }
+
+                    if (_item == null)
+                    {
+                        if (!openBags)
+                        {
+                            List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
+                            foreach (Item bag in bags)
+                            {
+                                bag.Use();
+                                bag.Use();
+                                openBags = true;
+                            }
+                        }
+
+                        Container Bag = Inventory.Backpacks.FirstOrDefault(c => c.IsOpen && c.Items.Count() > 0);
+
+                        if (Bag != null)
+                            foreach (Item MoveItem in Bag.Items.Take(Inventory.NumFreeSlots - 1))
+                                if (MoveItem.Name.Contains(GMIItemName))
+                                    MoveItem.MoveToInventory();
                     }
 
                     _mailOpenTimer = Time.NormalTime;

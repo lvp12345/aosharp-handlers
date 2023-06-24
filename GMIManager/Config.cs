@@ -20,6 +20,8 @@ namespace GMIManager
         public string GMIBuyOrderName => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIBuyOrderName : string.Empty;
         [JsonIgnore]
         public long GMIBuyOrderEndPrice => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIBuyOrderEndPrice : 0;
+        [JsonIgnore]
+        public string GMIItemName => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIItemName : string.Empty;
 
         public static Config Load(string path)
         {

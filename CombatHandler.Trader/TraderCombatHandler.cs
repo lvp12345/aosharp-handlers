@@ -149,7 +149,7 @@ namespace CombatHandler.Trader
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderTeamSkillWranglerBuff).OrderByStackingOrder(), UmbralWrangler);
+            RegisterSpellProcessor(RelevantNanos.UmbralWrangler,UmbralWrangler);
 
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
@@ -1345,9 +1345,9 @@ namespace CombatHandler.Trader
             public const int ImprovedQuantumUncertanity = 270808;
             public const int UnstoppableKiller = 275846;
             public const int DivestDamage = 273407;
-            public const int UmbralWranglerPremium = 235291;
             public const int MyEnemiesEnemyIsMyFriend = 270714;
             public const int FlowofTime = 30719;
+            public static int[] UmbralWrangler = { 235291, 235289, 235287, 235283, 235281, 235279, 235277, 235275, 235273, 235271 };
             public static int[] GrandThefts = { 269842, 280050 };
             public static int[] HealthDrain = { 270357, 77195, 76478, 76475, 76487, 76481,
                 76484, 76491, 76494, 76499, 76571, 76503, 76651, 76614, 76656,

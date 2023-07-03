@@ -323,6 +323,8 @@ namespace CombatHandler.Generic
           
             base.OnUpdate(deltaTime);
 
+            UseItems();
+
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
 
             //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
@@ -1237,7 +1239,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
@@ -1494,6 +1495,17 @@ namespace CombatHandler.Generic
             }
 
             return false;
+        }
+
+        private void UseItems()
+        {
+            foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+            {
+                if (item.Name.Contains("Cell Templates") || item.Name.Contains("Plasmid Cultures")
+                    || item.Name.Contains("Mitochondria Samples") || item.Name.Contains("Protein Mapping Data")
+                    || item.Name.Contains("Mission Token"))
+                    item?.Use();
+            }
         }
 
         protected void SynchronizePetCombatStateWithOwner()

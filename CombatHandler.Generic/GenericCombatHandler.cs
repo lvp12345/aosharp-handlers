@@ -1422,6 +1422,18 @@ namespace CombatHandler.Generic
             return DamageItem(item, fightingTarget, ref actionTarget);
         }
 
+        private void UseItems()
+        {
+            if (!Item.HasPendingUse)
+                foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory || c.UniqueIdentity.Type == IdentityType.Container))
+                {
+                    if (item.Name.Contains("Cell Templates") || item.Name.Contains("Plasmid Cultures")
+                        || item.Name.Contains("Mitochondria Samples") || item.Name.Contains("Protein Mapping Data")
+                        || item.Name.Contains("Mission Token"))
+                        item?.Use();
+                }
+        }
+
         #endregion
 
         #region Pets
@@ -1497,16 +1509,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        private void UseItems()
-        {
-            foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-            {
-                if (item.Name.Contains("Cell Templates") || item.Name.Contains("Plasmid Cultures")
-                    || item.Name.Contains("Mitochondria Samples") || item.Name.Contains("Protein Mapping Data")
-                    || item.Name.Contains("Mission Token"))
-                    item?.Use();
-            }
-        }
+       
 
         protected void SynchronizePetCombatStateWithOwner()
         {

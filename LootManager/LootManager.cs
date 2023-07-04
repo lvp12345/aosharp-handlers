@@ -23,7 +23,7 @@ namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
-        private double _lastCheckTime = Time.NormalTime;
+        private double _moveLootDelay = Time.NormalTime;
 
         public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
         public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
@@ -145,7 +145,7 @@ namespace LootManager
             {
                 if (backpack.Items.Count < 21)
                     return backpack;
-            } 
+            }
             return null;
         }
 
@@ -276,10 +276,11 @@ namespace LootManager
                             //Dont move if no eligible bag (name or space)
                             Backpack _bag = BagWithSpace();
                             if (_bag == null) { return; }
-                            itemtomove.MoveToContainer(_bag);
+                            else if (Time.NormalTime > _moveLootDelay + 2)
+                            { itemtomove.MoveToContainer(_bag); }
                         }
                     }
-                }
+                } 
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

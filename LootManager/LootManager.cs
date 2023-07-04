@@ -234,7 +234,7 @@ namespace LootManager
                         return;
                     }
 
-                foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
+                foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 4
                     && !_corpsePosList.Contains(c.Position)).Take(1))
                 {
                     Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity != corpse.Identity && c.Position.DistanceFrom(corpse.Position) <= 1f);

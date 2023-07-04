@@ -1425,7 +1425,7 @@ namespace CombatHandler.Generic
         private void UseItems()
         {
             if (!Item.HasPendingUse)
-                foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory || c.UniqueIdentity.Type == IdentityType.Container))
+                foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
                     if (item.Name.Contains("Cell Templates") || item.Name.Contains("Plasmid Cultures")
                         || item.Name.Contains("Mitochondria Samples") || item.Name.Contains("Protein Mapping Data")

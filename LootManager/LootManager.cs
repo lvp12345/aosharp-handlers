@@ -18,6 +18,7 @@ using System.Data;
 using System.IO;
 using AOSharp.Core.Movement;
 using System.Net.Http;
+using AOSharp.Common.Unmanaged.Interfaces;
 
 namespace LootManager
 {
@@ -33,6 +34,8 @@ namespace LootManager
         private static List<Identity> _corpseIdList = new List<Identity>();
 
         protected double _lastZonedTime = Time.NormalTime;
+        private static double _nowTimer = Time.NormalTime;
+        double _LootBoolTimer;
 
         private static int MinQlValue;
         private static int MaxQlValue;
@@ -52,8 +55,9 @@ namespace LootManager
         private static bool Looting = false;
         private static bool Bags = false;
         private static bool Delete = false;
+        static bool _corpseOpen = false;
 
-        private static double _nowTimer = Time.NormalTime;
+        
 
         private static int _currentIgnore = 0;
 
@@ -169,14 +173,14 @@ namespace LootManager
                             _initCheck = true;
                     }
                     else if (Delete)
-                        item.Delete();
+                        item.Delete(); 
                 }
 
             }
-
-            _corpsePosList.Add(_currentPos);
-            _corpseIdList.Add(container.Identity);
-            //Chat.WriteLine($"Looted {container.Identity} at {_currentPos}");
+            
+                _corpsePosList.Add(_currentPos);
+                _corpseIdList.Add(container.Identity);
+                //Chat.WriteLine($"Looted {container.Identity} at {_currentPos}");
 
             if (!_toggle && !_initCheck)
                 Item.Use(container.Identity);
@@ -202,7 +206,7 @@ namespace LootManager
             if (Game.IsZoning) //|| Time.NormalTime < _lastZonedTime + 10.0)
                 return;
 
-            if (Looting)
+            if (Looting && !Delete)
             {
 
                 //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
@@ -259,28 +263,64 @@ namespace LootManager
                     //This is so we can pass the vector to the event
                     _currentPos = corpse.Position;
                 }
+            }
 
-                //Moving this loop below the container opening loop allows us to loot without a bag named loot again
-                if (Looting)
+            if (Looting && Delete)
+            {
+                Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7).FirstOrDefault();
+
+                if (corpse != null)
                 {
-                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                    if (Spell.List.Any(c => c.IsReady))
                     {
-                        //Only check to move if there is something to move
-                        if (CheckRules(itemtomove))
+                        if (!_corpseOpen)
                         {
-                            if (!_initiliaseBags)
-                            {
-                                //Initialise bags again if the flag is false (after injecting or zoning)
-                                FindBagWithSpace();
-                            }
-                            //Dont move if no eligible bag (name or space)
-                            Backpack _bag = BagWithSpace();
-                            if (_bag == null) { return; }
-                            else if (Time.NormalTime > _moveLootDelay + 2)
-                            { itemtomove.MoveToContainer(_bag); }
+                            corpse.Open();
+
+                            _corpseOpen = true;
+
+                            _LootBoolTimer = Time.NormalTime;
+                        }
+
+                        if (Time.NormalTime > _LootBoolTimer + 1)
+                        {
+                            _corpseOpen = false;
                         }
                     }
-                } 
+                    //foreach (Item item in container.Items)
+                    foreach (Item item in corpse.Container.Items)
+                    {
+                        if (Inventory.NumFreeSlots > 1)
+                        {
+                            if (CheckRules(item))
+                                item.MoveToInventory();
+                            else
+                                item.Delete();
+                        }
+                    }
+                }
+            }
+
+            //Moving this loop below the container opening loop allows us to loot without a bag named loot again
+            if (Looting)
+            {
+                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                {
+                    //Only check to move if there is something to move
+                    if (CheckRules(itemtomove))
+                    {
+                        if (!_initiliaseBags)
+                        {
+                            //Initialise bags again if the flag is false (after injecting or zoning)
+                            FindBagWithSpace();
+                        }
+                        //Dont move if no eligible bag (name or space)
+                        Backpack _bag = BagWithSpace();
+                        if (_bag == null) { return; }
+                        else if (Time.NormalTime > _moveLootDelay + 2)
+                        { itemtomove.MoveToContainer(_bag); }
+                    }
+                }
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

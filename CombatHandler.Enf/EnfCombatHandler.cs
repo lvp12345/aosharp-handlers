@@ -1,11 +1,9 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Linq;
-using System;
 using AOSharp.Core.IPC;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 namespace CombatHandler.Enf
 {

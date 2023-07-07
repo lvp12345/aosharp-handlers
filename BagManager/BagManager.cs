@@ -1,16 +1,15 @@
-﻿using System;
-using System.Linq;
-using AOSharp.Core;
-using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
+﻿using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
+using AOSharp.Core;
+using AOSharp.Core.Inventory;
+using AOSharp.Core.UI;
+using SmokeLounge.AOtomation.Messaging.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using AOSharp.Core.Inventory;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BagManager
 {

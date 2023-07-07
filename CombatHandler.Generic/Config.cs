@@ -1,10 +1,9 @@
-﻿using System;
+﻿using AOSharp.Core;
+using AOSharp.Core.UI;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Xml;
-using Newtonsoft.Json;
 
 namespace CombatHandler.Generic
 {
@@ -144,7 +143,8 @@ namespace CombatHandler.Generic
         public event EventHandler<int> IPCChannelChangedEvent;
         private int _ipcChannel = 0;
 
-        public int IPCChannel {
+        public int IPCChannel
+        {
             get
             {
                 return _ipcChannel;

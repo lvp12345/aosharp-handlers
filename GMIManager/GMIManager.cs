@@ -1,20 +1,17 @@
-﻿using AOSharp.Core;
-using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
-using System.Collections.Generic;
-using AOSharp.Common.Unmanaged.Interfaces;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
-using System.IO;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Text;
-using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using Zoltu.IO;
-using System;
+using AOSharp.Core;
 using AOSharp.Core.GMI;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.UI;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Zoltu.IO;
 
 namespace GMIManager
 {
@@ -545,7 +542,7 @@ namespace GMIManager
                                 await Task.Delay(200);
                                 DeleteMail(_mailId);
                                 await Task.Delay(200);
-                                
+
                                 _mailId = 0;
                                 ReadMail(0);
                             }

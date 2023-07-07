@@ -1,7 +1,6 @@
 ﻿using AOSharp.Core;
-using AOSharp.Core.Combat;
-using System;
 using AOSharp.Core.UI;
+using System;
 
 namespace CombatHandler.Adventurer
 {
@@ -15,7 +14,7 @@ namespace CombatHandler.Adventurer
                 Chat.WriteLine("/handler for settings.");
                 AOSharp.Core.Combat.CombatHandler.Set(new AdvCombatHandler(pluginDir));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Chat.WriteLine(e.Message);
             }

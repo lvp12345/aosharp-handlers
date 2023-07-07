@@ -1,21 +1,18 @@
-﻿using System;
+﻿using AOSharp.Common.GameData;
+using AOSharp.Core;
+using AOSharp.Core.Inventory;
+using AOSharp.Core.IPC;
+using AOSharp.Core.UI;
+using CombatHandler.Generic.IPCMessages;
+using SmokeLounge.AOtomation.Messaging.GameData;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using AOSharp.Common.GameData;
-using AOSharp.Common.GameData.UI;
-using AOSharp.Core;
-using AOSharp.Core.Inventory;
-using AOSharp.Core.IPC;
-using CombatHandler.Generic.IPCMessages;
-using AOSharp.Core.UI;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using static CombatHandler.Generic.PerkCondtionProcessors;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Generic
 {
@@ -210,7 +207,7 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
             RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
-            RegisterPerkProcessor(PerkHash.Clipfever, ToggledDamagePerk); 
+            RegisterPerkProcessor(PerkHash.Clipfever, ToggledDamagePerk);
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
@@ -320,7 +317,7 @@ namespace CombatHandler.Generic
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
                 return;
-          
+
             base.OnUpdate(deltaTime);
 
             UseItems();
@@ -389,7 +386,7 @@ namespace CombatHandler.Generic
                 _lastCombatTime = Time.NormalTime;
             }
 
-           
+
         }
 
 
@@ -1140,7 +1137,7 @@ namespace CombatHandler.Generic
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            
+
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null && fightingTarget.IsInAttackRange();
         }
 
@@ -1172,7 +1169,7 @@ namespace CombatHandler.Generic
 
         private bool FreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                 || (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
                 && !DynelManager.LocalPlayer.Buffs.Contains(258231))) { return false; }
 
@@ -1246,9 +1243,9 @@ namespace CombatHandler.Generic
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                     || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) 
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
                     || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                    || DynelManager.LocalPlayer.Buffs.Contains(280470) 
+                    || DynelManager.LocalPlayer.Buffs.Contains(280470)
                     || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
                 SimpleChar teamMember = DynelManager.Players
@@ -1382,8 +1379,8 @@ namespace CombatHandler.Generic
 
         private bool NanomageEnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-          
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength) 
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Team.IsInTeam
                 //|| Item.HasPendingUse
@@ -1395,7 +1392,7 @@ namespace CombatHandler.Generic
 
         private bool AssaultClass(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 //|| Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > DuckAbsorbsItemPercentage
@@ -1406,7 +1403,7 @@ namespace CombatHandler.Generic
 
         protected bool TotwShieldShoulder(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 //|| Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
@@ -1454,7 +1451,7 @@ namespace CombatHandler.Generic
 
             if (!petData.ContainsKey(spell.Id)) { return false; }
 
-            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) 
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell))
             {
                 if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
 
@@ -1470,7 +1467,7 @@ namespace CombatHandler.Generic
 
             return true;
         }
-        
+
         private bool PetAlreadySpawned(PetType petType)
         {
             return DynelManager.LocalPlayer.Pets.Any(c => (c.Type == PetType.Unknown || c.Type == petType));
@@ -1509,7 +1506,7 @@ namespace CombatHandler.Generic
             return false;
         }
 
-       
+
 
         protected void SynchronizePetCombatStateWithOwner()
         {
@@ -1534,7 +1531,7 @@ namespace CombatHandler.Generic
 
                 if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
                     && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
-                        pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
             }
         }
 
@@ -1708,11 +1705,11 @@ namespace CombatHandler.Generic
         protected bool CanCast(Spell spell)
         {
             if (IsSettingEnabled("GlobalRez"))
-            { 
+            {
                 if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 1) return false;
             }
 
-                return spell.Cost < DynelManager.LocalPlayer.Nano;
+            return spell.Cost < DynelManager.LocalPlayer.Nano;
         }
 
         public static void CancelAllBuffs()
@@ -2008,7 +2005,7 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.UponAWaveOfSummerHigh:
                     return Stat.Riposte;
 
-                
+
                 case RelevantGenericItems.BlessedWithThunderLow:
                 case RelevantGenericItems.BlessedWithThunderHigh:
                     return Stat.MartialArts;
@@ -2098,7 +2095,7 @@ namespace CombatHandler.Generic
             public const int TearOfOedipus = 244216;
 
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
-            
+
             public const int FlowerOfLifeLow = 70614;
             public const int FlowerOfLifeHigh = 204326;
 
@@ -2138,7 +2135,7 @@ namespace CombatHandler.Generic
             public const int HealthAndNanoStim1 = 291043;
             public const int HealthAndNanoStim200 = 291044;
             public const int HealthAndNanoStim400 = 291045;
-            public const int DeathsDoor  = 303071;
+            public const int DeathsDoor = 303071;
 
             public const int AmmoBoxEnergy = 303138;
             public const int AmmoBoxShotgun = 303141;

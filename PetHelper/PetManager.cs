@@ -1,18 +1,12 @@
-﻿using System;
-using System.Linq;
+﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
 using PetManager.IPCMessages;
+using System;
+using System.Linq;
 using System.Runtime.InteropServices;
-using AOSharp.Common.GameData.UI;
-using System.Windows.Media;
-using AOSharp.Core.Movement;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using System.Windows.Interop;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using CombatHandler.Generic;
 
 namespace PetManager
 {
@@ -103,20 +97,20 @@ namespace PetManager
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                
-                    if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+
+                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                {
+                    if (int.TryParse(channelInput.Text, out int channelValue)
+                        && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
                     {
-                        if (int.TryParse(channelInput.Text, out int channelValue)
-                            && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
-                        {
-                            Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
-                        }
+                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
                     }
+                }
 
                 if (SettingsController.settingsWindow.FindView("PetManagerInfoView", out Button infoView))
                 {
                     infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView; 
+                    infoView.Clicked = InfoView;
                 }
 
                 //attack
@@ -128,7 +122,7 @@ namespace PetManager
 
                 //wait
                 if (SettingsController.settingsWindow.FindView("PetWait", out Button PetWait))
-                { 
+                {
                     PetWait.Tag = SettingsController.settingsWindow;
                     PetWait.Clicked = PetWaitClicked;
                 }
@@ -249,7 +243,7 @@ namespace PetManager
         //follow
         private void PetFollowClicked(object s, ButtonBase button)
         {
-            PetFollowCommand(null, null, null);   
+            PetFollowCommand(null, null, null);
         }
 
         private void PetFollowCommand(string command, string[] param, ChatWindow chatWindow)

@@ -1,20 +1,12 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Linq;
-using System;
-using AOSharp.Common.GameData.UI;
-using AOSharp.Core.IPC;
-using System.Threading.Tasks;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using System.Threading;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Collections.Generic;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.IPC;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System.Collections.Generic;
+using System.Linq;
 using static CombatHandler.Generic.PerkCondtionProcessors;
-using System.Windows.Input;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Doctor
 {

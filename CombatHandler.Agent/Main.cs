@@ -1,6 +1,6 @@
 ﻿using AOSharp.Core;
-using System;
 using AOSharp.Core.UI;
+using System;
 
 namespace CombatHandler.Agent
 {
@@ -14,7 +14,7 @@ namespace CombatHandler.Agent
                 Chat.WriteLine("/handler for settings.");
                 AOSharp.Core.Combat.CombatHandler.Set(new AgentCombatHandler(pluginDir));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Chat.WriteLine(e.Message);
             }

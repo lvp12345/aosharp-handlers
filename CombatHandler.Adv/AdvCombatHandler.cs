@@ -1,21 +1,9 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Linq;
-using System;
-using AOSharp.Common.GameData.UI;
 using AOSharp.Core.IPC;
-using System.Threading.Tasks;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using System.Threading;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Collections.Generic;
-using AOSharp.Core.Inventory;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
-using System.Runtime.Remoting.Messaging;
-using System.Runtime.Serialization.Formatters;
-using System.Timers;
-using System.ComponentModel;
+using System.Linq;
 
 namespace CombatHandler.Adventurer
 {
@@ -212,9 +200,9 @@ namespace CombatHandler.Adventurer
 
             if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
 
-            _settings[$"GlobalRez"] = rezMsg.Switch; 
             _settings[$"GlobalRez"] = rezMsg.Switch;
-            
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
         }
 
         #endregion

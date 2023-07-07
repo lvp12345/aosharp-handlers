@@ -1,9 +1,4 @@
-﻿using AOSharp.Common.GameData;
-using AOSharp.Core.UI;
-using AOSharp.Core;
-using System;
-using System.Collections.Generic;
-using AOSharp.Common.GameData.UI;
+﻿using System;
 
 namespace ResearchManager
 {

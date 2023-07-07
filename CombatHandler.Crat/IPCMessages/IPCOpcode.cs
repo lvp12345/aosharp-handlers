@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CombatHandler.Bureaucrat
+﻿namespace CombatHandler.Bureaucrat
 {
     public enum IPCOpcode
     {
@@ -20,6 +14,6 @@ namespace CombatHandler.Bureaucrat
         PetSyncOff = 2349,
         Disband = 2100,
         ClearBuffs = 2101,
-        Target =2350
+        Target = 2350
     }
 }

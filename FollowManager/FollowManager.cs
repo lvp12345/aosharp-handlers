@@ -1,22 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Diagnostics;
+﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages;
 using FollowManager.IPCMessages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using SmokeLounge.AOtomation.Messaging.GameData;
+using System;
+using System.Linq;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using AOSharp.Core.Inventory;
-using AOSharp.Common.GameData.UI;
-using System.Windows.Input;
 
 namespace FollowManager
 {
@@ -216,8 +208,8 @@ namespace FollowManager
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
-                    .Where(x => !string.IsNullOrEmpty(NavFollowIdentity) 
-                        && !x.Flags.HasFlag(CharacterFlags.Pet) 
+                    .Where(x => !string.IsNullOrEmpty(NavFollowIdentity)
+                        && !x.Flags.HasFlag(CharacterFlags.Pet)
                         && x.Name == NavFollowIdentity)
                     .FirstOrDefault();
 
@@ -237,8 +229,8 @@ namespace FollowManager
                 && Time.NormalTime > _followTimer + 1)
             {
                 Dynel identity = DynelManager.AllDynels
-                    .Where(x => !string.IsNullOrEmpty(FollowPlayer) 
-                        && !x.Flags.HasFlag(CharacterFlags.Pet) 
+                    .Where(x => !string.IsNullOrEmpty(FollowPlayer)
+                        && !x.Flags.HasFlag(CharacterFlags.Pet)
                         && x.Name == FollowPlayer)
                     .FirstOrDefault();
 

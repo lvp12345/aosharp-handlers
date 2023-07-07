@@ -1,19 +1,15 @@
-﻿using AOSharp.Core;
-using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
-using System.Collections.Generic;
-using AOSharp.Common.Unmanaged.Interfaces;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
-using System.IO;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Text;
 using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using Zoltu.IO;
+using AOSharp.Core;
+using AOSharp.Core.UI;
+using SmokeLounge.AOtomation.Messaging.Messages;
 using System;
-using AOSharp.Core.GMI;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Zoltu.IO;
 
 namespace MailManager
 {
@@ -297,7 +293,7 @@ namespace MailManager
 
                 if (mailAmountInput != null && !string.IsNullOrEmpty(mailAmountInput.Text))
                 {
-                    if (int.TryParse(mailAmountInput.Text, out int mailAmountValue) 
+                    if (int.TryParse(mailAmountInput.Text, out int mailAmountValue)
                         && Config.CharSettings[Game.ClientInst].MailAmount != mailAmountValue)
                     {
                         Config.CharSettings[Game.ClientInst].MailAmount = mailAmountValue;

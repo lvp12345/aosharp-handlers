@@ -1,10 +1,9 @@
 ﻿using AOSharp.Common.GameData;
-using AOSharp.Core.UI;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
+using AOSharp.Core.UI;
 using System;
 using System.Collections.Generic;
-using AOSharp.Common.GameData.UI;
-using System.Data;
 
 namespace LootManager
 {

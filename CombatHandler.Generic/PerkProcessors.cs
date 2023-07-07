@@ -1,16 +1,8 @@
 ﻿using AOSharp.Common.GameData;
-using AOSharp.Common.Unmanaged.Imports;
 using AOSharp.Core;
-using AOSharp.Core.Inventory;
-using AOSharp.Core.UI;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Windows.Media;
 using static CombatHandler.Generic.GenericCombatHandler;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
-using static System.Collections.Specialized.BitVector32;
 
 namespace CombatHandler.Generic
 {
@@ -512,7 +504,7 @@ namespace CombatHandler.Generic
             || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
             || c.Buffs.Contains(NanoLine.DOTStrainC)
             || c.Buffs.Contains(NanoLine.PainLanceDoT)
-            || c.Buffs.Contains(NanoLine.MINIDoT)         
+            || c.Buffs.Contains(NanoLine.MINIDoT)
             || c.Buffs.Contains(NanoLine.InitiativeDebuffs))
             .FirstOrDefault();
 

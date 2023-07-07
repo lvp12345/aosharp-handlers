@@ -1,14 +1,9 @@
-﻿using System;
-using System.Linq;
-using AOSharp.Core;
-using AOSharp.Core.IPC;
-using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using System.Collections.Generic;
+﻿using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
-using System.Windows.Input;
+using AOSharp.Core;
+using AOSharp.Core.UI;
+using System;
+using System.Linq;
 
 namespace AssistManager
 {
@@ -155,7 +150,7 @@ namespace AssistManager
             {
                 SimpleChar identity = DynelManager.Characters
                     .Where(c => !string.IsNullOrEmpty(AssistPlayer)
-                        && c.IsAlive && !c.Flags.HasFlag(CharacterFlags.Pet) 
+                        && c.IsAlive && !c.Flags.HasFlag(CharacterFlags.Pet)
                         && c.Name == AssistPlayer)
                     .FirstOrDefault();
 

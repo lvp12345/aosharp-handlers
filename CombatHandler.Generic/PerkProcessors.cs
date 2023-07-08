@@ -1,5 +1,7 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.Unmanaged.Imports;
 using AOSharp.Core;
+using AOSharp.Core.UI;
 using System.Collections.Generic;
 using System.Linq;
 using static CombatHandler.Generic.GenericCombatHandler;
@@ -227,15 +229,27 @@ namespace CombatHandler.Generic
 
         public static bool BuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perkAction.Name))
             {
-                if (buff.Name == perkAction.Name) { return false; }
+                return false;
             }
 
-            actionTarget.Target = DynelManager.LocalPlayer;
-            actionTarget.ShouldSetTarget = true;
+            actionTarget = (DynelManager.LocalPlayer, true);
             return true;
         }
+
+
+        //public static bool BuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //        foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
+        //    {
+        //        if (buff.Name == perkAction.Name) { return false; }
+        //    }
+
+        //    actionTarget.Target = DynelManager.LocalPlayer;
+        //    actionTarget.ShouldSetTarget = true;
+        //    return true;
+        //}
 
         public static bool SelfHealPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

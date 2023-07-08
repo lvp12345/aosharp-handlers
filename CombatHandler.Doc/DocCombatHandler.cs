@@ -839,28 +839,69 @@ namespace CombatHandler.Doctor
             return false;
         }
 
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
+
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        if (Team.IsInTeam)
+        //        {
+        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //                .Where(c => Team.Members
+        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                     && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+        //                .ToList();
+
+        //            if (dyingTeamMember.Count >= 4) { return false; }
+        //        }
+
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    }
+
+        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    }
+
+        //    return false;
+        //}
+
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HealPercentage == 0) { return false; }
+            if (HealPercentage == 0)
+            {
+                return false;
+            }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+            int healSelection = _settings["HealSelection"].AsInt32();
+
+            if (HealSelection.SingleTeam == (HealSelection)healSelection)
             {
                 if (Team.IsInTeam)
                 {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                             && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-                        .ToList();
+                    int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+                    int count = 0;
 
-                    if (dyingTeamMember.Count >= 4) { return false; }
+                    foreach (SimpleChar c in DynelManager.Characters)
+                    {
+                        if (Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                            && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+                        {
+                            count++;
+                            if (count >= 4)
+                            {
+                                return false;
+                            }
+                        }
+                    }
                 }
 
                 return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
 
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.SingleArea == (HealSelection)healSelection)
             {
                 return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
@@ -868,35 +909,75 @@ namespace CombatHandler.Doctor
             return false;
         }
 
+        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
+
+        //    if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        if (Spell.List.Any(c => c.Id == 275011)) { return false; }
+
+        //        if (Team.IsInTeam)
+        //        {
+        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //                .Where(c => Team.Members
+        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                        && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+        //                .ToList();
+
+        //            if (dyingTeamMember.Count >= 1)
+        //            {
+        //                return CanCast(spell);
+        //            }
+        //        }
+        //    }
+
+        //    return false;
+        //}
+
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HealPercentage == 0) { return false; }
-
-            if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealPercentage == 0)
             {
-                if (Spell.List.Any(c => c.Id == 275011)) { return false; }
+                return false;
+            }
+
+            int healSelection = _settings["HealSelection"].AsInt32();
+
+            if (HealSelection.Team == (HealSelection)healSelection)
+            {
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            }
+
+            if (HealSelection.SingleTeam == (HealSelection)healSelection)
+            {
+                if (Spell.List.Any(c => c.Id == 275011))
+                {
+                    return false;
+                }
 
                 if (Team.IsInTeam)
                 {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-                        .ToList();
+                    int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
 
-                    if (dyingTeamMember.Count >= 1)
+                    foreach (SimpleChar c in DynelManager.Characters)
                     {
-                        return CanCast(spell);
+                        if (Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                            && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+                        {
+                            return CanCast(spell);
+                        }
                     }
                 }
             }
 
             return false;
         }
+
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1152,69 +1233,168 @@ namespace CombatHandler.Doctor
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
+        //private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (fightingTarget == null) { return false; }
+
+        //    {
+        //        if (Team.IsInTeam)
+        //        {
+        //            SimpleChar teamMember = DynelManager.Players
+        //                .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                    && c.HealthPercent < 50
+        //                    && c.IsInLineOfSight
+        //                    && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+        //                    && c.Health > 0)
+        //                .OrderBy(c => c.HealthPercent)
+        //                .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+        //                .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+        //                .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
+        //                .FirstOrDefault();
+
+        //            if (teamMember != null)
+        //            {
+        //                actionTarget.ShouldSetTarget = true;
+        //                actionTarget.Target = teamMember;
+        //                return true;
+        //            }
+
+        //            return false;
+        //        }
+
+        //        if (DynelManager.LocalPlayer.HealthPercent < 50)
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = DynelManager.LocalPlayer;
+        //            return true;
+        //        }
+
+        //        return false;
+        //    }
+        //}
+
         private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
-
+            if (fightingTarget == null)
             {
-                if (Team.IsInTeam)
+                return false;
+            }
+
+            if (Team.IsInTeam)
+            {
+                SimpleChar teamMember = null;
+                foreach (SimpleChar c in DynelManager.Players)
                 {
-                    SimpleChar teamMember = DynelManager.Players
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.HealthPercent < 50
-                            && c.IsInLineOfSight
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
-                            && c.Health > 0)
-                        .OrderBy(c => c.HealthPercent)
-                        .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                        .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                        .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-                        .FirstOrDefault();
-
-                    if (teamMember != null)
+                    if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                        && c.HealthPercent < 50
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+                        && c.Health > 0)
                     {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = teamMember;
-                        return true;
+                        if (teamMember == null
+                            || c.HealthPercent < teamMember.HealthPercent
+                            || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
+                            || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
+                            || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
+                        {
+                            teamMember = c;
+                        }
                     }
-
-                    return false;
                 }
 
-                if (DynelManager.LocalPlayer.HealthPercent < 50)
+                if (teamMember != null)
                 {
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
+                    actionTarget.Target = teamMember;
                     return true;
                 }
 
                 return false;
             }
+
+            if (DynelManager.LocalPlayer.HealthPercent < 50)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
         }
+
 
         #endregion
 
         #region Items
 
+        //private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("TOTWBooks")) { return false; }
+        //    if (Item.HasPendingUse) { return false; }
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+
+        //    if (Team.IsInTeam)
+        //    {
+        //        SimpleChar teamMember = DynelManager.Players
+        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                && c.HealthPercent < 25
+        //                && c.IsInLineOfSight
+        //                && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+        //                && c.Health > 0)
+        //            .OrderBy(c => c.HealthPercent)
+        //            .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+        //            .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+        //            .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
+        //            .FirstOrDefault();
+
+        //        if (teamMember != null)
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = teamMember;
+        //            return true;
+        //        }
+
+        //        return false;
+        //    }
+
+        //    if (DynelManager.LocalPlayer.HealthPercent < 25)
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = DynelManager.LocalPlayer;
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
+
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TOTWBooks")) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+            if (!IsSettingEnabled("TOTWBooks") || Item.HasPendingUse || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis))
+            {
+                return false;
+            }
 
             if (Team.IsInTeam)
             {
-                SimpleChar teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                SimpleChar teamMember = null;
+                foreach (SimpleChar c in DynelManager.Players)
+                {
+                    if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent < 25
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
                         && c.Health > 0)
-                    .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-                    .FirstOrDefault();
+                    {
+                        if (teamMember == null
+                            || c.HealthPercent < teamMember.HealthPercent
+                            || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
+                            || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
+                            || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
+                        {
+                            teamMember = c;
+                        }
+                    }
+                }
 
                 if (teamMember != null)
                 {
@@ -1235,6 +1415,7 @@ namespace CombatHandler.Doctor
 
             return false;
         }
+
 
         #endregion
 

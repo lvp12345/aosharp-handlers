@@ -357,7 +357,7 @@ namespace CombatHandler.Generic
             if (Time.NormalTime > _updateTick + 0.1f)
             {
                 foreach (SimpleChar player in DynelManager.Characters
-                    .Where(c => c.IsPlayer && DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
+                    .Where(c => c.IsPlayer && c.Profession == (Profession)4294967295 && DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
                 {
                     Network.Send(new CharacterActionMessage()
                     {

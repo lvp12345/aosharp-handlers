@@ -278,11 +278,11 @@ namespace LootManager
                             corpse.Open();
 
                             _corpseOpen = true;
-
+                            Chat.WriteLine("Opening Corpse");
                             _LootBoolTimer = Time.NormalTime;
                         }
 
-                        if (Time.NormalTime > _LootBoolTimer + 1)
+                        if (Time.NormalTime > _LootBoolTimer + 4)
                         {
                             _corpseOpen = false;
                         }

@@ -47,25 +47,13 @@ namespace LootManager
         private static bool _initiliaseBags = false;
 
         private static bool Looting = false;
-        private static bool delete = false;
-        public static bool Delete
-        {
-            get { return delete; }
-            set
-            {
-                if (delete != value)
-                {
-                    delete = value;
-                    SaveSettings();
-                }
-            }
-        }
+        private static bool Delete = false;
+       
 
         private Window _infoWindow;
 
         public static string PluginDir;
         private static bool _toggle = false;
-
 
         public override void Run(string pluginDir)
         {
@@ -109,14 +97,8 @@ namespace LootManager
             }
         }
 
-        private static void SaveSettings()
-        {
-            SettingsController.Delete = Delete;
-        }
-
         public override void Teardown()
         {
-            SaveSettings();
             SaveRules();
             SettingsController.CleanUp();
         }

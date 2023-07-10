@@ -172,8 +172,8 @@ namespace LootManager
                         else if (_toggle)
                             _initCheck = true;
                     }
-                    else if (Delete)
-                        item.Delete(); 
+                    //else if (Delete)
+                    //    item.Delete(); 
                 }
 
             }
@@ -271,18 +271,18 @@ namespace LootManager
 
                 if (corpse != null)
                 {
-                    if (Spell.List.Any(c => c.IsReady))
+                    if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                     {
                         if (!_corpseOpen)
                         {
                             corpse.Open();
 
                             _corpseOpen = true;
-                            Chat.WriteLine("Opening Corpse");
+                            //Chat.WriteLine("Opening Corpse");
                             _LootBoolTimer = Time.NormalTime;
                         }
 
-                        if (Time.NormalTime > _LootBoolTimer + 4)
+                        if (Time.NormalTime > _LootBoolTimer + 2.5)
                         {
                             _corpseOpen = false;
                         }

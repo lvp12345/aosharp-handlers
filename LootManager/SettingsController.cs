@@ -23,20 +23,6 @@ namespace LootManager
 
         public static Window settingsWindow;
 
-        private static bool delete = false;
-        public static bool Delete
-        {
-            get { return delete; }
-            set
-            {
-                if (delete != value)
-                {
-                    delete = value;
-                    SaveSettings();
-                }
-            }
-        }
-
         public static void RegisterCharacters(Settings settings)
         {
             RegisterChatCommandIfNotRegistered();

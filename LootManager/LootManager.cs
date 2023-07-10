@@ -19,23 +19,21 @@ using System.IO;
 using AOSharp.Core.Movement;
 using System.Net.Http;
 using AOSharp.Common.Unmanaged.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
         private double _moveLootDelay = Time.NormalTime;
+        private double _closeBag;
 
         public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
         public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
 
-        private static List<Vector3> _corpsePosList = new List<Vector3>();
-        private static Vector3 _currentPos = Vector3.Zero;
-        private static List<Identity> _corpseIdList = new List<Identity>();
+        private string previousErrorMessage = string.Empty;
 
         protected double _lastZonedTime = Time.NormalTime;
-        private static double _nowTimer = Time.NormalTime;
-        double _LootBoolTimer;
 
         private static int MinQlValue;
         private static int MaxQlValue;
@@ -46,34 +44,28 @@ namespace LootManager
 
         protected Settings _settings;
         public static Settings _settingsItems;
-
-        private static bool _internalOpen = false;
-        private static bool _weAreDoingThings = false;
-        private static bool _currentlyLooting = false;
         private static bool _initiliaseBags = false;
 
         private static bool Looting = false;
-        private static bool Bags = false;
-        private static bool Delete = false;
-        static bool _corpseOpen = false;
-
-        
-
-        private static int _currentIgnore = 0;
+        private static bool delete = false;
+        public static bool Delete
+        {
+            get { return delete; }
+            set
+            {
+                if (delete != value)
+                {
+                    delete = value;
+                    SaveSettings();
+                }
+            }
+        }
 
         private Window _infoWindow;
 
-        private static List<Item> _invItems = new List<Item>();
-
-        //public static List<Item> _lootList = new List<Item>();
-
         public static string PluginDir;
         private static bool _toggle = false;
-        private static bool _initCheck = false;
-        //Stop error message spam
-        //public static string PrevMessage;
 
-        //public bool IsOpen { get; private set; }
 
         public override void Run(string pluginDir)
         {
@@ -83,8 +75,6 @@ namespace LootManager
                 PluginDir = pluginDir;
 
                 Game.OnUpdate += OnUpdate;
-                Game.TeleportEnded += OnZoning;
-                Inventory.ContainerOpened += OnContainerOpened;
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
@@ -106,19 +96,27 @@ namespace LootManager
                 Chat.WriteLine("Loot Manager loaded!");
                 Chat.WriteLine("/lootmanager for settings. /lm to enable/disable");
             }
-            catch (Exception e)
-            // Stop error message spam (unless more than one error message)
+            catch (Exception ex)
             {
-                //if (e.Message != PrevMessage)
-                //{
-                Chat.WriteLine(e.Message);
-                //PrevMessage = e.Message;
-                //}
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
+        }
+
+        private static void SaveSettings()
+        {
+            SettingsController.Delete = Delete;
         }
 
         public override void Teardown()
         {
+            SaveSettings();
             SaveRules();
             SettingsController.CleanUp();
         }
@@ -153,157 +151,88 @@ namespace LootManager
             return null;
         }
 
-        private void OnContainerOpened(object sender, Container container)
-        {
-            if (container.Identity.Type != IdentityType.Corpse
-            || !_internalOpen
-            || !_weAreDoingThings) { return; }
-
-            _currentlyLooting = true;
-
-            foreach (Item item in container.Items)
-            {
-                if (Inventory.NumFreeSlots > 1)
-                {
-                    if (CheckRules(item))
-                    {
-                        if (!_toggle)
-                            item.MoveToInventory();
-                        else if (_toggle)
-                            _initCheck = true;
-                    }
-                    //else if (Delete)
-                    //    item.Delete(); 
-                }
-
-            }
-            
-                _corpsePosList.Add(_currentPos);
-                _corpseIdList.Add(container.Identity);
-                //Chat.WriteLine($"Looted {container.Identity} at {_currentPos}");
-
-            if (!_toggle && !_initCheck)
-                Item.Use(container.Identity);
-
-            _internalOpen = false;
-            _weAreDoingThings = false;
-            _currentlyLooting = false;
-            _initCheck = false;
-        }
-
-        private void OnZoning(object sender, EventArgs e)
-        {
-            //Lets the bag check know it needs to scan again after zoning
-            if (_initiliaseBags || Time.NormalTime < _lastZonedTime + 3.0)
-            {
-                _initiliaseBags = false;
-            }
-        }
-
-
         private void OnUpdate(object sender, float deltaTime)
         {
-            if (Game.IsZoning) //|| Time.NormalTime < _lastZonedTime + 10.0)
+            if (Game.IsZoning)
                 return;
-
-            if (Looting && !Delete)
-            {
-
-                //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
-                if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 3f)
-                {
-                    if (_currentlyLooting) { return; }
-
-                    //Chat.WriteLine($"Resetting");
-                    _internalOpen = false;
-                    _weAreDoingThings = false;
-                }
-
-                if (_weAreDoingThings) { return; }
-
-                //Tidying up of the stupid ass logic
-                foreach (Vector3 corpsePos in _corpsePosList)
-                    if (DynelManager.Corpses.Where(c => c.Position == corpsePos).ToList().Count == 0)
-                    {
-                        _corpsePosList.Remove(corpsePos);
-                        //Chat.WriteLine($"Removing vector3");
-                        return;
-                    }
-
-                foreach (Identity corpseId in _corpseIdList)
-                    if (DynelManager.Corpses.Where(c => c.Identity == corpseId).ToList().Count == 0)
-                    {
-                        _corpseIdList.Remove(corpseId);
-                        //Chat.WriteLine($"Removing identity");
-                        return;
-                    }
-
-                foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 4
-                    && !_corpsePosList.Contains(c.Position)).Take(1))
-                {
-                    Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity != corpse.Identity && c.Position.DistanceFrom(corpse.Position) <= 1f);
-
-                    //This check prevents it from opening every body in a large pile, i still don't know why, changing it is the only solution i found
-                    //I've left it here in case some brave adventurer in the future wants to figure out why
-                    //if (_corpse != null || _weAreDoingThings) { continue; }
-
-                    if (_currentlyLooting) { return; }
-
-                    //This is so we can open ourselves without the event auto closing
-                    _internalOpen = true;
-                    _weAreDoingThings = true;
-                    _nowTimer = Time.NormalTime;
-
-                    if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
-                    {
-                        corpse.Open();
-                        //Chat.WriteLine($"Opening {corpse.Identity}");
-                    }
-
-                    //This is so we can pass the vector to the event
-                    _currentPos = corpse.Position;
-                }
-            }
-
-            if (Looting && Delete)
-            {
-                Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7).FirstOrDefault();
-
-                if (corpse != null)
-                {
-                    if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
-                    {
-                        if (!_corpseOpen)
-                        {
-                            corpse.Open();
-
-                            _corpseOpen = true;
-                            //Chat.WriteLine("Opening Corpse");
-                            _LootBoolTimer = Time.NormalTime;
-                        }
-
-                        if (Time.NormalTime > _LootBoolTimer + 2.5)
-                        {
-                            _corpseOpen = false;
-                        }
-                    }
-                    //foreach (Item item in container.Items)
-                    foreach (Item item in corpse.Container.Items)
-                    {
-                        if (Inventory.NumFreeSlots > 1)
-                        {
-                            if (CheckRules(item))
-                                item.MoveToInventory();
-                            else
-                                item.Delete();
-                        }
-                    }
-                }
-            }
-
-            //Moving this loop below the container opening loop allows us to loot without a bag named loot again
             if (Looting)
             {
+                if (!Delete)
+                {
+                    List<Vector3> openedCorpses = new List<Vector3>();
+
+                    foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6))
+                    {
+                        if (openedCorpses.Contains(corpse.Position))
+                        {
+                            continue;
+                        }
+
+                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && !corpse.IsOpen)
+                        {
+                            corpse.Open();
+                        }
+
+                        if (corpse.IsOpen)
+                        {
+                            openedCorpses.Add(corpse.Position);
+                            //Chat.WriteLine($"{corpse.Position} added.");
+                        }
+
+                        // Process the items within the corpse's container
+                        foreach (Item item in corpse.Container.Items)
+                        {
+                            if (Inventory.NumFreeSlots > 1 && CheckRules(item))
+                            {
+                                item.MoveToInventory();
+                            }
+                        }
+                    }
+
+                    List<Vector3> positionsToRemove = new List<Vector3>();
+
+                    foreach (Vector3 position in openedCorpses.ToList())
+                    {
+                        if (DynelManager.Corpses.FirstOrDefault(c => c.Position == position) == null)
+                        {
+                            positionsToRemove.Add(position);
+                            //Chat.WriteLine($"Position {position} removed from the list.");
+                        }
+                    }
+
+                    foreach (Vector3 position in positionsToRemove)
+                    {
+                        openedCorpses.Remove(position);
+                    }
+                }
+
+
+                if (Delete)
+                {
+                    Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6).FirstOrDefault();
+
+                    if (corpse != null)
+                    {
+                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && !corpse.IsOpen)
+                        {
+                            corpse.Open();
+                        }
+                        //foreach (Item item in container.Items)
+                        foreach (Item item in corpse.Container.Items)
+                        {
+                            if (Inventory.NumFreeSlots > 1)
+                            {
+                                if (CheckRules(item))
+                                    item.MoveToInventory();
+                                else
+                                    item.Delete();
+                            }
+                        }
+                    }
+                }
+
+                //Moving this loop below the container opening loop allows us to loot without a bag named loot again
+
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
                     //Only check to move if there is something to move
@@ -358,11 +287,6 @@ namespace LootManager
                 }
             }
         }
-
-        //private void TeleportEnded(object sender, EventArgs e)
-        //{
-        //    _lastZonedTime = Time.NormalTime;
-        //}
 
         private void chkDel_Toggled(object sender, bool e)
         {
@@ -614,6 +538,18 @@ namespace LootManager
             File.WriteAllText(filename, rulesJson);
         }
 
+        private int GetLineNumber(Exception ex)
+        {
+            var lineNumber = 0;
+
+            var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
+
+            if (lineMatch.Success)
+                lineNumber = int.Parse(lineMatch.Groups[1].Value);
+
+            return lineNumber;
+        }
+
         public bool CheckRules(Item item)
         {
             foreach (Rule rule in Rules)
@@ -621,8 +557,7 @@ namespace LootManager
                 if (
                     item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
                     item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
-                    item.QualityLevel <= Convert.ToInt32(rule.Hql)
-                    )
+                    item.QualityLevel <= Convert.ToInt32(rule.Hql))
                     return true;
 
             }
@@ -661,6 +596,6 @@ namespace LootManager
         public string ItemName;
         public int LowId;
         public int HighId;
-        public int Ql;
+        //public int Ql;
     }
 }

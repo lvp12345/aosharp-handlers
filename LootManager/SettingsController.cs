@@ -9,9 +9,9 @@ namespace LootManager
 {
     public static class SettingsController
     {
-        private static List<Settings> settingsToSave = new List<Settings>();
-        public static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
-        private static bool IsCommandRegistered;
+        private static readonly List<Settings> settingsToSave = new List<Settings>();
+        private static readonly Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
+        private static bool isCommandRegistered;
 
         public static MultiListView searchList;
 
@@ -19,8 +19,23 @@ namespace LootManager
         public static int ItemIdValue = 0;
         public static int MinQlValue = 0;
         public static int MaxQlValue = 0;
+        public static int QtyValue = 0;
 
         public static Window settingsWindow;
+
+        private static bool delete = false;
+        public static bool Delete
+        {
+            get { return delete; }
+            set
+            {
+                if (delete != value)
+                {
+                    delete = value;
+                    SaveSettings();
+                }
+            }
+        }
 
         public static void RegisterCharacters(Settings settings)
         {
@@ -48,7 +63,7 @@ namespace LootManager
 
         private static void RegisterChatCommandIfNotRegistered()
         {
-            if (!IsCommandRegistered)
+            if (!isCommandRegistered)
             {
                 Chat.RegisterCommand("lootmanager", (string command, string[] param, ChatWindow chatWindow) =>
                 {
@@ -60,29 +75,25 @@ namespace LootManager
                         {
                             AppendSettingsTab("Loot Manager", settingsWindow);
 
-                            settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
-                            settingsWindow.FindView("tivminql", out TextInputView tivminql);
-                            settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql);
-                            tivminql.Text = "1";
-                            tivmaxql.Text = "500";
-                            mlv.DeleteAllChildren();
-                            int iEntry = 0;
-                            foreach (Rule r in LootManager.Rules)
+                            if (settingsWindow.FindView("ScrollListRoot", out MultiListView mlv) &&
+                                settingsWindow.FindView("tivminql", out TextInputView tivminql) &&
+                                settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql))
                             {
-                                View entry = View.CreateFromXml(LootManager.PluginDir + "\\UI\\ItemEntry.xml");
-                                entry.FindChild("ItemName", out TextView tx);
+                                tivminql.Text = "1";
+                                tivmaxql.Text = "500";
+                                mlv.DeleteAllChildren();
+                                int iEntry = 0;
+                                foreach (Rule r in LootManager.Rules)
+                                {
+                                    View entry = View.CreateFromXml(LootManager.PluginDir + "\\UI\\ItemEntry.xml");
+                                    entry.FindChild("ItemName", out TextView tx);
 
-                                //entry.Tag = iEntry;
-                                string scope = "";
+                                    string scope = r.Global ? "Global" : "Local";
+                                    tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
 
-                                if (r.Global)
-                                    scope = "Global";
-                                else
-                                    scope = "Local";
-                                tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
-
-                                mlv.AddChild(entry, false);
-                                iEntry++;
+                                    mlv.AddChild(entry, false);
+                                    iEntry++;
+                                }
                             }
                         }
                     }
@@ -92,25 +103,31 @@ namespace LootManager
                     }
                 });
 
-                IsCommandRegistered = true;
+                isCommandRegistered = true;
             }
         }
 
-        public static void AppendSettingsTab(String settingsName, Window testWindow)
+        public static void AppendSettingsTab(string settingsName, Window testWindow)
         {
-            String settingsWindowXmlPath = settingsWindows[settingsName];
-            View settingsView = View.CreateFromXml(settingsWindowXmlPath);
+            if (settingsWindows.TryGetValue(settingsName, out string settingsWindowXmlPath))
+            {
+                View settingsView = View.CreateFromXml(settingsWindowXmlPath);
 
-            if (settingsView != null)
-            {
-                testWindow.AppendTab(settingsName, settingsView);
-                testWindow.Show(true);
+                if (settingsView != null)
+                {
+                    testWindow.AppendTab(settingsName, settingsView);
+                    testWindow.Show(true);
+                }
+                else
+                {
+                    Chat.WriteLine("Failed to load settings schema from " + settingsWindowXmlPath);
+                }
             }
-            else
-            {
-                Chat.WriteLine($"{settingsWindows[settingsName]}");
-                Chat.WriteLine("Failed to load settings schema from " + settingsWindowXmlPath);
-            }
+        }
+
+        private static void SaveSettings()
+        {
+            settingsToSave.ForEach(settings => settings.Save());
         }
     }
 }

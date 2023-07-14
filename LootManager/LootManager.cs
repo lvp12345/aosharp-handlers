@@ -48,7 +48,9 @@ namespace LootManager
 
         private static bool Looting = false;
         private static bool Delete = false;
-       
+
+        bool _lootingCorpse;
+        double _lootingTimer;
 
         private Window _infoWindow;
 
@@ -195,9 +197,13 @@ namespace LootManager
 
                     if (corpse != null)
                     {
-                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && !corpse.IsOpen)
+                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                         {
-                            corpse.Open();
+                            if (Time.NormalTime > _lootingTimer + 4)
+                            { 
+                                corpse.Open();
+                                _lootingTimer = Time.NormalTime;
+                            }
                         }
                         //foreach (Item item in container.Items)
                         foreach (Item item in corpse.Container.Items)

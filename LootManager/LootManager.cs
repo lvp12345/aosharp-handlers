@@ -147,7 +147,7 @@ namespace LootManager
                     // Don't move if no eligible bag (name or space)
                     Backpack _bag = BagWithSpace();
                     if (_bag == null) { return; }
-                    else if (Time.NormalTime > _moveLootDelay + 2)
+                    else if (Time.NormalTime > _moveLootDelay + 1)
                     {
                         itemtomove.MoveToContainer(_bag);
 

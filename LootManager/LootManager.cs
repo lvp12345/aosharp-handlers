@@ -25,7 +25,7 @@ namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
-        private double _moveLootDelay = Time.NormalTime;
+        private double _moveLootDelay;
         private double _closeBag;
 
         //public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
@@ -188,7 +188,6 @@ namespace LootManager
                     {
                         openedCorpses.Remove(position);
                     }
-                    MoveItemsToBag();
                 }
 
 
@@ -218,9 +217,10 @@ namespace LootManager
                             }
                         }
                     }
-                    MoveItemsToBag();
                 }
             }
+
+            MoveItemsToBag();
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
@@ -450,6 +450,8 @@ namespace LootManager
                     else if (Time.NormalTime > _moveLootDelay + 2)
                     {
                         itemtomove.MoveToContainer(_bag);
+
+                        _moveLootDelay = Time.NormalTime;
                     }
                 }
             }

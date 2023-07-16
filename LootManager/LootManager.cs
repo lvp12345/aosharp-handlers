@@ -20,12 +20,13 @@ using AOSharp.Core.Movement;
 using System.Net.Http;
 using AOSharp.Common.Unmanaged.Interfaces;
 using System.Text.RegularExpressions;
+using static AOSharp.Common.Unmanaged.Imports.InventoryGUIModule_c;
 
 namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
-        private double _moveLootDelay;
+        //private double _moveLootDelay;
         //private double _closeBag;
 
         //public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
@@ -51,6 +52,7 @@ namespace LootManager
 
         //bool _lootingCorpse;
         double _lootingTimer;
+        double _closeCorpse;
 
         private Window _infoWindow;
 
@@ -65,7 +67,7 @@ namespace LootManager
                 PluginDir = pluginDir;
 
                 Game.OnUpdate += OnUpdate;
-
+                Inventory.ContainerOpened += ProcessItemsInCorpseContainer;
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
                 LoadRules();
@@ -105,55 +107,70 @@ namespace LootManager
             SettingsController.CleanUp();
         }
 
-        private void FindBagWithSpace()
+        private void MoveItemsToBag()
         {
+            bool foundBagWithSpace = false;
+
+            // Loop through all backpacks to check if their item count is 0
+            // and open them to set the item count if necessary
             foreach (Backpack backpack in Inventory.Backpacks)
             {
-                // For some reason <container>.ItemsCount is returning 0 on initially starting the handler or on zoning
                 if (backpack.Items.Count == 0)
                 {
-                    //In this case backpacks must be opened and closed first to set the item count
-                    //As we cant identify a specific bag by name (yet) for the Use method, open them all .. this should only happen once
+                    // Open all backpacks to set the item count
                     List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
                     foreach (Item bag in bags)
                     {
                         bag.Use();
                         bag.Use();
                     }
-                    //_initiliaseBags = true;
                 }
             }
-        }
 
-        private static Backpack BagWithSpace()
-        {
+            // Find a backpack with the name containing "loot" that has less than 21 items
+            // and return it as the eligible bag with space
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Count < 21)
-                    return backpack;
+                {
+                    foundBagWithSpace = true;
+
+                    // Move the items to the eligible bag
+                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                    {
+                        // Only check to move if there is something to move
+                        if (CheckRules(itemtomove))
+                        {
+                            // Move the item to the eligible bag
+                            itemtomove.MoveToContainer(backpack);
+                            //_moveLootDelay = Time.NormalTime;
+                        }
+                    }
+
+                    break;
+                }
             }
-            return null;
+
+            if (!foundBagWithSpace)
+            {
+                // No eligible bag with free space found, stop searching
+                return;
+            }
         }
 
-        private void MoveItemsToBag()
+        private void ProcessItemsInCorpseContainer(object sender, Container e)
         {
-            foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+            Container container = e;
+
+            foreach (Item item in container.Items)
             {
-                // Only check to move if there is something to move
-                if (CheckRules(itemtomove))
-                {
-                    FindBagWithSpace();
+                if (Inventory.NumFreeSlots <= 1)
+                    return;
 
-                    // Don't move if no eligible bag (name or space)
-                    Backpack _bag = BagWithSpace();
-                    if (_bag == null) { return; }
-                    else if (Time.NormalTime > _moveLootDelay + 1)
-                    {
-                        itemtomove.MoveToContainer(_bag);
-
-                        _moveLootDelay = Time.NormalTime;
-                    }
-                }
+                if (CheckRules(item))
+                    item.MoveToInventory();
+                else if (Delete)
+                    item.Delete();
             }
         }
 
@@ -163,55 +180,41 @@ namespace LootManager
                 return;
             if (Looting)
             {
+
                 if (!Delete)
                 {
-                    List<Vector3> openedCorpses = new List<Vector3>();
+                    List<Corpse> unopenedCorpses = DynelManager.Corpses
+                        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6 && !c.IsOpen)
+                        .ToList();
 
-                    foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6))
+                    foreach (Corpse corpse in unopenedCorpses.ToList())
                     {
-                        if (openedCorpses.Contains(corpse.Position))
+                        if (corpse == null)
                         {
+                            unopenedCorpses.Remove(corpse);
                             continue;
                         }
-
-                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && !corpse.IsOpen)
+                        if (corpse.IsValid && Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 2)
                         {
-                            corpse.Open();
-                        }
-
-                        if (corpse.IsOpen)
-                        {
-                            openedCorpses.Add(corpse.Position);
-                            //Chat.WriteLine($"{corpse.Position} added.");
-                        }
-
-                        // Process the items within the corpse's container
-                        foreach (Item item in corpse.Container.Items)
-                        {
-                            if (Inventory.NumFreeSlots > 1 && CheckRules(item))
+                            if (!corpse.IsOpen)
                             {
-                                item.MoveToInventory();
+                                corpse.Open();
+                                //Chat.WriteLine("Opening");
+                            }
+                            
+                            _lootingTimer = Time.NormalTime;
+                        }
+                        else
+                        {
+                            if (corpse.IsValid && Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _closeCorpse + 6 && unopenedCorpses.Any(c => c.Position == corpse.Position))
+                            {
+                                corpse.Open();
+                                //Chat.WriteLine("Closing");
+                                _closeCorpse = Time.NormalTime;
                             }
                         }
                     }
-
-                    List<Vector3> positionsToRemove = new List<Vector3>();
-
-                    foreach (Vector3 position in openedCorpses.ToList())
-                    {
-                        if (DynelManager.Corpses.FirstOrDefault(c => c.Position == position) == null)
-                        {
-                            positionsToRemove.Add(position);
-                            //Chat.WriteLine($"Position {position} removed from the list.");
-                        }
-                    }
-
-                    foreach (Vector3 position in positionsToRemove)
-                    {
-                        openedCorpses.Remove(position);
-                    }
                 }
-
 
                 if (Delete)
                 {
@@ -219,30 +222,16 @@ namespace LootManager
 
                     if (corpse != null)
                     {
-                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
+                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 4)
                         {
-                            if (Time.NormalTime > _lootingTimer + 4)
-                            {
-                                corpse.Open();
-                                _lootingTimer = Time.NormalTime;
-                            }
-                        }
-                        //foreach (Item item in container.Items)
-                        foreach (Item item in corpse.Container.Items)
-                        {
-                            if (Inventory.NumFreeSlots > 1)
-                            {
-                                if (CheckRules(item))
-                                    item.MoveToInventory();
-                                else
-                                    item.Delete();
-                            }
+                            corpse.Open();
+                            _lootingTimer = Time.NormalTime;
                         }
                     }
                 }
-            }
 
-            MoveItemsToBag();
+                MoveItemsToBag();
+            }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {

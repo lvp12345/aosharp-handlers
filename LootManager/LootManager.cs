@@ -26,7 +26,7 @@ namespace LootManager
     public class LootManager : AOPluginEntry
     {
         private double _moveLootDelay;
-        private double _closeBag;
+        //private double _closeBag;
 
         //public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
         //public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
@@ -35,10 +35,10 @@ namespace LootManager
 
         protected double _lastZonedTime = Time.NormalTime;
 
-        private static int MinQlValue;
-        private static int MaxQlValue;
-        private static int ItemIdValue;
-        private static string ItemNameValue;
+        //private static int MinQlValue;
+        //private static int MaxQlValue;
+        //private static int ItemIdValue;
+        //private static string ItemNameValue;
 
         public static List<Rule> Rules;
 
@@ -49,7 +49,7 @@ namespace LootManager
         private static bool Looting = false;
         private static bool Delete = false;
 
-        bool _lootingCorpse;
+        //bool _lootingCorpse;
         double _lootingTimer;
 
         private Window _infoWindow;
@@ -133,6 +133,28 @@ namespace LootManager
                     return backpack;
             }
             return null;
+        }
+
+        private void MoveItemsToBag()
+        {
+            foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+            {
+                // Only check to move if there is something to move
+                if (CheckRules(itemtomove))
+                {
+                    FindBagWithSpace();
+
+                    // Don't move if no eligible bag (name or space)
+                    Backpack _bag = BagWithSpace();
+                    if (_bag == null) { return; }
+                    else if (Time.NormalTime > _moveLootDelay + 2)
+                    {
+                        itemtomove.MoveToContainer(_bag);
+
+                        _moveLootDelay = Time.NormalTime;
+                    }
+                }
+            }
         }
 
         private void OnUpdate(object sender, float deltaTime)
@@ -431,32 +453,6 @@ namespace LootManager
                 Chat.WriteLine(ex.Message);
             }
         }
-
-        private void MoveItemsToBag()
-        {
-            foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-            {
-                // Only check to move if there is something to move
-                if (CheckRules(itemtomove))
-                {
-                    if (!_initiliaseBags)
-                    {
-                        // Initialise bags again if the flag is false (after injecting or zoning)
-                        FindBagWithSpace();
-                    }
-                    // Don't move if no eligible bag (name or space)
-                    Backpack _bag = BagWithSpace();
-                    if (_bag == null) { return; }
-                    else if (Time.NormalTime > _moveLootDelay + 2)
-                    {
-                        itemtomove.MoveToContainer(_bag);
-
-                        _moveLootDelay = Time.NormalTime;
-                    }
-                }
-            }
-        }
-
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {

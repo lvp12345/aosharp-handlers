@@ -120,7 +120,7 @@ namespace LootManager
                         bag.Use();
                         bag.Use();
                     }
-                    _initiliaseBags = true;
+                    //_initiliaseBags = true;
                 }
             }
         }

@@ -61,13 +61,13 @@ namespace LootManager
                         {
                             AppendSettingsTab("Loot Manager", settingsWindow);
 
-                            if (settingsWindow.FindView("ScrollListRoot", out MultiListView mlv) &&
-                                settingsWindow.FindView("tivminql", out TextInputView tivminql) &&
-                                settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql))
+                            if (settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView) &&
+                                settingsWindow.FindView("_itemMinQL", out TextInputView _itemMinQL) &&
+                                settingsWindow.FindView("_itemMaxQL", out TextInputView _itemMaxQL))
                             {
-                                tivminql.Text = "1";
-                                tivmaxql.Text = "500";
-                                mlv.DeleteAllChildren();
+                                _itemMinQL.Text = "1";
+                                _itemMaxQL.Text = "500";
+                                _multiListView.DeleteAllChildren();
                                 int iEntry = 0;
                                 foreach (Rule r in LootManager.Rules)
                                 {
@@ -77,7 +77,7 @@ namespace LootManager
                                     string scope = r.Global ? "Global" : "Local";
                                     tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
 
-                                    mlv.AddChild(entry, false);
+                                    _multiListView.AddChild(entry, false);
                                     iEntry++;
                                 }
                             }

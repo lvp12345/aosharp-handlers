@@ -28,8 +28,8 @@ namespace LootManager
         private double _moveLootDelay = Time.NormalTime;
         private double _closeBag;
 
-        public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
-        public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
+        //public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
+        //public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
 
         private string previousErrorMessage = string.Empty;
 
@@ -188,6 +188,7 @@ namespace LootManager
                     {
                         openedCorpses.Remove(position);
                     }
+                    MoveItemsToBag();
                 }
 
 
@@ -200,7 +201,7 @@ namespace LootManager
                         if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                         {
                             if (Time.NormalTime > _lootingTimer + 4)
-                            { 
+                            {
                                 corpse.Open();
                                 _lootingTimer = Time.NormalTime;
                             }
@@ -217,26 +218,7 @@ namespace LootManager
                             }
                         }
                     }
-                }
-
-                //Moving this loop below the container opening loop allows us to loot without a bag named loot again
-
-                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
-                {
-                    //Only check to move if there is something to move
-                    if (CheckRules(itemtomove))
-                    {
-                        if (!_initiliaseBags)
-                        {
-                            //Initialise bags again if the flag is false (after injecting or zoning)
-                            FindBagWithSpace();
-                        }
-                        //Dont move if no eligible bag (name or space)
-                        Backpack _bag = BagWithSpace();
-                        if (_bag == null) { return; }
-                        else if (Time.NormalTime > _moveLootDelay + 2)
-                        { itemtomove.MoveToContainer(_bag); }
-                    }
+                    MoveItemsToBag();
                 }
             }
 
@@ -301,15 +283,15 @@ namespace LootManager
 
         private void addButtonClicked(object sender, ButtonBase e)
         {
-            SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
+            SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
 
-            SettingsController.settingsWindow.FindView("tivName", out TextInputView tivname);
-            SettingsController.settingsWindow.FindView("tivminql", out TextInputView tivminql);
-            SettingsController.settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql);
+            SettingsController.settingsWindow.FindView("tivName", out TextInputView _itemName);
+            SettingsController.settingsWindow.FindView("_itemMinQL", out TextInputView _itemMinQL);
+            SettingsController.settingsWindow.FindView("_itemMaxQL", out TextInputView _itemMaxQL);
 
             SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
 
-            if (tivname.Text.Trim() == "")
+            if (_itemName.Text.Trim() == "")
             {
                 txErr.Text = "Can't add an empty name";
                 return;
@@ -319,8 +301,8 @@ namespace LootManager
             int maxql = 0;
             try
             {
-                minql = Convert.ToInt32(tivminql.Text);
-                maxql = Convert.ToInt32(tivmaxql.Text);
+                minql = Convert.ToInt32(_itemMinQL.Text);
+                maxql = Convert.ToInt32(_itemMaxQL.Text);
             }
             catch
             {
@@ -349,10 +331,10 @@ namespace LootManager
             bool GlobalScope = chkGlobal.IsChecked;
 
 
-            mlv.DeleteAllChildren();
+            _multiListView.DeleteAllChildren();
 
 
-            Rules.Add(new Rule(tivname.Text, tivminql.Text, tivmaxql.Text, GlobalScope));
+            Rules.Add(new Rule(_itemName.Text, _itemMinQL.Text, _itemMaxQL.Text, GlobalScope));
 
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
 
@@ -360,7 +342,7 @@ namespace LootManager
             foreach (Rule r in Rules)
             {
                 View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
-                entry.FindChild("ItemName", out TextView tx);
+                entry.FindChild("ItemName", out TextView _textView);
                 string globalscope = "";
                 if (r.Global)
                     globalscope = "G";
@@ -368,16 +350,16 @@ namespace LootManager
                     globalscope = "L";
 
                 //entry.Tag = iEntry;
-                tx.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + " ] - " + r.Name;
+                _textView.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + " ] - " + r.Name;
 
-                mlv.AddChild(entry, false);
+                _multiListView.AddChild(entry, false);
                 iEntry++;
             }
 
 
-            tivname.Text = "";
-            tivminql.Text = "1";
-            tivmaxql.Text = "500";
+            _itemName.Text = "";
+            _itemMinQL.Text = "1";
+            _itemMaxQL.Text = "500";
             txErr.Text = "";
 
         }
@@ -386,7 +368,7 @@ namespace LootManager
         {
             try
             {
-                SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
+                SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
 
                 SettingsController.settingsWindow.FindView("tivindex", out TextInputView txIndex);
 
@@ -418,7 +400,7 @@ namespace LootManager
 
                 Rules.RemoveAt(index);
 
-                mlv.DeleteAllChildren();
+                _multiListView.DeleteAllChildren();
                 //viewitems.Clear();
 
                 int iEntry = 0;
@@ -437,7 +419,7 @@ namespace LootManager
                     tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
 
 
-                    mlv.AddChild(entry, false);
+                    _multiListView.AddChild(entry, false);
                     iEntry++;
                 }
 
@@ -449,6 +431,30 @@ namespace LootManager
                 Chat.WriteLine(ex.Message);
             }
         }
+
+        private void MoveItemsToBag()
+        {
+            foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+            {
+                // Only check to move if there is something to move
+                if (CheckRules(itemtomove))
+                {
+                    if (!_initiliaseBags)
+                    {
+                        // Initialise bags again if the flag is false (after injecting or zoning)
+                        FindBagWithSpace();
+                    }
+                    // Don't move if no eligible bag (name or space)
+                    Backpack _bag = BagWithSpace();
+                    if (_bag == null) { return; }
+                    else if (Time.NormalTime > _moveLootDelay + 2)
+                    {
+                        itemtomove.MoveToContainer(_bag);
+                    }
+                }
+            }
+        }
+
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
@@ -476,8 +482,8 @@ namespace LootManager
             {
                 string rulesJson = File.ReadAllText(filename);
                 Rules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
-                foreach (Rule r in Rules)
-                    r.Global = true;
+                foreach (Rule rule in Rules)
+                    rule.Global = true;
             }
 
 
@@ -487,10 +493,10 @@ namespace LootManager
                 List<Rule> scopedRules = new List<Rule>();
                 string rulesJson = File.ReadAllText(filename);
                 scopedRules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
-                foreach (Rule r in scopedRules)
+                foreach (Rule rule in scopedRules)
                 {
-                    r.Global = false;
-                    Rules.Add(r);
+                    rule.Global = false;
+                    Rules.Add(rule);
                 }
             }
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();

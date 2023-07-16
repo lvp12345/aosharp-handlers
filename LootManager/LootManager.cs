@@ -44,7 +44,7 @@ namespace LootManager
 
         protected Settings _settings;
         public static Settings _settingsItems;
-        private static bool _initiliaseBags = false;
+        //private static bool _initiliaseBags = false;
 
         private static bool Looting = false;
         private static bool Delete = false;

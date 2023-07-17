@@ -160,6 +160,8 @@ namespace LootManager
 
         private void ProcessItemsInCorpseContainer(object sender, Container e)
         {
+            if (e.Identity.Type != IdentityType.Corpse) return;
+
             Container container = e;
 
             foreach (Item item in container.Items)

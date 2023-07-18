@@ -115,7 +115,8 @@ namespace LootManager
             // and open them to set the item count if necessary
             foreach (Backpack backpack in Inventory.Backpacks)
             {
-                if (backpack.Items.Count == 0)
+                if (backpack.Items.Count == 0 && Inventory.Items.Any(item => item.Slot.Type == IdentityType.Inventory && CheckRules(item)))
+
                 {
                     // Open all backpacks to set the item count
                     List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();

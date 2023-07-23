@@ -61,7 +61,7 @@ namespace HelpManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\HelpManager\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Help Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -73,9 +73,9 @@ namespace HelpManager
                             settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
 
                             if (channelInput != null)
-                                channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                                channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
                             if (sitPercentageInput != null)
-                                sitPercentageInput.Text = $"{Config.CharSettings[Game.ClientInst].SitPercentage}";
+                                sitPercentageInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage}";
                         }
                     }
                     catch (Exception e)

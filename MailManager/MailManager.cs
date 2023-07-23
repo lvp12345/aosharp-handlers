@@ -40,10 +40,10 @@ namespace MailManager
             _settings = new Settings("MailManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\MailManager\\{Game.ClientInst}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\MailManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
-            Config.CharSettings[Game.ClientInst].MailCharacterNameChangedEvent += MailCharacterName_Changed;
-            Config.CharSettings[Game.ClientInst].MailAmountChangedEvent += MailAmount_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterNameChangedEvent += MailCharacterName_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmountChangedEvent += MailAmount_Changed;
             Network.PacketReceived += HandleMail;
 
             Game.OnUpdate += OnUpdate;
@@ -66,8 +66,8 @@ namespace MailManager
 
             _settings["Toggle"] = false;
 
-            MailCharacterName = Config.CharSettings[Game.ClientInst].MailCharacterName;
-            MailAmount = Config.CharSettings[Game.ClientInst].MailAmount;
+            MailCharacterName = Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterName;
+            MailAmount = Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmount;
         }
 
         private void HandleInfoViewClick(object s, ButtonBase button)
@@ -82,14 +82,14 @@ namespace MailManager
 
         public static void MailCharacterName_Changed(object s, string e)
         {
-            Config.CharSettings[Game.ClientInst].MailCharacterName = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterName = e;
             MailCharacterName = e;
             Config.Save();
         }
 
         public static void MailAmount_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].MailAmount = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmount = e;
             MailAmount = e;
             Config.Save();
         }
@@ -134,11 +134,11 @@ namespace MailManager
                     writer.Write((short)PacketType.N3Message);
                     writer.Write((short)1);
                     writer.Write((short)0);
-                    writer.Write(Game.ClientInst);
+                    writer.Write(DynelManager.LocalPlayer.Name);
                     writer.Write((int)2);
                     writer.Write((int)N3MessageType.Mail);
                     writer.Write((int)IdentityType.SimpleChar);
-                    writer.Write(Game.ClientInst);
+                    writer.Write(DynelManager.LocalPlayer.Name);
                     writer.Write((byte)0);
 
                     //Body
@@ -285,18 +285,18 @@ namespace MailManager
 
                 if (mailCharacterNameInput != null && !string.IsNullOrEmpty(mailCharacterNameInput.Text))
                 {
-                    if (Config.CharSettings[Game.ClientInst].MailCharacterName != mailCharacterNameInput.Text)
+                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterName != mailCharacterNameInput.Text)
                     {
-                        Config.CharSettings[Game.ClientInst].MailCharacterName = mailCharacterNameInput.Text;
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterName = mailCharacterNameInput.Text;
                     }
                 }
 
                 if (mailAmountInput != null && !string.IsNullOrEmpty(mailAmountInput.Text))
                 {
                     if (int.TryParse(mailAmountInput.Text, out int mailAmountValue)
-                        && Config.CharSettings[Game.ClientInst].MailAmount != mailAmountValue)
+                        && Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmount != mailAmountValue)
                     {
-                        Config.CharSettings[Game.ClientInst].MailAmount = mailAmountValue;
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmount = mailAmountValue;
                     }
                 }
 

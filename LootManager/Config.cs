@@ -5,18 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace PetManager
+namespace LootManager
 {
     public class Config
     {
         public Dictionary<string, CharacterSettings> CharSettings { get; set; }
 
         protected string _path;
-
-        [JsonIgnore]
-        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].IPCChannel : 3;
-
-
 
         public static Config Load(string path)
         {
@@ -57,11 +52,11 @@ namespace PetManager
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager\\{DynelManager.LocalPlayer.Name}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager\\{DynelManager.LocalPlayer.Name}");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager\\{DynelManager.LocalPlayer.Name}"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager\\{DynelManager.LocalPlayer.Name}");
 
             File.WriteAllText(_path, JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
         }
@@ -70,9 +65,8 @@ namespace PetManager
     public class CharacterSettings
     {
         public event EventHandler<int> IPCChannelChangedEvent;
-        private int _ipcChannel = 3;
+        private int _ipcChannel = 1;
 
-        //Breaking out auto-property
         public int IPCChannel
         {
             get
@@ -85,6 +79,60 @@ namespace PetManager
                 {
                     _ipcChannel = value;
                     IPCChannelChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<string> FollowPlayerChangedEvent;
+        private string _followPlayer = string.Empty;
+
+        public string FollowPlayer
+        {
+            get
+            {
+                return _followPlayer;
+            }
+            set
+            {
+                if (_followPlayer != value)
+                {
+                    _followPlayer = value;
+                    FollowPlayerChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<string> NavFollowIdentityChangedEvent;
+        private string _navFollowPlayer = string.Empty;
+
+        public string NavFollowIdentity
+        {
+            get
+            {
+                return _navFollowPlayer;
+            }
+            set
+            {
+                if (_navFollowPlayer != value)
+                {
+                    _navFollowPlayer = value;
+                    NavFollowIdentityChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> NavFollowDistanceChangedEvent;
+        private int _navFollowDistance = 0;
+
+        public int NavFollowDistance
+        {
+            get
+            {
+                return _navFollowDistance;
+            }
+            set
+            {
+                if (_navFollowDistance != value)
+                {
+                    _navFollowDistance = value;
+                    NavFollowDistanceChangedEvent?.Invoke(this, value);
                 }
             }
         }

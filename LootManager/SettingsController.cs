@@ -11,15 +11,20 @@ namespace LootManager
     {
         private static readonly List<Settings> settingsToSave = new List<Settings>();
         private static readonly Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
+        public static List<string> settingsViews = new List<string>();
         private static bool isCommandRegistered;
 
         public static MultiListView searchList;
+
+        public static Config Config { get; private set; }
 
         public static string NameValue = string.Empty;
         public static int ItemIdValue = 0;
         public static int MinQlValue = 0;
         public static int MaxQlValue = 0;
         public static int QtyValue = 0;
+
+        public static bool Delete;
 
         public static Window settingsWindow;
 
@@ -55,6 +60,8 @@ namespace LootManager
                 {
                     try
                     {
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
@@ -111,8 +118,9 @@ namespace LootManager
             }
         }
 
-        private static void SaveSettings()
+        public static void SaveSettings()
         {
+
             settingsToSave.ForEach(settings => settings.Save());
         }
     }

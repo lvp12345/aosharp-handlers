@@ -137,29 +137,6 @@ namespace BagManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F4) && !_init)
-            //{
-            //    _init = true;
-
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\HelpManager\\{Game.ClientInst}\\Config.json");
-
-            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Help Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
-
-            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-            //    {
-            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Help Manager")))
-            //        {
-            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-
-            //            SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView assistInput);
-
-            //            if (assistInput != null)
-            //                assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
-            //        }
-            //    }
-
-            //    _init = false;
-            //}
 
             if (ModeSelection.Trade == (ModeSelection)_settings["ModeSelection"].AsInt32()
                 && _settings["Toggle"].AsBool()

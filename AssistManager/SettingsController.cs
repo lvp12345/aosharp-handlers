@@ -61,7 +61,7 @@ namespace AssistManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\AssistManager\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\AssistManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Assist Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -72,7 +72,7 @@ namespace AssistManager
                             settingsWindow.FindView("AssistNamedCharacter", out TextInputView assistInput);
 
                             if (assistInput != null)
-                                assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
+                                assistInput.Text = Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayer;
                         }
                     }
                     catch (Exception e)

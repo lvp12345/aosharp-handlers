@@ -61,7 +61,7 @@ namespace PetManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Pet Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -72,7 +72,7 @@ namespace PetManager
                             settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
                             if (channelInput != null)
-                                channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                                channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
                         }
                     }
                     catch (Exception e)

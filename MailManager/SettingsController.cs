@@ -49,7 +49,7 @@ namespace MailManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\MailManager\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\MailManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Mail Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -61,9 +61,9 @@ namespace MailManager
                             settingsWindow.FindView("MailAmount", out TextInputView mailAmount);
 
                             if (mailCharacterName != null)
-                                mailCharacterName.Text = $"{Config.CharSettings[Game.ClientInst].MailCharacterName}";
+                                mailCharacterName.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterName}";
                             if (mailAmount != null)
-                                mailAmount.Text = $"{Config.CharSettings[Game.ClientInst].MailAmount}";
+                                mailAmount.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmount}";
                         }
                     }
                     catch (Exception e)

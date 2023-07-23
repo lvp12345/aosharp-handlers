@@ -26,31 +26,19 @@ namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
-        //private double _moveLootDelay;
-        //private double _closeBag;
-
-        //public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
-        //public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
-
+        
         private string previousErrorMessage = string.Empty;
 
         protected double _lastZonedTime = Time.NormalTime;
-
-        //private static int MinQlValue;
-        //private static int MaxQlValue;
-        //private static int ItemIdValue;
-        //private static string ItemNameValue;
 
         public static List<Rule> Rules;
 
         protected Settings _settings;
         public static Settings _settingsItems;
-        //private static bool _initiliaseBags = false;
 
         private static bool Looting = false;
-        private static bool Delete = false;
+        private bool Delete;
 
-        //bool _lootingCorpse;
         double _lootingTimer;
         double _closeCorpse;
 
@@ -68,6 +56,7 @@ namespace LootManager
 
                 Game.OnUpdate += OnUpdate;
                 Inventory.ContainerOpened += ProcessItemsInCorpseContainer;
+
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
                 LoadRules();
@@ -159,11 +148,9 @@ namespace LootManager
             }
         }
 
-        private void ProcessItemsInCorpseContainer(object sender, Container e)
+        private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
-            if (e.Identity.Type != IdentityType.Corpse) return;
-
-            Container container = e;
+            if (container.Identity.Type != IdentityType.Corpse) return;
 
             foreach (Item item in container.Items)
             {
@@ -181,6 +168,7 @@ namespace LootManager
         {
             if (Game.IsZoning)
                 return;
+
             if (Looting)
             {
 
@@ -272,10 +260,11 @@ namespace LootManager
             }
         }
 
-        private void chkDel_Toggled(object sender, bool e)
+        private void chkDel_Toggled(object sender, bool toggle)
         {
             Checkbox chk = (Checkbox)sender;
-            Delete = e;
+            Delete = toggle;
+            SettingsController.SaveSettings();
         }
 
         private void chkOnOff_Toggled(object sender, bool e)
@@ -453,6 +442,8 @@ namespace LootManager
 
         private void LoadRules()
         {
+            Delete = GetDeleteSetting();
+            Delete = bool.Parse(File.ReadAllText("settings.txt"));
             Rules = new List<Rule>();
 
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp"))
@@ -545,6 +536,11 @@ namespace LootManager
                     return true;
 
             }
+            return false;
+        }
+        private bool GetDeleteSetting()
+        {
+            // Load Delete value from settings
             return false;
         }
 

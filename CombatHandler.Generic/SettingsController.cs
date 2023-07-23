@@ -80,7 +80,7 @@ namespace CombatHandler.Generic
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\Generic\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\Generic\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -93,7 +93,7 @@ namespace CombatHandler.Generic
                                 settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
                                 if (channelInput != null)
-                                    channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                                    channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
                             }
                         }
                     }

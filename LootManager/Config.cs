@@ -10,6 +10,7 @@ namespace LootManager
     public class Config
     {
         public Dictionary<string, CharacterSettings> CharSettings { get; set; }
+        //public bool Delete { get; set; }
 
         protected string _path;
 
@@ -64,78 +65,7 @@ namespace LootManager
 
     public class CharacterSettings
     {
-        public event EventHandler<int> IPCChannelChangedEvent;
-        private int _ipcChannel = 1;
-
-        public int IPCChannel
-        {
-            get
-            {
-                return _ipcChannel;
-            }
-            set
-            {
-                if (_ipcChannel != value)
-                {
-                    _ipcChannel = value;
-                    IPCChannelChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<string> FollowPlayerChangedEvent;
-        private string _followPlayer = string.Empty;
-
-        public string FollowPlayer
-        {
-            get
-            {
-                return _followPlayer;
-            }
-            set
-            {
-                if (_followPlayer != value)
-                {
-                    _followPlayer = value;
-                    FollowPlayerChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<string> NavFollowIdentityChangedEvent;
-        private string _navFollowPlayer = string.Empty;
-
-        public string NavFollowIdentity
-        {
-            get
-            {
-                return _navFollowPlayer;
-            }
-            set
-            {
-                if (_navFollowPlayer != value)
-                {
-                    _navFollowPlayer = value;
-                    NavFollowIdentityChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
-        public event EventHandler<int> NavFollowDistanceChangedEvent;
-        private int _navFollowDistance = 0;
-
-        public int NavFollowDistance
-        {
-            get
-            {
-                return _navFollowDistance;
-            }
-            set
-            {
-                if (_navFollowDistance != value)
-                {
-                    _navFollowDistance = value;
-                    NavFollowDistanceChangedEvent?.Invoke(this, value);
-                }
-            }
-        }
+       
     }
 }
 

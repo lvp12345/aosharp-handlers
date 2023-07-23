@@ -122,38 +122,6 @@ namespace FollowManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F3) && !_init)
-            //{
-            //    _init = true;
-
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\FollowManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
-
-            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Follow Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
-
-            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-            //    {
-            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Follow Manager")))
-            //        {
-            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-
-            //            SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-            //            SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView followBox);
-            //            SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView navFollowBox);
-            //            SettingsController.settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceBox);
-
-            //            if (channelInput != null)
-            //                channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
-            //            if (followBox != null)
-            //                followBox.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer}";
-            //            if (navFollowBox != null)
-            //                navFollowBox.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity}";
-            //            if (navFollowDistanceBox != null)
-            //                navFollowDistanceBox.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance}";
-            //        }
-            //    }
-
-            //    _init = false;
-            //}
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {

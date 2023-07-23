@@ -6,16 +6,10 @@
 		<BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
 			<!-- Top row -->
 			<View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT" >
-				<!-- "Enabled" TextView -->
-				<TextView name="tvonoff" value="Enabled" layout_borders="Rect(5,5,5,5)"/>
-				<!-- "Enabled" CheckBox -->
-				<CheckBox name="chkOnOff" label="" layout_borders="Rect(5,5,5,5)"/>
-				<!-- "Delete leftovers" TextView -->
-				<TextView  name="tvdel" value="Delete leftovers" layout_borders="Rect(5,5,5,5)"/>
-				<!-- "Delete leftovers" CheckBox -->
-				<CheckBox name="chkDel" label="" layout_borders="Rect(5,5,5,5)"/>
-				<HLayoutSpacer/>
-				<!-- "Info" Button -->
+
+				<OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Enabled" layout_borders="Rect(5,5,5,5)"/>
+				<OptionCheckBox label="Delete leftovers" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Delete" layout_borders="Rect(5,5,5,0)"/>
+
 				<Button name="LootManagerInfoView" label="Info" layout_borders="Rect(5,5,5,5)"/>
 			</View>
 		</BorderView>

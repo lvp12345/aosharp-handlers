@@ -11,7 +11,6 @@ namespace LootManager
     {
         private static readonly List<Settings> settingsToSave = new List<Settings>();
         private static readonly Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
-        public static List<string> settingsViews = new List<string>();
         private static bool isCommandRegistered;
 
         public static MultiListView searchList;
@@ -90,9 +89,16 @@ namespace LootManager
                             }
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
-                        Chat.WriteLine(e);
+                        var errorMessage = "An error occurred on line " + LootManager.GetLineNumber(ex) + ": " + ex.Message;
+
+                        if (errorMessage != LootManager.previousErrorMessage)
+                        {
+                            Chat.WriteLine(errorMessage);
+                            Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                            LootManager.previousErrorMessage = errorMessage;
+                        }
                     }
                 });
 
@@ -118,10 +124,5 @@ namespace LootManager
             }
         }
 
-        public static void SaveSettings()
-        {
-
-            settingsToSave.ForEach(settings => settings.Save());
-        }
     }
 }

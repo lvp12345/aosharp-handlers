@@ -132,29 +132,30 @@ namespace LootManager
                         break;
                     }
                 }
+            }
 
-                // Find a backpack with the name containing "loot" and less than 21 items
-                foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+            // Find a backpack with the name containing "loot" and less than 21 items
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+            {
+                if (backpack.Items.Count < 21)
                 {
-                    if (backpack.Items.Count < 21)
+                    // Move the items to the backpack with free space
+                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                     {
-                        // Move the items to the backpack with free space
-                        foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                        // Only check to move if there is something to move
+                        if (CheckRules(itemtomove))
                         {
-                            // Only check to move if there is something to move
-                            if (CheckRules(itemtomove))
-                            {
-                                // Move the item to the backpack with free space
-                                itemtomove.MoveToContainer(backpack);
-                                //_moveLootDelay = Time.NormalTime;
-                            }
+                            // Move the item to the backpack with free space
+                            itemtomove.MoveToContainer(backpack);
+                            //_moveLootDelay = Time.NormalTime;
                         }
-
-                        // No need to check further, break out of the loop
-                        break;
                     }
+
+                    // No need to check further, break out of the loop
+                    break;
                 }
             }
+
         }
 
         private void ProcessItemsInCorpseContainer(object sender, Container container)
@@ -176,7 +177,10 @@ namespace LootManager
         private void OnUpdate(object sender, float deltaTime)
         {
             if (Game.IsZoning)
+            {
+                _bagsFull = false;
                 return;
+            }
 
             if (_settings["Enabled"].AsBool())
             {

@@ -109,11 +109,13 @@ namespace LootManager
 
         private void MoveItemsToBag()
         {
-            // Loop through all backpacks to check if their item count is 0
-            // and open them to set the item count if necessary
-            foreach (Backpack backpack in Inventory.Backpacks)
+
+
+            if (!_bagsFull)
             {
-                if (!_bagsFull)
+                // Loop through all backpacks to check if their item count is 0
+                // and open them to set the item count if necessary
+                foreach (Backpack backpack in Inventory.Backpacks)
                 {
                     if (backpack.Items.Count == 0 && Inventory.Items.Any(item => item.Slot.Type == IdentityType.Inventory && CheckRules(item)))
                     {
@@ -132,38 +134,40 @@ namespace LootManager
                         }
 
                     }
+
                 }
-            }
 
-            // Find a backpack with the name containing "loot" that has less than 21 items
-            // and return it as the eligible bag with space
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
-            {
-                if (backpack.Items.Count < 21)
+                // Find a backpack with the name containing "loot" that has less than 21 items
+                // and return it as the eligible bag with space
+                foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
                 {
-                    foundBagWithSpace = true;
-
-                    // Move the items to the eligible bag
-                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                    if (backpack.Items.Count < 21)
                     {
-                        // Only check to move if there is something to move
-                        if (CheckRules(itemtomove))
+                        foundBagWithSpace = true;
+
+                        // Move the items to the eligible bag
+                        foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                         {
-                            // Move the item to the eligible bag
-                            itemtomove.MoveToContainer(backpack);
-                            //_moveLootDelay = Time.NormalTime;
+                            // Only check to move if there is something to move
+                            if (CheckRules(itemtomove))
+                            {
+                                // Move the item to the eligible bag
+                                itemtomove.MoveToContainer(backpack);
+                                //_moveLootDelay = Time.NormalTime;
+                            }
                         }
+
+                        break;
                     }
 
-                    break;
                 }
-                
-            }
 
-            if (!foundBagWithSpace)
-            {
-                // No eligible bag with free space found, stop searching
-                return;
+                if (!foundBagWithSpace)
+                {
+                    // No eligible bag with free space found, stop searching
+                    _bagsFull = true;
+                    return;
+                }
             }
         }
 
@@ -190,7 +194,7 @@ namespace LootManager
 
             if (_settings["Enabled"].AsBool())
             {
-                if (_bagsFull && !foundBagWithSpace)
+                if (_bagsFull && Inventory.NumFreeSlots == 0)
                 {
                     _settings["Enabled"] = false;
                 }

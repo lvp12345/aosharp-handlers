@@ -9,6 +9,7 @@ using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace FollowManager
 {
@@ -30,6 +31,8 @@ namespace FollowManager
 
         public static View _infoView;
 
+        public static string previousErrorMessage = string.Empty;
+
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
@@ -39,40 +42,54 @@ namespace FollowManager
 
         public override void Run(string pluginDir)
         {
-            _settings = new Settings("FollowManager");
-            PluginDir = pluginDir;
-
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\FollowManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
-
-            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayerChangedEvent += FollowPlayer_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentityChangedEvent += NavFollowIdentity_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistanceChangedEvent += NavFollowDistance_Changed;
-
-            RegisterSettingsWindow("Follow Manager", "FollowManagerSettingWindow.xml");
-
-            Game.OnUpdate += OnUpdate;
-
-            _settings.AddVariable("Toggle", false);
-
-            Chat.RegisterCommand("toggle", (string command, string[] param, ChatWindow chatWindow) =>
+            try
             {
-                _settings["Toggle"] = !_settings["Toggle"].AsBool();
-                Chat.WriteLine($"Toggle : {_settings["Toggle"]}");
-            });
+                _settings = new Settings("FollowManager");
+                PluginDir = pluginDir;
 
-            _settings.AddVariable("FollowSelection", (int)FollowSelection.None);
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\FollowManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+                IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
-            Chat.WriteLine("FollowManager Loaded!");
-            Chat.WriteLine("/followmanager for settings.");
+                IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
+
+                Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayerChangedEvent += FollowPlayer_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentityChangedEvent += NavFollowIdentity_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistanceChangedEvent += NavFollowDistance_Changed;
+
+                RegisterSettingsWindow("Follow Manager", "FollowManagerSettingWindow.xml");
+
+                Game.OnUpdate += OnUpdate;
+
+                _settings.AddVariable("Toggle", false);
+
+                Chat.RegisterCommand("toggle", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    _settings["Toggle"] = !_settings["Toggle"].AsBool();
+                    Chat.WriteLine($"Toggle : {_settings["Toggle"]}");
+                });
+
+                _settings.AddVariable("FollowSelection", (int)FollowSelection.None);
+
+                Chat.WriteLine("FollowManager Loaded!");
+                Chat.WriteLine("/followmanager for settings.");
 
 
-            FollowPlayer = Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer;
-            NavFollowIdentity = Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity;
-            NavFollowDistance = Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance;
+                FollowPlayer = Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer;
+                NavFollowIdentity = Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity;
+                NavFollowDistance = Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance;
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
 
         public override void Teardown()
@@ -122,92 +139,105 @@ namespace FollowManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            try
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView followInput);
-                SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView navFollowInput);
-                SettingsController.settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceInput);
-
-                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
-                    if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                    SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                    SettingsController.settingsWindow.FindView("FollowNamedCharacter", out TextInputView followInput);
+                    SettingsController.settingsWindow.FindView("FollowNamedIdentity", out TextInputView navFollowInput);
+                    SettingsController.settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceInput);
+
+                    if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                     {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+                        if (int.TryParse(channelInput.Text, out int channelValue)
+                            && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+                        }
+                    }
+                    if (followInput != null && !string.IsNullOrEmpty(followInput.Text))
+                    {
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer = followInput.Text;
+                    }
+                    if (navFollowInput != null && !string.IsNullOrEmpty(navFollowInput.Text))
+                    {
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity = navFollowInput.Text;
+                    }
+                    if (navFollowDistanceInput != null && !string.IsNullOrEmpty(navFollowDistanceInput.Text))
+                    {
+                        if (int.TryParse(navFollowDistanceInput.Text, out int navFollowDistanceValue)
+                            && Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance != navFollowDistanceValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance = navFollowDistanceValue;
+                        }
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("FollowManagerInfoView", out Button infoView))
+                    {
+                        infoView.Tag = SettingsController.settingsWindow;
+                        infoView.Clicked = HandleInfoViewClick;
                     }
                 }
-                if (followInput != null && !string.IsNullOrEmpty(followInput.Text))
+
+                if (_settings["Toggle"].AsBool() && FollowSelection.LeadFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
+                    && Time.NormalTime > _followTimer + 1)
                 {
-                    Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer = followInput.Text;
-                }
-                if (navFollowInput != null && !string.IsNullOrEmpty(navFollowInput.Text))
-                {
-                    Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity = navFollowInput.Text;
-                }
-                if (navFollowDistanceInput != null && !string.IsNullOrEmpty(navFollowDistanceInput.Text))
-                {
-                    if (int.TryParse(navFollowDistanceInput.Text, out int navFollowDistanceValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance != navFollowDistanceValue)
+                    IPCChannel.Broadcast(new FollowMessage()
                     {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance = navFollowDistanceValue;
+                        Target = DynelManager.LocalPlayer.Identity
+                    });
+                    _followTimer = Time.NormalTime;
+                }
+
+                if (_settings["Toggle"].AsBool() && FollowSelection.NavFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
+                    && Time.NormalTime > _followTimer + 1)
+                {
+                    Dynel identity = DynelManager.AllDynels
+                        .Where(x => !string.IsNullOrEmpty(NavFollowIdentity)
+                            && !x.Flags.HasFlag(CharacterFlags.Pet)
+                            && x.Name == NavFollowIdentity)
+                        .FirstOrDefault();
+
+                    if (identity != null)
+                    {
+                        if (DynelManager.LocalPlayer.DistanceFrom(identity) <= NavFollowDistance)
+                            MovementController.Instance.Halt();
+
+                        if (DynelManager.LocalPlayer.DistanceFrom(identity) > NavFollowDistance)
+                            MovementController.Instance.SetDestination(identity.Position);
+
+                        _followTimer = Time.NormalTime;
                     }
                 }
 
-                if (SettingsController.settingsWindow.FindView("FollowManagerInfoView", out Button infoView))
+                if (_settings["Toggle"].AsBool() && FollowSelection.NamedFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
+                    && Time.NormalTime > _followTimer + 1)
                 {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = HandleInfoViewClick;
+                    Dynel identity = DynelManager.AllDynels
+                        .Where(x => !string.IsNullOrEmpty(FollowPlayer)
+                            && !x.Flags.HasFlag(CharacterFlags.Pet)
+                            && x.Name == FollowPlayer)
+                        .FirstOrDefault();
+
+                    if (identity != null)
+                    {
+                        if (identity.Identity != DynelManager.LocalPlayer.Identity)
+                            NamedFollow(identity);
+
+                        _followTimer = Time.NormalTime;
+                    }
                 }
             }
-
-            if (_settings["Toggle"].AsBool() && FollowSelection.LeadFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
-                && Time.NormalTime > _followTimer + 1)
+            catch (Exception ex)
             {
-                IPCChannel.Broadcast(new FollowMessage()
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
                 {
-                    Target = DynelManager.LocalPlayer.Identity
-                });
-                _followTimer = Time.NormalTime;
-            }
-
-            if (_settings["Toggle"].AsBool() && FollowSelection.NavFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
-                && Time.NormalTime > _followTimer + 1)
-            {
-                Dynel identity = DynelManager.AllDynels
-                    .Where(x => !string.IsNullOrEmpty(NavFollowIdentity)
-                        && !x.Flags.HasFlag(CharacterFlags.Pet)
-                        && x.Name == NavFollowIdentity)
-                    .FirstOrDefault();
-
-                if (identity != null)
-                {
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) <= NavFollowDistance)
-                        MovementController.Instance.Halt();
-
-                    if (DynelManager.LocalPlayer.DistanceFrom(identity) > NavFollowDistance)
-                        MovementController.Instance.SetDestination(identity.Position);
-
-                    _followTimer = Time.NormalTime;
-                }
-            }
-
-            if (_settings["Toggle"].AsBool() && FollowSelection.NamedFollow == (FollowSelection)_settings["FollowSelection"].AsInt32()
-                && Time.NormalTime > _followTimer + 1)
-            {
-                Dynel identity = DynelManager.AllDynels
-                    .Where(x => !string.IsNullOrEmpty(FollowPlayer)
-                        && !x.Flags.HasFlag(CharacterFlags.Pet)
-                        && x.Name == FollowPlayer)
-                    .FirstOrDefault();
-
-                if (identity != null)
-                {
-                    if (identity.Identity != DynelManager.LocalPlayer.Identity)
-                        NamedFollow(identity);
-
-                    _followTimer = Time.NormalTime;
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
                 }
             }
         }
@@ -249,6 +279,18 @@ namespace FollowManager
         public enum FollowSelection
         {
             None, LeadFollow, NamedFollow, NavFollow
+        }
+
+        public static int GetLineNumber(Exception ex)
+        {
+            var lineNumber = 0;
+
+            var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
+
+            if (lineMatch.Success)
+                lineNumber = int.Parse(lineMatch.Groups[1].Value);
+
+            return lineNumber;
         }
     }
 }

@@ -6,6 +6,7 @@ using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static AOSharp.Core.SpellData;
 
 namespace CombatHandler.Trader
 {
@@ -1007,110 +1008,141 @@ namespace CombatHandler.Trader
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (RansackSelection.Target == (RansackSelection)_settings["RansackSelection"].AsInt32())
-                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+            RansackSelection ransackSelection = (RansackSelection)_settings["RansackSelection"].AsInt32();
 
-            if (RansackSelection.Boss == (RansackSelection)_settings["RansackSelection"].AsInt32())
-
+            switch (ransackSelection)
             {
-                if (fightingTarget?.MaxHealth < 1000000)
-                {
-                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff) && buff.RemainingTime > 25) { return false; }
-
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-
-                else
-
-                {
+                case RansackSelection.Target:
                     return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
-                }
-            }
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-            if (RansackSelection.Area == (RansackSelection)_settings["RansackSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
-                {
-                    if (spell.StackingOrder <= buff.StackingOrder)
+                case RansackSelection.Boss:
+                    if (fightingTarget?.MaxHealth < 1000000)
                     {
-                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
-
-                        if (buff.RemainingTime > 25) { return false; }
+                        if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff bossDebuff) && bossDebuff.RemainingTime > 25)
+                        {
+                            return false;
+                        }
 
                         actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = _drainTarget;
+                        actionTarget.Target = fightingTarget;
                         return true;
                     }
+                    else
+                    {
+                        return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+                    }
 
+                case RansackSelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    {
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                            {
+                                return false;
+                            }
+
+                            if (buff.RemainingTime > 25)
+                            {
+                                return false;
+                            }
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    {
+                        return false;
+                    }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
                     return false;
-                }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
             }
-
-            return false;
         }
+
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DepriveSelection.Target == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+            DepriveSelection depriveSelection = (DepriveSelection)_settings["DepriveSelection"].AsInt32();
 
-            if (DepriveSelection.Boss == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
+            switch (depriveSelection)
             {
-                if (fightingTarget?.MaxHealth < 1000000)
-                {
-                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff) && buff.RemainingTime > 25) { return false; }
-
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-
-                else
-
-                {
+                case DepriveSelection.Target:
                     return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
-                }
-            }
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-            if (DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
-                {
-                    if (spell.StackingOrder <= buff.StackingOrder)
+                case DepriveSelection.Boss:
+                    if (fightingTarget?.MaxHealth < 1000000)
                     {
-                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
-
-                        if (buff.RemainingTime > 25) { return false; }
+                        if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff bossDebuff) && bossDebuff.RemainingTime > 25)
+                        {
+                            return false;
+                        }
 
                         actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = _drainTarget;
+                        actionTarget.Target = fightingTarget;
                         return true;
                     }
+                    else
+                    {
+                        return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                    }
 
+                case DepriveSelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    {
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                            {
+                                return false;
+                            }
+
+                            if (buff.RemainingTime > 25)
+                            {
+                                return false;
+                            }
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    {
+                        return false;
+                    }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
                     return false;
-                }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
             }
-
-            return false;
         }
+
 
         private bool MPDamageDebuffLineA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1119,11 +1151,28 @@ namespace CombatHandler.Trader
             switch (selection)
             {
                 case MPDamageDebuffLineASelection.Target:
-                case MPDamageDebuffLineASelection.Boss:
-                    if (selection == MPDamageDebuffLineASelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
-                        return false;
+                //case MPDamageDebuffLineASelection.Boss:
+                //    if (selection == MPDamageDebuffLineASelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                //        return false;
 
-                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                //    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+                case MPDamageDebuffLineASelection.Boss:
+                    if (fightingTarget?.MaxHealth < 1000000)
+                    {
+                        if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.DivestDamageTransfer, out Buff bossDebuff) && bossDebuff.RemainingTime > 25)
+                        {
+                            return false;
+                        }
+
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = fightingTarget;
+                        return true;
+                    }
+                    else
+                    {
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    }
 
                 case MPDamageDebuffLineASelection.Area:
                     if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
@@ -1419,6 +1468,7 @@ namespace CombatHandler.Trader
             public const int MyEnemiesEnemyIsMyFriend = 270714;
             public const int FlowofTime = 30719;
             public const int DecisionbyCommittee = 258659;
+            public const int DivestDamageTransfer = 273408;
             public static int[] UmbralWrangler = { 235291, 235289, 235287, 235283, 235281, 235279, 235277, 235275, 235273, 235271 };
             public static int[] GrandThefts = { 269842, 280050 };
             public static int[] HealthDrain = { 270357, 77195, 76478, 76475, 76487, 76481,

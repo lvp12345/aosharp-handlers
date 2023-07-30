@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Zoltu.IO;
 
@@ -63,17 +64,20 @@ namespace GMIManager
 
         //private static long _modifyAmount = 20000;
 
+        public static string previousErrorMessage = string.Empty;
+
         public override void Run(string pluginDir)
         {
-            _settings = new Settings("GMIManager");
+            try
+            { _settings = new Settings("GMIManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\GMIManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\GMIManager\\{Game.ClientInst}\\Config.json");
 
-            Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderNameChangedEventChangedEvent += GMIBuyOrderName_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderEndPriceChangedEvent += GMIBuyOrderEndPrice_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].GMIWithdrawAmountChangedEvent += GMIWithdrawAmount_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].GMIItemNameChangedEventChangedEvent += GMIItemName_Changed;
+            Config.CharSettings[Game.ClientInst].GMIBuyOrderNameChangedEventChangedEvent += GMIBuyOrderName_Changed;
+            Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPriceChangedEvent += GMIBuyOrderEndPrice_Changed;
+            Config.CharSettings[Game.ClientInst].GMIWithdrawAmountChangedEvent += GMIWithdrawAmount_Changed;
+            Config.CharSettings[Game.ClientInst].GMIItemNameChangedEventChangedEvent += GMIItemName_Changed;
             Network.PacketReceived += HandleMail;
 
             Game.OnUpdate += OnUpdate;
@@ -121,10 +125,22 @@ namespace GMIManager
 
             _settings["Toggle"] = false;
 
-            GMIWithdrawAmount = Config.CharSettings[DynelManager.LocalPlayer.Name].GMIWithdrawAmount;
-            GMIBuyOrderName = Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderName;
-            GMIBuyOrderEndPrice = Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderEndPrice;
-            GMIItemName = Config.CharSettings[DynelManager.LocalPlayer.Name].GMIItemName;
+            GMIWithdrawAmount = Config.CharSettings[Game.ClientInst].GMIWithdrawAmount;
+            GMIBuyOrderName = Config.CharSettings[Game.ClientInst].GMIBuyOrderName;
+            GMIBuyOrderEndPrice = Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice;
+            GMIItemName = Config.CharSettings[Game.ClientInst].GMIItemName;
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
 
         private void HandleInfoViewClick(object s, ButtonBase button)
@@ -138,28 +154,28 @@ namespace GMIManager
         }
         public static void GMIWithdrawAmount_Changed(object s, int e)
         {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].GMIWithdrawAmount = e;
+            Config.CharSettings[Game.ClientInst].GMIWithdrawAmount = e;
             GMIWithdrawAmount = e;
             Config.Save();
         }
 
         public static void GMIBuyOrderName_Changed(object s, string e)
         {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderName = e;
+            Config.CharSettings[Game.ClientInst].GMIBuyOrderName = e;
             GMIBuyOrderName = e;
             Config.Save();
         }
 
         public static void GMIBuyOrderEndPrice_Changed(object s, long e)
         {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderEndPrice = e;
+            Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice = e;
             GMIBuyOrderEndPrice = e;
             Config.Save();
         }
 
         public static void GMIItemName_Changed(object s, string e)
         {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].GMIItemName = e;
+            Config.CharSettings[Game.ClientInst].GMIItemName = e;
             GMIItemName = e;
             Config.Save();
         }
@@ -204,11 +220,11 @@ namespace GMIManager
                     writer.Write((short)PacketType.N3Message);
                     writer.Write((short)1);
                     writer.Write((short)0);
-                    writer.Write(DynelManager.LocalPlayer.Name);
+                    writer.Write(Game.ClientInst);
                     writer.Write((int)2);
                     writer.Write((int)N3MessageType.Mail);
                     writer.Write((int)IdentityType.SimpleChar);
-                    writer.Write(DynelManager.LocalPlayer.Name);
+                    writer.Write(Game.ClientInst);
                     writer.Write((byte)0);
 
                     //Body
@@ -404,7 +420,8 @@ namespace GMIManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            if (Game.IsZoning) { return; }
+            try
+            { if (Game.IsZoning) { return; }
 
             if (!_settings["Toggle"].AsBool())
                 _init = false;
@@ -592,18 +609,18 @@ namespace GMIManager
 
                 if (gMIBuyOrdersNameInput != null && !string.IsNullOrEmpty(gMIBuyOrdersNameInput.Text))
                 {
-                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderName != gMIBuyOrdersNameInput.Text)
+                    if (Config.CharSettings[Game.ClientInst].GMIBuyOrderName != gMIBuyOrdersNameInput.Text)
                     {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderName = gMIBuyOrdersNameInput.Text;
+                        Config.CharSettings[Game.ClientInst].GMIBuyOrderName = gMIBuyOrdersNameInput.Text;
                     }
                 }
 
                 if (gMIBuyOrdersEndPriceInput != null && !string.IsNullOrEmpty(gMIBuyOrdersEndPriceInput.Text))
                 {
                     if (long.TryParse(gMIBuyOrdersEndPriceInput.Text, out long gMIBuyOrdersEndPriceValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderEndPrice != gMIBuyOrdersEndPriceValue)
+                        && Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice != gMIBuyOrdersEndPriceValue)
                     {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderEndPrice = gMIBuyOrdersEndPriceValue;
+                        Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice = gMIBuyOrdersEndPriceValue;
                     }
                 }
 
@@ -611,17 +628,17 @@ namespace GMIManager
                 if (gMIWithdrawAmountInput != null && !string.IsNullOrEmpty(gMIWithdrawAmountInput.Text))
                 {
                     if (int.TryParse(gMIWithdrawAmountInput.Text, out int gMIWithdrawAmountValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].GMIWithdrawAmount != gMIWithdrawAmountValue)
+                        && Config.CharSettings[Game.ClientInst].GMIWithdrawAmount != gMIWithdrawAmountValue)
                     {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].GMIWithdrawAmount = gMIWithdrawAmountValue;
+                        Config.CharSettings[Game.ClientInst].GMIWithdrawAmount = gMIWithdrawAmountValue;
                     }
                 }
 
                 if (gMIItemNameInput != null && !string.IsNullOrEmpty(gMIItemNameInput.Text))
                 {
-                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].GMIItemName != gMIItemNameInput.Text)
+                    if (Config.CharSettings[Game.ClientInst].GMIItemName != gMIItemNameInput.Text)
                     {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].GMIItemName = gMIItemNameInput.Text;
+                        Config.CharSettings[Game.ClientInst].GMIItemName = gMIItemNameInput.Text;
                     }
                 }
 
@@ -631,6 +648,30 @@ namespace GMIManager
                     infoView.Clicked = HandleInfoViewClick;
                 }
             }
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
+        }
+
+        public static int GetLineNumber(Exception ex)
+        {
+            var lineNumber = 0;
+
+            var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
+
+            if (lineMatch.Success)
+                lineNumber = int.Parse(lineMatch.Groups[1].Value);
+
+            return lineNumber;
         }
     }
 }

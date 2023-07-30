@@ -75,7 +75,7 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("DamageDrain", true);
+            
             _settings.AddVariable("HealthDrain", false);
             _settings.AddVariable("LEDrainHeal", false);
 
@@ -93,10 +93,16 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
             _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
-            _settings.AddVariable("NanoDrainSelection", (int)NanoDrainSelection.None);
+
+            _settings.AddVariable("RKNanoDrainSelection", (int)RKNanoDrainSelection.None);
+            _settings.AddVariable("SLNanoDrainSelection", (int)SLNanoDrainSelection.None);
+
             _settings.AddVariable("ACDrainSelection", (int)ACDrainSelection.None);
             _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
-            _settings.AddVariable("DamageDrainSelection", (int)DamageDrainSelection.None);
+
+            _settings.AddVariable("MPDamageDebuffLineASelection", (int)MPDamageDebuffLineASelection.None);
+            _settings.AddVariable("TraderShutdownSkillDebuffSelection", (int)TraderShutdownSkillDebuffSelection.None);
+
             _settings.AddVariable("AADDrainSelection", (int)AADDrainSelection.None);
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
@@ -140,7 +146,6 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(), GlobalGenericBuff);
 
-
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
             RegisterSpellProcessor(RelevantNanos.UmbralWrangler, UmbralWrangler);
@@ -155,8 +160,8 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAADDrain).OrderByStackingOrder(), AADDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAAODrain).OrderByStackingOrder(), AAODrain, CombatActionPriority.Medium);
 
-            RegisterSpellProcessor(RelevantNanos.DivestDamage, DamageDrain, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderShutdownSkillDebuff).OrderByStackingOrder(), DamageDrain, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.DivestDamage, MPDamageDebuffLineA, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderShutdownSkillDebuff).OrderByStackingOrder(), TraderShutdownSkillDebuff, CombatActionPriority.Medium);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResistA, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DebuffNanoACHeavy).OrderByStackingOrder(), NanoResistB, CombatActionPriority.High);
@@ -170,6 +175,10 @@ namespace CombatHandler.Trader
 
             //Root/Snare
             RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
+
+            //Pets
+            RegisterSpellProcessor(RelevantNanos.DecisionbyCommittee, PetSpawner, CombatActionPriority.High);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), PetSpawner);
 
             PluginDirectory = pluginDir;
 
@@ -452,6 +461,8 @@ namespace CombatHandler.Trader
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            SynchronizePetCombatStateWithOwner();
+
             #region Settings
 
             var window = SettingsController.FindValidWindow(_windows);
@@ -553,7 +564,7 @@ namespace CombatHandler.Trader
 
             if ((RansackSelection.Area == (RansackSelection)_settings["RansackSelection"].AsInt32()
                 || DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32()
-                || DamageDrainSelection.Area == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32()
+                || MPDamageDebuffLineASelection.Area == (MPDamageDebuffLineASelection)_settings["MPDamageDebuffLineASelection"].AsInt32()
                 || ACDrainSelection.Area == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32()
                 || AAODrainSelection.Area == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32()
                 || AADDrainSelection.Area == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
@@ -929,32 +940,38 @@ namespace CombatHandler.Trader
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoDrainSelection.Shadowlands == (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32())
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            SLNanoDrainSelection selection = (SLNanoDrainSelection)_settings["SLNanoDrainSelection"].AsInt32();
 
-            if (NanoDrainSelection.ShadowlandsBoss == (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32())
+            switch (selection)
             {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case SLNanoDrainSelection.Target:
+                case SLNanoDrainSelection.Boss:
+                    if (selection == SLNanoDrainSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                        return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoDrainSelection.RubiKa == (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32())
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            RKNanoDrainSelection selection = (RKNanoDrainSelection)_settings["RKNanoDrainSelection"].AsInt32();
 
-            if (NanoDrainSelection.RubiKaBoss == (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32())
+            switch (selection)
             {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case RKNanoDrainSelection.Target:
+                case RKNanoDrainSelection.Boss:
+                    if (selection == RKNanoDrainSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                        return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1095,46 +1112,92 @@ namespace CombatHandler.Trader
             return false;
         }
 
-        private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MPDamageDebuffLineA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DamageDrainSelection.Target == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32())
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            MPDamageDebuffLineASelection selection = (MPDamageDebuffLineASelection)_settings["MPDamageDebuffLineASelection"].AsInt32();
 
-            if (DamageDrainSelection.Boss == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32())
+            switch (selection)
             {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case MPDamageDebuffLineASelection.Target:
+                case MPDamageDebuffLineASelection.Boss:
+                    if (selection == MPDamageDebuffLineASelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                        return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+                case MPDamageDebuffLineASelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                        return false;
 
-            if (DamageDrainSelection.Area == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
-                {
-                    if (spell.StackingOrder <= buff.StackingOrder)
+                    if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
                     {
-                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU) || buff.RemainingTime > 15)
+                                return false;
 
-                        if (buff.RemainingTime > 15) { return false; }
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
 
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = _drainTarget;
-                        return true;
+                        return false;
                     }
 
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                        return false;
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
                     return false;
-                }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
             }
+        }
 
-            return false;
+        private bool TraderShutdownSkillDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            TraderShutdownSkillDebuffSelection selection = (TraderShutdownSkillDebuffSelection)_settings["TraderShutdownSkillDebuffSelection"].AsInt32();
+
+            switch (selection)
+            {
+                case TraderShutdownSkillDebuffSelection.Target:
+                case TraderShutdownSkillDebuffSelection.Boss:
+                    if (selection == TraderShutdownSkillDebuffSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                        return false;
+
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+                case TraderShutdownSkillDebuffSelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                        return false;
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU) || buff.RemainingTime > 15)
+                                return false;
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                        return false;
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
+                    return false;
+            }
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1322,6 +1385,19 @@ namespace CombatHandler.Trader
 
         #endregion
 
+        #region Pets
+
+        private bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+            if (fightingTarget?.MaxHealth < 1000000) { return false; }
+            if (!spell.IsReady) { return false; }   
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        #endregion
+
         #region Misc
         private static bool IsMoving(SimpleChar target)
         {
@@ -1341,6 +1417,7 @@ namespace CombatHandler.Trader
             public const int DivestDamage = 273407;
             public const int MyEnemiesEnemyIsMyFriend = 270714;
             public const int FlowofTime = 30719;
+            public const int DecisionbyCommittee = 258659;
             public static int[] UmbralWrangler = { 235291, 235289, 235287, 235283, 235281, 235279, 235277, 235275, 235273, 235271 };
             public static int[] GrandThefts = { 269842, 280050 };
             public static int[] HealthDrain = { 270357, 77195, 76478, 76475, 76487, 76481,
@@ -1368,9 +1445,14 @@ namespace CombatHandler.Trader
         {
             None, Combat
         }
-        public enum NanoDrainSelection
+        public enum RKNanoDrainSelection
         {
-            None, RubiKa, RubiKaBoss, Shadowlands, ShadowlandsBoss
+            None, Target, Boss
+        }
+
+        public enum SLNanoDrainSelection
+        {
+            None, Target, Boss
         }
         public enum AADDrainSelection
         {
@@ -1388,7 +1470,11 @@ namespace CombatHandler.Trader
         {
             None, Target, Boss
         }
-        public enum DamageDrainSelection
+        public enum MPDamageDebuffLineASelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum TraderShutdownSkillDebuffSelection
         {
             None, Target, Area, Boss
         }

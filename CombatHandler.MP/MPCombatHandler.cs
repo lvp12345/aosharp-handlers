@@ -92,7 +92,10 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
             _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
             _settings.AddVariable("InterruptSelection", (int)InterruptSelection.None);
+
             _settings.AddVariable("DamageDebuffSelection", (int)DamageDebuffSelection.None);
+            _settings.AddVariable("DamageDebuffASelection", (int)DamageDebuffASelection.None);
+            _settings.AddVariable("DamageDebuffBSelection", (int)DamageDebuffBSelection.None);
 
             _settings.AddVariable("Cost", false);
             _settings.AddVariable("Evades", false);
@@ -152,7 +155,6 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
             RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
-
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
             RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
             RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
@@ -170,9 +172,11 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(), DamageDebuffA, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(), DamageDebuffB, CombatActionPriority.High);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResistanceDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(), NanoShutdownDebuff, CombatActionPriority.High);
 
@@ -200,7 +204,6 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
-
 
             PluginDirectory = pluginDir;
 
@@ -1047,27 +1050,25 @@ namespace CombatHandler.Metaphysicist
 
         private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoShutdownDebuffSelection.None == (NanoShutdownDebuffSelection)_settings["NanoShutdownDebuff"].AsInt32()) { return false; }
+            int selection = _settings["NanoShutdownDebuff"].AsInt32();
 
-            if (NanoShutdownDebuffSelection.Area == (NanoShutdownDebuffSelection)_settings["NanoShutdownDebuff"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (NanoShutdownDebuffSelection.Target == (NanoShutdownDebuffSelection)_settings["NanoShutdownDebuff"].AsInt32()
-                && fightingTarget != null)
+            switch (selection)
             {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+                case (int)NanoShutdownDebuffSelection.None:
+                    return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+                case (int)NanoShutdownDebuffSelection.Area:
+                    return AreaDebuff(spell, ref actionTarget);
 
-            if (NanoShutdownDebuffSelection.Boss == (NanoShutdownDebuffSelection)_settings["NanoShutdownDebuff"].AsInt32()
-                 && fightingTarget != null)
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case (int)NanoShutdownDebuffSelection.Target:
+                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
 
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case (int)NanoShutdownDebuffSelection.Boss:
+                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
             }
 
             return false;
@@ -1075,27 +1076,25 @@ namespace CombatHandler.Metaphysicist
 
         private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoResistanceDebuffSelection.None == (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32()) { return false; }
+            NanoResistanceDebuffSelection selection = (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32();
 
-            if (NanoResistanceDebuffSelection.Area == (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (NanoResistanceDebuffSelection.Target == (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32()
-                && fightingTarget != null)
+            switch (selection)
             {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+                case NanoResistanceDebuffSelection.None:
+                    return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+                case NanoResistanceDebuffSelection.Area:
+                    return AreaDebuff(spell, ref actionTarget);
 
-            if (NanoResistanceDebuffSelection.Boss == (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32()
-                 && fightingTarget != null)
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case NanoResistanceDebuffSelection.Target:
+                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
 
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case NanoResistanceDebuffSelection.Boss:
+                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
             }
 
             return false;
@@ -1103,27 +1102,77 @@ namespace CombatHandler.Metaphysicist
 
         private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DamageDebuffSelection.None == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32()) { return false; }
+            DamageDebuffSelection selection = (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32();
 
-            if (DamageDebuffSelection.Area == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (DamageDebuffSelection.Target == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32()
-                && fightingTarget != null)
+            switch (selection)
             {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+                case DamageDebuffSelection.None:
+                    return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case DamageDebuffSelection.Area:
+                    return AreaDebuff(spell, ref actionTarget);
+
+                case DamageDebuffSelection.Target:
+                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
+
+                case DamageDebuffSelection.Boss:
+                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
             }
 
-            if (DamageDebuffSelection.Boss == (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32()
-                 && fightingTarget != null)
+            return false;
+        }
+
+        private bool DamageDebuffA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            DamageDebuffASelection selection = (DamageDebuffASelection)_settings["DamageDebuffASelection"].AsInt32();
+
+            switch (selection)
             {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case DamageDebuffASelection.None:
+                    return false;
 
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+                case DamageDebuffASelection.Area:
+                    return AreaDebuff(spell, ref actionTarget);
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case DamageDebuffASelection.Target:
+                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
+
+                case DamageDebuffASelection.Boss:
+                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
+            }
+
+            return false;
+        }
+
+        private bool DamageDebuffB(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            DamageDebuffBSelection selection = (DamageDebuffBSelection)_settings["DamageDebuffBSelection"].AsInt32();
+
+            switch (selection)
+            {
+                case DamageDebuffBSelection.None:
+                    return false;
+
+                case DamageDebuffBSelection.Area:
+                    return AreaDebuff(spell, ref actionTarget);
+
+                case DamageDebuffBSelection.Target:
+                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
+
+                case DamageDebuffBSelection.Boss:
+                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    break;
             }
 
             return false;
@@ -1507,6 +1556,14 @@ namespace CombatHandler.Metaphysicist
             None, Self, Team
         }
         public enum DamageDebuffSelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum DamageDebuffASelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum DamageDebuffBSelection
         {
             None, Target, Area, Boss
         }

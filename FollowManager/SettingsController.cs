@@ -61,7 +61,7 @@ namespace FollowManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\FollowManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\FollowManager\\{Game.ClientInst}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Follow Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -75,13 +75,13 @@ namespace FollowManager
                             settingsWindow.FindView("NavFollowDistanceBox", out TextInputView navFollowDistanceBox);
 
                             if (channelInput != null)
-                                channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
+                                channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
                             if (followBox != null)
-                                followBox.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer}";
+                                followBox.Text = $"{Config.CharSettings[Game.ClientInst].FollowPlayer}";
                             if (navFollowBox != null)
-                                navFollowBox.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity}";
+                                navFollowBox.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowIdentity}";
                             if (navFollowDistanceBox != null)
-                                navFollowDistanceBox.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance}";
+                                navFollowDistanceBox.Text = $"{Config.CharSettings[Game.ClientInst].NavFollowDistance}";
                         }
                     }
                     catch (Exception e)

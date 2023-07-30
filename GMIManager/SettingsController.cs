@@ -49,7 +49,7 @@ namespace GMIManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\GMIManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\GMIManager\\{Game.ClientInst}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "GMI Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -63,13 +63,13 @@ namespace GMIManager
                             settingsWindow.FindView("GMIItemName", out TextInputView gMIItemName);
 
                             if (gMIBuyOrdersName != null)
-                                gMIBuyOrdersName.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderName}";
+                                gMIBuyOrdersName.Text = $"{Config.CharSettings[Game.ClientInst].GMIBuyOrderName}";
                             if (gMIBuyOrdersEndPrice != null)
-                                gMIBuyOrdersEndPrice.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].GMIBuyOrderEndPrice}";
+                                gMIBuyOrdersEndPrice.Text = $"{Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice}";
                             if (gMIWithdrawAmount != null)
-                                gMIWithdrawAmount.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].GMIWithdrawAmount}";
+                                gMIWithdrawAmount.Text = $"{Config.CharSettings[Game.ClientInst].GMIWithdrawAmount}";
                             if (gMIItemName != null)
-                                gMIItemName.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].GMIItemName}";
+                                gMIItemName.Text = $"{Config.CharSettings[Game.ClientInst].GMIItemName}";
                         }
                     }
                     catch (Exception e)

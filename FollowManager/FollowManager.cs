@@ -47,15 +47,15 @@ namespace FollowManager
                 _settings = new Settings("FollowManager");
                 PluginDir = pluginDir;
 
-                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\FollowManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
-                IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\FollowManager\\{Game.ClientInst}\\Config.json");
+                IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
                 IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
 
-                Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
-                Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayerChangedEvent += FollowPlayer_Changed;
-                Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentityChangedEvent += NavFollowIdentity_Changed;
-                Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistanceChangedEvent += NavFollowDistance_Changed;
+                Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
+                Config.CharSettings[Game.ClientInst].FollowPlayerChangedEvent += FollowPlayer_Changed;
+                Config.CharSettings[Game.ClientInst].NavFollowIdentityChangedEvent += NavFollowIdentity_Changed;
+                Config.CharSettings[Game.ClientInst].NavFollowDistanceChangedEvent += NavFollowDistance_Changed;
 
                 RegisterSettingsWindow("Follow Manager", "FollowManagerSettingWindow.xml");
 
@@ -75,9 +75,9 @@ namespace FollowManager
                 Chat.WriteLine("/followmanager for settings.");
 
 
-                FollowPlayer = Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer;
-                NavFollowIdentity = Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity;
-                NavFollowDistance = Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance;
+                FollowPlayer = Config.CharSettings[Game.ClientInst].FollowPlayer;
+                NavFollowIdentity = Config.CharSettings[Game.ClientInst].NavFollowIdentity;
+                NavFollowDistance = Config.CharSettings[Game.ClientInst].NavFollowDistance;
             }
             catch (Exception ex)
             {
@@ -104,19 +104,19 @@ namespace FollowManager
         }
         public static void FollowPlayer_Changed(object s, string e)
         {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer = e;
+            Config.CharSettings[Game.ClientInst].FollowPlayer = e;
             FollowPlayer = e;
             Config.Save();
         }
         public static void NavFollowIdentity_Changed(object s, string e)
         {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity = e;
+            Config.CharSettings[Game.ClientInst].NavFollowIdentity = e;
             NavFollowIdentity = e;
             Config.Save();
         }
         public static void NavFollowDistance_Changed(object s, int e)
         {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance = e;
+            Config.CharSettings[Game.ClientInst].NavFollowDistance = e;
             NavFollowDistance = e;
             Config.Save();
         }
@@ -151,25 +151,25 @@ namespace FollowManager
                     if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                     {
                         if (int.TryParse(channelInput.Text, out int channelValue)
-                            && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                            && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
                         {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+                            Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
                         }
                     }
                     if (followInput != null && !string.IsNullOrEmpty(followInput.Text))
                     {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].FollowPlayer = followInput.Text;
+                        Config.CharSettings[Game.ClientInst].FollowPlayer = followInput.Text;
                     }
                     if (navFollowInput != null && !string.IsNullOrEmpty(navFollowInput.Text))
                     {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowIdentity = navFollowInput.Text;
+                        Config.CharSettings[Game.ClientInst].NavFollowIdentity = navFollowInput.Text;
                     }
                     if (navFollowDistanceInput != null && !string.IsNullOrEmpty(navFollowDistanceInput.Text))
                     {
                         if (int.TryParse(navFollowDistanceInput.Text, out int navFollowDistanceValue)
-                            && Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance != navFollowDistanceValue)
+                            && Config.CharSettings[Game.ClientInst].NavFollowDistance != navFollowDistanceValue)
                         {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].NavFollowDistance = navFollowDistanceValue;
+                            Config.CharSettings[Game.ClientInst].NavFollowDistance = navFollowDistanceValue;
                         }
                     }
 

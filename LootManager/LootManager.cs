@@ -205,21 +205,22 @@ namespace LootManager
                         }
                         if (corpse.IsValid && Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 2)
                         {
+                            _lootingTimer = Time.NormalTime;
+
                             if (!corpse.IsOpen)
                             {
                                 corpse.Open();
                                 //Chat.WriteLine("Opening");
                             }
-                            
-                            _lootingTimer = Time.NormalTime;
                         }
                         else
                         {
                             if (corpse.IsValid && Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _closeCorpse + 6 && unopenedCorpses.Any(c => c.Position == corpse.Position))
                             {
+                                _closeCorpse = Time.NormalTime;
                                 corpse.Open();
                                 //Chat.WriteLine("Closing");
-                                _closeCorpse = Time.NormalTime;
+                                
                             }
                         }
                     }

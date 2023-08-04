@@ -253,36 +253,38 @@ namespace FollowManager
         }
         private void NamedFollow(Dynel dynel)
         {
-            FollowTargetMessage n3Msg = new FollowTargetMessage()
-            {
-                Target = dynel.Identity,
-                Unknown1 = 0,
-                Unknown2 = 0,
-                Unknown3 = 0,
-                Unknown4 = 0,
-                Unknown5 = 0,
-                Unknown6 = 0,
-                Unknown7 = 0
-            };
-            Network.Send(n3Msg);
+            MovementController.Instance.Follow(dynel.Identity);
+            //FollowTargetMessage n3Msg = new FollowTargetMessage()
+            //{
+            //    Target = dynel.Identity,
+            //    Unknown1 = 0,
+            //    Unknown2 = 0,
+            //    Unknown3 = 0,
+            //    Unknown4 = 0,
+            //    Unknown5 = 0,
+            //    Unknown6 = 0,
+            //    Unknown7 = 0
+            //};
+            //Network.Send(n3Msg);
             MovementController.Instance.SetMovement(MovementAction.Update);
         }
 
         private void OnFollowMessage(int sender, IPCMessage msg)
         {
             FollowMessage followMessage = (FollowMessage)msg;
-            FollowTargetMessage n3Msg = new FollowTargetMessage()
-            {
-                Target = followMessage.Target,
-                Unknown1 = 0,
-                Unknown2 = 0,
-                Unknown3 = 0,
-                Unknown4 = 0,
-                Unknown5 = 0,
-                Unknown6 = 0,
-                Unknown7 = 0
-            };
-            Network.Send(n3Msg);
+            //FollowTargetMessage n3Msg = new FollowTargetMessage()
+            //{
+            //    Target = followMessage.Target,
+            //    Unknown1 = 0,
+            //    Unknown2 = 0,
+            //    Unknown3 = 0,
+            //    Unknown4 = 0,
+            //    Unknown5 = 0,
+            //    Unknown6 = 0,
+            //    Unknown7 = 0
+            //};
+            //Network.Send(n3Msg);
+            MovementController.Instance.Follow(followMessage.Target);
             MovementController.Instance.SetMovement(MovementAction.Update);
         }
 

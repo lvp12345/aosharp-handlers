@@ -50,7 +50,7 @@ namespace FollowManager
             _settings = new Settings("FollowManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\FollowManager\\{Game.ClientInst}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\FollowManager\\{Game.ClientInst}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);
@@ -134,7 +134,7 @@ namespace FollowManager
             //{
             //    _init = true;
 
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\FollowManager\\{Game.ClientInst}\\Config.json");
+            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\FollowManager\\{Game.ClientInst}\\Config.json");
 
             //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Follow Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -253,36 +253,38 @@ namespace FollowManager
         }
         private void NamedFollow(Dynel dynel)
         {
-            FollowTargetMessage n3Msg = new FollowTargetMessage()
-            {
-                Target = dynel.Identity,
-                Unknown1 = 0,
-                Unknown2 = 0,
-                Unknown3 = 0,
-                Unknown4 = 0,
-                Unknown5 = 0,
-                Unknown6 = 0,
-                Unknown7 = 0
-            };
-            Network.Send(n3Msg);
+            MovementController.Instance.Follow(dynel.Identity);
+            //FollowTargetMessage n3Msg = new FollowTargetMessage()
+            //{
+            //    Target = dynel.Identity,
+            //    Unknown1 = 0,
+            //    Unknown2 = 0,
+            //    Unknown3 = 0,
+            //    Unknown4 = 0,
+            //    Unknown5 = 0,
+            //    Unknown6 = 0,
+            //    Unknown7 = 0
+            //};
+            //Network.Send(n3Msg);
             MovementController.Instance.SetMovement(MovementAction.Update);
         }
 
         private void OnFollowMessage(int sender, IPCMessage msg)
         {
             FollowMessage followMessage = (FollowMessage)msg;
-            FollowTargetMessage n3Msg = new FollowTargetMessage()
-            {
-                Target = followMessage.Target,
-                Unknown1 = 0,
-                Unknown2 = 0,
-                Unknown3 = 0,
-                Unknown4 = 0,
-                Unknown5 = 0,
-                Unknown6 = 0,
-                Unknown7 = 0
-            };
-            Network.Send(n3Msg);
+            //FollowTargetMessage n3Msg = new FollowTargetMessage()
+            //{
+            //    Target = followMessage.Target,
+            //    Unknown1 = 0,
+            //    Unknown2 = 0,
+            //    Unknown3 = 0,
+            //    Unknown4 = 0,
+            //    Unknown5 = 0,
+            //    Unknown6 = 0,
+            //    Unknown7 = 0
+            //};
+            //Network.Send(n3Msg);
+            MovementController.Instance.Follow(followMessage.Target);
             MovementController.Instance.SetMovement(MovementAction.Update);
         }
 

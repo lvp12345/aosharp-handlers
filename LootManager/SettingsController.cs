@@ -62,6 +62,10 @@ namespace LootManager
                             AppendSettingsTab("Loot Manager", settingsWindow);
 
                             settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
+                            settingsWindow.FindView("tivminql", out TextInputView tivminql);
+                            settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql);
+                            tivminql.Text = "1";
+                            tivmaxql.Text = "500";
                             mlv.DeleteAllChildren();
                             int iEntry = 0;
                             foreach (Rule r in LootManager.Rules)

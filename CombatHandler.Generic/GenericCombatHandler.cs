@@ -1422,13 +1422,32 @@ namespace CombatHandler.Generic
         private void UseItems()
         {
             if (!Item.HasPendingUse)
-                foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory
+                || c.UniqueIdentity.Type == IdentityType.Container))
                 {
                     if (item.Name.Contains("Cell Templates") || item.Name.Contains("Plasmid Cultures")
                         || item.Name.Contains("Mitochondria Samples") || item.Name.Contains("Protein Mapping Data")
                         || item.Name.Contains("Mission Token"))
+                    {
                         item?.Use();
+                    }
+
+                    if (item.UniqueIdentity.Type == IdentityType.Container)
+                    {
+                        List<Item> containerItems = Inventory.GetContainerItems(item.UniqueIdentity);
+                        foreach (Item containerItem in containerItems)
+                        {
+                            if (containerItem.Name.Contains("Cell Templates") || containerItem.Name.Contains("Plasmid Cultures")
+                                || containerItem.Name.Contains("Mitochondria Samples") || containerItem.Name.Contains("Protein Mapping Data")
+                                || containerItem.Name.Contains("Mission Token"))
+                            {
+                                containerItem?.Use();
+                            }
+                        }
+                    }
                 }
+
+
         }
 
         #endregion

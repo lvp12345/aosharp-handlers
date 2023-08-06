@@ -233,7 +233,7 @@ namespace LootManager
 
                     if (corpse != null)
                     {
-                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 4)
+                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 2)
                         {
                             corpse.Open();
                             _lootingTimer = Time.NormalTime;

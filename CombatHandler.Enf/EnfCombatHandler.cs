@@ -3,6 +3,7 @@ using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System;
 using System.Linq;
 
 namespace CombatHandler.Enf
@@ -990,10 +991,44 @@ namespace CombatHandler.Enf
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.MeleeEnergy);
         }
 
+        //private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
+        //}
+
         private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
+            // Check if there is a fighting target or if the spell ID should be ignored
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id))
+            {
+                return false;
+            }
+
+            // Check if the "Buffing" setting is enabled and if the spell can be cast, and if the ModelIdentity.Instance is not 152
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152)
+            {
+                return false;
+            }
+
+            // Check if NanoLine.DamageChangeBuffs is in the player's buffs
+            bool hasDamageChangeBuffs = DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DamageChangeBuffs);
+
+            // Check if there is enough remaining NCU to cast the spell
+            if (DynelManager.LocalPlayer.RemainingNCU >= Math.Abs(spell.NCU))
+            {
+                // If NanoLine.DamageChangeBuffs is NOT in the player's buffs, cast the spell
+                if (!hasDamageChangeBuffs)
+                {
+                    // Set the actionTarget to the local player and mark ShouldSetTarget as true
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
+            }
+
+            return false;
         }
+
 
         #endregion
 

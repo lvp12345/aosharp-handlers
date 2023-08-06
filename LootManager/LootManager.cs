@@ -191,7 +191,6 @@ namespace LootManager
 
                 if (!_settings["Delete"].AsBool())
                 {
-
                     List<Corpse> unopenedCorpses = DynelManager.Corpses
                         .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6 && !c.IsOpen)
                         .ToList();
@@ -203,27 +202,28 @@ namespace LootManager
                             unopenedCorpses.Remove(corpse);
                             continue;
                         }
-                        if (corpse.IsValid && Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 2)
-                        {
-                            _lootingTimer = Time.NormalTime;
 
-                            if (!corpse.IsOpen)
-                            {
-                                corpse.Open();
-                                //Chat.WriteLine("Opening");
-                            }
-                        }
-                        else
+                        if (corpse.IsValid && Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                         {
-                            if (corpse.IsValid && Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _closeCorpse + 6 && unopenedCorpses.Any(c => c.Position == corpse.Position))
-                            {
-                                _closeCorpse = Time.NormalTime;
-                                corpse.Open();
-                                //Chat.WriteLine("Closing");
-                                
-                            }
+                            corpse.Open();
+                            //Chat.WriteLine("Opening");
+                            _lootingTimer = Time.NormalTime + 4; 
                         }
                     }
+                }
+
+                if (_lootingTimer > 0 && Time.NormalTime >= _lootingTimer)
+                {
+                    Corpse corpse = DynelManager.Corpses.FirstOrDefault(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6 && c.IsOpen);
+
+                    if (corpse != null)
+                    {
+                        
+                        corpse.Open();
+                        //Chat.WriteLine("Closing");
+                    }
+
+                    _lootingTimer = 0;
                 }
 
                 if (_settings["Delete"].AsBool())

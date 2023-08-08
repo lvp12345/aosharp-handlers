@@ -237,6 +237,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
             RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
             RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
+
             RegisterItemProcessor(new int[] { RelevantGenericItems.RezCan1, RelevantGenericItems.RezCan2 }, RezCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
@@ -1175,6 +1176,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)) { return false; }
 
+            actiontarget.Target = DynelManager.LocalPlayer;
             actiontarget.ShouldSetTarget = true;
             return true;
 

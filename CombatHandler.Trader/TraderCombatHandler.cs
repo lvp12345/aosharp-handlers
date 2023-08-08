@@ -993,6 +993,14 @@ namespace CombatHandler.Trader
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            string[] namesToCheck = new string[] { "Vergil Aeneid", "Abmouth Supremus" };
+
+            if (namesToCheck.Any(name => fightingTarget?.Name.Contains(name) ?? false))
+            {
+                
+                return false;
+            }
+
             if (GrandTheftHumiditySelection.Target == (GrandTheftHumiditySelection)_settings["GrandTheftHumiditySelection"].AsInt32())
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 

@@ -227,6 +227,8 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
 
+            RegisterItemProcessor(RelevantGenericItems.RingofPurifyingFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
+
             RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
 
             RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
@@ -2049,6 +2051,7 @@ namespace CombatHandler.Generic
                     return Stat.MapNavigation;
 
                 case RelevantGenericItems.Drone:
+                case RelevantGenericItems.RingofPurifyingFlame:
                     return Stat.MaterialCreation;
 
                 case RelevantGenericItems.WenWen:
@@ -2114,6 +2117,9 @@ namespace CombatHandler.Generic
             public const int KizzermoleGumboil = 245323;
             public const int FallenStar = 244214;
             public const int TearOfOedipus = 244216;
+
+            public const int RingofPurifyingFlame = 305493;
+
 
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
 

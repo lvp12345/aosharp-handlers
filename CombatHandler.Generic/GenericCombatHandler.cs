@@ -228,6 +228,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
 
             RegisterItemProcessor(RelevantGenericItems.RingofPurifyingFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
+            RegisterItemProcessor(RelevantGenericItems.RingofBlightedFlesh, RelevantGenericItems.RingofBlightedFlesh, DamageItem);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
 
@@ -2054,6 +2055,9 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.RingofPurifyingFlame:
                     return Stat.MaterialCreation;
 
+                case RelevantGenericItems.RingofBlightedFlesh:
+                    return Stat.BiologicalMetamorphosis;
+
                 case RelevantGenericItems.WenWen:
                     return Stat.RangedEnergy;
 
@@ -2119,7 +2123,8 @@ namespace CombatHandler.Generic
             public const int TearOfOedipus = 244216;
 
             public const int RingofPurifyingFlame = 305493;
-
+            public const int BloodthrallRing = 305495;
+            public const int RingofBlightedFlesh = 305491;
 
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
 

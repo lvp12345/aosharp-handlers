@@ -505,7 +505,7 @@ namespace SyncManager
                 }
                 else if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
                 {
-                    if (Inventory.Find(genericCmdMsg.Source, out Item item))
+                    if (Inventory.Find(genericCmdMsg.Source.Value, out Item item))
                     {
                         IPCChannel.Broadcast(new UsableMessage()
                         {
@@ -519,7 +519,7 @@ namespace SyncManager
                         foreach (Backpack bag in Inventory.Backpacks)
                         {
                             _bagItem = bag.Items
-                                .Where(c => c.Slot.Instance == genericCmdMsg.Source.Instance)
+                                .Where(c => c.Slot.Instance == genericCmdMsg.Source.Value.Instance)
                                 .FirstOrDefault();
 
                             if (_bagItem != null)

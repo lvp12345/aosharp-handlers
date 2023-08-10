@@ -134,6 +134,9 @@ namespace CombatHandler.Trader
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
             RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
 
+            //Pets
+            RegisterSpellProcessor(RelevantNanos.DecisionbyCommittee, PetSpawner, CombatActionPriority.High);
+
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing);
             RegisterSpellProcessor(RelevantNanos.TeamHeal, TeamHealing);
@@ -177,9 +180,7 @@ namespace CombatHandler.Trader
             //Root/Snare
             RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
 
-            //Pets
-            RegisterSpellProcessor(RelevantNanos.DecisionbyCommittee, PetSpawner, CombatActionPriority.High);
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), PetSpawner);
+            
 
             PluginDirectory = pluginDir;
 

@@ -210,20 +210,19 @@ namespace LootManager
                             _lootingTimer = Time.NormalTime + 4; 
                         }
                     }
-                }
-
-                if (_lootingTimer > 0 && Time.NormalTime >= _lootingTimer)
-                {
-                    Corpse corpse = DynelManager.Corpses.FirstOrDefault(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6 && c.IsOpen);
-
-                    if (corpse != null)
+                    if (_lootingTimer > 0 && Time.NormalTime >= _lootingTimer)
                     {
-                        
-                        corpse.Open();
-                        //Chat.WriteLine("Closing");
-                    }
+                        Corpse corpse = DynelManager.Corpses.FirstOrDefault(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6 && c.IsOpen);
 
-                    _lootingTimer = 0;
+                        if (corpse != null)
+                        {
+
+                            corpse.Open();
+                            //Chat.WriteLine("Closing");
+                        }
+
+                        _lootingTimer = 0;
+                    }
                 }
 
                 if (_settings["Delete"].AsBool())

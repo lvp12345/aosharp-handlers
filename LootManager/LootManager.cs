@@ -35,6 +35,10 @@ namespace LootManager
 
         public static List<Rule> Rules;
 
+        private Dictionary<Identity, Vector3> openedCorpses = new Dictionary<Identity, Vector3>();
+        private Corpse currentCorpse = null;
+        private double openTime = 0;
+
         protected Settings _settings;
         public static Settings _settingsItems;
 
@@ -189,42 +193,49 @@ namespace LootManager
                     _settings["Enabled"] = false;
                 }
 
+
                 if (!_settings["Delete"].AsBool())
                 {
-                    List<Corpse> unopenedCorpses = DynelManager.Corpses
-                        .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6 && !c.IsOpen)
-                        .ToList();
-
-                    foreach (Corpse corpse in unopenedCorpses.ToList())
+                    if (currentCorpse == null)
                     {
-                        if (corpse == null)
-                        {
-                            unopenedCorpses.Remove(corpse);
-                            continue;
-                        }
+                        // Find a corpse that we haven't opened before
+                        currentCorpse = DynelManager.Corpses
+                            .FirstOrDefault(c =>
+                                c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
+                                !openedCorpses.ContainsKey(c.Identity));
 
-                        if (corpse.IsValid && Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
+                        // If found, open it and start the timer
+                        if (currentCorpse != null)
                         {
-                            corpse.Open();
-                            //Chat.WriteLine("Opening");
-                            _lootingTimer = Time.NormalTime + 4; 
+                            currentCorpse.Open();
+                            openTime = Time.NormalTime;
+                            return;
                         }
                     }
-                    if (_lootingTimer > 0 && Time.NormalTime >= _lootingTimer)
+                    else
                     {
-                        Corpse corpse = DynelManager.Corpses.FirstOrDefault(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6 && c.IsOpen);
-
-                        if (corpse != null)
+                        // Check if 4 seconds have passed since the corpse was opened
+                        if (Time.NormalTime - openTime >= 4)
                         {
+                            // If the corpse is still valid, close it and add it to the opened list
+                            if (DynelManager.IsValid(currentCorpse))
+                            {
+                                currentCorpse.Open();  // Assuming Open() toggles the state
+                                openedCorpses[currentCorpse.Identity] = currentCorpse.Position;
 
-                            corpse.Open();
-                            //Chat.WriteLine("Closing");
+                                // Reset current corpse and timer
+                                currentCorpse = null;
+                                openTime = 0;
+                            }
+                            else
+                            {
+                                // If corpse is no longer valid (e.g., it has disappeared), simply reset current corpse and timer
+                                currentCorpse = null;
+                                openTime = 0;
+                            }
                         }
-
-                        _lootingTimer = 0;
                     }
                 }
-
                 if (_settings["Delete"].AsBool())
                 {
 
@@ -357,7 +368,7 @@ namespace LootManager
             _multiListView.DeleteAllChildren();
 
 
-            Rules.Add(new Rule(_itemName.Text, _itemMinQL.Text, _itemMaxQL.Text, GlobalScope));
+            Rules.Add(new Rule(_itemName.Text.Trim(), _itemMinQL.Text, _itemMaxQL.Text, GlobalScope));
 
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
 

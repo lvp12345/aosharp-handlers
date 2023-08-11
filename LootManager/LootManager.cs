@@ -35,9 +35,7 @@ namespace LootManager
 
         public static List<Rule> Rules;
 
-        private Dictionary<Identity, Vector3> openedCorpses = new Dictionary<Identity, Vector3>();
-        private Corpse currentCorpse = null;
-        private double openTime = 0;
+        private Dictionary<Vector3, Identity> openedCorpses = new Dictionary<Vector3, Identity>();
 
         protected Settings _settings;
         public static Settings _settingsItems;
@@ -178,114 +176,113 @@ namespace LootManager
             }
         }
 
+        private async Task ProcessCorpsesAsync()
+        {
+            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && !DynelManager.LocalPlayer.IsAttacking)
+            {
+                foreach (Corpse currentCorpse in DynelManager.Corpses.Where(c =>
+                        c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
+                        !openedCorpses.ContainsKey(c.Position)))
+                {
+                    if (Time.NormalTime > _lootingTimer + 3)
+                    {
+                        currentCorpse.Open();
+                        _lootingTimer = Time.NormalTime;
+
+                        await Task.Delay(2000);
+
+                        currentCorpse.Open();
+                        openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
+                    }
+                }
+            }
+        }
+
         private void OnUpdate(object sender, float deltaTime)
         {
-            if (Game.IsZoning)
+            try
             {
-                _bagsFull = false;
-                return;
-            }
-
-            if (_settings["Enabled"].AsBool())
-            {
-                if (_bagsFull && Inventory.NumFreeSlots == 0)
+                if (Game.IsZoning)
                 {
-                    _settings["Enabled"] = false;
+                    _bagsFull = false;
+                    return;
                 }
 
-
-                if (!_settings["Delete"].AsBool())
+                if (_settings["Enabled"].AsBool())
                 {
-                    if (currentCorpse == null)
+                    if (_bagsFull && Inventory.NumFreeSlots == 0)
                     {
-                        // Find a corpse that we haven't opened before
-                        currentCorpse = DynelManager.Corpses
-                            .FirstOrDefault(c =>
-                                c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
-                                !openedCorpses.ContainsKey(c.Identity));
-
-                        // If found, open it and start the timer
-                        if (currentCorpse != null)
-                        {
-                            currentCorpse.Open();
-                            openTime = Time.NormalTime;
-                            return;
-                        }
+                        _settings["Enabled"] = false;
                     }
-                    else
-                    {
-                        // Check if 4 seconds have passed since the corpse was opened
-                        if (Time.NormalTime - openTime >= 4)
-                        {
-                            // If the corpse is still valid, close it and add it to the opened list
-                            if (DynelManager.IsValid(currentCorpse))
-                            {
-                                currentCorpse.Open();  // Assuming Open() toggles the state
-                                openedCorpses[currentCorpse.Identity] = currentCorpse.Position;
-
-                                // Reset current corpse and timer
-                                currentCorpse = null;
-                                openTime = 0;
-                            }
-                            else
-                            {
-                                // If corpse is no longer valid (e.g., it has disappeared), simply reset current corpse and timer
-                                currentCorpse = null;
-                                openTime = 0;
-                            }
-                        }
-                    }
-                }
-                if (_settings["Delete"].AsBool())
-                {
 
                     Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6).FirstOrDefault();
 
-                    if (corpse != null)
+                    if (!_settings["Delete"].AsBool())
                     {
-                        if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 2)
+                        ProcessCorpsesAsync();
+                    }
+
+
+                    if (_settings["Delete"].AsBool())
+                    {
+
+                        if (corpse != null)
                         {
-                            corpse.Open();
-                            _lootingTimer = Time.NormalTime;
+                            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 2)
+                            {
+                                corpse.Open();
+                                _lootingTimer = Time.NormalTime;
+                            }
                         }
                     }
+
+                    MoveItemsToBag();
                 }
 
-                MoveItemsToBag();
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                {
+                    //if (SettingsController.settingsWindow.FindView("chkOnOff", out Checkbox chkOnOff))
+                    //{
+                    //    chkOnOff.SetValue(Looting);
+                    //    if (chkOnOff.Toggled == null)
+                    //        chkOnOff.Toggled += chkOnOff_Toggled;
+                    //}
+
+                    //if (SettingsController.settingsWindow.FindView("chkDel", out Checkbox chkDel))
+                    //{
+                    //    chkDel.SetValue(Delete);
+                    //    if (chkDel.Toggled == null)
+                    //        chkDel.Toggled += chkDel_Toggled;
+                    //}
+
+                    if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
+                    {
+                        if (addbut.Clicked == null)
+                            addbut.Clicked += addButtonClicked;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("buttonDel", out Button rembut))
+                    {
+                        if (rembut.Clicked == null)
+                            rembut.Clicked += remButtonClicked;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
+                    {
+                        infoView.Tag = SettingsController.settingsWindow;
+                        infoView.Clicked = InfoView;
+                    }
+                }
             }
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            catch (Exception ex)
             {
-                //if (SettingsController.settingsWindow.FindView("chkOnOff", out Checkbox chkOnOff))
-                //{
-                //    chkOnOff.SetValue(Looting);
-                //    if (chkOnOff.Toggled == null)
-                //        chkOnOff.Toggled += chkOnOff_Toggled;
-                //}
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
 
-                //if (SettingsController.settingsWindow.FindView("chkDel", out Checkbox chkDel))
-                //{
-                //    chkDel.SetValue(Delete);
-                //    if (chkDel.Toggled == null)
-                //        chkDel.Toggled += chkDel_Toggled;
-                //}
-
-                if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
+                if (errorMessage != previousErrorMessage)
                 {
-                    if (addbut.Clicked == null)
-                        addbut.Clicked += addButtonClicked;
-                }
-
-                if (SettingsController.settingsWindow.FindView("buttonDel", out Button rembut))
-                {
-                    if (rembut.Clicked == null)
-                        rembut.Clicked += remButtonClicked;
-                }
-
-                if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
-                {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
                 }
             }
         }

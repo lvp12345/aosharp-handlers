@@ -222,7 +222,6 @@ namespace LootManager
                         ProcessCorpsesAsync();
                     }
 
-
                     if (_settings["Delete"].AsBool())
                     {
 

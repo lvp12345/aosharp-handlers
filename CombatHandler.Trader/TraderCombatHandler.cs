@@ -994,7 +994,7 @@ namespace CombatHandler.Trader
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            string[] namesToCheck = new string[] { "Vergil Aeneid", "Abmouth Supremus" };
+            string[] namesToCheck = new string[] { "Vergil Aeneid", "Abmouth Supremus", "Aztur the Immortal" };
 
             if (namesToCheck.Any(name => fightingTarget?.Name.Contains(name) ?? false))
             {

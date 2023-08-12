@@ -182,17 +182,20 @@ namespace LootManager
                     c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
                     !openedCorpses.ContainsKey(c.Position)))
             {
-                if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast 
+                if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast
                     && !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
-                    && !DynelManager.LocalPlayer.IsAttackPending && Time.NormalTime > _lootingTimer + 3)
+                    && !DynelManager.LocalPlayer.IsAttackPending)
                 {
-                    currentCorpse.Open(); // Open the corpse
-                    _lootingTimer = Time.NormalTime;
+                    if (Time.NormalTime > _lootingTimer + 3)
+                    {
+                        currentCorpse.Open(); // Open the corpse
+                        _lootingTimer = Time.NormalTime;
 
-                    await Task.Delay(2000);
+                        await Task.Delay(2000);
 
-                    currentCorpse.Open(); // Close the corpse
-                    openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
+                        currentCorpse.Open(); // Close the corpse
+                        openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
+                    }
                 }
             }
         }

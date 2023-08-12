@@ -42,6 +42,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonParameters.cs">
+      <Link>CommonParameters.cs</Link>
+    </Compile>
     <Compile Include="IPCMessages\ClearBuffsMessage.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>

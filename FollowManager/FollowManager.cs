@@ -47,7 +47,7 @@ namespace FollowManager
                 _settings = new Settings("FollowManager");
                 PluginDir = pluginDir;
 
-                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\FollowManager\\{Game.ClientInst}\\Config.json");
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\FollowManager\\{Game.ClientInst}\\Config.json");
                 IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
 
                 IPCChannel.RegisterCallback((int)IPCOpcode.Follow, OnFollowMessage);

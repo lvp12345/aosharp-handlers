@@ -178,23 +178,20 @@ namespace LootManager
 
         private async Task ProcessCorpsesAsync()
         {
-            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && !DynelManager.LocalPlayer.IsAttacking)
+            foreach (Corpse currentCorpse in DynelManager.Corpses.Where(c =>
+                    c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
+                    !openedCorpses.ContainsKey(c.Position)))
             {
-                foreach (Corpse currentCorpse in DynelManager.Corpses.Where(c =>
-                        c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
-                        !openedCorpses.ContainsKey(c.Position)))
+                if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                 {
-                    if (Time.NormalTime > _lootingTimer + 3)
-                    {
-                        currentCorpse.Open();
-                        _lootingTimer = Time.NormalTime;
-
-                        await Task.Delay(2000);
-
-                        currentCorpse.Open();
-                        openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
-                    }
+                    currentCorpse.Open();
+                    _lootingTimer = Time.NormalTime;
                 }
+
+                await Task.Delay(2000); // Wait for 2 seconds
+
+                currentCorpse.Open(); // Close the corpse
+                openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
             }
         }
 

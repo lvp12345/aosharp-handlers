@@ -1,10 +1,9 @@
-﻿using System;
+﻿using AOSharp.Core;
+using AOSharp.Core.UI;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Xml;
-using Newtonsoft.Json;
 
 namespace GMIManager
 {
@@ -20,6 +19,8 @@ namespace GMIManager
         public string GMIBuyOrderName => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIBuyOrderName : string.Empty;
         [JsonIgnore]
         public long GMIBuyOrderEndPrice => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIBuyOrderEndPrice : 0;
+        [JsonIgnore]
+        public string GMIItemName => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIItemName : string.Empty;
 
         public static Config Load(string path)
         {
@@ -74,6 +75,8 @@ namespace GMIManager
     {
         public event EventHandler<string> GMIBuyOrderNameChangedEventChangedEvent;
         private string _gMIBuyOrderName = string.Empty;
+        public event EventHandler<string> GMIItemNameChangedEventChangedEvent;
+        private string _gMIItemName = string.Empty;
 
         public string GMIBuyOrderName
         {
@@ -125,6 +128,22 @@ namespace GMIManager
                 {
                     _gMIBuyOrderEndPrice = value;
                     GMIBuyOrderEndPriceChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
+        public string GMIItemName
+        {
+            get
+            {
+                return _gMIItemName;
+            }
+            set
+            {
+                if (_gMIItemName != value)
+                {
+                    _gMIItemName = value;
+                    GMIItemNameChangedEventChangedEvent?.Invoke(this, value);
                 }
             }
         }

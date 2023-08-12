@@ -1,27 +1,17 @@
-﻿using System;
-using System.Linq;
-using System.Diagnostics;
+﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages;
 using HelpManager.IPCMessages;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using System.Runtime.InteropServices;
+using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using AOSharp.Core.Inventory;
-using AOSharp.Common.GameData.UI;
-using System.Windows.Input;
-using AOSharp.Common.SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using AOSharp.Core.GMI;
-using Zoltu.IO;
-using System.IO;
-using System.Text;
 
 namespace HelpManager
 {
@@ -106,8 +96,8 @@ namespace HelpManager
         public override void Run(string pluginDir)
         {
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\HelpManager\\{Game.ClientInst}\\Config.json");
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
             PluginDir = pluginDir;
 
@@ -117,8 +107,8 @@ namespace HelpManager
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
-            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
-            Config.CharSettings[Game.ClientInst].SitPercentageChangedEvent += SitPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentageChangedEvent += SitPercentage_Changed;
 
             RegisterSettingsWindow("Help Manager", "HelpManagerSettingWindow.xml");
 
@@ -139,7 +129,7 @@ namespace HelpManager
 
             PluginDirectory = pluginDir;
 
-            SitPercentage = Config.CharSettings[Game.ClientInst].SitPercentage;
+            SitPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage;
         }
 
         public override void Teardown()
@@ -156,7 +146,7 @@ namespace HelpManager
         }
         public static void SitPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].SitPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage = e;
             Config.Save();
         }
 
@@ -186,18 +176,18 @@ namespace HelpManager
                 if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                 {
                     if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
                     {
-                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
                     }
                 }
 
                 if (sitPercentageInput != null && !string.IsNullOrEmpty(sitPercentageInput.Text))
                 {
                     if (int.TryParse(sitPercentageInput.Text, out int sitPercentageValue)
-                        && Config.CharSettings[Game.ClientInst].SitPercentage != sitPercentageValue)
+                        && Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage != sitPercentageValue)
                     {
-                        Config.CharSettings[Game.ClientInst].SitPercentage = sitPercentageValue;
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage = sitPercentageValue;
                     }
                 }
 
@@ -403,7 +393,7 @@ namespace HelpManager
                     });
                 }
             }
-            else 
+            else
             {
                 Spell yalmbuff = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
 
@@ -487,7 +477,7 @@ namespace HelpManager
             }
         }
 
-            public static void CancelBuffs(int[] buffsToCancel)
+        public static void CancelBuffs(int[] buffsToCancel)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {

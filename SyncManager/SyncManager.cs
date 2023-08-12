@@ -1,23 +1,20 @@
-﻿using System;
-using System.Linq;
-using System.Diagnostics;
+﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
+using SmokeLounge.AOtomation.Messaging.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using AOSharp.Core.Inventory;
-using AOSharp.Common.GameData.UI;
 using SyncManager.IPCMessages;
-using System.Windows.Input;
-using System.Runtime.Remoting.Messaging;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace SyncManager
 {
@@ -55,10 +52,10 @@ namespace SyncManager
             _settings = new Settings("SyncManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\SyncManager\\{Game.ClientInst}\\Config.json");
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\SyncManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
-            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
             Network.N3MessageReceived += Network_N3MessageReceived;
@@ -111,7 +108,7 @@ namespace SyncManager
             //{
             //    _init = true;
 
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\SyncManager\\{Game.ClientInst}\\Config.json");
+            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\SyncManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
             //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Sync Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -124,7 +121,7 @@ namespace SyncManager
             //            SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
             //            if (channelInput != null)
-            //                channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+            //                channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
             //        }
             //    }
 
@@ -140,9 +137,9 @@ namespace SyncManager
                 if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                 {
                     if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
                     {
-                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
                     }
                 }
 

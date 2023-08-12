@@ -18,73 +18,59 @@ using System.Data;
 using System.IO;
 using AOSharp.Core.Movement;
 using System.Net.Http;
+using AOSharp.Common.Unmanaged.Interfaces;
+using System.Text.RegularExpressions;
+using static AOSharp.Common.Unmanaged.Imports.InventoryGUIModule_c;
 
 namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
-        private double _lastCheckTime = Time.NormalTime;
-
-        public static List<MultiListViewItem> MultiListViewItemList = new List<MultiListViewItem>();
-        public static Dictionary<ItemModel, MultiListViewItem> PreItemList = new Dictionary<ItemModel, MultiListViewItem>();
-
-        private static List<Vector3> _corpsePosList = new List<Vector3>();
-        private static Vector3 _currentPos = Vector3.Zero;
-        private static List<Identity> _corpseIdList = new List<Identity>();
+        
+        public static string previousErrorMessage = string.Empty;
 
         protected double _lastZonedTime = Time.NormalTime;
 
-        private static int MinQlValue;
-        private static int MaxQlValue;
-        private static int ItemIdValue;
-        private static string ItemNameValue;
+        public static Config Config { get; private set; }
 
         public static List<Rule> Rules;
+
+        private Dictionary<Vector3, Identity> openedCorpses = new Dictionary<Vector3, Identity>();
 
         protected Settings _settings;
         public static Settings _settingsItems;
 
-        private static bool _internalOpen = false;
-        private static bool _weAreDoingThings = false;
-        private static bool _currentlyLooting = false;
-        private static bool _initiliaseBags = false;
-
-        private static bool Looting = false;
-        private static bool Bags = false;
-        private static bool Delete = false;
-
-        private static double _nowTimer = Time.NormalTime;
-
-        private static int _currentIgnore = 0;
+        double _lootingTimer;
+        double _closeCorpse;
 
         private Window _infoWindow;
 
-        private static List<Item> _invItems = new List<Item>();
-
-        //public static List<Item> _lootList = new List<Item>();
-
         public static string PluginDir;
-        private static bool _toggle = false;
-        private static bool _initCheck = false;
-        //Stop error message spam
-        //public static string PrevMessage;
 
-        //public bool IsOpen { get; private set; }
+        private static bool _toggle = false;
+
+        bool _bagsFull = false;
+        bool foundBagWithSpace = false;
 
         public override void Run(string pluginDir)
         {
             try
             {
                 _settings = new Settings("LootManager");
+
                 PluginDir = pluginDir;
 
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+
                 Game.OnUpdate += OnUpdate;
-                Game.TeleportEnded += OnZoning;
-                Inventory.ContainerOpened += OnContainerOpened;
+                Inventory.ContainerOpened += ProcessItemsInCorpseContainer;
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
                 LoadRules();
+
+                _settings.AddVariable("Enabled", false);
+                _settings.AddVariable("Delete", false);
 
                 Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
                 {
@@ -95,245 +81,226 @@ namespace LootManager
 
                 Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
                 {
-                    Looting = !Looting;
-                    Chat.WriteLine($"Looting : {Looting}.");
+                    _settings["Enabled"] = !_settings["Enabled"].AsBool();
+                    Chat.WriteLine($"Enabled : {_settings["Enabled"]}");
                 });
 
+               
                 Chat.WriteLine("Loot Manager loaded!");
                 Chat.WriteLine("/lootmanager for settings. /lm to enable/disable");
             }
-            catch (Exception e)
-            // Stop error message spam (unless more than one error message)
+            catch (Exception ex)
             {
-                //if (e.Message != PrevMessage)
-                //{
-                Chat.WriteLine(e.Message);
-                //PrevMessage = e.Message;
-                //}
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
         }
 
         public override void Teardown()
         {
+            Config.Save();
             SaveRules();
             SettingsController.CleanUp();
         }
 
-        private void FindBagWithSpace()
+        private void MoveItemsToBag()
         {
-            foreach (Backpack backpack in Inventory.Backpacks)
+            if (!_bagsFull)
             {
-                // For some reason <container>.ItemsCount is returning 0 on initially starting the handler or on zoning
-                if (backpack.Items.Count == 0)
+                // Loop through all backpacks to check if their item count is 0
+                // and open them to set the item count if necessary
+                foreach (Backpack backpack in Inventory.Backpacks)
                 {
-                    //In this case backpacks must be opened and closed first to set the item count
-                    //As we cant identify a specific bag by name (yet) for the Use method, open them all .. this should only happen once
-                    List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
-                    foreach (Item bag in bags)
+                    if (backpack.Items.Count == 0 && Inventory.Items.Any(item => item.Slot.Type == IdentityType.Inventory && CheckRules(item)))
                     {
-                        bag.Use();
-                        bag.Use();
+                        // Open all backpacks to set the item count
+                        List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
+                        foreach (Item bag in bags)
+                        {
+                            bag.Use();
+                            bag.Use();
+                        }
+
+                        // Set _bagsFull to false since there is at least one backpack with free space
+                        _bagsFull = true;
+
+                        // No need to check further, break out of the loop
+                        break;
                     }
-                    _initiliaseBags = true;
                 }
             }
-        }
 
-        private static Backpack BagWithSpace()
-        {
+            // Find a backpack with the name containing "loot" and less than 21 items
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
                 if (backpack.Items.Count < 21)
-                    return backpack;
-            } 
-            return null;
+                {
+                    // Move the items to the backpack with free space
+                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                    {
+                        // Only check to move if there is something to move
+                        if (CheckRules(itemtomove))
+                        {
+                            // Move the item to the backpack with free space
+                            itemtomove.MoveToContainer(backpack);
+                            //_moveLootDelay = Time.NormalTime;
+                        }
+                    }
+
+                    // No need to check further, break out of the loop
+                    break;
+                }
+            }
+
         }
 
-        private void OnContainerOpened(object sender, Container container)
+        private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
-            if (container.Identity.Type != IdentityType.Corpse
-            || !_internalOpen
-            || !_weAreDoingThings) { return; }
-
-            _currentlyLooting = true;
+            if (container.Identity.Type != IdentityType.Corpse) return;
 
             foreach (Item item in container.Items)
             {
-                if (Inventory.NumFreeSlots > 1)
-                {
-                    if (CheckRules(item))
-                    {
-                        if (!_toggle)
-                            item.MoveToInventory();
-                        else if (_toggle)
-                            _initCheck = true;
-                    }
-                    else if (Delete)
-                        item.Delete();
-                }
+                if (Inventory.NumFreeSlots <= 1)
+                    return;
 
+                if (CheckRules(item))
+                    item.MoveToInventory();
+                else if (_settings["Delete"].AsBool())
+                    item.Delete();
             }
-
-            _corpsePosList.Add(_currentPos);
-            _corpseIdList.Add(container.Identity);
-            //Chat.WriteLine($"Looted {container.Identity} at {_currentPos}");
-
-            if (!_toggle && !_initCheck)
-                Item.Use(container.Identity);
-
-            _internalOpen = false;
-            _weAreDoingThings = false;
-            _currentlyLooting = false;
-            _initCheck = false;
         }
 
-        private void OnZoning(object sender, EventArgs e)
+        private async Task ProcessCorpsesAsync()
         {
-            //Lets the bag check know it needs to scan again after zoning
-            if (_initiliaseBags || Time.NormalTime < _lastZonedTime + 3.0)
+            foreach (Corpse currentCorpse in DynelManager.Corpses.Where(c =>
+                    c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
+                    !openedCorpses.ContainsKey(c.Position)))
             {
-                _initiliaseBags = false;
+                if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast
+                    && !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
+                    && !DynelManager.LocalPlayer.IsAttackPending)
+                {
+                    if (Time.NormalTime > _lootingTimer + 3)
+                    {
+                        currentCorpse.Open(); // Open the corpse
+                        _lootingTimer = Time.NormalTime;
+
+                        await Task.Delay(2000);
+
+                        currentCorpse.Open(); // Close the corpse
+                        openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
+                    }
+                }
             }
         }
-
 
         private void OnUpdate(object sender, float deltaTime)
         {
-            if (Game.IsZoning) //|| Time.NormalTime < _lastZonedTime + 10.0)
-                return;
-
-            if (Looting)
+            try
             {
-
-                //Stupid correction - for if we try looting and someone else is looting or we are moving and just get out of range before the tick...
-                if (_internalOpen && _weAreDoingThings && Time.NormalTime > _nowTimer + 3f)
+                if (Game.IsZoning)
                 {
-                    if (_currentlyLooting) { return; }
-
-                    //Chat.WriteLine($"Resetting");
-                    _internalOpen = false;
-                    _weAreDoingThings = false;
+                    _bagsFull = false;
+                    return;
                 }
 
-                if (_weAreDoingThings) { return; }
-
-                //Tidying up of the stupid ass logic
-                foreach (Vector3 corpsePos in _corpsePosList)
-                    if (DynelManager.Corpses.Where(c => c.Position == corpsePos).ToList().Count == 0)
-                    {
-                        _corpsePosList.Remove(corpsePos);
-                        //Chat.WriteLine($"Removing vector3");
-                        return;
-                    }
-
-                foreach (Identity corpseId in _corpseIdList)
-                    if (DynelManager.Corpses.Where(c => c.Identity == corpseId).ToList().Count == 0)
-                    {
-                        _corpseIdList.Remove(corpseId);
-                        //Chat.WriteLine($"Removing identity");
-                        return;
-                    }
-
-                foreach (Corpse corpse in DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 7
-                    && !_corpsePosList.Contains(c.Position)).Take(1))
+                if (_settings["Enabled"].AsBool())
                 {
-                    Corpse _corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity != corpse.Identity && c.Position.DistanceFrom(corpse.Position) <= 1f);
-
-                    //This check prevents it from opening every body in a large pile, i still don't know why, changing it is the only solution i found
-                    //I've left it here in case some brave adventurer in the future wants to figure out why
-                    //if (_corpse != null || _weAreDoingThings) { continue; }
-
-                    if (_currentlyLooting) { return; }
-
-                    //This is so we can open ourselves without the event auto closing
-                    _internalOpen = true;
-                    _weAreDoingThings = true;
-                    _nowTimer = Time.NormalTime;
-
-                    if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
+                    if (_bagsFull && Inventory.NumFreeSlots == 0)
                     {
-                        corpse.Open();
-                        //Chat.WriteLine($"Opening {corpse.Identity}");
+                        _settings["Enabled"] = false;
                     }
 
-                    //This is so we can pass the vector to the event
-                    _currentPos = corpse.Position;
-                }
+                    Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6).FirstOrDefault();
 
-                //Moving this loop below the container opening loop allows us to loot without a bag named loot again
-                if (Looting)
-                {
-                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                    if (!_settings["Delete"].AsBool())
                     {
-                        //Only check to move if there is something to move
-                        if (CheckRules(itemtomove))
+                        ProcessCorpsesAsync();
+                    }
+
+                    if (_settings["Delete"].AsBool())
+                    {
+
+                        if (corpse != null)
                         {
-                            if (!_initiliaseBags)
+                            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 2)
                             {
-                                //Initialise bags again if the flag is false (after injecting or zoning)
-                                FindBagWithSpace();
+                                corpse.Open();
+                                _lootingTimer = Time.NormalTime;
                             }
-                            //Dont move if no eligible bag (name or space)
-                            Backpack _bag = BagWithSpace();
-                            if (_bag == null) { return; }
-                            itemtomove.MoveToContainer(_bag);
                         }
                     }
+
+                    MoveItemsToBag();
+                }
+
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                {
+                    //if (SettingsController.settingsWindow.FindView("chkOnOff", out Checkbox chkOnOff))
+                    //{
+                    //    chkOnOff.SetValue(Looting);
+                    //    if (chkOnOff.Toggled == null)
+                    //        chkOnOff.Toggled += chkOnOff_Toggled;
+                    //}
+
+                    //if (SettingsController.settingsWindow.FindView("chkDel", out Checkbox chkDel))
+                    //{
+                    //    chkDel.SetValue(Delete);
+                    //    if (chkDel.Toggled == null)
+                    //        chkDel.Toggled += chkDel_Toggled;
+                    //}
+
+                    if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
+                    {
+                        if (addbut.Clicked == null)
+                            addbut.Clicked += addButtonClicked;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("buttonDel", out Button rembut))
+                    {
+                        if (rembut.Clicked == null)
+                            rembut.Clicked += remButtonClicked;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
+                    {
+                        infoView.Tag = SettingsController.settingsWindow;
+                        infoView.Clicked = InfoView;
+                    }
                 }
             }
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            catch (Exception ex)
             {
-                if (SettingsController.settingsWindow.FindView("chkOnOff", out Checkbox chkOnOff))
-                {
-                    chkOnOff.SetValue(Looting);
-                    if (chkOnOff.Toggled == null)
-                        chkOnOff.Toggled += chkOnOff_Toggled;
-                }
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
 
-                if (SettingsController.settingsWindow.FindView("chkDel", out Checkbox chkDel))
+                if (errorMessage != previousErrorMessage)
                 {
-                    chkDel.SetValue(Delete);
-                    if (chkDel.Toggled == null)
-                        chkDel.Toggled += chkDel_Toggled;
-                }
-
-                if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
-                {
-                    if (addbut.Clicked == null)
-                        addbut.Clicked += addButtonClicked;
-                }
-
-                if (SettingsController.settingsWindow.FindView("buttonDel", out Button rembut))
-                {
-                    if (rembut.Clicked == null)
-                        rembut.Clicked += remButtonClicked;
-                }
-
-                if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
-                {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
                 }
             }
         }
 
-        //private void TeleportEnded(object sender, EventArgs e)
+        //private void chkDel_Toggled(object sender, bool toggle)
         //{
-        //    _lastZonedTime = Time.NormalTime;
+        //    Checkbox chk = (Checkbox)sender;
+        //    Delete = toggle;
+        //    Config.Delete = Delete;
+        //    toggle = Config.Delete;
         //}
 
-        private void chkDel_Toggled(object sender, bool e)
-        {
-            Checkbox chk = (Checkbox)sender;
-            Delete = e;
-        }
-
-        private void chkOnOff_Toggled(object sender, bool e)
-        {
-            Checkbox chk = (Checkbox)sender;
-            Looting = e;
-        }
+        //private void chkOnOff_Toggled(object sender, bool toggle)
+        //{
+        //    Checkbox chk = (Checkbox)sender;
+        //    Looting = toggle;
+        //}
 
         private void InfoView(object s, ButtonBase button)
         {
@@ -348,15 +315,15 @@ namespace LootManager
 
         private void addButtonClicked(object sender, ButtonBase e)
         {
-            SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
+            SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
 
-            SettingsController.settingsWindow.FindView("tivName", out TextInputView tivname);
-            SettingsController.settingsWindow.FindView("tivminql", out TextInputView tivminql);
-            SettingsController.settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql);
+            SettingsController.settingsWindow.FindView("tivName", out TextInputView _itemName);
+            SettingsController.settingsWindow.FindView("_itemMinQL", out TextInputView _itemMinQL);
+            SettingsController.settingsWindow.FindView("_itemMaxQL", out TextInputView _itemMaxQL);
 
             SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
 
-            if (tivname.Text.Trim() == "")
+            if (_itemName.Text.Trim() == "")
             {
                 txErr.Text = "Can't add an empty name";
                 return;
@@ -366,8 +333,8 @@ namespace LootManager
             int maxql = 0;
             try
             {
-                minql = Convert.ToInt32(tivminql.Text);
-                maxql = Convert.ToInt32(tivmaxql.Text);
+                minql = Convert.ToInt32(_itemMinQL.Text);
+                maxql = Convert.ToInt32(_itemMaxQL.Text);
             }
             catch
             {
@@ -396,10 +363,10 @@ namespace LootManager
             bool GlobalScope = chkGlobal.IsChecked;
 
 
-            mlv.DeleteAllChildren();
+            _multiListView.DeleteAllChildren();
 
 
-            Rules.Add(new Rule(tivname.Text, tivminql.Text, tivmaxql.Text, GlobalScope));
+            Rules.Add(new Rule(_itemName.Text.Trim(), _itemMinQL.Text, _itemMaxQL.Text, GlobalScope));
 
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
 
@@ -407,7 +374,7 @@ namespace LootManager
             foreach (Rule r in Rules)
             {
                 View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
-                entry.FindChild("ItemName", out TextView tx);
+                entry.FindChild("ItemName", out TextView _textView);
                 string globalscope = "";
                 if (r.Global)
                     globalscope = "G";
@@ -415,16 +382,16 @@ namespace LootManager
                     globalscope = "L";
 
                 //entry.Tag = iEntry;
-                tx.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + " ] - " + r.Name;
+                _textView.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + " ] - " + r.Name;
 
-                mlv.AddChild(entry, false);
+                _multiListView.AddChild(entry, false);
                 iEntry++;
             }
 
 
-            tivname.Text = "";
-            tivminql.Text = "1";
-            tivmaxql.Text = "500";
+            _itemName.Text = "";
+            _itemMinQL.Text = "1";
+            _itemMaxQL.Text = "500";
             txErr.Text = "";
 
         }
@@ -433,7 +400,7 @@ namespace LootManager
         {
             try
             {
-                SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
+                SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
 
                 SettingsController.settingsWindow.FindView("tivindex", out TextInputView txIndex);
 
@@ -465,7 +432,7 @@ namespace LootManager
 
                 Rules.RemoveAt(index);
 
-                mlv.DeleteAllChildren();
+                _multiListView.DeleteAllChildren();
                 //viewitems.Clear();
 
                 int iEntry = 0;
@@ -484,7 +451,7 @@ namespace LootManager
                     tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
 
 
-                    mlv.AddChild(entry, false);
+                    _multiListView.AddChild(entry, false);
                     iEntry++;
                 }
 
@@ -492,8 +459,14 @@ namespace LootManager
             }
             catch (Exception ex)
             {
+                var errorMessage = "An error occurred on line " + LootManager.GetLineNumber(ex) + ": " + ex.Message;
 
-                Chat.WriteLine(ex.Message);
+                if (errorMessage != LootManager.previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    LootManager.previousErrorMessage = errorMessage;
+                }
             }
         }
 
@@ -506,38 +479,26 @@ namespace LootManager
         {
             Rules = new List<Rule>();
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager\\{DynelManager.LocalPlayer.Name}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager\\{DynelManager.LocalPlayer.Name}");
-
-            string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager\\Global.json";
+            string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager\\Global.json";
             if (File.Exists(filename))
             {
                 string rulesJson = File.ReadAllText(filename);
                 Rules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
-                foreach (Rule r in Rules)
-                    r.Global = true;
+                foreach (Rule rule in Rules)
+                    rule.Global = true;
             }
 
 
-            filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
+            filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
             if (File.Exists(filename))
             {
                 List<Rule> scopedRules = new List<Rule>();
                 string rulesJson = File.ReadAllText(filename);
                 scopedRules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
-                foreach (Rule r in scopedRules)
+                foreach (Rule rule in scopedRules)
                 {
-                    r.Global = false;
-                    Rules.Add(r);
+                    rule.Global = false;
+                    Rules.Add(rule);
                 }
             }
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
@@ -548,19 +509,7 @@ namespace LootManager
             List<Rule> GlobalRules = new List<Rule>();
             List<Rule> ScopeRules = new List<Rule>();
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager\\{DynelManager.LocalPlayer.Name}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager\\{DynelManager.LocalPlayer.Name}");
-
-            string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager\\Global.json";
+            string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager\\Global.json";
 
             GlobalRules = Rules.Where(o => o.Global == true).ToList();
             ScopeRules = Rules.Where(o => o.Global == false).ToList();
@@ -568,10 +517,11 @@ namespace LootManager
             string rulesJson = JsonConvert.SerializeObject(GlobalRules);
             File.WriteAllText(filename, rulesJson);
 
-            filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
+            filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
             rulesJson = JsonConvert.SerializeObject(ScopeRules);
             File.WriteAllText(filename, rulesJson);
         }
+
 
         public bool CheckRules(Item item)
         {
@@ -580,12 +530,23 @@ namespace LootManager
                 if (
                     item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
                     item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
-                    item.QualityLevel <= Convert.ToInt32(rule.Hql)
-                    )
+                    item.QualityLevel <= Convert.ToInt32(rule.Hql))
                     return true;
 
             }
             return false;
+        }
+
+        public static int GetLineNumber(Exception ex)
+        {
+            var lineNumber = 0;
+
+            var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
+
+            if (lineMatch.Success)
+                lineNumber = int.Parse(lineMatch.Groups[1].Value);
+
+            return lineNumber;
         }
 
     }
@@ -620,6 +581,5 @@ namespace LootManager
         public string ItemName;
         public int LowId;
         public int HighId;
-        public int Ql;
     }
 }

@@ -1,21 +1,18 @@
-﻿using System;
+﻿using AOSharp.Common.GameData;
+using AOSharp.Core;
+using AOSharp.Core.Inventory;
+using AOSharp.Core.IPC;
+using AOSharp.Core.UI;
+using CombatHandler.Generic.IPCMessages;
+using SmokeLounge.AOtomation.Messaging.GameData;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using AOSharp.Common.GameData;
-using AOSharp.Common.GameData.UI;
-using AOSharp.Core;
-using AOSharp.Core.Inventory;
-using AOSharp.Core.IPC;
-using CombatHandler.Generic.IPCMessages;
-using AOSharp.Core.UI;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using static CombatHandler.Generic.PerkCondtionProcessors;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Generic
 {
@@ -191,8 +188,8 @@ namespace CombatHandler.Generic
 
         public GenericCombatHandler(string pluginDir)
         {
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\Generic\\{Game.ClientInst}\\Config.json");
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\Generic\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
             PluginDir = pluginDir;
 
@@ -210,7 +207,7 @@ namespace CombatHandler.Generic
             RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
             RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
-            RegisterPerkProcessor(PerkHash.Clipfever, ToggledDamagePerk); 
+            RegisterPerkProcessor(PerkHash.Clipfever, ToggledDamagePerk);
             RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
@@ -230,6 +227,9 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
 
+            RegisterItemProcessor(RelevantGenericItems.RingofPurifyingFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
+            RegisterItemProcessor(RelevantGenericItems.RingofBlightedFlesh, RelevantGenericItems.RingofBlightedFlesh, BlightedFlesh);
+
             RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
 
             RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
@@ -240,6 +240,7 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
             RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
             RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
+
             RegisterItemProcessor(new int[] { RelevantGenericItems.RezCan1, RelevantGenericItems.RezCan2 }, RezCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
@@ -285,7 +286,7 @@ namespace CombatHandler.Generic
 
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
-            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
 
 
             //Network.N3MessageSent += Network_N3MessageSent;
@@ -320,19 +321,21 @@ namespace CombatHandler.Generic
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
                 return;
-          
+
             base.OnUpdate(deltaTime);
+
+            UseItems();
 
             //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
 
-            //Chat.WriteLine($"{Config.CharSettings[Game.ClientInst].IPCChannel}");
+            //Chat.WriteLine($"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}");
 
             //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1) && !_init
             //    && IsActiveWindow)
             //{
             //    _init = true;
 
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\Generic\\{Game.ClientInst}\\Config.json");
+            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\Generic\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
             //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -346,9 +349,9 @@ namespace CombatHandler.Generic
             //            SettingsController.settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView engiBioCocoonInput);
 
             //            if (channelInput != null)
-            //                channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+            //                channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
             //            if (engiBioCocoonInput != null)
-            //                engiBioCocoonInput.Text = $"{Config.CharSettings[Game.ClientInst].EngiBioCocoonPercentage}";
+            //                engiBioCocoonInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].EngiBioCocoonPercentage}";
             //        }
             //    }
 
@@ -358,7 +361,7 @@ namespace CombatHandler.Generic
             if (Time.NormalTime > _updateTick + 0.1f)
             {
                 foreach (SimpleChar player in DynelManager.Characters
-                    .Where(c => c.IsPlayer && DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
+                    .Where(c => c.IsPlayer && c.Profession == (Profession)4294967295 && DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
                 {
                     Network.Send(new CharacterActionMessage()
                     {
@@ -378,8 +381,8 @@ namespace CombatHandler.Generic
 
                 if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                     if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
-                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                        && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
             }
 
             if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
@@ -387,7 +390,7 @@ namespace CombatHandler.Generic
                 _lastCombatTime = Time.NormalTime;
             }
 
-           
+
         }
 
 
@@ -1138,8 +1141,17 @@ namespace CombatHandler.Generic
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            
+
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null && fightingTarget.IsInAttackRange();
+        }
+
+        protected virtual bool BlightedFlesh(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+
+            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) 
+                && fightingTarget != null 
+                && !fightingTarget.Buffs.Contains(RelevantGenericNanos.BlightedFlesh)
+                && fightingTarget.IsInAttackRange();
         }
 
         protected bool TotwDmgShoulder(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1170,12 +1182,13 @@ namespace CombatHandler.Generic
 
         private bool FreeStim(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                 || (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
                 && !DynelManager.LocalPlayer.Buffs.Contains(258231))) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)) { return false; }
 
+            actiontarget.Target = DynelManager.LocalPlayer;
             actiontarget.ShouldSetTarget = true;
             return true;
 
@@ -1237,7 +1250,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
@@ -1245,9 +1257,9 @@ namespace CombatHandler.Generic
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
                     || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) 
+                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
                     || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                    || DynelManager.LocalPlayer.Buffs.Contains(280470) 
+                    || DynelManager.LocalPlayer.Buffs.Contains(280470)
                     || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
 
                 SimpleChar teamMember = DynelManager.Players
@@ -1381,8 +1393,8 @@ namespace CombatHandler.Generic
 
         private bool NanomageEnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-          
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength) 
+
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Team.IsInTeam
                 //|| Item.HasPendingUse
@@ -1394,7 +1406,7 @@ namespace CombatHandler.Generic
 
         private bool AssaultClass(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 //|| Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > DuckAbsorbsItemPercentage
@@ -1405,7 +1417,7 @@ namespace CombatHandler.Generic
 
         protected bool TotwShieldShoulder(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment) 
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 //|| Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
@@ -1419,6 +1431,37 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FoodandDrinkBuffs)) { return false; }
 
             return DamageItem(item, fightingTarget, ref actionTarget);
+        }
+
+        private void UseItems()
+        {
+            if (!Item.HasPendingUse)
+                foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory
+                || c.UniqueIdentity.Type == IdentityType.Container))
+                {
+                    if (item.Name.Contains("Cell Templates") || item.Name.Contains("Plasmid Cultures")
+                        || item.Name.Contains("Mitochondria Samples") || item.Name.Contains("Protein Mapping Data")
+                        || item.Name.Contains("Mission Token"))
+                    {
+                        item?.Use();
+                    }
+
+                    if (item.UniqueIdentity.Type == IdentityType.Container)
+                    {
+                        List<Item> containerItems = Inventory.GetContainerItems(item.UniqueIdentity);
+                        foreach (Item containerItem in containerItems)
+                        {
+                            if (containerItem.Name.Contains("Cell Templates") || containerItem.Name.Contains("Plasmid Cultures")
+                                || containerItem.Name.Contains("Mitochondria Samples") || containerItem.Name.Contains("Protein Mapping Data")
+                                || containerItem.Name.Contains("Mission Token"))
+                            {
+                                containerItem?.Use();
+                            }
+                        }
+                    }
+                }
+
+
         }
 
         #endregion
@@ -1441,7 +1484,7 @@ namespace CombatHandler.Generic
 
             if (!petData.ContainsKey(spell.Id)) { return false; }
 
-            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell)) 
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell))
             {
                 if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
 
@@ -1457,7 +1500,7 @@ namespace CombatHandler.Generic
 
             return true;
         }
-        
+
         private bool PetAlreadySpawned(PetType petType)
         {
             return DynelManager.LocalPlayer.Pets.Any(c => (c.Type == PetType.Unknown || c.Type == petType));
@@ -1496,6 +1539,8 @@ namespace CombatHandler.Generic
             return false;
         }
 
+
+
         protected void SynchronizePetCombatStateWithOwner()
         {
             if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetSyncTime > 1)
@@ -1519,7 +1564,7 @@ namespace CombatHandler.Generic
 
                 if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
                     && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
-                        pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
             }
         }
 
@@ -1692,6 +1737,11 @@ namespace CombatHandler.Generic
 
         protected bool CanCast(Spell spell)
         {
+            if (IsSettingEnabled("GlobalRez"))
+            {
+                if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 1) return false;
+            }
+
             return spell.Cost < DynelManager.LocalPlayer.Nano;
         }
 
@@ -1988,7 +2038,7 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.UponAWaveOfSummerHigh:
                     return Stat.Riposte;
 
-                
+
                 case RelevantGenericItems.BlessedWithThunderLow:
                 case RelevantGenericItems.BlessedWithThunderHigh:
                     return Stat.MartialArts;
@@ -2011,7 +2061,11 @@ namespace CombatHandler.Generic
                     return Stat.MapNavigation;
 
                 case RelevantGenericItems.Drone:
+                case RelevantGenericItems.RingofPurifyingFlame:
                     return Stat.MaterialCreation;
+
+                case RelevantGenericItems.RingofBlightedFlesh:
+                    return Stat.BiologicalMetamorphosis;
 
                 case RelevantGenericItems.WenWen:
                     return Stat.RangedEnergy;
@@ -2077,8 +2131,12 @@ namespace CombatHandler.Generic
             public const int FallenStar = 244214;
             public const int TearOfOedipus = 244216;
 
+            public const int RingofPurifyingFlame = 305493;
+            public const int BloodthrallRing = 305495;
+            public const int RingofBlightedFlesh = 305491;
+
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
-            
+
             public const int FlowerOfLifeLow = 70614;
             public const int FlowerOfLifeHigh = 204326;
 
@@ -2118,7 +2176,7 @@ namespace CombatHandler.Generic
             public const int HealthAndNanoStim1 = 291043;
             public const int HealthAndNanoStim200 = 291044;
             public const int HealthAndNanoStim400 = 291045;
-            public const int DeathsDoor  = 303071;
+            public const int DeathsDoor = 303071;
 
             public const int AmmoBoxEnergy = 303138;
             public const int AmmoBoxShotgun = 303141;
@@ -2148,6 +2206,7 @@ namespace CombatHandler.Generic
             public const int CompositeRangedSpecial = 223364;
             public const int InnerSanctumDebuff = 206387;
             public const int InsightIntoSL = 268610;
+            public const int BlightedFlesh = 305492;
             public static int[] IgnoreNanos = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
             public static int[] AAOTransfer = new[] { 301524, 301520, 267263, 267265 };
             public static int[] KeeperStrStamAgiBuff = new[] { 211158, 211160, 211162, 273365 };
@@ -2186,209 +2245,209 @@ namespace CombatHandler.Generic
         }
         public static void BioCocoonPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentage = e;
             BioCocoonPercentage = e;
             Config.Save();
         }
 
         public static void SingleTauntDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].SingleTauntDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay = e;
             SingleTauntDelay = e;
             Config.Save();
         }
 
         public static void TimedTauntDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].TimedTauntDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TimedTauntDelay = e;
             TimedTauntDelay = e;
             Config.Save();
         }
 
         public static void MongoDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].MongoDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelay = e;
             MongoDelay = e;
             Config.Save();
         }
         public static void CycleAbsorbsDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay = e;
             CycleAbsorbsDelay = e;
             Config.Save();
         }
         public static void CycleChallengerDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CycleChallengerDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay = e;
             CycleChallengerDelay = e;
             Config.Save();
         }
         public static void CycleRageDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CycleRageDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleRageDelay = e;
             CycleRageDelay = e;
             Config.Save();
         }
         public static void StimTargetName_Changed(object s, string e)
         {
-            Config.CharSettings[Game.ClientInst].StimTargetName = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = e;
             StimTargetName = e;
             Config.Save();
         }
         public static void StimHealthPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].StimHealthPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = e;
             StimHealthPercentage = e;
             Config.Save();
         }
         public static void StimNanoPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].StimNanoPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = e;
             StimNanoPercentage = e;
             Config.Save();
         }
         public static void KitHealthPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].KitHealthPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = e;
             KitHealthPercentage = e;
             Config.Save();
         }
         public static void KitNanoPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].KitNanoPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = e;
             KitNanoPercentage = e;
             Config.Save();
         }
         public static void CycleXpPerksDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CycleXpPerksDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelay = e;
             CycleXpPerksDelay = e;
             Config.Save();
         }
         public static void HealPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].HealPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = e;
             HealPercentage = e;
             Config.Save();
         }
         public static void CompleteHealPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CompleteHealPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage = e;
             CompleteHealPercentage = e;
             Config.Save();
         }
         public static void HealthDrainPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].HealthDrainPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].HealthDrainPercentage = e;
             HealthDrainPercentage = e;
             Config.Save();
         }
         public static void NanoAegisPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].NanoAegisPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentage = e;
             NanoAegisPercentage = e;
             Config.Save();
         }
         public static void NullitySpherePercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].NullitySpherePercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage = e;
             NullitySpherePercentage = e;
             Config.Save();
         }
         public static void IzgimmersWealthPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].IzgimmersWealthPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentage = e;
             IzgimmersWealthPercentage = e;
             Config.Save();
         }
         public static void CycleSpherePerkDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = e;
             CycleSpherePerkDelay = e;
             Config.Save();
         }
         public static void CycleWitOfTheAtroxPerkDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = e;
             CycleWitOfTheAtroxPerkDelay = e;
             Config.Save();
         }
 
         public static void CycleBioRegrowthPerkDelay_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay = e;
             CycleBioRegrowthPerkDelay = e;
             Config.Save();
         }
         public static void BioRegrowthPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].BioRegrowthPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentage = e;
             BioRegrowthPercentage = e;
             Config.Save();
         }
         public static void SelfHealPerkPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = e;
             SelfHealPerkPercentage = e;
             Config.Save();
         }
         public static void SelfNanoPerkPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = e;
             SelfNanoPerkPercentage = e;
             Config.Save();
         }
         public static void TeamHealPerkPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = e;
             TeamHealPerkPercentage = e;
             Config.Save();
         }
         public static void TeamNanoPerkPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = e;
             TeamNanoPerkPercentage = e;
             Config.Save();
         }
         public static void BattleGroupHeal1Percentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].BattleGroupHeal1Percentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal1Percentage = e;
             BattleGroupHeal1Percentage = e;
             Config.Save();
         }
         public static void BattleGroupHeal2Percentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].BattleGroupHeal2Percentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal2Percentage = e;
             BattleGroupHeal2Percentage = e;
             Config.Save();
         }
         public static void BattleGroupHeal3Percentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].BattleGroupHeal3Percentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal3Percentage = e;
             BattleGroupHeal3Percentage = e;
             Config.Save();
         }
         public static void BattleGroupHeal4Percentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].BattleGroupHeal4Percentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4Percentage = e;
             BattleGroupHeal4Percentage = e;
             Config.Save();
         }
         public static void DuckAbsorbsItemPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].DuckAbsorbsItemPercentage = e;
             DuckAbsorbsItemPercentage = e;
             Config.Save();
         }
         public static void BodyDevAbsorbsItemPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = e;
             BodyDevAbsorbsItemPercentage = e;
             Config.Save();
         }
         public static void StrengthAbsorbsItemPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = e;
             StrengthAbsorbsItemPercentage = e;
             Config.Save();
         }

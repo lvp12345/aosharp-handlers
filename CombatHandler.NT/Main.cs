@@ -1,7 +1,6 @@
 ﻿using AOSharp.Core;
-using AOSharp.Core.Combat;
-using System;
 using AOSharp.Core.UI;
+using System;
 
 namespace CombatHandler.NanoTechnician
 {

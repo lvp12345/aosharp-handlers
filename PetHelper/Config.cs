@@ -1,21 +1,20 @@
-﻿using System;
+﻿using AOSharp.Core;
+using AOSharp.Core.UI;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Xml;
-using Newtonsoft.Json;
 
 namespace PetManager
 {
     public class Config
     {
-        public Dictionary<int, CharacterSettings> CharSettings { get; set; }
+        public Dictionary<string, CharacterSettings> CharSettings { get; set; }
 
         protected string _path;
 
         [JsonIgnore]
-        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].IPCChannel : 3;
+        public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].IPCChannel : 3;
 
 
 
@@ -36,9 +35,9 @@ namespace PetManager
 
                 config = new Config
                 {
-                    CharSettings = new Dictionary<int, CharacterSettings>()
+                    CharSettings = new Dictionary<string, CharacterSettings>()
                     {
-                        { Game.ClientInst, new CharacterSettings() }
+                        { DynelManager.LocalPlayer.Name, new CharacterSettings() }
                     }
                 };
 
@@ -55,14 +54,14 @@ namespace PetManager
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp"))
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\PetManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\PetManager");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\PetManager\\{Game.ClientInst}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\PetManager\\{Game.ClientInst}");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager\\{DynelManager.LocalPlayer.Name}"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager\\{DynelManager.LocalPlayer.Name}");
 
             File.WriteAllText(_path, JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
         }

@@ -1,21 +1,20 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Linq;
-using System;
 using AOSharp.Core.IPC;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
-using System.Diagnostics;
+using System;
+using System.Linq;
 
 namespace CombatHandler.Enf
 {
     class EnfCombatHandler : GenericCombatHandler
-    { 
+    {
         private static string PluginDirectory;
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         private static Window _buffWindow;
         private static Window _tauntWindow;
@@ -42,38 +41,40 @@ namespace CombatHandler.Enf
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Config.CharSettings[Game.ClientInst].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
-            Config.CharSettings[Game.ClientInst].MongoDelayChangedEvent += MongoDelay_Changed;
-            Config.CharSettings[Game.ClientInst].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
-            Config.CharSettings[Game.ClientInst].CycleChallengerDelayChangedEvent += CycleChallengerDelay_Changed;
-            Config.CharSettings[Game.ClientInst].CycleRageDelayChangedEvent += CycleRageDelay_Changed;
-            Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
-            Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
-            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
-            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentageChangedEvent += DuckAbsorbsItemPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].BioRegrowthPercentageChangedEvent += BioRegrowthPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelayChangedEvent += CycleBioRegrowthPerkDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelayChangedEvent += MongoDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelayChangedEvent += CycleChallengerDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleRageDelayChangedEvent += CycleRageDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].DuckAbsorbsItemPercentageChangedEvent += DuckAbsorbsItemPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentageChangedEvent += BioRegrowthPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelayChangedEvent += CycleBioRegrowthPerkDelay_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
+            _settings.AddVariable("GlobalRez", true);
+
             _settings.AddVariable("Ost", false);
 
             _settings.AddVariable("SharpObjects", true);
@@ -162,28 +163,28 @@ namespace CombatHandler.Enf
 
             PluginDirectory = pluginDir;
 
-            BioCocoonPercentage = Config.CharSettings[Game.ClientInst].BioCocoonPercentage;
-            SingleTauntDelay = Config.CharSettings[Game.ClientInst].SingleTauntDelay;
-            MongoDelay = Config.CharSettings[Game.ClientInst].MongoDelay;
-            CycleAbsorbsDelay = Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay;
-            CycleChallengerDelay = Config.CharSettings[Game.ClientInst].CycleChallengerDelay;
-            CycleRageDelay = Config.CharSettings[Game.ClientInst].CycleRageDelay;
-            StimTargetName = Config.CharSettings[Game.ClientInst].StimTargetName;
-            StimHealthPercentage = Config.CharSettings[Game.ClientInst].StimHealthPercentage;
-            StimNanoPercentage = Config.CharSettings[Game.ClientInst].StimNanoPercentage;
-            KitHealthPercentage = Config.CharSettings[Game.ClientInst].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[Game.ClientInst].KitNanoPercentage;
-            CycleSpherePerkDelay = Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay;
-            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay;
-            SelfHealPerkPercentage = Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage;
-            SelfNanoPerkPercentage = Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage;
-            TeamHealPerkPercentage = Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage;
-            TeamNanoPerkPercentage = Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage;
-            DuckAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage;
-            BodyDevAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage;
-            StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
-            BioRegrowthPercentage = Config.CharSettings[Game.ClientInst].BioRegrowthPercentage;
-            CycleBioRegrowthPerkDelay = Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay;
+            BioCocoonPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentage;
+            SingleTauntDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay;
+            MongoDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelay;
+            CycleAbsorbsDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay;
+            CycleChallengerDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay;
+            CycleRageDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleRageDelay;
+            StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
+            StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
+            StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
+            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+            CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
+            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
+            SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
+            SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
+            TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
+            TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
+            DuckAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].DuckAbsorbsItemPercentage;
+            BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
+            StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+            BioRegrowthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentage;
+            CycleBioRegrowthPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
@@ -213,13 +214,16 @@ namespace CombatHandler.Enf
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
+
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         #endregion
 
@@ -503,112 +507,112 @@ namespace CombatHandler.Enf
 
                 if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
                     if (int.TryParse(bioCocoonInput.Text, out int bioCocoonValue))
-                        if (Config.CharSettings[Game.ClientInst].BioCocoonPercentage != bioCocoonValue)
-                            Config.CharSettings[Game.ClientInst].BioCocoonPercentage = bioCocoonValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentage != bioCocoonValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentage = bioCocoonValue;
 
                 if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
                     if (int.TryParse(singleInput.Text, out int singleValue))
-                        if (Config.CharSettings[Game.ClientInst].SingleTauntDelay != singleValue)
-                            Config.CharSettings[Game.ClientInst].SingleTauntDelay = singleValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay != singleValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay = singleValue;
 
                 if (mongoInput != null && !string.IsNullOrEmpty(mongoInput.Text))
                     if (int.TryParse(mongoInput.Text, out int mongoValue))
-                        if (Config.CharSettings[Game.ClientInst].MongoDelay != mongoValue)
-                            Config.CharSettings[Game.ClientInst].MongoDelay = mongoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelay != mongoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelay = mongoValue;
 
                 if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
                     if (int.TryParse(absorbsInput.Text, out int absorbsValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay != absorbsValue)
-                            Config.CharSettings[Game.ClientInst].CycleAbsorbsDelay = absorbsValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay != absorbsValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay = absorbsValue;
 
                 if (challengerInput != null && !string.IsNullOrEmpty(challengerInput.Text))
                     if (int.TryParse(challengerInput.Text, out int challengerValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleChallengerDelay != challengerValue)
-                            Config.CharSettings[Game.ClientInst].CycleChallengerDelay = challengerValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay != challengerValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay = challengerValue;
 
                 if (rageInput != null && !string.IsNullOrEmpty(rageInput.Text))
                     if (int.TryParse(rageInput.Text, out int rageValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleRageDelay != rageValue)
-                            Config.CharSettings[Game.ClientInst].CycleRageDelay = rageValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleRageDelay != rageValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleRageDelay = rageValue;
 
                 if (stimTargetInput != null)
-                        if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
-                            Config.CharSettings[Game.ClientInst].StimTargetName = stimTargetInput.Text;
+                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
 
                 if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
                     if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
-                        if (Config.CharSettings[Game.ClientInst].StimHealthPercentage != stimHealthValue)
-                            Config.CharSettings[Game.ClientInst].StimHealthPercentage = stimHealthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
 
                 if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
                     if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].StimNanoPercentage != stimNanoValue)
-                            Config.CharSettings[Game.ClientInst].StimNanoPercentage = stimNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
 
                 if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
                     if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
-                        if (Config.CharSettings[Game.ClientInst].KitHealthPercentage != kitHealthValue)
-                            Config.CharSettings[Game.ClientInst].KitHealthPercentage = kitHealthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
 
                 if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
                     if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].KitNanoPercentage != kitNanoValue)
-                            Config.CharSettings[Game.ClientInst].KitNanoPercentage = kitNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
 
                 if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
                     if (int.TryParse(sphereInput.Text, out int sphereValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay != sphereValue)
-                            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay = sphereValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
 
                 if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
                     if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
-                            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
 
                 if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
                     if (int.TryParse(selfHealInput.Text, out int selfHealValue))
-                        if (Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage != selfHealValue)
-                            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage = selfHealValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
 
                 if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
                     if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage != selfNanoValue)
-                            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage = selfNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
 
                 if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
                     if (int.TryParse(teamHealInput.Text, out int teamHealValue))
-                        if (Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage != teamHealValue)
-                            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage = teamHealValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
 
                 if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
                     if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage != teamNanoValue)
-                            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage = teamNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
 
                 if (duckInput != null && !string.IsNullOrEmpty(duckInput.Text))
                     if (int.TryParse(duckInput.Text, out int duckValue))
-                        if (Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage != duckValue)
-                            Config.CharSettings[Game.ClientInst].DuckAbsorbsItemPercentage = duckValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].DuckAbsorbsItemPercentage != duckValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].DuckAbsorbsItemPercentage = duckValue;
 
                 if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
                     if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
-                        if (Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage != bodyDevValue)
-                            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage = bodyDevValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
 
                 if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
                     if (int.TryParse(strengthInput.Text, out int strengthValue))
-                        if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
-                            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
 
                 if (bioRegrowthPercentageInput != null && !string.IsNullOrEmpty(bioRegrowthPercentageInput.Text))
                     if (int.TryParse(bioRegrowthPercentageInput.Text, out int bioRegrowthPercentageValue))
-                        if (Config.CharSettings[Game.ClientInst].BioRegrowthPercentage != bioRegrowthPercentageValue)
-                            Config.CharSettings[Game.ClientInst].BioRegrowthPercentage = bioRegrowthPercentageValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentage != bioRegrowthPercentageValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentage = bioRegrowthPercentageValue;
 
                 if (bioRegrowthDelayInput != null && !string.IsNullOrEmpty(bioRegrowthDelayInput.Text))
                     if (int.TryParse(bioRegrowthDelayInput.Text, out int bioRegrowthDelayValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay != bioRegrowthDelayValue)
-                            Config.CharSettings[Game.ClientInst].CycleBioRegrowthPerkDelay = bioRegrowthDelayValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay != bioRegrowthDelayValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay = bioRegrowthDelayValue;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -698,29 +702,29 @@ namespace CombatHandler.Enf
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }
@@ -833,14 +837,14 @@ namespace CombatHandler.Enf
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
 
-                if (mob != null)
+                if (mob != null && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
                     _singleTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = mob;
                     return true;
                 }
-                else if (fightingTarget != null)
+                else if (fightingTarget != null && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
                     _singleTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
@@ -852,7 +856,8 @@ namespace CombatHandler.Enf
             if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
-                if (fightingTarget != null)
+                if (fightingTarget != null
+                    && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
                     _singleTaunt = Time.NormalTime;
                     actionTarget.ShouldSetTarget = true;
@@ -870,10 +875,10 @@ namespace CombatHandler.Enf
 
             if (DynelManager.NPCs.Any(c => c.Health > 0
                 && c.Name == "Alien Heavy Patroller"
-                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 18f)) { return false; }
+                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f)) { return false; }
 
             if (Time.NormalTime > _mongo + MongoDelay
-            && fightingTarget != null)
+            && fightingTarget != null && DynelManager.LocalPlayer.HealthPercent >= 30)
             {
                 _mongo = Time.NormalTime;
                 return true;
@@ -986,10 +991,44 @@ namespace CombatHandler.Enf
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.MeleeEnergy);
         }
 
+        //private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
+        //}
+
         private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
+            // Check if there is a fighting target or if the spell ID should be ignored
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id))
+            {
+                return false;
+            }
+
+            // Check if the "Buffing" setting is enabled and if the spell can be cast, and if the ModelIdentity.Instance is not 152
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152)
+            {
+                return false;
+            }
+
+            // Check if NanoLine.DamageChangeBuffs is in the player's buffs
+            bool hasDamageChangeBuffs = DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DamageChangeBuffs);
+
+            // Check if there is enough remaining NCU to cast the spell
+            if (DynelManager.LocalPlayer.RemainingNCU >= Math.Abs(spell.NCU))
+            {
+                // If NanoLine.DamageChangeBuffs is NOT in the player's buffs, cast the spell
+                if (!hasDamageChangeBuffs)
+                {
+                    // Set the actionTarget to the local player and mark ShouldSetTarget as true
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
+            }
+
+            return false;
         }
+
 
         #endregion
 
@@ -1030,7 +1069,7 @@ namespace CombatHandler.Enf
         {
             if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
 
-           if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
+            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
                 return TeamBuff(spell, spell.Nanoline, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
@@ -1040,7 +1079,7 @@ namespace CombatHandler.Enf
 
         #region Misc
 
-    private static class RelevantNanos
+        private static class RelevantNanos
         {
             public static readonly int[] SingleTargetTaunt = { 275014, 223123, 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
             public static readonly int[] Melee1HB = { 202846, 202844, 202842, 29630, 202840, 29644 };

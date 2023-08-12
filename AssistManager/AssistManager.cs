@@ -29,7 +29,7 @@ namespace AssistManager
             _settings = new Settings("AssistManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\AssistManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\AssistManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
             Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayerChangedEvent += AssistPlayer_Changed;
 

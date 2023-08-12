@@ -96,7 +96,7 @@ namespace HelpManager
         public override void Run(string pluginDir)
         {
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
             PluginDir = pluginDir;

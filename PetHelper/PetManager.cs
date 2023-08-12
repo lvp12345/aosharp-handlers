@@ -34,7 +34,7 @@ namespace PetManager
         public override void Run(string pluginDir)
         {
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\KnowsMods\\PetManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\PetManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
             IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);

@@ -1,10 +1,9 @@
-﻿using System;
+﻿using AOSharp.Core;
+using AOSharp.Core.UI;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Xml;
-using Newtonsoft.Json;
 
 namespace GMIManager
 {
@@ -20,6 +19,8 @@ namespace GMIManager
         public string GMIBuyOrderName => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIBuyOrderName : string.Empty;
         [JsonIgnore]
         public long GMIBuyOrderEndPrice => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIBuyOrderEndPrice : 0;
+        [JsonIgnore]
+        public string GMIItemName => CharSettings != null && CharSettings.ContainsKey(Game.ClientInst) ? CharSettings[Game.ClientInst].GMIItemName : string.Empty;
 
         public static Config Load(string path)
         {
@@ -54,17 +55,17 @@ namespace GMIManager
 
         public void Save()
         {
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\GMIManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\GMIManager");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager");
 
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\GMIManager\\{Game.ClientInst}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\GMIManager\\{Game.ClientInst}");
+            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager\\{Game.ClientInst}"))
+                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager\\{Game.ClientInst}");
 
             File.WriteAllText(_path, JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
         }
@@ -74,6 +75,8 @@ namespace GMIManager
     {
         public event EventHandler<string> GMIBuyOrderNameChangedEventChangedEvent;
         private string _gMIBuyOrderName = string.Empty;
+        public event EventHandler<string> GMIItemNameChangedEventChangedEvent;
+        private string _gMIItemName = string.Empty;
 
         public string GMIBuyOrderName
         {
@@ -125,6 +128,22 @@ namespace GMIManager
                 {
                     _gMIBuyOrderEndPrice = value;
                     GMIBuyOrderEndPriceChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
+        public string GMIItemName
+        {
+            get
+            {
+                return _gMIItemName;
+            }
+            set
+            {
+                if (_gMIItemName != value)
+                {
+                    _gMIItemName = value;
+                    GMIItemNameChangedEventChangedEvent?.Invoke(this, value);
                 }
             }
         }

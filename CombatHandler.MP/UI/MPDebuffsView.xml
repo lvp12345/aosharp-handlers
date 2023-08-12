@@ -1,25 +1,37 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Damage debuff" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DamageDebuffSelection">
-      <RadioButton label="None" value="0"/>
-      <RadioButton label="Target" value="1"/>
-      <RadioButton label="Area" value="2"/>
-		<RadioButton label="Boss" value="3"/>
-	</OptionRadioButtonGroup>
-	<OptionRadioButtonGroup label="Nano Resistance" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoResistanceDebuff">
-		<RadioButton label="None" value="0"/>
-		<RadioButton label="Target" value="1"/>
-		<RadioButton label="Area" value="2"/>
-		<RadioButton label="Boss" value="3"/>
-	</OptionRadioButtonGroup>
-	<OptionRadioButtonGroup label="Nano Shutdown" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoShutdownDebuff">
-		<RadioButton label="None" value="0"/>
-		<RadioButton label="Target" value="1"/>
-		<RadioButton label="Area" value="2"/>
-		<RadioButton label="Boss" value="3"/>
-    </OptionRadioButtonGroup>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-  </BorderView>
+	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="Damage debuff" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DamageDebuffSelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Target" value="1"/>
+			<RadioButton label="Area" value="2"/>
+			<RadioButton label="Boss" value="3"/>
+		</OptionRadioButtonGroup>
+		<OptionRadioButtonGroup label="Damage debuff Line A" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DamageDebuffASelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Target" value="1"/>
+			<RadioButton label="Area" value="2"/>
+			<RadioButton label="Boss" value="3"/>
+		</OptionRadioButtonGroup>
+		<OptionRadioButtonGroup label="Damage debuff Line B" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DamageDebuffBSelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Target" value="1"/>
+			<RadioButton label="Area" value="2"/>
+			<RadioButton label="Boss" value="3"/>
+		</OptionRadioButtonGroup>
+		<OptionRadioButtonGroup label="Nano Resistance" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoResistanceDebuff">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Target" value="1"/>
+			<RadioButton label="Area" value="2"/>
+			<RadioButton label="Boss" value="3"/>
+		</OptionRadioButtonGroup>
+		<OptionRadioButtonGroup label="Nano Shutdown" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoShutdownDebuff">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Target" value="1"/>
+			<RadioButton label="Area" value="2"/>
+			<RadioButton label="Boss" value="3"/>
+		</OptionRadioButtonGroup>
+		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>
 </root>

@@ -49,6 +49,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonParameters.cs">
+      <Link>CommonParameters.cs</Link>
+    </Compile>
     <Compile Include="AdvCombatHandler.cs" />
     <Compile Include="IPCMessages\ClearBuffsMessage.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -56,8 +59,8 @@
     <Compile Include="IPCMessages\DisbandMessage.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
-    <Compile Include="IPCMessages\GloballCompositesMessage.cs" />
-    <Compile Include="IPCMessages\GlobalDebuffingMessage.cs" />
+    <Compile Include="IPCMessages\GlobalRezMessage.cs" />
+    <Compile Include="IPCMessages\GlobalCompositesMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\GlobalBuffingMessage.cs" />
     <Compile Include="IPCMessages\RemaingNCUMessage.cs" />

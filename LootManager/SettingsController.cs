@@ -1,25 +1,29 @@
 ﻿using AOSharp.Common.GameData;
-using AOSharp.Core.UI;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
+using AOSharp.Core.UI;
 using System;
 using System.Collections.Generic;
-using AOSharp.Common.GameData.UI;
-using System.Data;
 
 namespace LootManager
 {
     public static class SettingsController
     {
-        private static List<Settings> settingsToSave = new List<Settings>();
-        public static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
-        private static bool IsCommandRegistered;
+        private static readonly List<Settings> settingsToSave = new List<Settings>();
+        private static readonly Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
+        private static bool isCommandRegistered;
 
         public static MultiListView searchList;
+
+        public static Config Config { get; private set; }
 
         public static string NameValue = string.Empty;
         public static int ItemIdValue = 0;
         public static int MinQlValue = 0;
         public static int MaxQlValue = 0;
+        public static int QtyValue = 0;
+
+        public static bool Delete;
 
         public static Window settingsWindow;
 
@@ -49,69 +53,76 @@ namespace LootManager
 
         private static void RegisterChatCommandIfNotRegistered()
         {
-            if (!IsCommandRegistered)
+            if (!isCommandRegistered)
             {
                 Chat.RegisterCommand("lootmanager", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     try
                     {
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Loot Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {
                             AppendSettingsTab("Loot Manager", settingsWindow);
 
-                            settingsWindow.FindView("ScrollListRoot", out MultiListView mlv);
-                            settingsWindow.FindView("tivminql", out TextInputView tivminql);
-                            settingsWindow.FindView("tivmaxql", out TextInputView tivmaxql);
-                            tivminql.Text = "1";
-                            tivmaxql.Text = "500";
-                            mlv.DeleteAllChildren();
-                            int iEntry = 0;
-                            foreach (Rule r in LootManager.Rules)
+                            if (settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView) &&
+                                settingsWindow.FindView("_itemMinQL", out TextInputView _itemMinQL) &&
+                                settingsWindow.FindView("_itemMaxQL", out TextInputView _itemMaxQL))
                             {
-                                View entry = View.CreateFromXml(LootManager.PluginDir + "\\UI\\ItemEntry.xml");
-                                entry.FindChild("ItemName", out TextView tx);
+                                _itemMinQL.Text = "1";
+                                _itemMaxQL.Text = "500";
+                                _multiListView.DeleteAllChildren();
+                                int iEntry = 0;
+                                foreach (Rule r in LootManager.Rules)
+                                {
+                                    View entry = View.CreateFromXml(LootManager.PluginDir + "\\UI\\ItemEntry.xml");
+                                    entry.FindChild("ItemName", out TextView tx);
 
-                                //entry.Tag = iEntry;
-                                string scope = "";
+                                    string scope = r.Global ? "Global" : "Local";
+                                    tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
 
-                                if (r.Global)
-                                    scope = "Global";
-                                else
-                                    scope = "Local";
-                                tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
-
-                                mlv.AddChild(entry, false);
-                                iEntry++;
+                                    _multiListView.AddChild(entry, false);
+                                    iEntry++;
+                                }
                             }
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
-                        Chat.WriteLine(e);
+                        var errorMessage = "An error occurred on line " + LootManager.GetLineNumber(ex) + ": " + ex.Message;
+
+                        if (errorMessage != LootManager.previousErrorMessage)
+                        {
+                            Chat.WriteLine(errorMessage);
+                            Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                            LootManager.previousErrorMessage = errorMessage;
+                        }
                     }
                 });
 
-                IsCommandRegistered = true;
+                isCommandRegistered = true;
             }
         }
 
-        public static void AppendSettingsTab(String settingsName, Window testWindow)
+        public static void AppendSettingsTab(string settingsName, Window testWindow)
         {
-            String settingsWindowXmlPath = settingsWindows[settingsName];
-            View settingsView = View.CreateFromXml(settingsWindowXmlPath);
+            if (settingsWindows.TryGetValue(settingsName, out string settingsWindowXmlPath))
+            {
+                View settingsView = View.CreateFromXml(settingsWindowXmlPath);
 
-            if (settingsView != null)
-            {
-                testWindow.AppendTab(settingsName, settingsView);
-                testWindow.Show(true);
-            }
-            else
-            {
-                Chat.WriteLine($"{settingsWindows[settingsName]}");
-                Chat.WriteLine("Failed to load settings schema from " + settingsWindowXmlPath);
+                if (settingsView != null)
+                {
+                    testWindow.AppendTab(settingsName, settingsView);
+                    testWindow.Show(true);
+                }
+                else
+                {
+                    Chat.WriteLine("Failed to load settings schema from " + settingsWindowXmlPath);
+                }
             }
         }
+
     }
 }

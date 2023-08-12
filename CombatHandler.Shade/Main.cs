@@ -1,6 +1,6 @@
 ﻿using AOSharp.Core;
-using System;
 using AOSharp.Core.UI;
+using System;
 
 namespace CombatHandler.Shade
 {

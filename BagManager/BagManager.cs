@@ -1,16 +1,15 @@
-﻿using System;
-using System.Linq;
-using AOSharp.Core;
-using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
+﻿using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
+using AOSharp.Core;
+using AOSharp.Core.Inventory;
+using AOSharp.Core.UI;
+using SmokeLounge.AOtomation.Messaging.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using AOSharp.Core.Inventory;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BagManager
 {
@@ -138,29 +137,6 @@ namespace BagManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F4) && !_init)
-            //{
-            //    _init = true;
-
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\HelpManager\\{Game.ClientInst}\\Config.json");
-
-            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Help Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
-
-            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-            //    {
-            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Help Manager")))
-            //        {
-            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-
-            //            SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView assistInput);
-
-            //            if (assistInput != null)
-            //                assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
-            //        }
-            //    }
-
-            //    _init = false;
-            //}
 
             if (ModeSelection.Trade == (ModeSelection)_settings["ModeSelection"].AsInt32()
                 && _settings["Toggle"].AsBool()

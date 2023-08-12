@@ -1,9 +1,5 @@
 ﻿using AOSharp.Common.GameData;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CombatHandler.Generic
 {
@@ -11,7 +7,7 @@ namespace CombatHandler.Generic
     {
         public static PerkType GetPerkType(PerkHash perkHash)
         {
-            if(!HashMap.ContainsKey(perkHash))
+            if (!HashMap.ContainsKey(perkHash))
             {
                 return PerkType.Unknown;
             }
@@ -494,7 +490,7 @@ namespace CombatHandler.Generic
             {PerkHash.Vaccinate1 , PerkType.Trader_Debuff_Cleanse}, //Trader debuff
             {PerkHash.Vaccinate2 , PerkType.Trader_Debuff_Cleanse}, //Trader debuff
             {PerkHash.Violence , PerkType.TargetDamage},
-            {PerkHash.ViralCombination , PerkType.TargetDamage}, 
+            {PerkHash.ViralCombination , PerkType.TargetDamage},
             {PerkHash.ViralWipe , PerkType.Dot_Cleanse}, //Dots
             {PerkHash.VitalShock , PerkType.TargetDamage},
             {PerkHash.WeaponBash , PerkType.TargetDamage},

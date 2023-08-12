@@ -1,18 +1,12 @@
-﻿using System;
-using System.Linq;
+﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
 using PetManager.IPCMessages;
+using System;
+using System.Linq;
 using System.Runtime.InteropServices;
-using AOSharp.Common.GameData.UI;
-using System.Windows.Media;
-using AOSharp.Core.Movement;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using System.Windows.Interop;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using CombatHandler.Generic;
 
 namespace PetManager
 {
@@ -40,8 +34,8 @@ namespace PetManager
         public override void Run(string pluginDir)
         {
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\PetManager\\{Game.ClientInst}\\Config.json");
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\PetManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
             IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
@@ -54,7 +48,7 @@ namespace PetManager
 
             _settings = new Settings("PetManager");
 
-            Config.CharSettings[Game.ClientInst].IPCChannelChangedEvent += IPCChannel_Changed; ;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed; ;
 
             RegisterSettingsWindow("Pet Manager", "PetManagerSettingWindow.xml");
 
@@ -107,9 +101,9 @@ namespace PetManager
                 if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                 {
                     if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[Game.ClientInst].IPCChannel != channelValue)
+                        && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
                     {
-                        Config.CharSettings[Game.ClientInst].IPCChannel = channelValue;
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
                     }
                 }
 

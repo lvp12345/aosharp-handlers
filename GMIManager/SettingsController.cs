@@ -1,9 +1,9 @@
 ﻿using AOSharp.Common.GameData;
-using AOSharp.Core.UI;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
+using AOSharp.Core.UI;
 using System;
 using System.Collections.Generic;
-using AOSharp.Common.GameData.UI;
 
 namespace GMIManager
 {
@@ -49,7 +49,7 @@ namespace GMIManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\GMIManager\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager\\{Game.ClientInst}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "GMI Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -60,6 +60,7 @@ namespace GMIManager
                             settingsWindow.FindView("GMIWithdrawAmount", out TextInputView gMIWithdrawAmount);
                             settingsWindow.FindView("GMIBuyOrdersName", out TextInputView gMIBuyOrdersName);
                             settingsWindow.FindView("GMIBuyOrdersEndPrice", out TextInputView gMIBuyOrdersEndPrice);
+                            settingsWindow.FindView("GMIItemName", out TextInputView gMIItemName);
 
                             if (gMIBuyOrdersName != null)
                                 gMIBuyOrdersName.Text = $"{Config.CharSettings[Game.ClientInst].GMIBuyOrderName}";
@@ -67,6 +68,8 @@ namespace GMIManager
                                 gMIBuyOrdersEndPrice.Text = $"{Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice}";
                             if (gMIWithdrawAmount != null)
                                 gMIWithdrawAmount.Text = $"{Config.CharSettings[Game.ClientInst].GMIWithdrawAmount}";
+                            if (gMIItemName != null)
+                                gMIItemName.Text = $"{Config.CharSettings[Game.ClientInst].GMIItemName}";
                         }
                     }
                     catch (Exception e)

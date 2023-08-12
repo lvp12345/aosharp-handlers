@@ -1,12 +1,10 @@
 ﻿using AOSharp.Common.GameData;
-using AOSharp.Core.UI;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
+using AOSharp.Core.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AOSharp.Common.GameData.UI;
 
 namespace CombatHandler.Generic
 {
@@ -82,7 +80,7 @@ namespace CombatHandler.Generic
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\Generic\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\Generic\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -95,7 +93,7 @@ namespace CombatHandler.Generic
                                 settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
                                 if (channelInput != null)
-                                    channelInput.Text = $"{Config.CharSettings[Game.ClientInst].IPCChannel}";
+                                    channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
                             }
                         }
                     }

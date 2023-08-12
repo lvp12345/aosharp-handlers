@@ -184,16 +184,17 @@ namespace LootManager
             {
                 if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
                 {
-                    currentCorpse.Open();
+                    currentCorpse.Open(); // Open the corpse
                     _lootingTimer = Time.NormalTime;
+
+                    await Task.Delay(2000);
+
+                    currentCorpse.Open(); // Close the corpse
+                    openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
                 }
-
-                await Task.Delay(2000); // Wait for 2 seconds
-
-                currentCorpse.Open(); // Close the corpse
-                openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
             }
         }
+
 
         private void OnUpdate(object sender, float deltaTime)
         {

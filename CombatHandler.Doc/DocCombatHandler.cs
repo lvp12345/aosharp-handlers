@@ -1,20 +1,12 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Linq;
-using System;
-using AOSharp.Common.GameData.UI;
-using AOSharp.Core.IPC;
-using System.Threading.Tasks;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using System.Threading;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Collections.Generic;
 using AOSharp.Core.Inventory;
+using AOSharp.Core.IPC;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System.Collections.Generic;
+using System.Linq;
 using static CombatHandler.Generic.PerkCondtionProcessors;
-using System.Windows.Input;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Doctor
 {
@@ -24,7 +16,7 @@ namespace CombatHandler.Doctor
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
@@ -49,36 +41,36 @@ namespace CombatHandler.Doctor
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
-            Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
-            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
-            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].BattleGroupHeal1PercentageChangedEvent += BattleGroupHeal1Percentage_Changed;
-            Config.CharSettings[Game.ClientInst].BattleGroupHeal2PercentageChangedEvent += BattleGroupHeal2Percentage_Changed;
-            Config.CharSettings[Game.ClientInst].BattleGroupHeal3PercentageChangedEvent += BattleGroupHeal3Percentage_Changed;
-            Config.CharSettings[Game.ClientInst].BattleGroupHeal4PercentageChangedEvent += BattleGroupHeal4Percentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentageChangedEvent += HealPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal1PercentageChangedEvent += BattleGroupHeal1Percentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal2PercentageChangedEvent += BattleGroupHeal2Percentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal3PercentageChangedEvent += BattleGroupHeal3Percentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4PercentageChangedEvent += BattleGroupHeal4Percentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("GlobalRez", true);
 
             _settings.AddVariable("SharpObjects", false);
             _settings.AddVariable("Grenades", false);
@@ -181,25 +173,25 @@ namespace CombatHandler.Doctor
 
             PluginDirectory = pluginDir;
 
-            HealPercentage = Config.CharSettings[Game.ClientInst].HealPercentage;
-            CompleteHealPercentage = Config.CharSettings[Game.ClientInst].CompleteHealPercentage;
-            StimTargetName = Config.CharSettings[Game.ClientInst].StimTargetName;
-            StimHealthPercentage = Config.CharSettings[Game.ClientInst].StimHealthPercentage;
-            StimNanoPercentage = Config.CharSettings[Game.ClientInst].StimNanoPercentage;
-            KitHealthPercentage = Config.CharSettings[Game.ClientInst].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[Game.ClientInst].KitNanoPercentage;
-            CycleSpherePerkDelay = Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay;
-            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay;
-            SelfHealPerkPercentage = Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage;
-            SelfNanoPerkPercentage = Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage;
-            TeamHealPerkPercentage = Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage;
-            TeamNanoPerkPercentage = Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage;
-            BodyDevAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage;
-            StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
-            BattleGroupHeal1Percentage = Config.CharSettings[Game.ClientInst].BattleGroupHeal1Percentage;
-            BattleGroupHeal2Percentage = Config.CharSettings[Game.ClientInst].BattleGroupHeal2Percentage;
-            BattleGroupHeal3Percentage = Config.CharSettings[Game.ClientInst].BattleGroupHeal3Percentage;
-            BattleGroupHeal4Percentage = Config.CharSettings[Game.ClientInst].BattleGroupHeal4Percentage;
+            HealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage;
+            CompleteHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage;
+            StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
+            StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
+            StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
+            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+            CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
+            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
+            SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
+            SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
+            TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
+            TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
+            BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
+            StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+            BattleGroupHeal1Percentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal1Percentage;
+            BattleGroupHeal2Percentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal2Percentage;
+            BattleGroupHeal3Percentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal3Percentage;
+            BattleGroupHeal4Percentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4Percentage;
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow };
@@ -230,13 +222,16 @@ namespace CombatHandler.Doctor
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
+
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         #endregion
 
@@ -521,97 +516,97 @@ namespace CombatHandler.Doctor
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                     if (int.TryParse(healInput.Text, out int healValue))
-                        if (Config.CharSettings[Game.ClientInst].HealPercentage != healValue)
-                            Config.CharSettings[Game.ClientInst].HealPercentage = healValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage != healValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = healValue;
 
                 if (completeHealInput != null && !string.IsNullOrEmpty(completeHealInput.Text))
                     if (int.TryParse(completeHealInput.Text, out int completeHealValue))
-                        if (Config.CharSettings[Game.ClientInst].CompleteHealPercentage != completeHealValue)
-                            Config.CharSettings[Game.ClientInst].CompleteHealPercentage = completeHealValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage != completeHealValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage = completeHealValue;
 
                 if (stimTargetInput != null)
-                    if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
-                        Config.CharSettings[Game.ClientInst].StimTargetName = stimTargetInput.Text;
+                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
 
                 if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
                     if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
-                        if (Config.CharSettings[Game.ClientInst].StimHealthPercentage != stimHealthValue)
-                            Config.CharSettings[Game.ClientInst].StimHealthPercentage = stimHealthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
 
                 if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
                     if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].StimNanoPercentage != stimNanoValue)
-                            Config.CharSettings[Game.ClientInst].StimNanoPercentage = stimNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
 
                 if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
                     if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
-                        if (Config.CharSettings[Game.ClientInst].KitHealthPercentage != kitHealthValue)
-                            Config.CharSettings[Game.ClientInst].KitHealthPercentage = kitHealthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
 
                 if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
                     if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].KitNanoPercentage != kitNanoValue)
-                            Config.CharSettings[Game.ClientInst].KitNanoPercentage = kitNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
 
                 if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
                     if (int.TryParse(sphereInput.Text, out int sphereValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay != sphereValue)
-                            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay = sphereValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
 
                 if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
                     if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
-                            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
 
                 if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
                     if (int.TryParse(selfHealInput.Text, out int selfHealValue))
-                        if (Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage != selfHealValue)
-                            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage = selfHealValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
 
                 if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
                     if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage != selfNanoValue)
-                            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage = selfNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
 
                 if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
                     if (int.TryParse(teamHealInput.Text, out int teamHealValue))
-                        if (Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage != teamHealValue)
-                            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage = teamHealValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
 
                 if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
                     if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage != teamNanoValue)
-                            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage = teamNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
 
                 if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
                     if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
-                        if (Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage != bodyDevValue)
-                            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage = bodyDevValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
 
                 if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
                     if (int.TryParse(strengthInput.Text, out int strengthValue))
-                        if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
-                            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
 
                 if (bg1Input != null && !string.IsNullOrEmpty(bg1Input.Text))
                     if (int.TryParse(bg1Input.Text, out int bg1Value))
-                        if (Config.CharSettings[Game.ClientInst].BattleGroupHeal1Percentage != bg1Value)
-                            Config.CharSettings[Game.ClientInst].BattleGroupHeal1Percentage = bg1Value;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal1Percentage != bg1Value)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal1Percentage = bg1Value;
 
                 if (bg2Input != null && !string.IsNullOrEmpty(bg2Input.Text))
                     if (int.TryParse(bg2Input.Text, out int bg2Value))
-                        if (Config.CharSettings[Game.ClientInst].BattleGroupHeal2Percentage != bg2Value)
-                            Config.CharSettings[Game.ClientInst].BattleGroupHeal2Percentage = bg2Value;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal2Percentage != bg2Value)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal2Percentage = bg2Value;
 
                 if (bg3Input != null && !string.IsNullOrEmpty(bg3Input.Text))
                     if (int.TryParse(bg3Input.Text, out int bg3Value))
-                        if (Config.CharSettings[Game.ClientInst].BattleGroupHeal3Percentage != bg3Value)
-                            Config.CharSettings[Game.ClientInst].BattleGroupHeal3Percentage = bg3Value;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal3Percentage != bg3Value)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal3Percentage = bg3Value;
 
                 if (bg4Input != null && !string.IsNullOrEmpty(bg4Input.Text))
                     if (int.TryParse(bg4Input.Text, out int bg4Value))
-                        if (Config.CharSettings[Game.ClientInst].BattleGroupHeal4Percentage != bg4Value)
-                            Config.CharSettings[Game.ClientInst].BattleGroupHeal4Percentage = bg4Value;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4Percentage != bg4Value)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4Percentage = bg4Value;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -707,29 +702,29 @@ namespace CombatHandler.Doctor
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }
@@ -844,28 +839,69 @@ namespace CombatHandler.Doctor
             return false;
         }
 
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
+
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        if (Team.IsInTeam)
+        //        {
+        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //                .Where(c => Team.Members
+        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                     && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+        //                .ToList();
+
+        //            if (dyingTeamMember.Count >= 4) { return false; }
+        //        }
+
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    }
+
+        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    }
+
+        //    return false;
+        //}
+
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HealPercentage == 0) { return false; }
+            if (HealPercentage == 0)
+            {
+                return false;
+            }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+            int healSelection = _settings["HealSelection"].AsInt32();
+
+            if (HealSelection.SingleTeam == (HealSelection)healSelection)
             {
                 if (Team.IsInTeam)
                 {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                             && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-                        .ToList();
+                    int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+                    int count = 0;
 
-                    if (dyingTeamMember.Count >= 4) { return false; }
+                    foreach (SimpleChar c in DynelManager.Characters)
+                    {
+                        if (Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                            && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+                        {
+                            count++;
+                            if (count >= 4)
+                            {
+                                return false;
+                            }
+                        }
+                    }
                 }
 
                 return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
 
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealSelection.SingleArea == (HealSelection)healSelection)
             {
                 return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
@@ -873,35 +909,75 @@ namespace CombatHandler.Doctor
             return false;
         }
 
+        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
+
+        //    if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        if (Spell.List.Any(c => c.Id == 275011)) { return false; }
+
+        //        if (Team.IsInTeam)
+        //        {
+        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //                .Where(c => Team.Members
+        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                        && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+        //                .ToList();
+
+        //            if (dyingTeamMember.Count >= 1)
+        //            {
+        //                return CanCast(spell);
+        //            }
+        //        }
+        //    }
+
+        //    return false;
+        //}
+
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HealPercentage == 0) { return false; }
-
-            if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+            if (HealPercentage == 0)
             {
-                if (Spell.List.Any(c => c.Id == 275011)) { return false; }
+                return false;
+            }
+
+            int healSelection = _settings["HealSelection"].AsInt32();
+
+            if (HealSelection.Team == (HealSelection)healSelection)
+            {
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            }
+
+            if (HealSelection.SingleTeam == (HealSelection)healSelection)
+            {
+                if (Spell.List.Any(c => c.Id == 275011))
+                {
+                    return false;
+                }
 
                 if (Team.IsInTeam)
                 {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-                        .ToList();
+                    int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
 
-                    if (dyingTeamMember.Count >= 1)
+                    foreach (SimpleChar c in DynelManager.Characters)
                     {
-                        return CanCast(spell);
+                        if (Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                            && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+                        {
+                            return CanCast(spell);
+                        }
                     }
                 }
             }
 
             return false;
         }
+
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1157,69 +1233,168 @@ namespace CombatHandler.Doctor
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
 
+        //private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (fightingTarget == null) { return false; }
+
+        //    {
+        //        if (Team.IsInTeam)
+        //        {
+        //            SimpleChar teamMember = DynelManager.Players
+        //                .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                    && c.HealthPercent < 50
+        //                    && c.IsInLineOfSight
+        //                    && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+        //                    && c.Health > 0)
+        //                .OrderBy(c => c.HealthPercent)
+        //                .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+        //                .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+        //                .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
+        //                .FirstOrDefault();
+
+        //            if (teamMember != null)
+        //            {
+        //                actionTarget.ShouldSetTarget = true;
+        //                actionTarget.Target = teamMember;
+        //                return true;
+        //            }
+
+        //            return false;
+        //        }
+
+        //        if (DynelManager.LocalPlayer.HealthPercent < 50)
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = DynelManager.LocalPlayer;
+        //            return true;
+        //        }
+
+        //        return false;
+        //    }
+        //}
+
         private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null) { return false; }
-
+            if (fightingTarget == null)
             {
-                if (Team.IsInTeam)
+                return false;
+            }
+
+            if (Team.IsInTeam)
+            {
+                SimpleChar teamMember = null;
+                foreach (SimpleChar c in DynelManager.Players)
                 {
-                    SimpleChar teamMember = DynelManager.Players
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.HealthPercent < 50
-                            && c.IsInLineOfSight
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
-                            && c.Health > 0)
-                        .OrderBy(c => c.HealthPercent)
-                        .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                        .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                        .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-                        .FirstOrDefault();
-
-                    if (teamMember != null)
+                    if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                        && c.HealthPercent < 50
+                        && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+                        && c.Health > 0)
                     {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = teamMember;
-                        return true;
+                        if (teamMember == null
+                            || c.HealthPercent < teamMember.HealthPercent
+                            || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
+                            || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
+                            || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
+                        {
+                            teamMember = c;
+                        }
                     }
-
-                    return false;
                 }
 
-                if (DynelManager.LocalPlayer.HealthPercent < 50)
+                if (teamMember != null)
                 {
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
+                    actionTarget.Target = teamMember;
                     return true;
                 }
 
                 return false;
             }
+
+            if (DynelManager.LocalPlayer.HealthPercent < 50)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
         }
+
 
         #endregion
 
         #region Items
 
+        //private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("TOTWBooks")) { return false; }
+        //    if (Item.HasPendingUse) { return false; }
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+
+        //    if (Team.IsInTeam)
+        //    {
+        //        SimpleChar teamMember = DynelManager.Players
+        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                && c.HealthPercent < 25
+        //                && c.IsInLineOfSight
+        //                && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+        //                && c.Health > 0)
+        //            .OrderBy(c => c.HealthPercent)
+        //            .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+        //            .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+        //            .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
+        //            .FirstOrDefault();
+
+        //        if (teamMember != null)
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = teamMember;
+        //            return true;
+        //        }
+
+        //        return false;
+        //    }
+
+        //    if (DynelManager.LocalPlayer.HealthPercent < 25)
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = DynelManager.LocalPlayer;
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
+
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TOTWBooks")) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
+            if (!IsSettingEnabled("TOTWBooks") || Item.HasPendingUse || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis))
+            {
+                return false;
+            }
 
             if (Team.IsInTeam)
             {
-                SimpleChar teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                SimpleChar teamMember = null;
+                foreach (SimpleChar c in DynelManager.Players)
+                {
+                    if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent < 25
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
                         && c.Health > 0)
-                    .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-                    .FirstOrDefault();
+                    {
+                        if (teamMember == null
+                            || c.HealthPercent < teamMember.HealthPercent
+                            || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
+                            || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
+                            || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
+                        {
+                            teamMember = c;
+                        }
+                    }
+                }
 
                 if (teamMember != null)
                 {
@@ -1240,6 +1415,7 @@ namespace CombatHandler.Doctor
 
             return false;
         }
+
 
         #endregion
 
@@ -1321,16 +1497,16 @@ namespace CombatHandler.Doctor
             public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
 
             public const int AlphaAndOmega = 42409;
-            public static int[] Heals = new[] 
+            public static int[] Heals = new[]
             { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
                         43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                         43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
-                        28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 
+                        28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665
             };
-            public static int[] TeamHeals = new[] 
+            public static int[] TeamHeals = new[]
             { 273312, 273315, 270349, 43891, 223291, 43892, 43893, 43894, 43895, 43896, 43897, 43898, 43899,
                         43900, 43901, 43903, 43902, 42404, 43905, 43904, 42395, 43907, 43908, 43906, 42398, 43910, 43909, 42402,
-                        43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408 
+                        43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408
             };
         }
 

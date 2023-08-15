@@ -1,9 +1,9 @@
 ﻿using AOSharp.Common.GameData;
-using AOSharp.Core.UI;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
+using AOSharp.Core.UI;
 using System;
 using System.Collections.Generic;
-using AOSharp.Common.GameData.UI;
 
 namespace MailManager
 {
@@ -49,7 +49,7 @@ namespace MailManager
                 {
                     try
                     {
-                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\MailManager\\{Game.ClientInst}\\Config.json");
+                        Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\MailManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                         settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Mail Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
 
@@ -61,9 +61,9 @@ namespace MailManager
                             settingsWindow.FindView("MailAmount", out TextInputView mailAmount);
 
                             if (mailCharacterName != null)
-                                mailCharacterName.Text = $"{Config.CharSettings[Game.ClientInst].MailCharacterName}";
+                                mailCharacterName.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterName}";
                             if (mailAmount != null)
-                                mailAmount.Text = $"{Config.CharSettings[Game.ClientInst].MailAmount}";
+                                mailAmount.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmount}";
                         }
                     }
                     catch (Exception e)

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Linq;
-using AOSharp.Core;
-using AOSharp.Core.IPC;
-using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using System.Collections.Generic;
+﻿using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
-using System.Windows.Input;
+using AOSharp.Core;
+using AOSharp.Core.UI;
+using System;
+using System.Linq;
 
 namespace AssistManager
 {
@@ -34,9 +29,9 @@ namespace AssistManager
             _settings = new Settings("AssistManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\AssistManager\\{Game.ClientInst}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\AssistManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
-            Config.CharSettings[Game.ClientInst].AssistPlayerChangedEvent += AssistPlayer_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayerChangedEvent += AssistPlayer_Changed;
 
             Game.OnUpdate += OnUpdate;
 
@@ -53,7 +48,7 @@ namespace AssistManager
             Chat.WriteLine("AssistManager Loaded!");
             Chat.WriteLine("/assistmanager for settings.");
 
-            AssistPlayer = Config.CharSettings[Game.ClientInst].AssistPlayer;
+            AssistPlayer = Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayer;
         }
 
         public override void Teardown()
@@ -63,7 +58,7 @@ namespace AssistManager
 
         public static void AssistPlayer_Changed(object s, string e)
         {
-            Config.CharSettings[Game.ClientInst].AssistPlayer = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayer = e;
             AssistPlayer = e;
             //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
@@ -87,49 +82,6 @@ namespace AssistManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F4) && !_init)
-            //{
-            //    _init = true;
-
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AOSP\\HelpManager\\{Game.ClientInst}\\Config.json");
-
-            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Help Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
-
-            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-            //    {
-            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Help Manager")))
-            //        {
-            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-
-            //            SettingsController.settingsWindow.FindView("AssistNamedCharacter", out TextInputView assistInput);
-
-            //            if (assistInput != null)
-            //                assistInput.Text = Config.CharSettings[Game.ClientInst].AssistPlayer;
-            //        }
-            //    }
-
-            //    _init = false;
-            //}
-
-            //if (Time.NormalTime > _updateTick + 8f)
-            //{
-            //    List<SimpleChar> PlayersInRange = DynelManager.Characters
-            //        .Where(x => x.IsPlayer)
-            //        .Where(x => DynelManager.LocalPlayer.DistanceFrom(x) < 30f)
-            //        .ToList();
-
-            //    foreach (SimpleChar player in PlayersInRange)
-            //    {
-            //        Network.Send(new CharacterActionMessage()
-            //        {
-            //            Action = CharacterActionType.InfoRequest,
-            //            Target = player.Identity
-
-            //        });
-            //    }
-
-            //    _updateTick = Time.NormalTime;
-            //}
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
@@ -137,9 +89,9 @@ namespace AssistManager
 
                 if (assistInput != null && !string.IsNullOrEmpty(assistInput.Text))
                 {
-                    if (Config.CharSettings[Game.ClientInst].AssistPlayer != assistInput.Text)
+                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayer != assistInput.Text)
                     {
-                        Config.CharSettings[Game.ClientInst].AssistPlayer = assistInput.Text;
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayer = assistInput.Text;
                     }
                 }
 
@@ -155,7 +107,7 @@ namespace AssistManager
             {
                 SimpleChar identity = DynelManager.Characters
                     .Where(c => !string.IsNullOrEmpty(AssistPlayer)
-                        && c.IsAlive && !c.Flags.HasFlag(CharacterFlags.Pet) 
+                        && c.IsAlive && !c.Flags.HasFlag(CharacterFlags.Pet)
                         && c.Name == AssistPlayer)
                     .FirstOrDefault();
 

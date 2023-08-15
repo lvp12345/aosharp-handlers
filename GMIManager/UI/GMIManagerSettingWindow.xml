@@ -1,35 +1,40 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Helper" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <Button name="GMIManagerInfoView" label="Info" layout_borders="Rect(5,5,3,5)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="GMIManager__Toggle" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-      <OptionRadioButtonGroup label="Mode" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="GMIManager__ModeSelection">
-        <RadioButton label="Withdraw" value="0"/>
-        <RadioButton label="Modify" value="1"/>
-        <RadioButton label="Refresh" value="2"/>
-      </OptionRadioButtonGroup>
-    </View>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="Amount*" layout_borders="Rect(5,5,5,5)"/>
-    <TextInputView name="GMIWithdrawAmount" min_size="Point(70,14)" max_size="Point(70,14)" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="Name" layout_borders="Rect(5,5,5,5)"/>
-    <TextInputView name="GMIBuyOrdersName" min_size="Point(140,14)" max_size="Point(140,14)" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="End price*" layout_borders="Rect(5,5,5,5)"/>
-    <TextInputView name="GMIBuyOrdersEndPrice" min_size="Point(190,14)" max_size="Point(190,14)" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="*Withdraw amount - amount of 900millions." layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="*End price - exact number." layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-  </BorderView>
+	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Helper" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<Button name="GMIManagerInfoView" label="Info" layout_borders="Rect(5,5,3,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="GMIManager__Toggle" layout_borders="Rect(10,1,5,1)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Mode" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="GMIManager__ModeSelection">
+				<RadioButton label="Withdraw" value="0"/>
+				<RadioButton label="Modify" value="1"/>
+				<RadioButton label="Refresh" value="2"/>
+				<RadioButton label="Item" value="3"/>
+			</OptionRadioButtonGroup>
+		</View>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="Amount*" layout_borders="Rect(5,5,5,5)"/>
+		<TextInputView name="GMIWithdrawAmount" min_size="Point(70,14)" max_size="Point(70,14)" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="Buy Order Name" layout_borders="Rect(5,5,5,5)"/>
+		<TextInputView name="GMIBuyOrdersName" min_size="Point(140,14)" max_size="Point(140,14)" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="End price*" layout_borders="Rect(5,5,5,5)"/>
+		<TextInputView name="GMIBuyOrdersEndPrice" min_size="Point(190,14)" max_size="Point(190,14)" layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="Item Name" layout_borders="Rect(5,5,5,5)"/>
+		<TextInputView name="GMIItemName" min_size="Point(140,14)" max_size="Point(140,14)" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="*Withdraw amount - amount of 900millions." layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="*End price - exact number." layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>
 </root>

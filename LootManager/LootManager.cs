@@ -178,9 +178,13 @@ namespace LootManager
 
         private async Task ProcessCorpsesAsync()
         {
-            foreach (Corpse currentCorpse in DynelManager.Corpses.Where(c =>
-                    c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
-                    !openedCorpses.ContainsKey(c.Position)))
+            Corpse currentCorpse = null; 
+
+            Corpse corpseToOpen = DynelManager.Corpses.FirstOrDefault(c =>
+                c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
+                !openedCorpses.ContainsKey(c.Position));
+
+            if (corpseToOpen != null)
             {
                 if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast
                     && !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
@@ -188,17 +192,22 @@ namespace LootManager
                 {
                     if (Time.NormalTime > _lootingTimer + 3)
                     {
-                        currentCorpse.Open(); // Open the corpse
+                        currentCorpse = corpseToOpen;
+                        currentCorpse.Open(); // Open the corpseToOpen
                         _lootingTimer = Time.NormalTime;
 
                         await Task.Delay(2000);
 
-                        currentCorpse.Open(); // Close the corpse
-                        openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
+                        if (currentCorpse != null)
+                        {
+                            currentCorpse.Open(); // Close the currentCorpse
+                            openedCorpses[currentCorpse.Position] = currentCorpse.Identity;
+                        }
                     }
                 }
             }
         }
+
 
         private void OnUpdate(object sender, float deltaTime)
         {

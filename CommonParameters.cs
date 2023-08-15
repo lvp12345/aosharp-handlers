@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 
 public class CommonParameters
 {
     public const string BasePath = "AOSharp";
-    public const string AppPath = "AOSP";
+    public const string AppPath = "KnowsMods";
 }

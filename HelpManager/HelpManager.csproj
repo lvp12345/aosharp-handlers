@@ -57,6 +57,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonParameters.cs">
+      <Link>CommonParameters.cs</Link>
+    </Compile>
     <Compile Include="Config.cs" />
     <Compile Include="IPCMessages\YalmUseMessage.cs" />
     <Compile Include="IPCMessages\YalmOnMessage.cs" />

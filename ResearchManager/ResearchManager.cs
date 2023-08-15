@@ -1,12 +1,9 @@
-﻿using AOSharp.Core;
-using AOSharp.Core.UI;
-using AOSharp.Common.GameData;
-using System.Collections.Generic;
+﻿using AOSharp.Common.GameData;
 using AOSharp.Common.Unmanaged.Interfaces;
+using AOSharp.Core;
+using AOSharp.Core.UI;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using AOSharp.Common.GameData.UI;
 
 namespace ResearchManager
 {
@@ -78,7 +75,7 @@ namespace ResearchManager
                             _asyncToggle = false;
                         });
                 }
- 
+
             }
 
             //if (_settings["Toggle"].AsBool() && !Game.IsZoning)

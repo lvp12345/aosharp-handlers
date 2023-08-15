@@ -1,17 +1,12 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.UI;
-using System.Linq;
-using System;
-using AOSharp.Common.GameData.UI;
 using AOSharp.Core.IPC;
-using System.Threading.Tasks;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
-using System.Threading;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using System.Collections.Generic;
-using AOSharp.Core.Inventory;
+using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using static AOSharp.Core.SpellData;
 
 namespace CombatHandler.Trader
 {
@@ -21,7 +16,7 @@ namespace CombatHandler.Trader
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
-        //private static bool ToggleDebuffing = false;
+        private static bool ToggleRez = false;
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
@@ -47,32 +42,32 @@ namespace CombatHandler.Trader
             IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            //IPCChannel.RegisterCallback((int)IPCOpcode.GlobalDebuffing, OnGlobalDebuffingMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Config.CharSettings[Game.ClientInst].HealPercentageChangedEvent += HealPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].HealthDrainPercentageChangedEvent += HealthDrainPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].StimTargetNameChangedEvent += StimTargetName_Changed;
-            Config.CharSettings[Game.ClientInst].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
-            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
-            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
-            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentageChangedEvent += HealPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].HealthDrainPercentageChangedEvent += HealthDrainPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
             _settings.AddVariable("Buffing", true);
             _settings.AddVariable("Composites", true);
 
             _settings.AddVariable("GlobalBuffing", true);
             _settings.AddVariable("GlobalComposites", true);
-            //_settings.AddVariable("GlobalDebuffs", true);
+            _settings.AddVariable("GlobalRez", true);
 
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
@@ -81,7 +76,7 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("DamageDrain", true);
+            
             _settings.AddVariable("HealthDrain", false);
             _settings.AddVariable("LEDrainHeal", false);
 
@@ -99,10 +94,16 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
             _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
-            _settings.AddVariable("NanoDrainSelection", (int)NanoDrainSelection.None);
+
+            _settings.AddVariable("RKNanoDrainSelection", (int)RKNanoDrainSelection.None);
+            _settings.AddVariable("SLNanoDrainSelection", (int)SLNanoDrainSelection.None);
+
             _settings.AddVariable("ACDrainSelection", (int)ACDrainSelection.None);
             _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
-            _settings.AddVariable("DamageDrainSelection", (int)DamageDrainSelection.None);
+
+            _settings.AddVariable("MPDamageDebuffLineASelection", (int)MPDamageDebuffLineASelection.None);
+            _settings.AddVariable("TraderShutdownSkillDebuffSelection", (int)TraderShutdownSkillDebuffSelection.None);
+
             _settings.AddVariable("AADDrainSelection", (int)AADDrainSelection.None);
             _settings.AddVariable("AAODrainSelection", (int)AAODrainSelection.None);
             _settings.AddVariable("GrandTheftHumiditySelection", (int)GrandTheftHumiditySelection.Target);
@@ -133,6 +134,9 @@ namespace CombatHandler.Trader
             RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
             RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
 
+            //Pets
+            RegisterSpellProcessor(RelevantNanos.DecisionbyCommittee, PetSpawner, CombatActionPriority.High);
+
             //Heals
             RegisterSpellProcessor(RelevantNanos.Heal, Healing);
             RegisterSpellProcessor(RelevantNanos.TeamHeal, TeamHealing);
@@ -146,11 +150,10 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(), GlobalGenericBuff);
 
-
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderTeamSkillWranglerBuff).OrderByStackingOrder(), UmbralWrangler);
-            
+            RegisterSpellProcessor(RelevantNanos.UmbralWrangler, UmbralWrangler);
+
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
 
@@ -160,9 +163,9 @@ namespace CombatHandler.Trader
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAADDrain).OrderByStackingOrder(), AADDrain, CombatActionPriority.Medium);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAAODrain).OrderByStackingOrder(), AAODrain, CombatActionPriority.Medium);
-            
-            RegisterSpellProcessor(RelevantNanos.DivestDamage, DamageDrain, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderShutdownSkillDebuff).OrderByStackingOrder(), DamageDrain, CombatActionPriority.Medium);
+
+            RegisterSpellProcessor(RelevantNanos.DivestDamage, MPDamageDebuffLineA, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderShutdownSkillDebuff).OrderByStackingOrder(), TraderShutdownSkillDebuff, CombatActionPriority.Medium);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResistA, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DebuffNanoACHeavy).OrderByStackingOrder(), NanoResistB, CombatActionPriority.High);
@@ -177,23 +180,25 @@ namespace CombatHandler.Trader
             //Root/Snare
             RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
 
+            
+
             PluginDirectory = pluginDir;
 
-            HealPercentage = Config.CharSettings[Game.ClientInst].HealPercentage;
-            HealthDrainPercentage = Config.CharSettings[Game.ClientInst].HealthDrainPercentage;
-            StimTargetName = Config.CharSettings[Game.ClientInst].StimTargetName;
-            StimHealthPercentage = Config.CharSettings[Game.ClientInst].StimHealthPercentage;
-            StimNanoPercentage = Config.CharSettings[Game.ClientInst].StimNanoPercentage;
-            KitHealthPercentage = Config.CharSettings[Game.ClientInst].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[Game.ClientInst].KitNanoPercentage;
-            CycleSpherePerkDelay = Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay;
-            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay;
-            SelfHealPerkPercentage = Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage;
-            SelfNanoPerkPercentage = Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage;
-            TeamHealPerkPercentage = Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage;
-            TeamNanoPerkPercentage = Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage;
-            BodyDevAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage;
-            StrengthAbsorbsItemPercentage = Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage;
+            HealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage;
+            HealthDrainPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].HealthDrainPercentage;
+            StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
+            StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
+            StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
+            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+            CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
+            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
+            SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
+            SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
+            TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
+            TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
+            BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
+            StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
         }
         public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };
 
@@ -222,14 +227,16 @@ namespace CombatHandler.Trader
             _settings[$"Composites"] = compMsg.Switch;
             _settings[$"GlobalComposites"] = compMsg.Switch;
         }
+        private void OnGlobalRezMessage(int sender, IPCMessage msg)
+        {
+            GlobalRezMessage rezMsg = (GlobalRezMessage)msg;
 
-        //private void OnGlobalDebuffingMessage(int sender, IPCMessage msg)
-        //{
-        //    GlobalDebuffingMessage debuffMsg = (GlobalDebuffingMessage)msg;
+            if (DynelManager.LocalPlayer.Identity.Instance == sender) { return; }
 
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //    _settings[$"Debuffing"] = debuffMsg.Switch;
-        //}
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+            _settings[$"GlobalRez"] = rezMsg.Switch;
+
+        }
 
         #endregion
 
@@ -456,6 +463,8 @@ namespace CombatHandler.Trader
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            SynchronizePetCombatStateWithOwner();
+
             #region Settings
 
             var window = SettingsController.FindValidWindow(_windows);
@@ -480,84 +489,84 @@ namespace CombatHandler.Trader
 
                 if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                     if (int.TryParse(healInput.Text, out int healValue))
-                        if (Config.CharSettings[Game.ClientInst].HealPercentage != healValue)
-                            Config.CharSettings[Game.ClientInst].HealPercentage = healValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage != healValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = healValue;
 
                 if (healthDrainInput != null && !string.IsNullOrEmpty(healthDrainInput.Text))
                     if (int.TryParse(healthDrainInput.Text, out int heallthDrainValue))
-                        if (Config.CharSettings[Game.ClientInst].HealthDrainPercentage != heallthDrainValue)
-                            Config.CharSettings[Game.ClientInst].HealthDrainPercentage = heallthDrainValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].HealthDrainPercentage != heallthDrainValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].HealthDrainPercentage = heallthDrainValue;
 
                 if (stimTargetInput != null)
-                    if (Config.CharSettings[Game.ClientInst].StimTargetName != stimTargetInput.Text)
-                        Config.CharSettings[Game.ClientInst].StimTargetName = stimTargetInput.Text;
+                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                        Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
 
                 if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
                     if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
-                        if (Config.CharSettings[Game.ClientInst].StimHealthPercentage != stimHealthValue)
-                            Config.CharSettings[Game.ClientInst].StimHealthPercentage = stimHealthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
 
                 if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
                     if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].StimNanoPercentage != stimNanoValue)
-                            Config.CharSettings[Game.ClientInst].StimNanoPercentage = stimNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
 
                 if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
                     if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
-                        if (Config.CharSettings[Game.ClientInst].KitHealthPercentage != kitHealthValue)
-                            Config.CharSettings[Game.ClientInst].KitHealthPercentage = kitHealthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
 
                 if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
                     if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].KitNanoPercentage != kitNanoValue)
-                            Config.CharSettings[Game.ClientInst].KitNanoPercentage = kitNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
 
                 if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
                     if (int.TryParse(sphereInput.Text, out int sphereValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay != sphereValue)
-                            Config.CharSettings[Game.ClientInst].CycleSpherePerkDelay = sphereValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
 
                 if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
                     if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
-                        if (Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
-                            Config.CharSettings[Game.ClientInst].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
 
                 if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
                     if (int.TryParse(selfHealInput.Text, out int selfHealValue))
-                        if (Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage != selfHealValue)
-                            Config.CharSettings[Game.ClientInst].SelfHealPerkPercentage = selfHealValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
 
                 if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
                     if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage != selfNanoValue)
-                            Config.CharSettings[Game.ClientInst].SelfNanoPerkPercentage = selfNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
 
                 if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
                     if (int.TryParse(teamHealInput.Text, out int teamHealValue))
-                        if (Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage != teamHealValue)
-                            Config.CharSettings[Game.ClientInst].TeamHealPerkPercentage = teamHealValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
 
                 if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
                     if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
-                        if (Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage != teamNanoValue)
-                            Config.CharSettings[Game.ClientInst].TeamNanoPerkPercentage = teamNanoValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
 
                 if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
                     if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
-                        if (Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage != bodyDevValue)
-                            Config.CharSettings[Game.ClientInst].BodyDevAbsorbsItemPercentage = bodyDevValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
 
                 if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
                     if (int.TryParse(strengthInput.Text, out int strengthValue))
-                        if (Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage != strengthValue)
-                            Config.CharSettings[Game.ClientInst].StrengthAbsorbsItemPercentage = strengthValue;
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
             }
 
             #endregion
 
             if ((RansackSelection.Area == (RansackSelection)_settings["RansackSelection"].AsInt32()
                 || DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32()
-                || DamageDrainSelection.Area == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32()
+                || MPDamageDebuffLineASelection.Area == (MPDamageDebuffLineASelection)_settings["MPDamageDebuffLineASelection"].AsInt32()
                 || ACDrainSelection.Area == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32()
                 || AAODrainSelection.Area == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32()
                 || AADDrainSelection.Area == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
@@ -667,29 +676,29 @@ namespace CombatHandler.Trader
 
                 #endregion
 
-                #region Global Debuffing
+                #region Global Resurrection
 
-                //if (!_settings["GlobalDebuffing"].AsBool() && ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
 
-                //        Switch = false
-                //    });
+                        Switch = false
+                    });
 
-                //    ToggleDebuffing = false;
-                //    _settings["GlobalDebuffing"] = false;
-                //}
-                //if (_settings["GlobalDebuffing"].AsBool() && !ToggleDebuffing)
-                //{
-                //    IPCChannel.Broadcast(new GlobalDebuffingMessage()
-                //    {
-                //        Switch = true
-                //    });
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
 
-                //    ToggleDebuffing = true;
-                //    _settings["GlobalDebuffing"] = true;
-                //}
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
                 #endregion
             }
@@ -912,7 +921,7 @@ namespace CombatHandler.Trader
 
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() ) { return false; }
+            if (IsInsideInnerSanctum()) { return false; }
 
             if (Team.IsInTeam && IsSettingEnabled("Evades"))
                 return TeamBuff(spell, spell.Nanoline, ref actionTarget)
@@ -933,32 +942,38 @@ namespace CombatHandler.Trader
 
         private bool SLNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoDrainSelection.Shadowlands == (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32())
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            SLNanoDrainSelection selection = (SLNanoDrainSelection)_settings["SLNanoDrainSelection"].AsInt32();
 
-            if (NanoDrainSelection.ShadowlandsBoss == (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32())
+            switch (selection)
             {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case SLNanoDrainSelection.Target:
+                case SLNanoDrainSelection.Boss:
+                    if (selection == SLNanoDrainSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                        return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-             }
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            return false;
+                default:
+                    return false;
+            }
         }
 
         private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoDrainSelection.RubiKa == (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32())
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            RKNanoDrainSelection selection = (RKNanoDrainSelection)_settings["RKNanoDrainSelection"].AsInt32();
 
-            if (NanoDrainSelection.RubiKaBoss == (NanoDrainSelection)_settings["NanoDrainSelection"].AsInt32())
+            switch (selection)
             {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case RKNanoDrainSelection.Target:
+                case RKNanoDrainSelection.Boss:
+                    if (selection == RKNanoDrainSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                        return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -979,6 +994,14 @@ namespace CombatHandler.Trader
 
         private bool GrandTheftHumidity(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            string[] namesToCheck = new string[] { "Vergil Aeneid", "Abmouth Supremus", "Aztur the Immortal" };
+
+            if (namesToCheck.Any(name => fightingTarget?.Name.Contains(name) ?? false))
+            {
+                
+                return false;
+            }
+
             if (GrandTheftHumiditySelection.Target == (GrandTheftHumiditySelection)_settings["GrandTheftHumiditySelection"].AsInt32())
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
@@ -994,151 +1017,245 @@ namespace CombatHandler.Trader
 
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (RansackSelection.Target == (RansackSelection)_settings["RansackSelection"].AsInt32())
-                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+            RansackSelection ransackSelection = (RansackSelection)_settings["RansackSelection"].AsInt32();
 
-            if (RansackSelection.Boss == (RansackSelection)_settings["RansackSelection"].AsInt32())
-
+            switch (ransackSelection)
             {
-                if (fightingTarget?.MaxHealth < 1000000)
-                {
-                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff) && buff.RemainingTime > 25) { return false; }
-
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-
-                else
-
-                {
+                case RansackSelection.Target:
                     return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
-                }
-            }
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-            if (RansackSelection.Area == (RansackSelection)_settings["RansackSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
-                {
-                    if (spell.StackingOrder <= buff.StackingOrder)
+                case RansackSelection.Boss:
+                    if (fightingTarget?.MaxHealth < 1000000)
                     {
-                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
-
-                        if (buff.RemainingTime > 25) { return false; }
+                        if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff bossDebuff) && bossDebuff.RemainingTime > 25)
+                        {
+                            return false;
+                        }
 
                         actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = _drainTarget;
+                        actionTarget.Target = fightingTarget;
                         return true;
                     }
+                    else
+                    {
+                        return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+                    }
 
+                case RansackSelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    {
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                            {
+                                return false;
+                            }
+
+                            if (buff.RemainingTime > 25)
+                            {
+                                return false;
+                            }
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    {
+                        return false;
+                    }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
                     return false;
-                }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
             }
-
-            return false;
         }
+
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DepriveSelection.Target == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+            DepriveSelection depriveSelection = (DepriveSelection)_settings["DepriveSelection"].AsInt32();
 
-            if (DepriveSelection.Boss == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-            { 
-                if (fightingTarget?.MaxHealth < 1000000)
-                {
-                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff) && buff.RemainingTime > 25) { return false; }
+            switch (depriveSelection)
+            {
+                case DepriveSelection.Target:
+                    return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+
+                case DepriveSelection.Boss:
+                    if (fightingTarget?.MaxHealth < 1000000)
+                    {
+                        if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff bossDebuff) && bossDebuff.RemainingTime > 25)
+                        {
+                            return false;
+                        }
+
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = fightingTarget;
+                        return true;
+                    }
+                    else
+                    {
+                        return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                    }
+
+                case DepriveSelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    {
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                            {
+                                return false;
+                            }
+
+                            if (buff.RemainingTime > 25)
+                            {
+                                return false;
+                            }
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    {
+                        return false;
+                    }
 
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
+                    actionTarget.Target = _drainTarget;
                     return true;
-                }
 
-                else
-
-                {
-                    return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
-                }
-            }
-                
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-            if (DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
-                {
-                    if (spell.StackingOrder <= buff.StackingOrder)
-                    {
-                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
-
-                        if (buff.RemainingTime > 25) { return false; }
-
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = _drainTarget;
-                        return true;
-                    }
-
+                default:
                     return false;
-                }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
             }
-
-            return false;
         }
 
-        private bool DamageDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+
+        private bool MPDamageDebuffLineA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DamageDrainSelection.Target == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32())
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            MPDamageDebuffLineASelection selection = (MPDamageDebuffLineASelection)_settings["MPDamageDebuffLineASelection"].AsInt32();
 
-            if (DamageDrainSelection.Boss == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32())
+            switch (selection)
             {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                case MPDamageDebuffLineASelection.Target:
+                //case MPDamageDebuffLineASelection.Boss:
+                //    if (selection == MPDamageDebuffLineASelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                //        return false;
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+                //    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-            if (DamageDrainSelection.Area == (DamageDrainSelection)_settings["DamageDrainSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
-                {
-                    if (spell.StackingOrder <= buff.StackingOrder)
+                case MPDamageDebuffLineASelection.Boss:
+                    if (fightingTarget?.MaxHealth < 1000000)
                     {
-                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
-
-                        if (buff.RemainingTime > 15) { return false; }
+                        if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.DivestDamageTransfer, out Buff bossDebuff) && bossDebuff.RemainingTime > 25)
+                        {
+                            return false;
+                        }
 
                         actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = _drainTarget;
+                        actionTarget.Target = fightingTarget;
                         return true;
                     }
+                    else
+                    {
+                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    }
 
+                case MPDamageDebuffLineASelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                        return false;
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU) || buff.RemainingTime > 15)
+                                return false;
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                        return false;
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
                     return false;
-                }
-
-                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
             }
+        }
 
-            return false;
+        private bool TraderShutdownSkillDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            TraderShutdownSkillDebuffSelection selection = (TraderShutdownSkillDebuffSelection)_settings["TraderShutdownSkillDebuffSelection"].AsInt32();
+
+            switch (selection)
+            {
+                case TraderShutdownSkillDebuffSelection.Target:
+                case TraderShutdownSkillDebuffSelection.Boss:
+                    if (selection == TraderShutdownSkillDebuffSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                        return false;
+
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+                case TraderShutdownSkillDebuffSelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                        return false;
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU) || buff.RemainingTime > 15)
+                                return false;
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                        return false;
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
+                    return false;
+            }
         }
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1326,6 +1443,20 @@ namespace CombatHandler.Trader
 
         #endregion
 
+        #region Pets
+
+        private bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+            if (fightingTarget == null) { return false; }
+            if (fightingTarget?.MaxHealth < 1000000) { return false; }
+            if (!spell.IsReady) { return false; }   
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        #endregion
+
         #region Misc
         private static bool IsMoving(SimpleChar target)
         {
@@ -1343,9 +1474,11 @@ namespace CombatHandler.Trader
             public const int ImprovedQuantumUncertanity = 270808;
             public const int UnstoppableKiller = 275846;
             public const int DivestDamage = 273407;
-            public const int UmbralWranglerPremium = 235291;
             public const int MyEnemiesEnemyIsMyFriend = 270714;
             public const int FlowofTime = 30719;
+            public const int DecisionbyCommittee = 258659;
+            public const int DivestDamageTransfer = 273408;
+            public static int[] UmbralWrangler = { 235291, 235289, 235287, 235283, 235281, 235279, 235277, 235275, 235273, 235271 };
             public static int[] GrandThefts = { 269842, 280050 };
             public static int[] HealthDrain = { 270357, 77195, 76478, 76475, 76487, 76481,
                 76484, 76491, 76494, 76499, 76571, 76503, 76651, 76614, 76656,
@@ -1362,7 +1495,7 @@ namespace CombatHandler.Trader
 
         public enum PerkSelection
         {
-           None, Sacrifice, PurpleHeart
+            None, Sacrifice, PurpleHeart
         }
         public enum HealSelection
         {
@@ -1372,9 +1505,14 @@ namespace CombatHandler.Trader
         {
             None, Combat
         }
-        public enum NanoDrainSelection
+        public enum RKNanoDrainSelection
         {
-            None, RubiKa, RubiKaBoss, Shadowlands, ShadowlandsBoss
+            None, Target, Boss
+        }
+
+        public enum SLNanoDrainSelection
+        {
+            None, Target, Boss
         }
         public enum AADDrainSelection
         {
@@ -1392,7 +1530,11 @@ namespace CombatHandler.Trader
         {
             None, Target, Boss
         }
-        public enum DamageDrainSelection
+        public enum MPDamageDebuffLineASelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum TraderShutdownSkillDebuffSelection
         {
             None, Target, Area, Boss
         }

@@ -1448,8 +1448,8 @@ namespace CombatHandler.Trader
         private bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-            //if (fightingTarget == null) { return false; }
-            if (fightingTarget?.MaxHealth < 1000000) { return false; }
+            if (fightingTarget == null) { return false; }
+            if (fightingTarget.MaxHealth < 1000000) { return false; }
             if (!spell.IsReady) { return false; }   
 
             return Buff(spell, spell.Nanoline, ref actionTarget);

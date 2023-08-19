@@ -463,7 +463,7 @@ namespace CombatHandler.Trader
                 _ncuUpdateTime = Time.NormalTime;
             }
 
-            SynchronizePetCombatStateWithOwner();
+            SyncPetCombat();
 
             #region Settings
 
@@ -1453,6 +1453,30 @@ namespace CombatHandler.Trader
             if (!spell.IsReady) { return false; }   
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected void SyncPetCombat()
+        {
+
+            foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
+                SyncPetCombat(_pet);
+
+        }
+
+        private void SyncPetCombat(Pet pet)
+        {
+            if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
+                pet?.Follow();
+
+            if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
+            {
+                if (pet?.Character.IsAttacking == false)
+                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+
+                if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
+                    && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
+                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+            }
         }
 
         #endregion

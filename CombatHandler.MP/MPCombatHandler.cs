@@ -1182,6 +1182,27 @@ namespace CombatHandler.Metaphysicist
 
         #region Pets
 
+        private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
+            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("MezzPet")) { return false; }
+
+            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
+            return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
+        }
+
         #region Buffs
 
         private bool MezzPetSeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1361,26 +1382,7 @@ namespace CombatHandler.Metaphysicist
 
         #region Misc
 
-        private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("MezzPet")) { return false; }
-
-            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
-        }
+        
 
         private Spell[] GetAttackPetsWithSLPetsFirst()
         {

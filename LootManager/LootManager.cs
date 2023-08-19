@@ -70,14 +70,15 @@ namespace LootManager
                 LoadRules();
 
                 _settings.AddVariable("Enabled", false);
+
                 _settings.AddVariable("Delete", false);
 
-                Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    _toggle = !_toggle;
+                //Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
+                //{
+                //    _toggle = !_toggle;
 
-                    Chat.WriteLine("Leaving loot open now.");
-                });
+                //    Chat.WriteLine("Leaving loot open now.");
+                //});
 
                 Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
                 {
@@ -226,8 +227,6 @@ namespace LootManager
                         _settings["Enabled"] = false;
                     }
 
-                    Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6).FirstOrDefault();
-
                     if (!_settings["Delete"].AsBool())
                     {
                         ProcessCorpsesAsync();
@@ -235,6 +234,7 @@ namespace LootManager
 
                     if (_settings["Delete"].AsBool())
                     {
+                        Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6).FirstOrDefault();
 
                         if (corpse != null)
                         {

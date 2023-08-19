@@ -72,18 +72,18 @@ namespace LootManager
                 _settings.AddVariable("Enabled", false);
                 _settings.AddVariable("Delete", false);
 
-                Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    _toggle = !_toggle;
+                //Chat.RegisterCommand("leaveopen", (string command, string[] param, ChatWindow chatWindow) =>
+                //{
+                //    _toggle = !_toggle;
 
-                    Chat.WriteLine("Leaving loot open now.");
-                });
+                //    Chat.WriteLine("Leaving loot open now.");
+                //});
 
-                Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    _settings["Enabled"] = !_settings["Enabled"].AsBool();
-                    Chat.WriteLine($"Enabled : {_settings["Enabled"]}");
-                });
+                //Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
+                //{
+                //    _settings["Enabled"] = !_settings["Enabled"].AsBool();
+                //    Chat.WriteLine($"Enabled : {_settings["Enabled"]}");
+                //});
 
                
                 Chat.WriteLine("Loot Manager loaded!");
@@ -221,10 +221,10 @@ namespace LootManager
 
                 if (_settings["Enabled"].AsBool())
                 {
-                    if (_bagsFull && Inventory.NumFreeSlots == 0)
-                    {
-                        _settings["Enabled"] = false;
-                    }
+                    //if (_bagsFull && Inventory.NumFreeSlots == 0)
+                    //{
+                    //    _settings["Enabled"] = false;
+                    //}
 
                     Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6).FirstOrDefault();
 

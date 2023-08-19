@@ -80,11 +80,11 @@ namespace LootManager
                 //    Chat.WriteLine("Leaving loot open now.");
                 //});
 
-                Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    _settings["Enabled"] = !_settings["Enabled"].AsBool();
-                    Chat.WriteLine($"Enabled : {_settings["Enabled"]}");
-                });
+                //Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
+                //{
+                //    _settings["Enabled"] = !_settings["Enabled"].AsBool();
+                //    Chat.WriteLine($"Enabled : {_settings["Enabled"]}");
+                //});
 
                
                 Chat.WriteLine("Loot Manager loaded!");

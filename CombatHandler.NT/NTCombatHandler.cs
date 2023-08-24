@@ -5,6 +5,7 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace CombatHandler.NanoTechnician
 {
@@ -124,6 +125,12 @@ namespace CombatHandler.NanoTechnician
             //DeTaunt
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt, CombatActionPriority.High);
 
+            //Debuffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
+
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis, CombatActionPriority.High);
@@ -145,13 +152,7 @@ namespace CombatHandler.NanoTechnician
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
             RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
-
-            //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
-
+            
             //Dots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Medium);

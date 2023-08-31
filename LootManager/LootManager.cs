@@ -163,6 +163,9 @@ namespace LootManager
 
         private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
+
+            if (!_settings["Enabled"].AsBool()) return;
+
             if (container.Identity.Type != IdentityType.Corpse) return;
 
             foreach (Item item in container.Items)

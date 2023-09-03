@@ -1032,6 +1032,7 @@ namespace CombatHandler.Bureaucrat
             || c.Buffs.Contains(NanoLine.Snare)
             || c.Buffs.Contains(305244) //Pause for Reflection
             || c.Buffs.Contains(268174) //Cunning of The Voracious Horror
+            || c.Buffs.Contains(82166) //Greater Fear of Attention
             && SpellChecksOther(spell, spell.Nanoline, c))
             .FirstOrDefault();
 

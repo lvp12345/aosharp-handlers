@@ -259,7 +259,6 @@ namespace CombatHandler.Bureaucrat
 
             //Pet Perks
 
-
             PluginDirectory = pluginDir;
 
             CycleXpPerksDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelay;
@@ -1258,6 +1257,7 @@ namespace CombatHandler.Bureaucrat
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.MaxHealth < 1000000)
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
                     .FirstOrDefault();
 
                 if (target != null)
@@ -1271,17 +1271,18 @@ namespace CombatHandler.Bureaucrat
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
                 SimpleChar target = DynelManager.NPCs
-                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                    && c.Health > 0
-                    && c.IsInLineOfSight
-                    && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                    && c.MaxHealth < 1000000
-                    && c.FightingTarget != null
-                    && !AttackingMob(c)
-                    && AttackingTeam(c))
-                .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                .FirstOrDefault();
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
 
                 if (target != null)
                 {
@@ -1310,6 +1311,7 @@ namespace CombatHandler.Bureaucrat
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.MaxHealth < 1000000)
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
                     .FirstOrDefault();
 
                 if (target != null)
@@ -1333,6 +1335,7 @@ namespace CombatHandler.Bureaucrat
                         && !AttackingMob(c)
                         && AttackingTeam(c))
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
                     .FirstOrDefault();
 
                 if (target != null)
@@ -1363,6 +1366,7 @@ namespace CombatHandler.Bureaucrat
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.MaxHealth < 1000000)
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
                     .FirstOrDefault();
 
                 if (target != null)
@@ -1386,6 +1390,7 @@ namespace CombatHandler.Bureaucrat
                         && !AttackingMob(c)
                         && AttackingTeam(c))
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
                     .FirstOrDefault();
 
                 if (target != null)

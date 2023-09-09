@@ -23,6 +23,7 @@ namespace CombatHandler.NanoTechnician
         private static Window _procWindow;
         private static Window _itemWindow;
         private static Window _debuffWindow;
+        private static Window _calmingWindow;
         private static Window _nukeWindow;
         private static Window _perkWindow;
 
@@ -30,6 +31,7 @@ namespace CombatHandler.NanoTechnician
         private static View _itemView;
         private static View _buffView;
         private static View _debuffView;
+        private static View _calmView;
         private static View _nukeView;
         private static View _perkView;
 
@@ -102,6 +104,8 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
             _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
 
+            _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Mezz);
+
             _settings.AddVariable("AOESelection", (int)AOESelection.None);
 
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
@@ -131,6 +135,11 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
 
+            //Calms
+            RegisterSpellProcessor(RelevantNanos.Mezz, Mezz, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Stun, Stun, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Calm, Calm, CombatActionPriority.High);
+
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis, CombatActionPriority.High);
@@ -152,7 +161,7 @@ namespace CombatHandler.NanoTechnician
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
             RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
-            
+
             //Dots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Medium);
@@ -188,7 +197,7 @@ namespace CombatHandler.NanoTechnician
             BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
             StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -247,6 +256,24 @@ namespace CombatHandler.NanoTechnician
                 _debuffWindow = container;
             }
         }
+
+        private void HandleCalmingViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_calmView)) { return; }
+
+                _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\NTCalmingView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Calming", XmlViewName = "NTCalmingView" }, _calmView);
+            }
+            else if (_calmingWindow == null || (_calmingWindow != null && !_calmingWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_calmingWindow, PluginDir, new WindowOptions() { Name = "Calming", XmlViewName = "NTCalmingView" }, _calmView, out var container);
+                _calmingWindow = container;
+            }
+        }
+
         private void HandlePerkViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -612,6 +639,12 @@ namespace CombatHandler.NanoTechnician
                     debuffView.Clicked = HandleDebuffsViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
+                {
+                    calmView.Tag = SettingsController.settingsWindow;
+                    calmView.Clicked = HandleCalmingViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
                 {
                     procView.Tag = SettingsController.settingsWindow;
@@ -893,6 +926,172 @@ namespace CombatHandler.NanoTechnician
 
         #endregion
 
+        #region Calms
+
+        private bool Mezz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (CalmingSelection.Mezz != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
+
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool Stun(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (CalmingSelection.Stun != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
+
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool Calm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (CalmingSelection.Calm != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
+
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Blinds
 
         private bool AOEBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1168,6 +1367,11 @@ namespace CombatHandler.NanoTechnician
             public static readonly int[] AOENukes = { 266293, 28638,
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };
+
+            public static readonly int[] Mezz = { 253384, 253382, 253380 };
+            public const int Stun = 28625;
+            public static readonly int[] Calm = { 259364, 259365, 259362, 259363, 259366, 259367, 100443, 100441, 259335, 259336, 100442, 100440 };
+
             public const int SuperiorFleetingImmunity = 273386;
             public static readonly int[] AbsorbACBuff = { 270356, 117676, 117675, 117677, 117678, 117679 };
             public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
@@ -1204,6 +1408,16 @@ namespace CombatHandler.NanoTechnician
 
             public const int WilloftheIllusionist = 274717;
 
+        }
+
+        public enum CalmingSelection
+        {
+            Mezz, Stun, Calm
+        }
+
+        public enum ModeSelection
+        {
+            None, All, Adds
         }
 
         #endregion

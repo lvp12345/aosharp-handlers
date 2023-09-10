@@ -136,10 +136,10 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
 
-            ////Calms
-            //RegisterSpellProcessor(RelevantNanos.Mezz, Mezz, CombatActionPriority.High);
-            //RegisterSpellProcessor(RelevantNanos.Stun, Stun, CombatActionPriority.High);
-            //RegisterSpellProcessor(RelevantNanos.Calm, Calm, CombatActionPriority.High);
+            //Calms
+            RegisterSpellProcessor(RelevantNanos.Mezz, Mezz, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Stun, Stun, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Calm, Calm, CombatActionPriority.High);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);

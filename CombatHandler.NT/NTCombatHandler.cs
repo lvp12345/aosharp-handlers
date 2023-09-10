@@ -105,6 +105,7 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
 
             _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Mezz);
+            _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
 
             _settings.AddVariable("AOESelection", (int)AOESelection.None);
 

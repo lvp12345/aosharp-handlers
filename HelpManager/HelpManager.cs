@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace HelpManager
 {
@@ -27,6 +26,8 @@ namespace HelpManager
 
         private static int SitPercentage;
 
+        private Stopwatch _kitTimer = new Stopwatch();
+
         private static bool _init = false;
 
         private static double _updateTick;
@@ -37,6 +38,8 @@ namespace HelpManager
         private static double _morphPathingTimer;
         private static double _bellyPathingTimer;
         private static double _zixMorphTimer;
+
+        private static double _uiDelay;
 
         public static bool Sitting = false;
         public static bool HealingPet = false;
@@ -168,34 +171,24 @@ namespace HelpManager
         private void OnUpdate(object s, float deltaTime)
         {
 
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            SitAndUseKit();
+
+            if (Time.NormalTime > _zixMorphTimer + 3)
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                SettingsController.settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
-
-                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
                 {
-                    if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
-                    {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
-                    }
+                    CancelBuffs(RelevantNanos.ZixMorph);
                 }
 
-                if (sitPercentageInput != null && !string.IsNullOrEmpty(sitPercentageInput.Text))
-                {
-                    if (int.TryParse(sitPercentageInput.Text, out int sitPercentageValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage != sitPercentageValue)
-                    {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage = sitPercentageValue;
-                    }
-                }
+                _zixMorphTimer = Time.NormalTime;
+            }
 
-                if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
-                {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
-                }
+            if (Time.NormalTime > _sitPetUpdateTimer + 2)
+            {
+                if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
+                    ListenerPetSit();
+
+                _sitPetUpdateTimer = Time.NormalTime;
             }
 
             if (_settings["BellyPathing"].AsBool() && Time.NormalTime > _bellyPathingTimer + 1)
@@ -262,31 +255,42 @@ namespace HelpManager
                 _shapeUsedTimer = Time.NormalTime;
             }
 
+            #region UI
 
-            if (Time.NormalTime > _sitUpdateTimer + 0.5)
+            if (Time.NormalTime > _uiDelay + 1.0)
             {
-                ListenerSit();
-
-                _sitUpdateTimer = Time.NormalTime;
-            }
-
-            if (Time.NormalTime > _zixMorphTimer + 3)
-            {
-                if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
-                    CancelBuffs(RelevantNanos.ZixMorph);
+                    SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                    SettingsController.settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
+
+                    if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                    {
+                        if (int.TryParse(channelInput.Text, out int channelValue)
+                            && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+                        }
+                    }
+
+                    if (sitPercentageInput != null && !string.IsNullOrEmpty(sitPercentageInput.Text))
+                    {
+                        if (int.TryParse(sitPercentageInput.Text, out int sitPercentageValue)
+                            && Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage != sitPercentageValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage = sitPercentageValue;
+                        }
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
+                    {
+                        infoView.Tag = SettingsController.settingsWindow;
+                        infoView.Clicked = InfoView;
+                    }
                 }
-
-                _zixMorphTimer = Time.NormalTime;
+                _uiDelay = Time.NormalTime;
             }
-
-            if (Time.NormalTime > _sitPetUpdateTimer + 2)
-            {
-                if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
-                    ListenerPetSit();
-
-                _sitPetUpdateTimer = Time.NormalTime;
-            }
+            #endregion
         }
 
         private void OnYalmCast(int sender, IPCMessage msg)
@@ -428,51 +432,66 @@ namespace HelpManager
 
                     MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
 
-                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
+                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit
+                        && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
                     {
-                        kit.Use(healpet.Character, true);
-                        Task.Factory.StartNew(
-                            async () =>
-                            {
-                                await Task.Delay(100);
-                                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                            });
+
+                        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+
                         _sitPetUsedTimer = Time.NormalTime;
                     }
                 }
             }
         }
 
-        private void ListenerSit()
+        private void SitAndUseKit()
         {
             Spell spell = Spell.List.FirstOrDefault(x => x.IsReady);
 
-            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.Id)).FirstOrDefault();
+            Item kit = Inventory.Items.FirstOrDefault(x => RelevantItems.Kits.Contains(x.Id));
 
-            if (kit == null) { return; }
-
-            if (spell != null && _settings["AutoSit"].AsBool())
+            if (kit == null || spell == null)
             {
-                if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
+                return;
+            }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
+            {
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) &&
+                    DynelManager.LocalPlayer.MovementState != MovementState.Sit)
                 {
-                    if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
-                        && DynelManager.LocalPlayer.MovementState != MovementState.Sit)
+                    if (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
                     {
-                        if (DynelManager.LocalPlayer.NanoPercent < SitPercentage || DynelManager.LocalPlayer.HealthPercent < SitPercentage)
-                        {
-                            Task.Factory.StartNew(
-                               async () =>
-                               {
-                                   Sitting = true;
-                                   await Task.Delay(400);
-                                   MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                                   await Task.Delay(800);
-                                   MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                                   await Task.Delay(200);
-                                   Sitting = false;
-                               });
-                        }
+                        // Switch to sitting
+                        MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
                     }
+                }
+            }
+
+            if (DynelManager.LocalPlayer.MovementState == MovementState.Sit
+           && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+            {
+                // If the Stopwatch hasn't been started or 2 seconds have elapsed
+                if (!_kitTimer.IsRunning || _kitTimer.ElapsedMilliseconds >= 2000)
+                {
+                    if (DynelManager.LocalPlayer.NanoPercent < 90 || DynelManager.LocalPlayer.HealthPercent < 90)
+                    {
+                        // Use the kit
+                        kit.Use(DynelManager.LocalPlayer, true);
+
+                        // Reset and start the Stopwatch
+                        _kitTimer.Restart();
+                    }
+                }
+            }
+
+            if (DynelManager.LocalPlayer.MovementState == MovementState.Sit
+            && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+            {
+                if (DynelManager.LocalPlayer.NanoPercent > 66 || DynelManager.LocalPlayer.HealthPercent > 66)
+                {
+                    // Leave sitting if treatment cooldown is active
+                    MovementController.Instance.SetMovement(MovementAction.LeaveSit);
                 }
             }
         }

@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 
 namespace SyncManager
 {
@@ -37,7 +37,7 @@ namespace SyncManager
         public static bool Toggle = false;
 
         private static double _useTimer;
-        private static double _openBagsTimer = Time.NormalTime;
+        private Stopwatch bagUseStopwatch = new Stopwatch();
 
         public static Window _infoWindow;
 
@@ -150,29 +150,34 @@ namespace SyncManager
                 }
             }
 
-
             if (!_openBags && _settings["SyncBags"].AsBool())
             {
-                Task.Factory.StartNew(
-                   async () =>
-                   {
-                       await Task.Delay(10000);
+                if (!bagUseStopwatch.IsRunning)
+                {
+                    bagUseStopwatch.Start();
+                }
 
-                       List<Item> bags = Inventory.Items
-                           .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                           .ToList();
+                if (bagUseStopwatch.Elapsed.TotalSeconds >= 10)
+                {
+                    List<Item> bags = Inventory.Items
+                        .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
+                        .ToList();
 
-                       foreach (Item bag in bags)
-                       {
-                           bag.Use();
-                           bag.Use();
-                       }
-                   });
+                    foreach (Item bag in bags)
+                    {
+                        bag.Use();
+                        bag.Use();
+                    }
 
-                _openBags = true;
+                    _openBags = true;
+                    bagUseStopwatch.Reset();  // Reset the stopwatch
+                }
             }
-
-
+            else if (_openBags)
+            {
+                // Do whatever you need to do when _openBags is true
+                bagUseStopwatch.Reset();  // Reset the stopwatch if you want
+            }
 
             if (Time.NormalTime > _useTimer + 0.1)
             {
@@ -317,21 +322,7 @@ namespace SyncManager
 
             if (_settings["SyncBags"].AsBool())
             {
-                Task.Factory.StartNew(
-                    async () =>
-                    {
-                        await Task.Delay(10000);
-
-                        List<Item> bags = Inventory.Items
-                            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                            .ToList();
-
-                        foreach (Item bag in bags)
-                        {
-                            bag.Use();
-                            bag.Use();
-                        }
-                    });
+                _openBags = false;
             }
         }
         private void Network_N3MessageReceived(object s, N3Message n3Msg)

@@ -105,7 +105,7 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
             _settings.AddVariable("HackedBlindSelection", (int)HackedBlindSelection.None);
 
-            _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Mezz);
+            _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Calm);
             _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
 
             _settings.AddVariable("AOESelection", (int)AOESelection.None);
@@ -1340,7 +1340,7 @@ namespace CombatHandler.NanoTechnician
 
         public enum CalmingSelection
         {
-            Mezz, Stun, Calm
+            Stun, Calm
         }
 
         public enum ModeSelection

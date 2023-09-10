@@ -156,6 +156,7 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+
             RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
             RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
             RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PsyMod);
@@ -579,7 +580,7 @@ namespace CombatHandler.Metaphysicist
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -1401,7 +1402,6 @@ namespace CombatHandler.Metaphysicist
             return null;
         }
 
-        //Ewww
         private SimpleChar GetTargetToHeal()
         {
             if (DynelManager.LocalPlayer.HealthPercent < 90)
@@ -1426,9 +1426,9 @@ namespace CombatHandler.Metaphysicist
             else
             {
                 Pet dyingPet = DynelManager.LocalPlayer.Pets
-                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
+                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social ||pet.Type == PetType.Support)
                      .Where(pet => pet.Character.HealthPercent < 80)
-                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
                      .OrderBy(pet => pet.Character.HealthPercent)
                      .FirstOrDefault();
 
@@ -1439,19 +1439,6 @@ namespace CombatHandler.Metaphysicist
             }
 
             return null;
-        }
-
-        private SimpleChar GetTargetToMezz()
-        {
-            //Ewww
-            return DynelManager.Characters
-                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                .Where(c => DynelManager.LocalPlayer.FightingTarget.Identity != c.Identity)
-                .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player of a pet
-                .Where(c => c.IsAttacking) //Is in combat
-                .Where(c => c.IsValid).Where(c => c.IsInLineOfSight).Where(c => c.DistanceFrom(DynelManager.LocalPlayer) <= 15f) //Is in range for debuff
-                .FirstOrDefault();
         }
 
         private void AssignTargetToHealPet()
@@ -1494,6 +1481,22 @@ namespace CombatHandler.Metaphysicist
                     }
                 }
             }
+        }
+
+        private SimpleChar GetTargetToMezz()
+        {
+            
+            return DynelManager.Characters
+                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                .Where(c => DynelManager.LocalPlayer.FightingTarget.Identity != c.Identity)
+                .Where(c => !c.IsPlayer)
+                .Where(c => !c.IsPet) //Is not player of a pet
+                .Where(c => c.IsAttacking) //Is in combat
+                .Where(c => c.IsValid)
+                .Where(c => c.IsInLineOfSight)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) <= 15f) //Is in range for debuff
+                .FirstOrDefault();
         }
 
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)

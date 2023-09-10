@@ -202,6 +202,8 @@ namespace CombatHandler.Doctor
         {
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+
+            //Chat.WriteLine("Received RemainingNCUMessage");
         }
         private void OnGlobalBuffingMessage(int sender, IPCMessage msg)
         {
@@ -211,6 +213,8 @@ namespace CombatHandler.Doctor
 
             _settings[$"Buffing"] = buffMsg.Switch;
             _settings[$"GlobalBuffing"] = buffMsg.Switch;
+
+            //Chat.WriteLine("Received GlobalBuffingMessage");
         }
         private void OnGlobalCompositesMessage(int sender, IPCMessage msg)
         {
@@ -220,6 +224,8 @@ namespace CombatHandler.Doctor
 
             _settings[$"Composites"] = compMsg.Switch;
             _settings[$"GlobalComposites"] = compMsg.Switch;
+
+            //Chat.WriteLine("Received GlobalCompositesMessage");
         }
 
         private void OnGlobalRezMessage(int sender, IPCMessage msg)
@@ -230,6 +236,8 @@ namespace CombatHandler.Doctor
 
             _settings[$"GlobalRez"] = rezMsg.Switch;
             _settings[$"GlobalRez"] = rezMsg.Switch;
+
+            //Chat.WriteLine("Received GlobalRezMessage");
 
         }
 
@@ -479,7 +487,7 @@ namespace CombatHandler.Doctor
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 

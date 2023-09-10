@@ -375,7 +375,7 @@ namespace CombatHandler.Fixer
             base.OnUpdate(deltaTime);
             EquipBackArmor();
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 

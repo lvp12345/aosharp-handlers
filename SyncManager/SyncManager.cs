@@ -37,7 +37,6 @@ namespace SyncManager
         public static bool Toggle = false;
 
         private static double _useTimer;
-        private Stopwatch bagUseStopwatch = new Stopwatch();
 
         public static Window _infoWindow;
 
@@ -152,31 +151,18 @@ namespace SyncManager
 
             if (!_openBags && _settings["SyncBags"].AsBool())
             {
-                if (!bagUseStopwatch.IsRunning)
+                Inventory.Backpacks.ForEach(b =>
                 {
-                    bagUseStopwatch.Start();
-                }
-
-                if (bagUseStopwatch.Elapsed.TotalSeconds >= 10)
-                {
-                    List<Item> bags = Inventory.Items
-                        .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                        .ToList();
-
-                    foreach (Item bag in bags)
+                    if (!b.IsOpen)
                     {
-                        bag.Use();
-                        bag.Use();
+                        Item.Use(b.Slot);
+                        Item.Use(b.Slot);
                     }
-
+                });
+                if (Inventory.Backpacks.All(b => b.IsOpen))
+                {
                     _openBags = true;
-                    bagUseStopwatch.Reset();  // Reset the stopwatch
                 }
-            }
-            else if (_openBags)
-            {
-                // Do whatever you need to do when _openBags is true
-                bagUseStopwatch.Reset();  // Reset the stopwatch if you want
             }
 
             if (Time.NormalTime > _useTimer + 0.1)

@@ -9,9 +9,8 @@
 		</OptionRadioButtonGroup>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<OptionRadioButtonGroup label="Type" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__CalmingSelection">
-			<RadioButton label="Mezz" value="0"/>
-			<RadioButton label="Stun" value="1"/>
-			<RadioButton label="Calm" value="2"/>
+			<RadioButton label="Stun" value="0"/>
+			<RadioButton label="Calm" value="1"/>
 		</OptionRadioButtonGroup>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>

@@ -103,6 +103,7 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
             _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
             _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
+            _settings.AddVariable("HackedBlindSelection", (int)HackedBlindSelection.None);
 
             _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Mezz);
             _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
@@ -135,9 +136,9 @@ namespace CombatHandler.NanoTechnician
             RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.HackedBlind, HackedBlind, CombatActionPriority.High);
 
             //Calms
-            RegisterSpellProcessor(RelevantNanos.Mezz, Mezz, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.Stun, Stun, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.Calm, Calm, CombatActionPriority.High);
 
@@ -845,57 +846,8 @@ namespace CombatHandler.NanoTechnician
                 || AOESelection.Normal == (AOESelection)_settings["AOESelection"].AsInt32()
                 || fightingTarget == null) { return false; }
 
-            //Task.Factory.StartNew(
-            //    async () =>
-            //    {
-            //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
-            //        await Task.Delay(444);
-            //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
-            //    });
-
-            //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
-            //{
-            //    return true;
-            //}
-
             return true;
         }
-
-        //private bool AIDOTNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("AIDot") || fightingTarget == null || !CanCast(spell)) { return false; }
-
-        //    if (fightingTarget.Health < 80000) { return false; }
-
-        //    if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
-
-        //    return true;
-        //}
-
-        //private bool AIDOTNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (AIDotSelection.None == (AIDotSelection)_settings["AIDot"].AsInt32()) { return false; }
-
-        //    if (AIDotSelection.Target == (AIDotSelection)_settings["AIDot"].AsInt32()
-        //        && fightingTarget != null)
-        //    {
-
-        //        if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    if (AIDotSelection.Boss == (AIDotSelection)_settings["AIDot"].AsInt32())
-        //    {
-        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-        //        if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    return false;
-        //}
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -929,60 +881,7 @@ namespace CombatHandler.NanoTechnician
 
         #region Calms
 
-        private bool Mezz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-            if (CalmingSelection.Mezz != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
-
-            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
-            {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000)
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
-            {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000
-                        && c.FightingTarget != null
-                        && !AttackingMob(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
+        
         private bool Stun(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
@@ -1129,7 +1028,6 @@ namespace CombatHandler.NanoTechnician
 
         }
 
-
         private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
@@ -1158,7 +1056,32 @@ namespace CombatHandler.NanoTechnician
             return false;
         }
 
+        private bool HackedBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
 
+            if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+            if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+
+            if (!_drainTarget.Buffs.Contains(RelevantNanos.HackedBlind))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
+        }
 
         #endregion
 
@@ -1345,6 +1268,10 @@ namespace CombatHandler.NanoTechnician
         {
             None, Target, Boss
         }
+        public enum HackedBlindSelection
+        {
+            None, Target, Boss
+        }
         public enum AOESelection
         {
             None, Normal, VE
@@ -1369,7 +1296,7 @@ namespace CombatHandler.NanoTechnician
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };
 
-            public static readonly int[] Mezz = { 253384, 253382, 253380 };
+            public static readonly int[] HackedBlind = { 253384, 253382, 253380 };
             public const int Stun = 28625;
             public static readonly int[] Calm = { 259364, 259365, 259362, 259363, 259366, 259367, 100443, 100441, 259335, 259336, 100442, 100440 };
 

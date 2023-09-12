@@ -218,12 +218,6 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
             RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
 
-            ////Pet Items
-            //RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);
-            //RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToHitpointsLow, RelevantTrimmers.DivertEnergyToHitpointsHigh }, PetDivertHpTrimmer);
-            //RegisterItemProcessor(new int[] { RelevantTrimmers.DivertEnergyToOffenseLow, RelevantTrimmers.DivertEnergyToOffenseHigh }, PetDivertOffTrimmer);
-            //RegisterItemProcessor(new int[] { RelevantTrimmers.IncreaseAggressivenessLow, RelevantTrimmers.IncreaseAggressivenessHigh }, PetAggressiveTrimmer);
-
             //Pet Trimmers
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness, PetAggressiveTrimmer);
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, PetAggDefTrimmer);

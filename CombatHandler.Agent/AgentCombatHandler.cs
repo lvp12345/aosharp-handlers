@@ -122,9 +122,9 @@ namespace CombatHandler.Agent
             RegisterPerkProcessor(PerkHash.LEProcAgentImprovedFocus, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, LEProc2, CombatActionPriority.Low);
 
-        
-        //Healing
-        RegisterSpellProcessor(RelevantNanos.Healing, Healing, CombatActionPriority.Medium);
+
+            //Healing
+            RegisterSpellProcessor(RelevantNanos.Healing, Healing, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.CompleteHealing, CompleteHealing, CombatActionPriority.High);
 
             //Buffs

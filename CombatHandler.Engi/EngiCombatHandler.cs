@@ -143,22 +143,20 @@ namespace CombatHandler.Engineer
             RegisterSettingsWindow("Engi Handler", "EngineerSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcEngineerReactiveArmor, ReactiveArmor, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, DestructiveTheorem, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerEnergyTransfer, EnergyTransfer, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerEndureBarrage, EndureBarrage, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveSignal, DestructiveSignal, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerSplinterPreservation, SplinterPreservation, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerCushionBlows, CushionBlows, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerReactiveArmor, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveTheorem, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerEnergyTransfer, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerEndureBarrage, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDestructiveSignal, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerSplinterPreservation, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerCushionBlows, LEProc1, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcEngineerAssaultForceRelief, AssaultForceRelief, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerDroneMissiles, DroneMissiles, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerDroneExplosives, DroneExplosives, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerCongenialEncasement, CongenialEncasement, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEngineerPersonalProtection, PersonalProtection, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerAssaultForceRelief, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDroneMissiles, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerDroneExplosives, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerCongenialEncasement, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEngineerPersonalProtection, LEProc2, CombatActionPriority.Low);
 
-            //Perks
-            //RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamArmorBuff);
@@ -886,84 +884,18 @@ namespace CombatHandler.Engineer
 
         #region LE Procs
 
-        private bool CushionBlows(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.CushionBlows != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool DestructiveSignal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.DestructiveSignal != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool DestructiveTheorem(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.DestructiveTheorem != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool EndureBarrage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.EndureBarrage != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool EnergyTransfer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.EnergyTransfer != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool ReactiveArmor(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.ReactiveArmor != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool SplinterPreservation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.SplinterPreservation != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-
-        private bool AssaultForceRelief(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.AssaultForceRelief != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool CongenialEncasement(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.CongenialEncasement != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool DroneExplosives(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.DroneExplosives != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool DroneMissiles(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.DroneMissiles != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool PersonalProtection(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.PersonalProtection != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
@@ -1510,8 +1442,6 @@ namespace CombatHandler.Engineer
 
         #region Misc
 
-
-
         private bool SnareMobExists()
         {
             return DynelManager.NPCs
@@ -1661,16 +1591,6 @@ namespace CombatHandler.Engineer
             public static readonly int[] DivertEnergyToHitpoints = { 88382, 88381 }; // Lock skill Elec. Engi for 5m.
             public static readonly int[] DivertEnergyToOffense = { 88378, 88377 }; // Lock skill Mech. Engi for 5m.
 
-            //public const int IncreaseAggressivenessLow = 154939;
-            //public const int IncreaseAggressivenessHigh = 154940;
-
-            //public const int DivertEnergyToOffenseLow = 88377;
-            //public const int DivertEnergyToOffenseHigh = 88378;
-
-            //public const int PositiveAggressiveDefensiveHigh = 88384;
-
-            //public const int DivertEnergyToHitpointsLow = 88381;
-            //public const int DivertEnergyToHitpointsHigh = 88382;
         }
 
         public enum PetPerkSelection
@@ -1681,7 +1601,6 @@ namespace CombatHandler.Engineer
         {
             None, MastersBidding, SedativeInjectors
         }
-
         public enum BuffingAuraSelection
         {
             None, Armor, Reflect, Damage, Shield
@@ -1690,17 +1609,29 @@ namespace CombatHandler.Engineer
         {
             None, Blind, PetSnare, ShieldRipper
         }
-        public enum ProcType1Selection
-        {
-            ReactiveArmor, DestructiveTheorem, EnergyTransfer, EndureBarrage, DestructiveSignal, SplinterPreservation, CushionBlows
-        }
         public enum InitBuffSelection
         {
             None, Self, Team
         }
+
+        public enum ProcType1Selection
+        {
+            ReactiveArmor = 1146377031,
+            DestructiveTheorem = 1380274768,
+            EnergyTransfer = 1145654611,
+            EndureBarrage = 1146245699,
+            DestructiveSignal = 1095717441,
+            SplinterPreservation = 1162171474,
+            CushionBlows = 1146242392
+        }
+
         public enum ProcType2Selection
         {
-            AssaultForceRelief, DroneMissiles, DroneExplosives, CongenialEncasement, PersonalProtection
+            AssaultForceRelief = 1380995154,
+            DroneMissiles = 1145394248,
+            DroneExplosives = 1112425541,
+            CongenialEncasement = 1381254213,
+            PersonalProtection = 1145395030
         }
 
         #endregion

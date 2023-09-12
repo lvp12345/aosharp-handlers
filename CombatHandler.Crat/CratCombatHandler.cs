@@ -156,20 +156,24 @@ namespace CombatHandler.Bureaucrat
             Game.TeleportEnded += OnZoned;
 
             //LE Procs
+            //RegisterPerkProcessor((PerkHash)_settings["ProcType1Selection"].AsInt32(), LEProc1, CombatActionPriority.Low);
+            //RegisterPerkProcessor((PerkHash)_settings["ProcType2Selection"].AsInt32(), LEProc2, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratFormsInTriplicate, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratSocialServices, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratNextWindowOver, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratWaitInThatQueue, CratLEProc, CombatActionPriority.Low);
+            //type 1
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratFormsInTriplicate, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratSocialServices, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratNextWindowOver, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratWaitInThatQueue, LEProc1, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratMobilityEmbargo, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratWrongWindow, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratTaxAudit, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratLostPaperwork, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratDeflation, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, CratLEProc, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, CratLEProc, CombatActionPriority.Low);
+            //type2
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratMobilityEmbargo, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratWrongWindow, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratTaxAudit, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratLostPaperwork, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratDeflation, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, LEProc2, CombatActionPriority.Low);
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
@@ -938,10 +942,17 @@ namespace CombatHandler.Bureaucrat
 
         #region LE Procs
 
-        protected bool CratLEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()) 
-                && perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
+                return false;
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
                 return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);

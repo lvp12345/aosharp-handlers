@@ -947,86 +947,6 @@ namespace CombatHandler.Bureaucrat
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
-        //private bool FormsinTriplicate(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType1Selection.FormsinTriplicate != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool NextWindowOver(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType1Selection.NextWindowOver != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool PleaseHold(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType1Selection.PleaseHold != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool SocialServices(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType1Selection.SocialServices != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-        //private bool WaitInThatQueue(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType1Selection.WaitInThatQueue != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool Deflation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType2Selection.Deflation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool InflationAdjustment(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType2Selection.InflationAdjustment != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool LostPaperwork(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType2Selection.LostPaperwork != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool MobilityEmbargo(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType2Selection.MobilityEmbargo != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-        //private bool Papercut(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType2Selection.Papercut != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-        //private bool TaxAudit(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType2Selection.TaxAudit != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-        //private bool WrongWindow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (ProcType2Selection.WrongWindow != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-        //    return LEProc(perk, fightingTarget, ref actionTarget);
-        //}
-
         #endregion
 
         #region Exoneration
@@ -1915,7 +1835,7 @@ namespace CombatHandler.Bureaucrat
         {
             None, Target, Area, Boss
         }
-        //
+        
         public enum ProcType1Selection
         {
             PleaseHold = 1280593985,

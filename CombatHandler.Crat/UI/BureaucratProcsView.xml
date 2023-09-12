@@ -1,24 +1,24 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Please Hold (Target Modify Run speed -1500 30s)" value="0"/>
-      <RadioButton label="Forms in Triplicate (Self Hit Nano 20%)" value="1"/>
-      <RadioButton label="Social Services (Target Restrict Action Movement 6s)" value="2"/>
-      <RadioButton label="Next Window Over (Self Hit Nano 10%)" value="3"/>
-      <RadioButton label="Wait In That Queue (Target Modify Run speed -600 15s)" value="4"/>
-    </OptionRadioButtonGroup>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Mobility Embargo (AOE 10m Restrict Action Movement 8s)" value="0"/>
-      <RadioButton label="Wrong Window (Self Modify Nano attack damage 50% 30s)" value="1"/>
-      <RadioButton label="Tax Audit (Target Hit Health Energy -1600 .. -3750)" value="2"/>
-      <RadioButton label="Lost Paperwork (Target Hit Health Melee -264 .. -532)" value="3"/>
-      <RadioButton label="Deflation (Self Modify Nano attack damage 25% 45s)" value="4"/>
-      <RadioButton label="Inflation Adjustment (Self Modify Nano attack damage modifier 10% 60s) " value="5"/>
-      <RadioButton label="Papercut (Target Hit Health Cold -10 .. -23)" value="6"/>
-    </OptionRadioButtonGroup>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-  </BorderView>
+	<BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
+			<RadioButton label="Please Hold (Target Modify Run speed -1500 30s)" value="1280593985"/>
+			<RadioButton label="Forms in Triplicate (Self Hit Nano 20%)" value="1179601236"/>
+			<RadioButton label="Social Services (Target Restrict Action Movement 6s)" value="1514685775"/>
+			<RadioButton label="Next Window Over (Self Hit Nano 10%)" value="1314412356"/>
+			<RadioButton label="Wait In That Queue (Target Modify Run speed -600 15s)" value="1346720323"/>
+		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
+			<RadioButton label="Mobility Embargo (AOE 10m Restrict Action Movement 8s)" value="1314214988"/>
+			<RadioButton label="Wrong Window (Self Modify Nano attack damage 50% 30s)" value="1465014094"/>
+			<RadioButton label="Tax Audit (Target Hit Health Energy -1600 .. -3750)" value="1415070025"/>
+			<RadioButton label="Lost Paperwork (Target Hit Health Melee -264 .. -532)" value="1346717775"/>
+			<RadioButton label="Deflation (Self Modify Nano attack damage 25% 45s)" value="1398166355"/>
+			<RadioButton label="Inflation Adjustment (Self Modify Nano attack damage modifier 10% 60s) " value="1229340996"/>
+			<RadioButton label="Papercut (Target Hit Health Cold -10 .. -23)" value="1346459477"/>
+		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>
 </root>

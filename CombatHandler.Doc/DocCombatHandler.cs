@@ -87,14 +87,16 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
             _settings.AddVariable("NanoTransmission", false);
+
             _settings.AddVariable("HealSelection", (int)HealSelection.SingleTeam);
 
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
-            _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.None);
-            _settings.AddVariable("DOTB", (int)DOTBDebuffTargetSelection.None);
-            _settings.AddVariable("DOTC", (int)DOTCDebuffTargetSelection.None);
 
-            _settings.AddVariable("Nuking", false);
+            _settings.AddVariable("NukingSelection", (int)NukingSelection.Boss);
+
+            _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.Boss);
+            _settings.AddVariable("DOTB", (int)DOTBDebuffTargetSelection.Boss);
+            _settings.AddVariable("DOTC", (int)DOTCDebuffTargetSelection.Boss);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DangerousCulture);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.MassiveVitaePlan);
@@ -112,6 +114,52 @@ namespace CombatHandler.Doctor
 
             RegisterSettingsWindow("Doctor Handler", "DocSettingsView.xml");
 
+            //Healing
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
+
+            //Perks
+            RegisterPerkProcessor(PerkHash.BattlegroupHeal1, BattleGroupHeal1);
+            RegisterPerkProcessor(PerkHash.BattlegroupHeal2, BattleGroupHeal2);
+            RegisterPerkProcessor(PerkHash.BattlegroupHeal3, BattleGroupHeal3);
+            RegisterPerkProcessor(PerkHash.BattlegroupHeal4, BattleGroupHeal4);
+
+            RegisterPerkProcessor(PerkHash.NanoTransmission, NanoTransmission);
+            RegisterPerkProcessor(PerkHash.CloseCall, CloseCall);
+
+            //Hots
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
+
+            RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
+            RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
+
+            //Debuffs
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuff, CombatActionPriority.Medium);
+
+            //Nukes
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Nuke).OrderByStackingOrder(), SingleTargetNuke, CombatActionPriority.Low);
+
+            //Dots
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(), DOTBDebuffTarget, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
+
+            //Items
+            RegisterItemProcessor(new int[] { RelevantItems.SacredTextoftheImmortalOne, RelevantItems.TeachingsoftheImmortalOne }, TOTWHeal);
+
+            //Buffs
+            RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
+
+            //Team Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), HealDeltaBuff);
+
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcDoctorDangerousCulture, LEProc1, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcDoctorAntiseptic, LEProc1, CombatActionPriority.Low);
@@ -126,51 +174,6 @@ namespace CombatHandler.Doctor
             RegisterPerkProcessor(PerkHash.LEProcDoctorAnesthetic, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcDoctorInflammation, LEProc2, CombatActionPriority.Low);
-
-
-            //Perks
-            RegisterPerkProcessor(PerkHash.BattlegroupHeal1, BattleGroupHeal1);
-            RegisterPerkProcessor(PerkHash.BattlegroupHeal2, BattleGroupHeal2);
-            RegisterPerkProcessor(PerkHash.BattlegroupHeal3, BattleGroupHeal3);
-            RegisterPerkProcessor(PerkHash.BattlegroupHeal4, BattleGroupHeal4);
-
-            RegisterPerkProcessor(PerkHash.NanoTransmission, NanoTransmission);
-            RegisterPerkProcessor(PerkHash.CloseCall, CloseCall);
-
-            //Healing
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
-
-            //Hots
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
-
-            //Buffs
-            RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
-
-            //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), HealDeltaBuff);
-
-            RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
-            RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
-
-            //Debuffs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuff, CombatActionPriority.Medium);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Nuke).OrderByStackingOrder(), SingleTargetNuke, CombatActionPriority.Low);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(), DOTBDebuffTarget, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
-
-            //Items
-            RegisterItemProcessor(new int[] { RelevantItems.SacredTextoftheImmortalOne, RelevantItems.TeachingsoftheImmortalOne }, TOTWHeal);
 
             PluginDirectory = pluginDir;
 
@@ -1035,45 +1038,31 @@ namespace CombatHandler.Doctor
 
         #endregion
 
-        #region Debuffs
-
-        private bool InitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-
-            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 10) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 10) { return false; }
-
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
+        #region Nuke
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
 
-            return ToggledTargetDebuff("Nuking", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (NukingSelection.None == (NukingSelection)_settings["NukingSelection"].AsInt32()) { return false; }
+
+            if (NukingSelection.Target == (NukingSelection)_settings["NukingSelection"].AsInt32())
+            {
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (NukingSelection.Boss == (NukingSelection)_settings["NukingSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+            return false;
         }
+
+        #endregion
+
+        #region DOTS
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1157,6 +1146,42 @@ namespace CombatHandler.Doctor
                  && fightingTarget != null)
             {
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
+
+        #endregion
+
+
+        #region Debuffs
+
+        private bool InitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+
+            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+                return AreaDebuff(spell, ref actionTarget);
+
+            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+                if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 10) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
+                && fightingTarget != null)
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 10) { return false; }
 
                 if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
@@ -1385,6 +1410,11 @@ namespace CombatHandler.Doctor
         public enum InitDebuffSelection
         {
             None, Target, Area, Boss
+        }
+
+        public enum NukingSelection
+        {
+            None, Target, Boss
         }
 
         public enum DOTADebuffTargetSelection

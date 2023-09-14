@@ -244,18 +244,20 @@ namespace CombatHandler.Generic
                 RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
 
-                RegisterItemProcessor(new int[] { RelevantGenericItems.RezCan1, RelevantGenericItems.RezCan2 }, RezCan);
+                RegisterItemProcessor(RelevantGenericItems.RezCanIds, RezCan);
+                //RegisterItemProcessor(new int[] { RelevantGenericItems.RezCan1, RelevantGenericItems.RezCan2 }, RezCan);
+
                 RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, RelevantGenericItems.HealthAndNanoStim400 }, HealthAndNanoStim, CombatActionPriority.High);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.PremSitKit, RelevantGenericItems.AreteSitKit, RelevantGenericItems.SitKit1,
-            RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
+                RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.DaTaunterLow, RelevantGenericItems.DaTaunterHigh }, TargetedDamageItem);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
-            RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
+                RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
 
 
                 RegisterItemProcessor(RelevantGenericItems.AmmoBoxArrows, RelevantGenericItems.AmmoBoxArrows, AmmoBoxArrows);
@@ -2152,8 +2154,11 @@ namespace CombatHandler.Generic
 
             public const int GnuffsEternalRiftCrystal = 303179;
 
+            public static int[] RezCanIds = new[] { 301070, 303390 };
+
             public const int RezCan1 = 301070;
             public const int RezCan2 = 303390;
+
             public const int ExpCan1 = 288769;
             public const int ExpCan2 = 303376;
 

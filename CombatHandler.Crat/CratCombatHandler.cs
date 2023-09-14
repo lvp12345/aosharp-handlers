@@ -1565,9 +1565,6 @@ namespace CombatHandler.Bureaucrat
             Pet _attackPet = DynelManager.LocalPlayer.Pets
                 .FirstOrDefault(c => c.Character != null && c.Type == PetType.Attack && canTrimFunc(c));
 
-            //Pet _supportPet = DynelManager.LocalPlayer.Pets
-            //    .FirstOrDefault(c => c.Character != null && c.Type == PetType.Support && canTrimFunc(c));
-
             if (_attackPet != null)
             {
                 actionTarget.ShouldSetTarget = true;
@@ -1576,15 +1573,6 @@ namespace CombatHandler.Bureaucrat
                 updateTime(PetType.Attack);
                 return true;
             }
-
-            //if (_supportPet != null)
-            //{
-            //    actionTarget.ShouldSetTarget = true;
-            //    actionTarget.Target = _supportPet.Character;
-            //    updateStatus(PetType.Support);
-            //    updateTime(PetType.Support);
-            //    return true;
-            //}
 
             return false;
         }

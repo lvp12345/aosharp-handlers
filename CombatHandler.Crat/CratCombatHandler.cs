@@ -190,15 +190,29 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), PsyIntBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), CutRedTape);
 
-            //Buff Aura
-            RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
-            RegisterSpellProcessor(RelevantNanos.CritBuffAuras, BuffCritAura);
-            RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, BuffNanoResistAura);
+            //Buff Aura   AAOAAD, Crit, NanoResist
+            RegisterSpellProcessor(RelevantNanos.AadBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.AAOAAD));
+            RegisterSpellProcessor(RelevantNanos.CritBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+               GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.Crit));
+            RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+               GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.NanoResist));
 
-            //Debuff Aura
-            RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, DebuffNanoDrainAura);
-            RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, DebuffNanoResistAura);
-            RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, DebuffCritAura);
+            //RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
+            //RegisterSpellProcessor(RelevantNanos.CritBuffAuras, BuffCritAura);
+            //RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, BuffNanoResistAura);
+
+            //Debuff Aura  NanoResist, Crit, MaxNano
+            RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.NanoResist));
+            RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.Crit));
+            RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.MaxNano));
+
+            //RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, DebuffNanoDrainAura);
+            //RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, DebuffNanoResistAura);
+            //RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, DebuffCritAura);
 
             //Perks
             RegisterPerkProcessor(PerkHash.Leadership, Leadership);
@@ -1049,50 +1063,76 @@ namespace CombatHandler.Bureaucrat
 
         #region Auras
 
-        private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool GenericAuraBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, BuffingAuraSelection auraType)
         {
-            if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            BuffingAuraSelection currentSetting = (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32();
+
+            if (currentSetting != auraType)
+            {
+                return false;
+            }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool GenericDebuffingAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, DebuffingAuraSelection debuffType)
         {
-            if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+            DebuffingAuraSelection currentSetting = (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32();
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
+            if (currentSetting != debuffType)
+            {
+                return false;
+            }
 
-        private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
+            if(fightingTarget == null) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
+        //private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
+        //    return Buff(spell, spell.Nanoline, ref actionTarget);
+        //}
 
-        private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-                || fightingTarget == null) { return false; }
+        //private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
 
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
+        //    return Buff(spell, spell.Nanoline, ref actionTarget);
+        //}
+
+        //private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
+
+        //    return Buff(spell, spell.Nanoline, ref actionTarget);
+        //}
+
+        //private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+        //        || fightingTarget == null) { return false; }
+
+        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //}
+
+        //private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+        //        || fightingTarget == null) { return false; }
+
+        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //}
+
+        //private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
+        //        || fightingTarget == null) { return false; }
+
+        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //}
 
         #endregion
 

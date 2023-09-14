@@ -136,8 +136,6 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
 
             //Debuffs
-            //RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuff, CombatActionPriority.Medium);
-
             RegisterSpellProcessor(RelevantNanos.InitDebuffs,
                  (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericDotDebuff(spell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
                  CombatActionPriority.Medium);

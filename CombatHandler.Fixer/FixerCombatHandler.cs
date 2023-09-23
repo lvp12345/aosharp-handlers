@@ -653,7 +653,7 @@ namespace CombatHandler.Fixer
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ShortHOT")) { return false; }
+            if (!IsSettingEnabled("ShortHOT") || !InCombat()) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }

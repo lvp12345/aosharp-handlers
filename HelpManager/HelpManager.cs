@@ -117,7 +117,7 @@ namespace HelpManager
 
             Game.OnUpdate += OnUpdate;
 
-            _settings.AddVariable("AutoSit", true);
+            _settings.AddVariable("AutoSit", false);
 
             _settings.AddVariable("MorphPathing", false);
             _settings.AddVariable("BellyPathing", false);
@@ -170,9 +170,11 @@ namespace HelpManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-           
+           if (_settings["AutoSit"].AsBool())
+            {
                 SitAndUseKit();
-
+            }
+                
             if (Time.NormalTime > _zixMorphTimer + 3)
             {
                 if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))

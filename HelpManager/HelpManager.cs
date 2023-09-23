@@ -449,71 +449,78 @@ namespace HelpManager
         private void SitAndUseKit()
         {
             if (InCombat())
-            {
                 return;
-            }
 
             Spell spell = Spell.List.FirstOrDefault(x => x.IsReady);
-
             Item kit = Inventory.Items.FirstOrDefault(x => RelevantItems.Kits.Contains(x.Id));
+            var localPlayer = DynelManager.LocalPlayer;
 
             if (kit == null || spell == null)
-            {
                 return;
+
+            if (!localPlayer.Buffs.Contains(280488) && CanUseSitKit())
+            {
+                HandleMovementState();
             }
 
-            if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
+            if (localPlayer.MovementState == MovementState.Sit && (!_kitTimer.IsRunning || _kitTimer.ElapsedMilliseconds >= 2000))
             {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) &&
-                    DynelManager.LocalPlayer.MovementState != MovementState.Sit)
+                if (localPlayer.NanoPercent < 90 || localPlayer.HealthPercent < 90)
                 {
-                    if (DynelManager.LocalPlayer.NanoPercent < 66 || DynelManager.LocalPlayer.HealthPercent < 66)
-                    {
-                        // Switch to sitting
-                        MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                    }
-                }
-            }
-
-            if (DynelManager.LocalPlayer.MovementState == MovementState.Sit
-           && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
-            {
-                // If the Stopwatch hasn't been started or 2 seconds have elapsed
-                if (!_kitTimer.IsRunning || _kitTimer.ElapsedMilliseconds >= 2000)
-                {
-                    if (DynelManager.LocalPlayer.NanoPercent < 90 || DynelManager.LocalPlayer.HealthPercent < 90)
-                    {
-                        // Use the kit
-                        kit.Use(DynelManager.LocalPlayer, true);
-
-                        // Reset and start the Stopwatch
-                        _kitTimer.Restart();
-                    }
-                }
-            }
-
-            if (DynelManager.LocalPlayer.MovementState == MovementState.Sit
-            && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
-            {
-                if (DynelManager.LocalPlayer.NanoPercent > 66 || DynelManager.LocalPlayer.HealthPercent > 66)
-                {
-                    // Leave sitting if treatment cooldown is active
-                    MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                    kit.Use(localPlayer, true);
+                    _kitTimer.Restart();
                 }
             }
         }
 
-        public static void CancelBuffs(int[] buffsToCancel)
+        private void HandleMovementState()
         {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
+            var localPlayer = DynelManager.LocalPlayer;
+
+            bool shouldSit = localPlayer.NanoPercent < 66 || localPlayer.HealthPercent < 66;
+            bool canSit = !localPlayer.Cooldowns.ContainsKey(Stat.Treatment) && localPlayer.MovementState != MovementState.Sit;
+
+            bool shouldStand = localPlayer.NanoPercent > 66 || localPlayer.HealthPercent > 66;
+            bool onCooldown = localPlayer.Cooldowns.ContainsKey(Stat.Treatment);
+
+            if (shouldSit && canSit)
             {
-                if (buffsToCancel.Contains(buff.Id))
-                    buff.Remove();
+                MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+            }
+            else if (shouldStand && onCooldown)
+            {
+                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
             }
         }
 
-        private bool BeingAttacked()
+        private bool CanUseSitKit()
         {
+            if (!DynelManager.LocalPlayer.IsAlive || DynelManager.LocalPlayer.IsMoving || Game.IsZoning)
+            {
+                return false;
+            }
+
+            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.Id != 297274).ToList();
+            if (sitKits.Any())
+            {
+                return sitKits.OrderBy(x => x.QualityLevel).Any(sitKit => MeetsSkillRequirement(sitKit));
+            }
+
+            return Inventory.Find(297274, out Item premSitKit);
+        }
+
+        private bool MeetsSkillRequirement(Item sitKit)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+            int skillReq = sitKit.QualityLevel > 200 ? (sitKit.QualityLevel % 200 * 3) + 1501 : (int)(sitKit.QualityLevel * 7.5f);
+
+            return localPlayer.GetStat(Stat.FirstAid) >= skillReq || localPlayer.GetStat(Stat.Treatment) >= skillReq;
+        }
+
+        public static bool InCombat()
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
             if (Team.IsInTeam)
             {
                 return DynelManager.Characters
@@ -523,48 +530,20 @@ namespace HelpManager
 
             return DynelManager.Characters
                     .Any(c => c.FightingTarget != null
-                        && c.FightingTarget.Name == DynelManager.LocalPlayer.Name);
+                        && c.FightingTarget.Name == localPlayer.Name)
+                    || localPlayer.GetStat(Stat.NumFightingOpponents) > 0
+                    || Team.IsInCombat()
+                    || localPlayer.FightingTarget != null;
         }
 
-        private bool CanUseSitKit()
+
+        public static void CancelBuffs(int[] buffsToCancel)
         {
-            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.Id != 297274).ToList();
-
-            if (Inventory.Find(297274, out Item premSitKit))
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {
-                if (DynelManager.LocalPlayer.IsAlive && !BeingAttacked() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    && !Team.IsInCombat() && DynelManager.LocalPlayer.FightingTarget == null
-                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning) { return true; }
+                if (buffsToCancel.Contains(buff.Id))
+                    buff.Remove();
             }
-
-            if (!sitKits.Any()) { return false; }
-
-            if (DynelManager.LocalPlayer.IsAlive && !BeingAttacked() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    && !Team.IsInCombat() && DynelManager.LocalPlayer.FightingTarget == null
-                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning)
-            {
-                foreach (Item sitKit in sitKits.OrderBy(x => x.QualityLevel))
-                {
-                    int skillReq = (sitKit.QualityLevel > 200 ? (sitKit.QualityLevel % 200 * 3) + 1501 : (int)(sitKit.QualityLevel * 7.5f));
-
-                    if (DynelManager.LocalPlayer.GetStat(Stat.FirstAid) >= skillReq || DynelManager.LocalPlayer.GetStat(Stat.Treatment) >= skillReq)
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static bool InCombat()
-        {
-            if (Team.IsInTeam)
-            {
-                return DynelManager.Characters
-                    .Any(c => Team.Members.Select(m => m.Name).Contains(c.FightingTarget?.Name));
-            }
-
-            return DynelManager.Characters
-                    .Any(c => c.FightingTarget?.Name == DynelManager.LocalPlayer.Name);
         }
 
         private float PetMaxNanoPool()

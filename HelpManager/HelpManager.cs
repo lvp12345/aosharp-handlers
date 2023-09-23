@@ -170,8 +170,8 @@ namespace HelpManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-
-            SitAndUseKit();
+           
+                SitAndUseKit();
 
             if (Time.NormalTime > _zixMorphTimer + 3)
             {
@@ -446,6 +446,11 @@ namespace HelpManager
 
         private void SitAndUseKit()
         {
+            if (InCombat())
+            {
+                return;
+            }
+
             Spell spell = Spell.List.FirstOrDefault(x => x.IsReady);
 
             Item kit = Inventory.Items.FirstOrDefault(x => RelevantItems.Kits.Contains(x.Id));
@@ -546,6 +551,18 @@ namespace HelpManager
             }
 
             return false;
+        }
+
+        public static bool InCombat()
+        {
+            if (Team.IsInTeam)
+            {
+                return DynelManager.Characters
+                    .Any(c => Team.Members.Select(m => m.Name).Contains(c.FightingTarget?.Name));
+            }
+
+            return DynelManager.Characters
+                    .Any(c => c.FightingTarget?.Name == DynelManager.LocalPlayer.Name);
         }
 
         private float PetMaxNanoPool()

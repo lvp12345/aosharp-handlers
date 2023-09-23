@@ -5,6 +5,7 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic.IPCMessages;
 using SmokeLounge.AOtomation.Messaging.GameData;
+using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
 using System.Collections.Generic;
@@ -286,6 +287,7 @@ namespace CombatHandler.Generic
 
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
+            Network.N3MessageReceived += Network_N3MessageReceived;
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
 
 
@@ -358,20 +360,20 @@ namespace CombatHandler.Generic
             //    _init = false;
             //}
 
-            if (Time.NormalTime > _updateTick + 0.1f)
-            {
-                foreach (SimpleChar player in DynelManager.Characters
-                    .Where(c => c.IsPlayer && c.Profession == (Profession)4294967295 && DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
-                {
-                    Network.Send(new CharacterActionMessage()
-                    {
-                        Action = CharacterActionType.InfoRequest,
-                        Target = player.Identity
-                    });
-                }
+            //if (Time.NormalTime > _updateTick + 0.1f)
+            //{
+            //    foreach (SimpleChar player in DynelManager.Characters
+            //        .Where(c => c.IsPlayer && c.Profession == (Profession)4294967295 && DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
+            //    {
+            //        Network.Send(new CharacterActionMessage()
+            //        {
+            //            Action = CharacterActionType.InfoRequest,
+            //            Target = player.Identity
+            //        });
+            //    }
 
-                _updateTick = Time.NormalTime;
-            }
+            //    _updateTick = Time.NormalTime;
+            //}
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
@@ -391,6 +393,25 @@ namespace CombatHandler.Generic
             }
 
 
+        }
+
+        private void Network_N3MessageReceived(object s, N3Message n3Msg)
+        {
+            if (n3Msg.N3MessageType == N3MessageType.NewLevel)
+            {
+                NewLevelMessage levelMsg = (NewLevelMessage)n3Msg;
+
+                SimpleChar _player = DynelManager.Players.FirstOrDefault(c => c.Identity.Instance == n3Msg.Identity.Instance);
+
+                if (_player != null)
+                {
+                    Network.Send(new CharacterActionMessage()
+                    {
+                        Action = CharacterActionType.InfoRequest,
+                        Target = _player.Identity
+                    });
+                }
+            }
         }
 
 

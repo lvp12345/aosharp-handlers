@@ -140,7 +140,6 @@ namespace CombatHandler.Doctor
                  (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericDotDebuff(spell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
                  CombatActionPriority.Medium);
 
-
             //Nukes
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Nuke).OrderByStackingOrder(), SingleTargetNuke, CombatActionPriority.Low);
 

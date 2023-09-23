@@ -7,6 +7,7 @@ using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static CombatHandler.Bureaucrat.CratCombatHandler;
 using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Bureaucrat
@@ -60,9 +61,6 @@ namespace CombatHandler.Bureaucrat
         };
 
         private static double _ncuUpdateTime;
-
-        PerkHash selectedPerkType1Hash;
-        PerkHash selectedPerkType2Hash;
 
         public CratCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -132,7 +130,8 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("BuffPets", true);
             _settings.AddVariable("WarpPets", false);
 
-            _settings.AddVariable("MastersBidding", false);
+            _settings.AddVariable("SupportPetProcSelection", (int)SupportPetProcSelection.MastersBidding);
+            _settings.AddVariable("AttackPetProcSelection", (int)AttackPetProcSelection.MastersBidding);
 
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.Boss);
             _settings.AddVariable("RedTapeSelection", (int)RedTapeSelection.Boss);
@@ -238,14 +237,29 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetSupportTargetBuff);
             RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetSupportTargetBuff);
+            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetSupportTargetBuff);
 
             RegisterSpellProcessor(RelevantNanos.DroidDamageMatrix, DroidMatrixBuff);
-            RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix, DroidMatrixBuff);
+            //RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix, DroidMatrixBuff);
 
-            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
+            //Pet Procs
+            RegisterSpellProcessor(RelevantNanos.MastersBidding,
+                (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => SupportPetProc(petProc, fightingTarget, ref actionTarget, SupportPetProcSelection.MastersBidding));
+
+
+            RegisterSpellProcessor(RelevantNanos.SedativeInjectors,
+                (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => SupportPetProc(petProc, fightingTarget, ref actionTarget, SupportPetProcSelection.SedativeInjectors));
+
+            RegisterSpellProcessor(RelevantNanos.MastersBidding,
+                (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => AttackPetProc(petProc, fightingTarget, ref actionTarget, AttackPetProcSelection.MastersBidding));
+
+            RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix,
+                (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => AttackPetProc(petProc, fightingTarget, ref actionTarget, AttackPetProcSelection.DroidPressureMatrix));
 
             RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
 
@@ -1563,19 +1577,63 @@ namespace CombatHandler.Bureaucrat
             return false;
         }
 
-        private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+
+        #endregion
+
+        #region Proc
+
+        private bool SupportPetProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, SupportPetProcSelection petProcSelection)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone() || !IsSettingEnabled("MastersBidding")) { return false; }
+            SupportPetProcSelection currentSetting = (SupportPetProcSelection)_settings["SupportPetProcSelection"].AsInt32();
+
+            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
+            {
+                return false;
+            }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;
 
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
+                    && (pet.Type == PetType.Support))
                 {
                     if (spell.IsReady)
+                    {
                         spell.Cast(pet.Character, true);
+                    }
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool AttackPetProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, AttackPetProcSelection petProcSelection)
+        {
+            AttackPetProcSelection currentSetting = (AttackPetProcSelection)_settings["AttackPetProcSelection"].AsInt32();
+
+            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
+            {
+                return false;
+            }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && (pet.Type == PetType.Attack))
+                {
+                    if (spell.IsReady)
+                    {
+                        spell.Cast(pet.Character, true);
+                    }
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    return true;
                 }
             }
 
@@ -1602,9 +1660,15 @@ namespace CombatHandler.Bureaucrat
         {
             if (!IsSettingEnabled(settingName) || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
+            double currentTime = Time.NormalTime;
+            if ((settingName == "DivertHpTrimmer" && currentTime - _lastPetTrimDivertHpTime[PetType.Attack] < DelayBetweenDiverTrims) ||
+                (settingName == "DivertOffTrimmer" && currentTime - _lastPetTrimDivertOffTime[PetType.Attack] < DelayBetweenDiverTrims))
+            {
+                return false;
+            }
+
             Pet _attackPet = DynelManager.LocalPlayer.Pets
                 .FirstOrDefault(c => c.Character != null && c.Type == PetType.Attack && canTrimFunc(c));
-
             if (_attackPet != null)
             {
                 actionTarget.ShouldSetTarget = true;
@@ -1780,7 +1844,10 @@ namespace CombatHandler.Bureaucrat
             public const int LastMinNegotiations = 267535;
             public const int SkilledGunSlinger = 263251;
             public const int GreaterGunSlinger = 263250;
+
             public const int MastersBidding = 268171;
+            public const int SedativeInjectors = 302254;
+
             public const int PuissantVoidInertia = 224129;
             public const int ShacklesofObedience = 82463;
             public const int CompositeMartialProwess = 302158;
@@ -1827,6 +1894,16 @@ namespace CombatHandler.Bureaucrat
             public static readonly int[] PositiveAggressiveDefensive = { 88384, 88383 }; // Mech. Engi
             public static readonly int[] DivertEnergyToHitpoints = { 88382, 88381 }; // Lock skill Elec. Engi for 5m.
             public static readonly int[] DivertEnergyToOffense = { 88378, 88377 }; // Lock skill Mech. Engi for 5m.
+        }
+
+        public enum SupportPetProcSelection
+        {
+            None, MastersBidding, SedativeInjectors
+        }
+
+        public enum AttackPetProcSelection
+        {
+            None, MastersBidding, DroidPressureMatrix
         }
 
         public enum InitDebuffSelection

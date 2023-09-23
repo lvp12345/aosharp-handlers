@@ -7,6 +7,7 @@ using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static CombatHandler.Engineer.EngiCombatHandler;
 using static System.Collections.Specialized.BitVector32;
 
 namespace CombatHandler.Engineer
@@ -22,12 +23,14 @@ namespace CombatHandler.Engineer
         public static bool _syncPets;
 
         //private const float DelayBetweenTrims = 1;
+
         private const float DelayBetweenDiverTrims = 305;
 
         //private bool petTrimmedAggressive = false;
 
         protected Dictionary<PetType, bool> petTrimmedAggressive = new Dictionary<PetType, bool>();
         protected Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
+
         private Dictionary<PetType, bool> petTrimmedHpDiv = new Dictionary<PetType, bool>();
         private Dictionary<PetType, bool> petTrimmedOffDiv = new Dictionary<PetType, bool>();
 
@@ -211,17 +214,36 @@ namespace CombatHandler.Engineer
 
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
 
-            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
-            RegisterSpellProcessor(RelevantNanos.SedativeInjectors, SedativeInjectors);
-
             RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
 
+            //Pet Procs
+            RegisterSpellProcessor(RelevantNanos.MastersBidding,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericPetProc(spell, fightingTarget, ref actionTarget, PetProcSelection.MastersBidding));
+           
+
+            RegisterSpellProcessor(RelevantNanos.SedativeInjectors,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericPetProc(spell, fightingTarget, ref actionTarget, PetProcSelection.SedativeInjectors));
+
             //Pet Perks
-            RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
-            RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
-            RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
+            RegisterPerkProcessor(PerkHash.TauntBox,
+                (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.TauntBox));
+
+            RegisterPerkProcessor(PerkHash.ChaoticEnergy,
+                (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.ChaoticBox));
+
+            RegisterPerkProcessor(PerkHash.SiphonBox,
+                (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.SiphonBox));
+
+            //RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
+            //RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
+            //RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
 
             //Pet Trimmers
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness,
@@ -1069,8 +1091,6 @@ namespace CombatHandler.Engineer
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
-
-
         private bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
@@ -1080,49 +1100,6 @@ namespace CombatHandler.Engineer
                 if (pet.Character == null) continue;
 
                 if (!pet.Character.Buffs.Contains(NanoLine.ShieldoftheObedientServant))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PetProcSelection.MastersBidding != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
-
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
-                {
-                    if (spell.IsReady)
-                        spell.Cast(pet.Character, true);
-                }
-            }
-
-            return false;
-        }
-
-        private bool SedativeInjectors(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PetProcSelection.SedativeInjectors != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
-
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
-                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
@@ -1302,58 +1279,76 @@ namespace CombatHandler.Engineer
 
         #endregion
 
+        #region Proc
+
+        private bool GenericPetProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, PetProcSelection petProcSelection)
+        {
+            PetProcSelection currentSetting = (PetProcSelection)_settings["PetProcSelection"].AsInt32();
+
+            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
+            {
+                return false;
+            }
+
+            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            {
+                if (pet.Character == null) continue;
+
+                if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
+                    && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
+                {
+                    if (spell.IsReady)
+                    {
+                        spell.Cast(pet.Character, true);
+                    }
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = pet.Character;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Perks
 
-        private bool TauntBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool GenericPetPerk(PerkAction perkAction, SimpleChar fightingTarget,
+                     ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, PetPerkSelection petPerkSelection)
         {
-            if (PetPerkSelection.TauntBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
-                || !CanLookupPetsAfterZone()) { return false; }
+            PetPerkSelection currentSetting = (PetPerkSelection)_settings["PetPerkSelection"].AsInt32();
 
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            if (currentSetting == PetPerkSelection.None || currentSetting != petPerkSelection 
+                ||!CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
             {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(RelevantNanos.PerkTauntBox))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
+                return false;
             }
 
-            return false;
-        }
-
-        private bool ChaoticBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PetPerkSelection.ChaoticBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
-                || !CanLookupPetsAfterZone() || actionTarget.Target != null) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
+            int[] relevantNano;
+            switch (currentSetting)
             {
-                if (pet.Character == null) continue;
-
-                if (!pet.Character.Buffs.Contains(RelevantNanos.PerkChaoticBox))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
+                case PetPerkSelection.TauntBox:
+                    relevantNano = RelevantNanos.PerkTauntBox;
+                    break;
+                case PetPerkSelection.ChaoticBox:
+                    relevantNano = RelevantNanos.PerkChaoticBox;
+                    break;
+                case PetPerkSelection.SiphonBox:
+                    relevantNano = RelevantNanos.PerkSiphonBox;
+                    break;
+                default:
+                    return false;
             }
 
-            return false;
-        }
-
-        private bool SiphonBox(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PetPerkSelection.SiphonBox != (PetPerkSelection)_settings["PetPerkSelection"].AsInt32()
-                || !CanLookupPetsAfterZone() || actionTarget.Target != null) { return false; }
-
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null) continue;
+                if (pet.Character == null)
+                {
+                    continue;
+                }
 
-                if (!pet.Character.Buffs.Contains(RelevantNanos.PerkSiphonBox))
+                if (!relevantNano.Any(nano => pet.Character.Buffs.Contains(nano)))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
@@ -1371,8 +1366,18 @@ namespace CombatHandler.Engineer
         private bool PetTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget,
                         string settingName, Func<Pet, bool> canTrimFunc, Action<PetType> updateStatus, Action<PetType> updateTime)
         {
+            
             if (!IsSettingEnabled(settingName) || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
+            
+            double currentTime = Time.NormalTime;
+            if ((settingName == "DivertHpTrimmer" && currentTime - _lastPetTrimDivertHpTime[PetType.Attack] < DelayBetweenDiverTrims) ||
+                (settingName == "DivertOffTrimmer" && currentTime - _lastPetTrimDivertOffTime[PetType.Attack] < DelayBetweenDiverTrims))
+            {
+                return false; 
+            }
+
+            
             Pet _attackPet = DynelManager.LocalPlayer.Pets
                 .FirstOrDefault(c => c.Character != null && c.Type == PetType.Attack && canTrimFunc(c));
 
@@ -1399,6 +1404,7 @@ namespace CombatHandler.Engineer
 
             return false;
         }
+
 
         #endregion
 
@@ -1514,11 +1520,14 @@ namespace CombatHandler.Engineer
         {
             public const int CompositeAttribute = 223372;
             public const int CompositeNano = 223380;
+
             public const int MastersBidding = 268171;
             public const int SedativeInjectors = 302254;
+
             public const int CompositeUtility = 287046;
             public const int CompositeRanged = 223348;
             public const int CompositeRangedSpec = 223364;
+
             public const int SympatheticReactiveCocoon = 154550;
             public const int IntrusiveAuraCancellation = 204372;
             public const int BoostedTendons = 269463;
@@ -1534,6 +1543,7 @@ namespace CombatHandler.Engineer
             public static readonly int[] PerkTauntBox = { 229131, 229130, 229129, 229128, 229127, 229126 };
             public static readonly int[] PerkSiphonBox = { 229657, 229656, 229655, 229654 };
             public static readonly int[] PerkChaoticBox = { 227787 };
+
             public static readonly int[] PetCleanse = { 269870, 269869 };
 
             public static readonly int[] ShieldRippers = { 154725, 154726, 154727, 154728 };

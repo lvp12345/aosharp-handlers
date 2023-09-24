@@ -505,6 +505,8 @@ namespace CombatHandler.NanoTechnician
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region Settings
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -656,6 +658,7 @@ namespace CombatHandler.NanoTechnician
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                #endregion
 
                 #region GlobalBuffing
 
@@ -824,7 +827,6 @@ namespace CombatHandler.NanoTechnician
         #endregion
 
         #region Calms
-
 
         private bool Stun(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1236,6 +1238,16 @@ namespace CombatHandler.NanoTechnician
             None, Target, Boss
         }
 
+        public enum CalmingSelection
+        {
+            Stun, Calm
+        }
+
+        public enum ModeSelection
+        {
+            None, All, Adds
+        }
+
         private static class RelevantNanos
         {
             public const int NanobotAegis = 302074;
@@ -1290,16 +1302,6 @@ namespace CombatHandler.NanoTechnician
 
             public const int WilloftheIllusionist = 274717;
 
-        }
-
-        public enum CalmingSelection
-        {
-            Stun, Calm
-        }
-
-        public enum ModeSelection
-        {
-            None, All, Adds
         }
 
         #endregion

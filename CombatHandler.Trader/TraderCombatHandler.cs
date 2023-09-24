@@ -22,6 +22,7 @@ namespace CombatHandler.Trader
         private static Window _debuffWindow;
         private static Window _healingWindow;
         private static Window _procWindow;
+        private static Window _mezzWindow;
         private static Window _itemWindow;
         private static Window _perkWindow;
 
@@ -29,6 +30,7 @@ namespace CombatHandler.Trader
         private static View _debuffView;
         private static View _healingView;
         private static View _procView;
+        private static View _mezzView;
         private static View _itemView;
         private static View _perkView;
 
@@ -110,6 +112,8 @@ namespace CombatHandler.Trader
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
             _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Combat);
 
+            _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
+
             _settings.AddVariable("Root", false);
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
@@ -144,6 +148,9 @@ namespace CombatHandler.Trader
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
+
+            //Mezz
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz), Mezz, CombatActionPriority.High);
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
@@ -199,7 +206,7 @@ namespace CombatHandler.Trader
             BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
             StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
         }
-        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _mezzWindow, _healingWindow, _buffWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -255,6 +262,23 @@ namespace CombatHandler.Trader
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "TraderBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+            }
+        }
+
+        private void HandleMezzViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_mezzView)) { return; }
+
+                _mezzView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderMezzView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Mezz", XmlViewName = "TraderMezzView" }, _mezzView);
+            }
+            else if (_mezzWindow == null || (_mezzWindow != null && !_mezzWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_mezzWindow, PluginDir, new WindowOptions() { Name = "Mezz", XmlViewName = "TraderMezzView" }, _mezzView, out var container);
+                _mezzWindow = container;
             }
         }
 
@@ -561,7 +585,7 @@ namespace CombatHandler.Trader
                             Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
             }
 
-            #endregion
+
 
             if ((RansackSelection.Area == (RansackSelection)_settings["RansackSelection"].AsInt32()
                 || DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32()
@@ -602,6 +626,12 @@ namespace CombatHandler.Trader
                     healingView.Clicked = HandleHealingViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("MezzView", out Button mezzView))
+                {
+                    mezzView.Tag = SettingsController.settingsWindow;
+                    mezzView.Clicked = HandleMezzViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
@@ -619,6 +649,8 @@ namespace CombatHandler.Trader
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 
@@ -1351,6 +1383,64 @@ namespace CombatHandler.Trader
 
         #endregion
 
+        #region Mezz
+
+        private bool Mezz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
+
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Roots
         private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1518,6 +1608,11 @@ namespace CombatHandler.Trader
         public enum EvadesSelection
         {
             None, Self, Team
+        }
+
+        public enum ModeSelection
+        {
+            None, All, Adds
         }
 
         public enum ProcType1Selection

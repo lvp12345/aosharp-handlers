@@ -118,10 +118,10 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("PetDefensiveNanos", false);
             _settings.AddVariable("PetArmorBuff", false);
 
-            _settings.AddVariable("TauntTrimmer", false);
-            _settings.AddVariable("AggDefTrimmer", false);
+            _settings.AddVariable("TauntTrimmer", true);
+            _settings.AddVariable("AggDefTrimmer", true);
             _settings.AddVariable("DivertHpTrimmer", false);
-            _settings.AddVariable("DivertOffTrimmer", false);
+            _settings.AddVariable("DivertOffTrimmer", true);
 
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
             _settings.AddVariable("TeamArmorBuff", true);
@@ -262,13 +262,14 @@ namespace CombatHandler.Engineer
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
                 PetTrimmer(item, target, ref action, "DivertHpTrimmer", CanDivertHpTrim, petType => {
                     petTrimmedHpDiv[petType] = true;
-                }, petType => _lastTrimTime = Time.NormalTime));
+                }, petType => _lastPetTrimDivertHpTime[petType] = Time.NormalTime));
 
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
                 PetTrimmer(item, target, ref action, "DivertOffTrimmer", CanDivertOffTrim, petType => {
                     petTrimmedOffDiv[petType] = true;
-                }, petType => _lastTrimTime = Time.NormalTime));
+                }, petType => _lastPetTrimDivertOffTime[petType] = Time.NormalTime));
+
 
             ResetTrimmers();
 
@@ -1371,13 +1372,18 @@ namespace CombatHandler.Engineer
 
             
             double currentTime = Time.NormalTime;
-            if ((settingName == "DivertHpTrimmer" && currentTime - _lastPetTrimDivertHpTime[PetType.Attack] < DelayBetweenDiverTrims) ||
-                (settingName == "DivertOffTrimmer" && currentTime - _lastPetTrimDivertOffTime[PetType.Attack] < DelayBetweenDiverTrims))
+            if (
+                (settingName == "DivertHpTrimmer" &&
+                    (currentTime - _lastPetTrimDivertHpTime[PetType.Attack] < DelayBetweenDiverTrims ||
+                    currentTime - _lastPetTrimDivertHpTime[PetType.Support] < DelayBetweenDiverTrims)) ||
+                (settingName == "DivertOffTrimmer" &&
+                    (currentTime - _lastPetTrimDivertOffTime[PetType.Attack] < DelayBetweenDiverTrims ||
+                    currentTime - _lastPetTrimDivertOffTime[PetType.Support] < DelayBetweenDiverTrims))
+               )
             {
-                return false; 
+                return false;
             }
 
-            
             Pet _attackPet = DynelManager.LocalPlayer.Pets
                 .FirstOrDefault(c => c.Character != null && c.Type == PetType.Attack && canTrimFunc(c));
 

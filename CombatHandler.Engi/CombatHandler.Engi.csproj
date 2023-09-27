@@ -82,7 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="UI\EngineerPetCommandView.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\EngineerPerksView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

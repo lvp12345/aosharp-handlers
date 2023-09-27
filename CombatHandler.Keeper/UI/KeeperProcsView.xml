@@ -3,21 +3,21 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Righteous Smite (Damage Boost [Team] +200 60s)" value="0"/>
-      <RadioButton label="Symbiotic Bypass (Evade Buff [Team] +140 Evade ClsC +40 Dodge Ranged +40 Duck Exp 60s) " value="1"/>
-      <RadioButton label="Virtuous Reaper (Damage Boost [Team] +90 60s" value="2"/>
-      <RadioButton label="Ignore The Unrepentant (Evade Buff +110 Evade ClsC +30 Dodge Ranged +30 Duck Exp 60s)" value="3"/>
-      <RadioButton label="Pure Strike (Damage Boost +65 60s)" value="4"/>
-      <RadioButton label="Eschew the Faithless (Self Modify Duck explosives 14 Dodge ranged 14 Evade close 50 60s)" value="5"/>
-      <RadioButton label="Righteous Strike (Self Modify Damage modifier 20 60s)" value="6"/>
+      <RadioButton label="Righteous Smite (Damage Boost [Team] +200 60s)" value="1179013701"/>
+      <RadioButton label="Symbiotic Bypass (Evade Buff [Team] +140 Evade ClsC +40 Dodge Ranged +40 Duck Exp 60s) " value="138053716"/>
+      <RadioButton label="Virtuous Reaper (Damage Boost [Team] +90 60s" value="1179144773"/>
+      <RadioButton label="Ignore The Unrepentant (Evade Buff +110 Evade ClsC +30 Dodge Ranged +30 Duck Exp 60s)" value="1163154517"/>
+      <RadioButton label="Pure Strike (Damage Boost +65 60s)" value="1163088981"/>
+      <RadioButton label="Eschew the Faithless (Self Modify Duck explosives 14 Dodge ranged 14 Evade close 50 60s)" value="1146770517"/>
+      <RadioButton label="Righteous Strike (Self Modify Damage modifier 20 60s)" value="1179931461"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Honor Restored (AAO +50 AAD +120 [Team] 60s)" value="0"/>
-      <RadioButton label="Ambient Purification (Healing [Team] 481-948)" value="1"/>
-      <RadioButton label="Benevolent Barrier (Reflect Shield +4% 600s)" value="2"/>
-      <RadioButton label="Subjugation (AAO +20 AAD +45 [Team] 60s)" value="3"/>
-      <RadioButton label="Faithful Reconstruction (Team Hit Health 42 .. 53)" value="4"/>
+      <RadioButton label="Honor Restored (AAO +50 AAD +120 [Team] 60s)" value="1129202757"/>
+      <RadioButton label="Ambient Purification (Healing [Team] 481-948)" value="1178945877"/>
+      <RadioButton label="Benevolent Barrier (Reflect Shield +4% 600s)" value="1380537172"/>
+      <RadioButton label="Subjugation (AAO +20 AAD +45 [Team] 60s)" value="1380467279"/>
+      <RadioButton label="Faithful Reconstruction (Team Hit Health 42 .. 53)" value="1398232143"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

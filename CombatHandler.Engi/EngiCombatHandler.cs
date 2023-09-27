@@ -174,7 +174,6 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.ShieldRippers, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
                 GenericDebuffingAura(spell, fightingTarget, ref actionTarget, DebuffingAuraSelection.ShieldRipper));
 
-
             //RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
             //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
             //RegisterSpellProcessor(RelevantNanos.ShieldRippers, ShieldRipperAura);

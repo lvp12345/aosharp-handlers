@@ -35,9 +35,9 @@
 				<!-- Maximum QL TextInputView -->
 				<TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="_itemMaxQL" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" />
 				<!-- "Quantity" TextView -->
-				<TextView  name="tvqty" value="Quantity" layout_borders="Rect(5,5,5,0)" />
+				<!--TextView  name="tvqty" value="Quantity" layout_borders="Rect(5,5,5,0)" /-->
 				<!-- Quantity TextInputView -->
-				<TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="tivqty" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" />
+				<!--TextInputView feature_flags="TVF_ACCEPT_TXT_INPUT|TVF_ACCEPT_MOUSE_INPUT|TVF_NUMERIC"  name="tivqty" max_size="Point(30,13)" min_size="Point(30,13)"  layout_borders="Rect(5,5,5,0)" /-->
 
 				<!-- "Global Scope" TextView -->
 				<TextView  name="tvGlobal" value="Global Scope" layout_borders="Rect(5,5,5,5)"/>

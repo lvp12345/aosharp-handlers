@@ -3,21 +3,21 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Aesir Absorption (Self Modify Add All Def. 50 30s)" value="0"/>
-      <RadioButton label="Machete Flurry (Self Modify +Damage 75 60s)" value="1"/>
-      <RadioButton label="Self Preservation (Self Modify ShieldAC 52, Self Modify AbsorbAC 255 60s)" value="2"/>
-      <RadioButton label="Skin Protection (Self Modify ShieldAC 31, Self Modify AbsorbAC 150 60s)" value="3"/>
-      <RadioButton label="Ferocious Hits (Self Modify +Damage 15 30s)" value="4"/>
+      <RadioButton label="Aesir Absorption (Self Modify Add All Def. 50 30s)" value="1397705028"/>
+      <RadioButton label="Machete Flurry (Self Modify +Damage 75 60s)" value="1296254540"/>
+      <RadioButton label="Self Preservation (Self Modify ShieldAC 52, Self Modify AbsorbAC 255 60s)" value="1145197381"/>
+      <RadioButton label="Skin Protection (Self Modify ShieldAC 31, Self Modify AbsorbAC 150 60s)" value="1397049667"/>
+      <RadioButton label="Ferocious Hits (Self Modify +Damage 15 30s)" value="1464618305"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Healing Herbs (Self Hit Health 697 .. 1193)" value="0"/>
-      <RadioButton label="Combustion (Target Hit Health Fire -1294 .. -2415)" value="1"/>
-      <RadioButton label="Charring Blow (Target Hit Health Fire -533 .. -1434)" value="2"/>
-      <RadioButton label="Restore Vigor (Team Hit Health 356 .. 746)" value="3"/>
-      <RadioButton label="Machete Slice (Target Hit Health Fire -137 .. -350)" value="4"/>
-      <RadioButton label="Soothing Herbs (Self Hit Health 186 .. 391)" value="5"/>
-      <RadioButton label="Basic Dressing (Self Hit Health 15 .. 25)" value="6"/>
+      <RadioButton label="Healing Herbs (Self Hit Health 697 .. 1193)" value="1212237890"/>
+      <RadioButton label="Combustion (Target Hit Health Fire -1294 .. -2415)" value="1112822866"/>
+      <RadioButton label="Charring Blow (Target Hit Health Fire -533 .. -1434)" value="1296581199"/>
+      <RadioButton label="Restore Vigor (Team Hit Health 356 .. 746)" value="1279608914"/>
+      <RadioButton label="Machete Slice (Target Hit Health Fire -137 .. -350)" value="1296257868"/>
+      <RadioButton label="Soothing Herbs (Self Hit Health 186 .. 391)" value="1398032450"/>
+      <RadioButton label="Basic Dressing (Self Hit Health 15 .. 25)" value="1347635282"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

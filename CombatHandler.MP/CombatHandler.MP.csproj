@@ -79,7 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="UI\MPPetCommandView.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\MPPerksView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

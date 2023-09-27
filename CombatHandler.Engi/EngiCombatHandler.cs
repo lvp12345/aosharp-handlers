@@ -174,10 +174,6 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.ShieldRippers, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
                 GenericDebuffingAura(spell, fightingTarget, ref actionTarget, DebuffingAuraSelection.ShieldRipper));
 
-            //RegisterSpellProcessor(RelevantNanos.Blinds, BlindAura);
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), SnareAura);
-            //RegisterSpellProcessor(RelevantNanos.ShieldRippers, ShieldRipperAura);
-
             RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
 
             //Buffs
@@ -239,10 +235,6 @@ namespace CombatHandler.Engineer
             RegisterPerkProcessor(PerkHash.SiphonBox,
                 (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                 => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.SiphonBox));
-
-            //RegisterPerkProcessor(PerkHash.TauntBox, TauntBox);
-            //RegisterPerkProcessor(PerkHash.ChaoticEnergy, ChaoticBox);
-            //RegisterPerkProcessor(PerkHash.SiphonBox, SiphonBox);
 
             //Pet Trimmers
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness,
@@ -1216,49 +1208,6 @@ namespace CombatHandler.Engineer
                     return false;
             }
         }
-
-
-        //private bool BlindAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Buffing")) { return false; }
-
-        //    if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
-
-        //    if (DebuffingAuraSelection.Blind != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
-
-        //    return DynelManager.NPCs.Any(c => c.Health > 0
-        //        && c.FightingTarget?.Buffs.Contains(202732) == false && c.FightingTarget?.Buffs.Contains(214879) == false
-        //        && c.FightingTarget?.Buffs.Contains(284620) == false && c.FightingTarget?.Buffs.Contains(216382) == false
-        //        && c.FightingTarget?.IsPet == false
-        //        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f);
-        //}
-        //private bool SnareAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Buffing")) { return false; }
-
-        //    if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
-
-        //    if (DebuffingAuraSelection.PetSnare != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
-
-        //    if (SnareMobExists())
-        //        if (CanCast(spell))
-        //            return spell.IsReady;
-
-        //    return PetBuff(spell, fightingTarget, ref actionTarget);
-        //}
-        //private bool ShieldRipperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
-
-        //    if (DebuffingAuraSelection.ShieldRipper != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()) { return false; }
-
-        //    return DynelManager.NPCs.Any(c => c.Health > 0
-        //        && c.FightingTarget?.Buffs.Contains(202732) == false && c.FightingTarget?.Buffs.Contains(214879) == false
-        //        && c.FightingTarget?.Buffs.Contains(284620) == false && c.FightingTarget?.Buffs.Contains(216382) == false
-        //        && c.FightingTarget?.IsPet == false
-        //        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f);
-        //}
-
 
         private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

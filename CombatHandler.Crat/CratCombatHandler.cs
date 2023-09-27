@@ -283,13 +283,13 @@ namespace CombatHandler.Bureaucrat
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
                 PetTrimmer(item, target, ref action, "DivertHpTrimmer", CanDivertHpTrim, petType => {
                     petTrimmedHpDiv[petType] = true;
-                }, petType => _lastTrimTime = Time.NormalTime));
+                }, petType => _lastPetTrimDivertHpTime[petType] = Time.NormalTime));
 
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
                 PetTrimmer(item, target, ref action, "DivertOffTrimmer", CanDivertOffTrim, petType => {
                     petTrimmedOffDiv[petType] = true;
-                }, petType => _lastTrimTime = Time.NormalTime));
+                }, petType => _lastPetTrimDivertOffTime[petType] = Time.NormalTime));
 
             ResetTrimmers();
 

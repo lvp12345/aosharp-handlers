@@ -199,8 +199,7 @@ namespace CombatHandler.Generic
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            if (Time.NormalTime > _delay + 0.4)
-            {
+            
                 RegisterPerkProcessors();
                 RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
                 RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
@@ -288,8 +287,6 @@ namespace CombatHandler.Generic
                     RegisterSpellProcessor(RelevantGenericNanos.CompositeRanged, CompositeBuff);
                     RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
                 }
-                _delay = Time.NormalTime;
-            }
 
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;

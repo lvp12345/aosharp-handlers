@@ -132,7 +132,7 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("MEBuff", false);
 
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
-            _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
+            _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
 
             _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.ChaoticBox);
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);

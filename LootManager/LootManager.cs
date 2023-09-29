@@ -47,6 +47,7 @@ namespace LootManager
         private static bool _toggle = false;
 
         bool _bagsFull = false;
+        bool _bagsInit = false;
         bool foundBagWithSpace = false;
 
         public override void Run(string pluginDir)
@@ -103,11 +104,11 @@ namespace LootManager
 
         private void MoveItemsToBag()
         {
-            if (!_bagsFull)
+            if (!_bagsFull && !_bagsInit)
             {
-                // Loop through all backpacks to check if their item count is 0
+                // Loop through all backpacks of the right name to check if their item count is 0 (this is either valid OR you have just zoned OR turned on the plugin)
                 // and open them to set the item count if necessary
-                foreach (Backpack backpack in Inventory.Backpacks)
+                foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
                 {
                     if (backpack.Items.Count == 0 && Inventory.Items.Any(item => item.Slot.Type == IdentityType.Inventory && CheckRules(item)))
                     {
@@ -119,13 +120,15 @@ namespace LootManager
                             bag.Use();
                         }
 
-                        // Set _bagsFull to false since there is at least one backpack with free space
-                        _bagsFull = true;
-
+                        // REMOVED THIS BREAK AS YOU COULD BE INITIALISING THE WRONG BAG AND ASSUME YOU HAVE ONE CALLED "LOOT*" WITH FREE SPACE OR THEY ALL COULD BE FULL
+                        // YOU HAVE TO INITIALISE ALL POSSIBLE BAGS!!!!!
                         // No need to check further, break out of the loop
-                        break;
+                       // break;
                     }
                 }
+
+                // Everything will be init for now
+                _bagsInit = true;
             }
 
             // Find a backpack with the name containing "loot" and less than 21 items
@@ -144,6 +147,18 @@ namespace LootManager
                             //_moveLootDelay = Time.NormalTime;
                         }
                     }
+
+                    // No need to check further, break out of the loop - all items moved
+                    break;
+                }
+            }
+            // Finally check if we still have free space in eligible bags
+            _bagsFull = true;
+            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+            {
+                if (backpack.Items.Count < 21)
+                {
+                    _bagsFull = false;
 
                     // No need to check further, break out of the loop
                     break;
@@ -215,6 +230,8 @@ namespace LootManager
                 if (Game.IsZoning)
                 {
                     _bagsFull = false;
+                    // We zoned so bag counts reset
+                    _bagsInit = false;
                     return;
                 }
 

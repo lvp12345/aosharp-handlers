@@ -100,7 +100,6 @@ namespace LootManager
             SaveRules();
             SettingsController.CleanUp();
         }
-
         private void UpdateBackpackInfo(Backpack backpack)
         {
             // Check if the backpack is already in the dictionary
@@ -114,7 +113,15 @@ namespace LootManager
                 if (existingInfo.FreeSlots != newFreeSlots)
                 {
                     existingInfo.FreeSlots = newFreeSlots;
-                    Chat.WriteLine($"Updated backpack info - Name: {existingInfo.Name}, Free Slots: {existingInfo.FreeSlots}");
+                    string itemNames = string.Join(", ", existingInfo.ItemNames);
+                    //Chat.WriteLine($"Updated backpack info - Name: {existingInfo.Name}, Free Slots: {existingInfo.FreeSlots}, Items: {itemNames}");
+                }
+
+                // Clear the existing item names and add the new ones
+                existingInfo.ItemNames.Clear();
+                foreach (var item in backpack.Items)
+                {
+                    existingInfo.ItemNames.Add(item.Name);
                 }
             }
             else
@@ -125,10 +132,19 @@ namespace LootManager
                     Name = backpack.Name,
                     FreeSlots = 21 - backpack.Items.Count,
                 };
+
+                // Store the item names
+                foreach (var item in backpack.Items)
+                {
+                    newInfo.ItemNames.Add(item.Name);
+                }
+
+                string itemNames = string.Join(", ", newInfo.ItemNames);
                 backpackDictionary.Add(backpack.Identity, newInfo);
-                Chat.WriteLine($"Added backpack info - Name: {newInfo.Name}, Free Slots: {newInfo.FreeSlots}");
+                //Chat.WriteLine($"Added backpack info - Name: {newInfo.Name}, Free Slots: {newInfo.FreeSlots}, Items: {itemNames}");
             }
         }
+
         private void MoveItemsToBag()
         {
             if (!_bagsFull && !_bagsInit)
@@ -167,7 +183,7 @@ namespace LootManager
                         {
                             // Move the item to the backpack with free space
                             itemtomove.MoveToContainer(backpack);
-                            Chat.WriteLine($"Moved item {itemtomove.Name} to backpack {backpack.Name}");
+                            //Chat.WriteLine($"Moved item {itemtomove.Name} to backpack {backpack.Name}");
                         }
                     }
 
@@ -610,19 +626,23 @@ namespace LootManager
     {
         public string Name { get; set; }
         public int FreeSlots { get; set; }
+        public List<string> ItemNames { get; set; }
 
         public BackpackInfo()
         {
             Name = string.Empty;
             FreeSlots = 0;
+            ItemNames = new List<string>();
         }
 
         public BackpackInfo(string name, int freeSlots)
         {
             Name = name;
             FreeSlots = freeSlots;
+            ItemNames = new List<string>();
         }
     }
+
 
     public class RemoveItemModel
     {

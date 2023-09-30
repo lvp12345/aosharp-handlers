@@ -129,7 +129,6 @@ namespace LootManager
                 Chat.WriteLine($"Added backpack info - Name: {newInfo.Name}, Free Slots: {newInfo.FreeSlots}");
             }
         }
-
         private void MoveItemsToBag()
         {
             if (!_bagsFull && !_bagsInit)
@@ -155,7 +154,6 @@ namespace LootManager
                 // Everything will be init for now
                 _bagsInit = true;
             }
-
             // Find a backpack with the name containing "loot" and less than 21 items
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
@@ -197,7 +195,6 @@ namespace LootManager
                 }
             }
         }
-
         private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
 

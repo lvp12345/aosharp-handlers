@@ -5,16 +5,13 @@ using System.Linq;
 using AOSharp.Common.GameData;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
-using AOSharp.Core.IPC;
 using AOSharp.Common.GameData.UI;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using System.Data;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
 using AOSharp.Core.Misc;
-using System.Runtime;
 
 namespace LootManager
 {
@@ -36,6 +33,8 @@ namespace LootManager
         public static List<Rule> Rules;
 
         private Dictionary<Vector3, Identity> openedCorpses = new Dictionary<Vector3, Identity>();
+
+        private Dictionary<Identity, BackpackInfo> backpackDictionary = new Dictionary<Identity, BackpackInfo>();
 
         protected Settings _settings;
         public static Settings _settingsItems;
@@ -101,13 +100,56 @@ namespace LootManager
             SaveRules();
             SettingsController.CleanUp();
         }
+        private void UpdateBackpackInfo(Backpack backpack)
+        {
+            // Check if the backpack is already in the dictionary
+            if (backpackDictionary.ContainsKey(backpack.Identity))
+            {
+                // Update the existing entry with new information
+                var existingInfo = backpackDictionary[backpack.Identity];
+                int newFreeSlots = 21 - backpack.Items.Count;
+
+                // Check if the free slots count has changed
+                if (existingInfo.FreeSlots != newFreeSlots)
+                {
+                    existingInfo.FreeSlots = newFreeSlots;
+                    string itemNames = string.Join(", ", existingInfo.ItemNames);
+                    //Chat.WriteLine($"Updated backpack info - Name: {existingInfo.Name}, Free Slots: {existingInfo.FreeSlots}, Items: {itemNames}");
+                }
+
+                // Clear the existing item names and add the new ones
+                existingInfo.ItemNames.Clear();
+                foreach (var item in backpack.Items)
+                {
+                    existingInfo.ItemNames.Add(item.Name);
+                }
+            }
+            else
+            {
+                // Add a new entry for the backpack
+                var newInfo = new BackpackInfo
+                {
+                    Name = backpack.Name,
+                    FreeSlots = 21 - backpack.Items.Count,
+                };
+
+                // Store the item names
+                foreach (var item in backpack.Items)
+                {
+                    newInfo.ItemNames.Add(item.Name);
+                }
+
+                string itemNames = string.Join(", ", newInfo.ItemNames);
+                backpackDictionary.Add(backpack.Identity, newInfo);
+                //Chat.WriteLine($"Added backpack info - Name: {newInfo.Name}, Free Slots: {newInfo.FreeSlots}, Items: {itemNames}");
+            }
+        }
 
         private void MoveItemsToBag()
         {
             if (!_bagsFull && !_bagsInit)
             {
-                // Loop through all backpacks of the right name to check if their item count is 0 (this is either valid OR you have just zoned OR turned on the plugin)
-                // and open them to set the item count if necessary
+                // Loop through all backpacks of the right name to check if their item count is 0
                 foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
                 {
                     if (backpack.Items.Count == 0 && Inventory.Items.Any(item => item.Slot.Type == IdentityType.Inventory && CheckRules(item)))
@@ -119,18 +161,15 @@ namespace LootManager
                             bag.Use();
                             bag.Use();
                         }
-
-                        // REMOVED THIS BREAK AS YOU COULD BE INITIALISING THE WRONG BAG AND ASSUME YOU HAVE ONE CALLED "LOOT*" WITH FREE SPACE OR THEY ALL COULD BE FULL
-                        // YOU HAVE TO INITIALISE ALL POSSIBLE BAGS!!!!!
-                        // No need to check further, break out of the loop
-                       // break;
                     }
+
+                    // Add or update backpack information in the dictionary
+                    UpdateBackpackInfo(backpack);
                 }
 
                 // Everything will be init for now
                 _bagsInit = true;
             }
-
             // Find a backpack with the name containing "loot" and less than 21 items
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {
@@ -144,14 +183,18 @@ namespace LootManager
                         {
                             // Move the item to the backpack with free space
                             itemtomove.MoveToContainer(backpack);
-                            //_moveLootDelay = Time.NormalTime;
+                            //Chat.WriteLine($"Moved item {itemtomove.Name} to backpack {backpack.Name}");
                         }
                     }
+
+                    // Update the dictionary with the new free slot count
+                    UpdateBackpackInfo(backpack);
 
                     // No need to check further, break out of the loop - all items moved
                     break;
                 }
             }
+
             // Finally check if we still have free space in eligible bags
             _bagsFull = true;
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
@@ -160,13 +203,14 @@ namespace LootManager
                 {
                     _bagsFull = false;
 
+                    // Update the dictionary with the new free slot count
+                    UpdateBackpackInfo(backpack);
+
                     // No need to check further, break out of the loop
                     break;
                 }
             }
-
         }
-
         private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
 
@@ -270,20 +314,7 @@ namespace LootManager
                 {
                     if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                     {
-                        //if (SettingsController.settingsWindow.FindView("chkOnOff", out Checkbox chkOnOff))
-                        //{
-                        //    chkOnOff.SetValue(Looting);
-                        //    if (chkOnOff.Toggled == null)
-                        //        chkOnOff.Toggled += chkOnOff_Toggled;
-                        //}
-
-                        //if (SettingsController.settingsWindow.FindView("chkDel", out Checkbox chkDel))
-                        //{
-                        //    chkDel.SetValue(Delete);
-                        //    if (chkDel.Toggled == null)
-                        //        chkDel.Toggled += chkDel_Toggled;
-                        //}
-
+                       
                         if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
                         {
                             if (addbut.Clicked == null)
@@ -320,20 +351,6 @@ namespace LootManager
                 }
             }
         }
-
-        //private void chkDel_Toggled(object sender, bool toggle)
-        //{
-        //    Checkbox chk = (Checkbox)sender;
-        //    Delete = toggle;
-        //    Config.Delete = Delete;
-        //    toggle = Config.Delete;
-        //}
-
-        //private void chkOnOff_Toggled(object sender, bool toggle)
-        //{
-        //    Checkbox chk = (Checkbox)sender;
-        //    Looting = toggle;
-        //}
 
         private void InfoView(object s, ButtonBase button)
         {
@@ -555,21 +572,6 @@ namespace LootManager
             File.WriteAllText(filename, rulesJson);
         }
 
-
-        //public bool CheckRules(Item item)
-        //{
-        //    foreach (Rule rule in Rules)
-        //    {
-        //        if (
-        //            item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
-        //            item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
-        //            item.QualityLevel <= Convert.ToInt32(rule.Hql))
-        //            return true;
-
-        //    }
-        //    return false;
-        //}
-
         public bool CheckRules(Item item)
         {
             foreach (Rule rule in Rules)
@@ -596,7 +598,6 @@ namespace LootManager
             return false;
         }
 
-
         public static int GetLineNumber(Exception ex)
         {
             var lineNumber = 0;
@@ -620,6 +621,28 @@ namespace LootManager
         [FieldOffset(0x9C)]
         public IntPtr Name;
     }
+
+    public class BackpackInfo
+    {
+        public string Name { get; set; }
+        public int FreeSlots { get; set; }
+        public List<string> ItemNames { get; set; }
+
+        public BackpackInfo()
+        {
+            Name = string.Empty;
+            FreeSlots = 0;
+            ItemNames = new List<string>();
+        }
+
+        public BackpackInfo(string name, int freeSlots)
+        {
+            Name = name;
+            FreeSlots = freeSlots;
+            ItemNames = new List<string>();
+        }
+    }
+
 
     public class RemoveItemModel
     {

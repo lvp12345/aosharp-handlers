@@ -158,9 +158,9 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.CorporateLeadership, RootReducer);
 
             //Calms
-            RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, SLCalm, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.AOECalms, AOECalm, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.RkCalms, RKCalm, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, Calm, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AOECalms, Calm, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.RkCalms, Calm, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
             //RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
 
@@ -197,10 +197,6 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
                GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.NanoResist));
 
-            //RegisterSpellProcessor(RelevantNanos.AadBuffAuras, BuffAAOAADAura);
-            //RegisterSpellProcessor(RelevantNanos.CritBuffAuras, BuffCritAura);
-            //RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, BuffNanoResistAura);
-
             //Debuff Aura  NanoResist, Crit, MaxNano
             RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
                 GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.NanoResist));
@@ -208,10 +204,6 @@ namespace CombatHandler.Bureaucrat
                 GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.Crit));
             RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
                 GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.MaxNano));
-
-            //RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, DebuffNanoDrainAura);
-            //RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, DebuffNanoResistAura);
-            //RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, DebuffCritAura);
 
             //Perks
             RegisterPerkProcessor(PerkHash.Leadership, Leadership);
@@ -329,7 +321,6 @@ namespace CombatHandler.Bureaucrat
             BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
             StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
 
-            //Network.N3MessageSent += Network_N3MessageSent;
         }
 
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _petCommandWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };
@@ -713,6 +704,8 @@ namespace CombatHandler.Bureaucrat
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -896,6 +889,8 @@ namespace CombatHandler.Bureaucrat
                     IPCChannel.Broadcast(new PetSyncOnMessag());
                     syncPetsOnEnabled();
                 }
+
+                #endregion
 
 
                 #region GlobalBuffing
@@ -1254,164 +1249,48 @@ namespace CombatHandler.Bureaucrat
 
         #region Calms
 
-        private bool SLCalm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Calm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            
+            CalmingSelection calmingSelection = (CalmingSelection)_settings["CalmingSelection"].AsInt32();
+            ModeSelection modeSelection = (ModeSelection)_settings["ModeSelection"].AsInt32();
 
-            if (CalmingSelection.SL != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
-
-            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            if (calmingSelection != CalmingSelection.SL && calmingSelection != CalmingSelection.AOE && calmingSelection != CalmingSelection.RK)
             {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000)
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
+                return false;
             }
 
-            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            if (!CanCast(spell) || modeSelection == ModeSelection.None)
             {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000
-                        && c.FightingTarget != null
+                return false;
+            }
+
+            IEnumerable<SimpleChar> targets = DynelManager.NPCs
+                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                    && c.Health > 0
+                    && c.IsInLineOfSight
+                    && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                    && c.MaxHealth < 1000000);
+
+            if (modeSelection == ModeSelection.Adds)
+            {
+                targets = targets
+                    .Where(c => c.FightingTarget != null
                         && !AttackingMob(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
+                        && AttackingTeam(c));
             }
 
-            return false;
-        }
+            SimpleChar target = targets
+                .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                .ThenBy(c => c.Health)
+                .FirstOrDefault();
 
-        private bool AOECalm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-            if (CalmingSelection.AOE != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
-
-            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            if (target != null)
             {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000)
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
-            {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000
-                        && c.FightingTarget != null
-                        && !AttackingMob(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool RKCalm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
-            if (CalmingSelection.RK != (CalmingSelection)_settings["CalmingSelection"].AsInt32()
-                || !CanCast(spell) || ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
-
-            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
-            {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000)
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
-            {
-                SimpleChar target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.MaxHealth < 1000000
-                        && c.FightingTarget != null
-                        && !AttackingMob(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
             }
 
             return false;

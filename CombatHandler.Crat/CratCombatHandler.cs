@@ -169,12 +169,37 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.ShacklesofObedience, Snare, CombatActionPriority.High);
 
             //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), InitDebuffs, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs, CombatActionPriority.Medium);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"), CombatActionPriority.Medium);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(), RedTape, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(), IntensifyStress, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff,
+            (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+            => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
+            CombatActionPriority.Medium);
+
+            RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff,
+           (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+           => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
+           CombatActionPriority.Medium);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "RedTapeSelection"), CombatActionPriority.Medium);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "IntensifyStressSelection"), CombatActionPriority.Medium);
+
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), 
+            //    InitDebuffs, CombatActionPriority.Medium);
+            //RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs, CombatActionPriority.Medium);
+            //RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs, CombatActionPriority.Medium);
+
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(), 
+            //    RedTape, CombatActionPriority.Medium);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(), 
+            //    IntensifyStress, CombatActionPriority.Medium);
 
             //Nukes
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
@@ -261,25 +286,29 @@ namespace CombatHandler.Bureaucrat
             //Pet Trimmers
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "TauntTrimmer", CanTauntTrim, petType => {
+                PetTrimmer(item, target, ref action, "TauntTrimmer", CanTauntTrim, petType =>
+                {
                     petTrimmedAggressive[petType] = true;
                 }, petType => _lastTrimTime = Time.NormalTime));
 
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "AggDefTrimmer", CanAggDefTrim, petType => {
+                PetTrimmer(item, target, ref action, "AggDefTrimmer", CanAggDefTrim, petType =>
+                {
                     petTrimmedAggDef[petType] = true;
                 }, petType => _lastTrimTime = Time.NormalTime));
 
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpoints,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "DivertHpTrimmer", CanDivertHpTrim, petType => {
+                PetTrimmer(item, target, ref action, "DivertHpTrimmer", CanDivertHpTrim, petType =>
+                {
                     petTrimmedHpDiv[petType] = true;
                 }, petType => _lastPetTrimDivertHpTime[petType] = Time.NormalTime));
 
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "DivertOffTrimmer", CanDivertOffTrim, petType => {
+                PetTrimmer(item, target, ref action, "DivertOffTrimmer", CanDivertOffTrim, petType =>
+                {
                     petTrimmedOffDiv[petType] = true;
                 }, petType => _lastPetTrimDivertOffTime[petType] = Time.NormalTime));
 
@@ -1093,7 +1122,7 @@ namespace CombatHandler.Bureaucrat
                 return false;
             }
 
-            if(fightingTarget == null) { return false; }
+            if (fightingTarget == null) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -1147,77 +1176,101 @@ namespace CombatHandler.Bureaucrat
 
         #region Debuffs
 
-        private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
         {
-            if (InitDebuffSelection.None == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()) { return false; }
+            int settingValue = _settings[debuffType].AsInt32();
 
-            if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+            if (settingValue == 0) return false;
+
+            if (settingValue == 1 && fightingTarget != null)
             {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
             }
 
-            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
+            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);
 
-            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && fightingTarget != null)
+            if (settingValue == 3 && fightingTarget != null)
             {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                if (fightingTarget.MaxHealth < 1000000) return false;
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
             }
 
             return false;
         }
 
-        private bool RedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (RedTapeSelection.None == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()) { return false; }
+        //private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (InitDebuffSelection.None == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()) { return false; }
 
-            if (RedTapeSelection.Boss == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+        //    if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+        //    {
+        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
 
-            if (RedTapeSelection.Area == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
+        //    if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
+        //        return AreaDebuff(spell, ref actionTarget);
 
-            if (RedTapeSelection.Target == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+        //    if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
+        //        && fightingTarget != null)
+        //    {
+        //        if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
-        private bool IntensifyStress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IntensifyStressSelection.None == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()) { return false; }
+        //private bool RedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (RedTapeSelection.None == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()) { return false; }
 
-            if (IntensifyStressSelection.Boss == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+        //    if (RedTapeSelection.Boss == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
+        //    {
+        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
 
-            if (IntensifyStressSelection.Target == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+        //    if (RedTapeSelection.Area == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
+        //        return AreaDebuff(spell, ref actionTarget);
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+        //    if (RedTapeSelection.Target == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()
+        //        && fightingTarget != null)
+        //    {
+        //        if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
-            return false;
-        }
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
+
+        //    return false;
+        //}
+
+        //private bool IntensifyStress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IntensifyStressSelection.None == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()) { return false; }
+
+        //    if (IntensifyStressSelection.Boss == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32())
+        //    {
+        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
+
+        //    if (IntensifyStressSelection.Target == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()
+        //        && fightingTarget != null)
+        //    {
+        //        if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
+
+        //    return false;
+        //}
 
         #endregion
 
@@ -1251,7 +1304,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool Calm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            
+
             CalmingSelection calmingSelection = (CalmingSelection)_settings["CalmingSelection"].AsInt32();
             ModeSelection modeSelection = (ModeSelection)_settings["ModeSelection"].AsInt32();
 
@@ -1798,7 +1851,7 @@ namespace CombatHandler.Bureaucrat
         {
             None, Target, Area, Boss
         }
-        
+
         public enum ProcType1Selection
         {
             PleaseHold = 1280593985,

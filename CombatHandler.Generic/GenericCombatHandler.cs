@@ -245,7 +245,6 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
 
             RegisterItemProcessor(RelevantGenericItems.RezCanIds, RezCan);
-            //RegisterItemProcessor(new int[] { RelevantGenericItems.RezCan1, RelevantGenericItems.RezCan2 }, RezCan);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
@@ -671,6 +670,34 @@ namespace CombatHandler.Generic
 
         #endregion
 
+        #region Debuffs
+
+        public bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
+        {
+            int settingValue = _settings[debuffType].AsInt32();
+
+            if (settingValue == 0) return false;
+
+            if (settingValue == 1 && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);
+
+            if (settingValue == 3 && fightingTarget != null)
+            {
+                if (fightingTarget.MaxHealth < 1000000) return false;
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Extensions
 
         #region Comps
@@ -838,6 +865,17 @@ namespace CombatHandler.Generic
             }
 
             return false;
+        }
+
+        public bool GenericSelectionBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        {
+            int settingValue = _settings[selectionSetting].AsInt32();
+
+            if (settingValue == 0) return false;
+
+            if (settingValue == 2) return GenericTeamBuff(spell, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #endregion

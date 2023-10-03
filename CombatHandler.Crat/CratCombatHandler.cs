@@ -191,16 +191,6 @@ namespace CombatHandler.Bureaucrat
                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "IntensifyStressSelection"), CombatActionPriority.Medium);
 
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(), 
-            //    InitDebuffs, CombatActionPriority.Medium);
-            //RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff, InitDebuffs, CombatActionPriority.Medium);
-            //RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff, InitDebuffs, CombatActionPriority.Medium);
-
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(), 
-            //    RedTape, CombatActionPriority.Medium);
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(), 
-            //    IntensifyStress, CombatActionPriority.Medium);
-
             //Nukes
             RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
@@ -209,6 +199,10 @@ namespace CombatHandler.Bureaucrat
             RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
 
             //Team Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericSelectionBuff(spell, fightingTarget, ref actionTarget, "InitBuffSelection"));
+
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
             RegisterSpellProcessor(RelevantNanos.PistolBuffs, PistolTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), PsyIntBuff);
@@ -1073,14 +1067,6 @@ namespace CombatHandler.Bureaucrat
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
         private bool PsyIntBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("NeuronalStimulatorTeam"))
@@ -1095,6 +1081,14 @@ namespace CombatHandler.Bureaucrat
                 return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
         #endregion
@@ -1170,106 +1164,6 @@ namespace CombatHandler.Bureaucrat
         //        || fightingTarget == null) { return false; }
 
         //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //}
-
-        #endregion
-
-        #region Debuffs
-
-        private bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
-        {
-            int settingValue = _settings[debuffType].AsInt32();
-
-            if (settingValue == 0) return false;
-
-            if (settingValue == 1 && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
-                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);
-
-            if (settingValue == 3 && fightingTarget != null)
-            {
-                if (fightingTarget.MaxHealth < 1000000) return false;
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
-                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
-        //private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (InitDebuffSelection.None == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()) { return false; }
-
-        //    if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-        //    {
-        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-        //        return AreaDebuff(spell, ref actionTarget);
-
-        //    if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-        //        && fightingTarget != null)
-        //    {
-        //        if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    return false;
-        //}
-
-        //private bool RedTape(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (RedTapeSelection.None == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()) { return false; }
-
-        //    if (RedTapeSelection.Boss == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
-        //    {
-        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    if (RedTapeSelection.Area == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32())
-        //        return AreaDebuff(spell, ref actionTarget);
-
-        //    if (RedTapeSelection.Target == (RedTapeSelection)_settings["RedTapeSelection"].AsInt32()
-        //        && fightingTarget != null)
-        //    {
-        //        if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    return false;
-        //}
-
-        //private bool IntensifyStress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IntensifyStressSelection.None == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()) { return false; }
-
-        //    if (IntensifyStressSelection.Boss == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32())
-        //    {
-        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    if (IntensifyStressSelection.Target == (IntensifyStressSelection)_settings["IntensifyStressSelection"].AsInt32()
-        //        && fightingTarget != null)
-        //    {
-        //        if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    return false;
         //}
 
         #endregion
@@ -1396,8 +1290,6 @@ namespace CombatHandler.Bureaucrat
 
         //    return false;
         //}
-
-
 
         #endregion
 

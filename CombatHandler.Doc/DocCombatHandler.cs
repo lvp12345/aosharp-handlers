@@ -168,6 +168,7 @@ namespace CombatHandler.Doctor
 
             //Buffs
             RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),

@@ -149,20 +149,17 @@ namespace LootManager
         {
             if (!_bagsFull && !_bagsInit)
             {
+                // Open all backpacks to set the item count
+                List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
+                foreach (Item bag in bags)
+                {
+                    bag.Use();
+                    bag.Use();
+                }
+
                 // Loop through all backpacks of the right name to check if their item count is 0
                 foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
                 {
-                    if (backpack.Items.Count == 0 && Inventory.Items.Any(item => item.Slot.Type == IdentityType.Inventory && CheckRules(item)))
-                    {
-                        // Open all backpacks to set the item count
-                        List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
-                        foreach (Item bag in bags)
-                        {
-                            bag.Use();
-                            bag.Use();
-                        }
-                    }
-
                     // Add or update backpack information in the dictionary
                     UpdateBackpackInfo(backpack);
                 }
@@ -170,6 +167,7 @@ namespace LootManager
                 // Everything will be init for now
                 _bagsInit = true;
             }
+
             // Find a backpack with the name containing "loot" and less than 21 items
             foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
             {

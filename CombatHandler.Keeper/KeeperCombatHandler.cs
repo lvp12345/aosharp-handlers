@@ -87,7 +87,6 @@ namespace CombatHandler.Keeper
 
             RegisterPerkProcessors();
 
-
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousSmite, LEProc1, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcKeeperSymbioticBypass, LEProc1, CombatActionPriority.Low);
@@ -102,8 +101,6 @@ namespace CombatHandler.Keeper
             RegisterPerkProcessor(PerkHash.LEProcKeeperBenevolentBarrier, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcKeeperSubjugation, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcKeeperFaithfulReconstruction, LEProc2, CombatActionPriority.Low);
-
-
 
             //Anti-Fear
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), RecastAntiFear);
@@ -382,6 +379,8 @@ namespace CombatHandler.Keeper
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -508,6 +507,8 @@ namespace CombatHandler.Keeper
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 

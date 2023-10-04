@@ -137,7 +137,8 @@ namespace CombatHandler.Doctor
 
             //Debuffs
             RegisterSpellProcessor(RelevantNanos.InitDebuffs,
-                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => EnumDebuff(spell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
+                 (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                 => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
                  CombatActionPriority.Medium);
 
             //Nukes
@@ -145,17 +146,20 @@ namespace CombatHandler.Doctor
 
             //Dots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => EnumDebuff(spell, fightingTarget, ref actionTarget, "DOTA"),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DOTA"),
                 CombatActionPriority.Medium
             );
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => EnumDebuff(spell, fightingTarget, ref actionTarget, "DOTB"),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DOTB"),
                 CombatActionPriority.Medium
             );
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => EnumDebuff(spell, fightingTarget, ref actionTarget, "DOTC"),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DOTC"),
                 CombatActionPriority.Medium
             );
 
@@ -167,19 +171,24 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericSelectionBuff(spell, fightingTarget, ref actionTarget, "InitBuffSelection"));
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuffSelection"));
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericSelectionBuff(spell, fightingTarget, ref actionTarget, "NanoResistSelection"));
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NanoResistSelection"));
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericSelectionBuff(spell, fightingTarget, ref actionTarget, "HealDeltaBuffSelection"));
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "HealDeltaBuffSelection"));
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericSelectionBuff(spell, fightingTarget, ref actionTarget, "TreatmentBuffSelection"));
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "TreatmentBuffSelection"));
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericSelectionBuff(spell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
 
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcDoctorDangerousCulture, LEProc1, CombatActionPriority.Low);

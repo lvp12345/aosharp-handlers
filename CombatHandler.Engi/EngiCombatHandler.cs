@@ -22,11 +22,7 @@ namespace CombatHandler.Engineer
 
         public static bool _syncPets;
 
-        //private const float DelayBetweenTrims = 1;
-
         private const float DelayBetweenDiverTrims = 305;
-
-        //private bool petTrimmedAggressive = false;
 
         protected Dictionary<PetType, bool> petTrimmedAggressive = new Dictionary<PetType, bool>();
         protected Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
@@ -665,6 +661,8 @@ namespace CombatHandler.Engineer
             CancelHostileAuras(RelevantNanos.Blinds);
             CancelHostileAuras(RelevantNanos.ShieldRippers);
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -846,6 +844,8 @@ namespace CombatHandler.Engineer
                     Chat.WriteLine("SyncPets enabled.");
                     syncPetsOnEnabled();
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 

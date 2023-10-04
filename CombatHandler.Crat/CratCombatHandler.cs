@@ -200,7 +200,7 @@ namespace CombatHandler.Bureaucrat
 
             //Team Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericSelectionBuff(spell, fightingTarget, ref actionTarget, "InitBuffSelection"));
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuffSelection"));
 
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);

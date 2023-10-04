@@ -867,15 +867,15 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public bool GenericSelectionBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        public bool GenericSelectionBuff(Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
             int settingValue = _settings[selectionSetting].AsInt32();
 
             if (settingValue == 0) return false;
 
-            if (settingValue == 2) return GenericTeamBuff(spell, ref actionTarget);
+            if (settingValue == 2) return GenericTeamBuff(buffSpell, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return Buff(buffSpell, buffSpell.Nanoline, ref actionTarget);
         }
 
         #endregion

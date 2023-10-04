@@ -75,11 +75,11 @@ namespace CombatHandler.Fixer
             _settings.AddVariable("ShortHOT", false);
             _settings.AddVariable("LongHOTSelection", (int)LongHOTSelection.None);
 
-            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);
-            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.BootlegRemedies);
-
             _settings.AddVariable("RunspeedSelection", (int)RunspeedSelection.None);
             _settings.AddVariable("ArmorSelection", (int)ArmorSelection.None);
+
+            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);
+            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.BootlegRemedies);
 
             _settings.AddVariable("Evasion", false);
 
@@ -119,7 +119,10 @@ namespace CombatHandler.Fixer
             RegisterSpellProcessor(RelevantNanos.ShadowwebSpinner, ShadowwebSpinner);
 
             //Hots
-            RegisterSpellProcessor(RelevantNanos.LongHOT, LongHOT);
+            RegisterSpellProcessor(RelevantNanos.LongHOT,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "LongHOTSelection"));
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
             RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GlobalGenericBuff);
@@ -386,6 +389,8 @@ namespace CombatHandler.Fixer
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -500,6 +505,8 @@ namespace CombatHandler.Fixer
                     perkView.Tag = SettingsController.settingsWindow;
                     perkView.Clicked = HandlePerkViewClick;
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 
@@ -640,16 +647,6 @@ namespace CombatHandler.Fixer
         #endregion
 
         #region Hots
-
-        private bool LongHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (LongHOTSelection.Team == (LongHOTSelection)_settings["LongHOTSelection"].AsInt32())
-                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
-
-            if (LongHOTSelection.None == (LongHOTSelection)_settings["LongHOTSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

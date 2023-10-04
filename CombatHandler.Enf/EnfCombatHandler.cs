@@ -482,6 +482,8 @@ namespace CombatHandler.Enf
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -650,6 +652,8 @@ namespace CombatHandler.Enf
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 

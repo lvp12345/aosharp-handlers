@@ -72,6 +72,7 @@ namespace CombatHandler.Generic
         private double CycleBioRegrowthPerk = 0;
 
         private static double _updateTick;
+        double _delay;
 
         private static Window _perkWindow;
 
@@ -199,6 +200,7 @@ namespace CombatHandler.Generic
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
+
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
             RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
@@ -242,18 +244,19 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
             RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.RezCan1, RelevantGenericItems.RezCan2 }, RezCan);
+            RegisterItemProcessor(RelevantGenericItems.RezCanIds, RezCan);
+
             RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
             RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, RelevantGenericItems.HealthAndNanoStim400 }, HealthAndNanoStim, CombatActionPriority.High);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.PremSitKit, RelevantGenericItems.AreteSitKit, RelevantGenericItems.SitKit1,
-            RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
+                RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.DaTaunterLow, RelevantGenericItems.DaTaunterHigh }, TargetedDamageItem);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
-            RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
+                RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
 
 
             RegisterItemProcessor(RelevantGenericItems.AmmoBoxArrows, RelevantGenericItems.AmmoBoxArrows, AmmoBoxArrows);
@@ -287,11 +290,8 @@ namespace CombatHandler.Generic
 
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
-            Network.N3MessageReceived += Network_N3MessageReceived;
+            //Network.N3MessageSent += OnN3MessageSent;
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
-
-
-            //Network.N3MessageSent += Network_N3MessageSent;
 
             Chat.RegisterCommand("reform", ReformCommand);
             Chat.RegisterCommand("form", FormCommand);
@@ -328,53 +328,6 @@ namespace CombatHandler.Generic
 
             UseItems();
 
-            //Chat.WriteLine($"{SettingsController.GetRegisteredCharacters().Length}");
-
-            //Chat.WriteLine($"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}");
-
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F1) && !_init
-            //    && IsActiveWindow)
-            //{
-            //    _init = true;
-
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\Generic\\{DynelManager.LocalPlayer.Name}\\Config.json");
-
-            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
-
-            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-            //    {
-            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Handler")))
-            //        {
-            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-
-            //            SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-            //            SettingsController.settingsWindow.FindView("EngiBioCocoonPercentageBox", out TextInputView engiBioCocoonInput);
-
-            //            if (channelInput != null)
-            //                channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
-            //            if (engiBioCocoonInput != null)
-            //                engiBioCocoonInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].EngiBioCocoonPercentage}";
-            //        }
-            //    }
-
-            //    _init = false;
-            //}
-
-            //if (Time.NormalTime > _updateTick + 0.1f)
-            //{
-            //    foreach (SimpleChar player in DynelManager.Characters
-            //        .Where(c => c.IsPlayer && c.Profession == (Profession)4294967295 && DynelManager.LocalPlayer.DistanceFrom(c) < 40f))
-            //    {
-            //        Network.Send(new CharacterActionMessage()
-            //        {
-            //            Action = CharacterActionType.InfoRequest,
-            //            Target = player.Identity
-            //        });
-            //    }
-
-            //    _updateTick = Time.NormalTime;
-            //}
-
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.CleanUp();
@@ -391,29 +344,7 @@ namespace CombatHandler.Generic
             {
                 _lastCombatTime = Time.NormalTime;
             }
-
-
         }
-
-        private void Network_N3MessageReceived(object s, N3Message n3Msg)
-        {
-            if (n3Msg.N3MessageType == N3MessageType.NewLevel)
-            {
-                NewLevelMessage levelMsg = (NewLevelMessage)n3Msg;
-
-                SimpleChar _player = DynelManager.Players.FirstOrDefault(c => c.Identity.Instance == n3Msg.Identity.Instance);
-
-                if (_player != null)
-                {
-                    Network.Send(new CharacterActionMessage()
-                    {
-                        Action = CharacterActionType.InfoRequest,
-                        Target = _player.Identity
-                    });
-                }
-            }
-        }
-
 
         #region Perks
 
@@ -696,15 +627,7 @@ namespace CombatHandler.Generic
 
         #endregion
 
-        #region Logic
-
-        protected bool Pistol(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
+        #region Healing
 
         //TODO: Add UI
         private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -740,6 +663,34 @@ namespace CombatHandler.Generic
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Debuffs
+
+        public bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
+        {
+            int settingValue = _settings[debuffType].AsInt32();
+
+            if (settingValue == 0) return false;
+
+            if (settingValue == 1 && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);
+
+            if (settingValue == 3 && fightingTarget != null)
+            {
+                if (fightingTarget.MaxHealth < 1000000) return false;
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -916,6 +867,17 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        public bool GenericSelectionBuff(Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        {
+            int settingValue = _settings[selectionSetting].AsInt32();
+
+            if (settingValue == 0) return false;
+
+            if (settingValue == 2) return GenericTeamBuff(buffSpell, ref actionTarget);
+
+            return Buff(buffSpell, buffSpell.Nanoline, ref actionTarget);
+        }
+
         #endregion
 
         #endregion
@@ -1057,7 +1019,6 @@ namespace CombatHandler.Generic
 
         #region Weapon Type
 
-       
         protected bool BuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
         {
             if (fightingTarget != null) { return false; }
@@ -1166,8 +1127,8 @@ namespace CombatHandler.Generic
         protected virtual bool BlightedFlesh(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) 
-                && fightingTarget != null 
+            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))
+                && fightingTarget != null
                 && !fightingTarget.Buffs.Contains(RelevantGenericNanos.BlightedFlesh)
                 && fightingTarget.IsInAttackRange();
         }
@@ -1478,8 +1439,6 @@ namespace CombatHandler.Generic
                         }
                     }
                 }
-
-
         }
 
         #endregion
@@ -1865,71 +1824,6 @@ namespace CombatHandler.Generic
             }
         }
 
-        //public static void Network_N3MessageSent(object s, N3Message n3Msg)
-        //{
-        //    if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
-
-        //    //Chat.WriteLine($"{n3Msg.Identity != DynelManager.LocalPlayer.Identity}");
-
-        //    if (n3Msg.N3MessageType == N3MessageType.LookAt)
-        //    {
-        //        LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
-        //        IPCChannel.Broadcast(new TargetMessage()
-        //        {
-        //            Target = lookAtMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.Attack)
-        //    {
-        //        AttackMessage attackMsg = (AttackMessage)n3Msg;
-        //        IPCChannel.Broadcast(new AttackIPCMessage()
-        //        {
-        //            Target = attackMsg.Target
-        //        });
-        //    }
-        //    else if (n3Msg.N3MessageType == N3MessageType.StopFight)
-        //    {
-        //        StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
-        //        IPCChannel.Broadcast(new StopAttackIPCMessage());
-        //    }
-        //}
-
-        //public static void OnStopAttackMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    DynelManager.LocalPlayer.StopAttack();
-        //}
-
-        //public static void OnTargetMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    TargetMessage targetMsg = (TargetMessage)msg;
-        //    Targeting.SetTarget(targetMsg.Target);
-        //}
-
-        //public static void OnAttackMessage(int sender, IPCMessage msg)
-        //{
-        //    if (IsActiveWindow)
-        //        return;
-
-        //    if (Game.IsZoning)
-        //        return;
-
-        //    AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
-        //    Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
-        //    DynelManager.LocalPlayer.Attack(targetDynel, true);
-        //}
-
         public static bool IsRaidEnabled(string[] param)
         {
             return param.Length > 0 && "raid".Equals(param[0]);
@@ -2114,6 +2008,23 @@ namespace CombatHandler.Generic
             }
         }
 
+        private static void OnN3MessageSent(object sender, N3Message n3Msg)
+        {
+            if (n3Msg is CharacterActionMessage characterActionMessage)
+            {
+                if (characterActionMessage.Action == CharacterActionType.InfoRequest)
+                {
+                    Chat.WriteLine($"Sent CharacterActionMessage with the following details:");
+                    Chat.WriteLine($"- Action: {characterActionMessage.Action}");
+                    Chat.WriteLine($"- Unknown1: {characterActionMessage.Unknown1}");
+                    Chat.WriteLine($"- Target Identity: {characterActionMessage.Target}");
+                    Chat.WriteLine($"- Parameter1: {characterActionMessage.Parameter1}");
+                    Chat.WriteLine($"- Parameter2: {characterActionMessage.Parameter2}");
+                    Chat.WriteLine($"- Unknown2: {characterActionMessage.Unknown2}");
+                }
+            }
+        }
+
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
@@ -2169,8 +2080,11 @@ namespace CombatHandler.Generic
 
             public const int GnuffsEternalRiftCrystal = 303179;
 
+            public static int[] RezCanIds = new[] { 301070, 303390 };
+
             public const int RezCan1 = 301070;
             public const int RezCan2 = 303390;
+
             public const int ExpCan1 = 288769;
             public const int ExpCan2 = 303376;
 
@@ -2230,7 +2144,6 @@ namespace CombatHandler.Generic
             public static int[] KeeperStrStamAgiBuff = new[] { 211158, 211160, 211162, 273365 };
 
         }
-
 
         public class PetSpellData
         {

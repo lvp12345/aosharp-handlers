@@ -112,19 +112,21 @@ namespace CombatHandler.Enf
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, VortexOfHate, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerRagingBlow, RagingBlow, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerShieldOfTheOgre, ShieldOfTheOgre, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireRage, InspireRage, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerAirOfHatred, AirOfHatred, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerTearLigaments, TearLigaments, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerVileRage, VileRage, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerRagingBlow, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerShieldOfTheOgre, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireRage, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerAirOfHatred, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerTearLigaments, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerVileRage, LEProc1, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerViolationBuffer, ViolationBuffer, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, InspireIre, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerShrugOffHits, ShrugOffHits, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerBustKneecaps, BustKneecaps, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerIgnorePain, IgnorePain, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerViolationBuffer, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerShrugOffHits, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerBustKneecaps, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerIgnorePain, LEProc2, CombatActionPriority.Low);
+
+
 
             //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
@@ -156,7 +158,9 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
             RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TargetedHpBuff);
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
-            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength, StrengthBuff);
+            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
 
             //Taunt Tools
             RegisterItemProcessor(244655, 244655, TauntTool);
@@ -467,7 +471,7 @@ namespace CombatHandler.Enf
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -477,6 +481,8 @@ namespace CombatHandler.Enf
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -647,6 +653,8 @@ namespace CombatHandler.Enf
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                #endregion
+
                 #region GlobalBuffing
 
                 if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
@@ -733,83 +741,18 @@ namespace CombatHandler.Enf
 
         #region LE Procs
 
-        private bool InspireRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.InspireRage != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool RagingBlow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.RagingBlow != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool ShieldOfTheOgre(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.Shieldoftheogre != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool TearLigaments(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.TearLigaments != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool VileRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.VileRage != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool VortexOfHate(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.VortexofHate != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool AirOfHatred(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.Airofhatred != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool BustKneecaps(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.BustKneecaps != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool IgnorePain(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.IgnorePain != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool InspireIre(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.InspireIre != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool ShrugOffHits(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.ShrugOffHits != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool ViolationBuffer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.ViolationBuffer != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
@@ -1065,16 +1008,6 @@ namespace CombatHandler.Enf
             return GenericTeamBuff(spell, ref actionTarget);
         }
 
-        private bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
-
-            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
         #endregion
 
         #region Misc
@@ -1104,13 +1037,24 @@ namespace CombatHandler.Enf
 
         public enum ProcType1Selection
         {
-            VortexofHate, RagingBlow, Shieldoftheogre, InspireRage, Airofhatred, TearLigaments, VileRage
+            VortexofHate = 1112689735,
+            RagingBlow = 1380532823,
+            Shieldoftheogre = 1229867077,
+            InspireRage = 1230197319,
+            Airofhatred = 1413827655,
+            TearLigaments = 1111577427,
+            VileRage = 1230195026
         }
 
         public enum ProcType2Selection
         {
-            ViolationBuffer, InspireIre, ShrugOffHits, BustKneecaps, IgnorePain
+            ViolationBuffer = 1112886085,
+            InspireIre = 1112754266,
+            ShrugOffHits = 1447973709,
+            BustKneecaps = 1480807238,
+            IgnorePain = 1229410377
         }
+
         public enum SingleTauntsSelection
         {
             None, Target, Area

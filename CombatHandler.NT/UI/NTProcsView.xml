@@ -3,20 +3,20 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Thermal Reprieve (Reflectshield +10% Reflect 10 Max Reflect 60s)" value="0"/>
-      <RadioButton label="Harvest Energy (Nano-HOT 5220 [12x435 every 5sec] 60s)" value="1"/>
-      <RadioButton label="Layered Amnesty (Reflectshield +4% 60s Defensive)" value="2"/>
-      <RadioButton label="Source Tap (Nano-HOT 1224 [12x102 every 5sec] 60s)" value="3"/>
-      <RadioButton label="Circular Logic (Nano-HOT 60 [12x5 every 5sec] 60s)" value="4"/>
+      <RadioButton label="Thermal Reprieve (Reflectshield +10% Reflect 10 Max Reflect 60s)" value="1347900245"/>
+      <RadioButton label="Harvest Energy (Nano-HOT 5220 [12x435 every 5sec] 60s)" value="1128877135"/>
+      <RadioButton label="Layered Amnesty (Reflectshield +4% 60s Defensive)" value="1397248588"/>
+      <RadioButton label="Source Tap (Nano-HOT 1224 [12x102 every 5sec] 60s)" value="1364218711"/>
+      <RadioButton label="Circular Logic (Nano-HOT 60 [12x5 every 5sec] 60s)" value="1346851668"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Optimized Library (AC/HP/NR Buff +331 AC +350 Max HP +140 NR 60s)" value="0"/>
-      <RadioButton label="Accelerated Reality (Nanoinit Buff +750 60s)" value="1"/>
-      <RadioButton label="Looping Service (Absorbshield 680 60s)" value="2"/>
-      <RadioButton label="Powered Nano Fortress (AC/HP/NR Buff +167 AC +246 Max HP +111 NR 60s) " value="3"/>
-      <RadioButton label="Increase Momentum (Nanoinit Buff +200 60s)" value="4"/>
-      <RadioButton label="Unstable Library (AC/HP/NR Buff +31 AC +50 Max HP +32 NR 60s)" value="5"/>
+      <RadioButton label="Optimized Library (AC/HP/NR Buff +331 AC +350 Max HP +140 NR 60s)" value="1330465858"/>
+      <RadioButton label="Accelerated Reality (Nanoinit Buff +750 60s)" value="1163086928"/>
+      <RadioButton label="Looping Service (Absorbshield 680 60s)" value="1431522377"/>
+      <RadioButton label="Powered Nano Fortress (AC/HP/NR Buff +167 AC +246 Max HP +111 NR 60s) " value="1414677832"/>
+      <RadioButton label="Increase Momentum (Nanoinit Buff +200 60s)" value="1229147471"/>
+      <RadioButton label="Unstable Library (AC/HP/NR Buff +31 AC +50 Max HP +32 NR 60s)" value="1146311237"/>
     </OptionRadioButtonGroup> 
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

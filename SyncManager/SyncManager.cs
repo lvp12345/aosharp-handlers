@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace SyncManager
 {
@@ -37,7 +36,6 @@ namespace SyncManager
         public static bool Toggle = false;
 
         private static double _useTimer;
-        private static double _openBagsTimer = Time.NormalTime;
 
         public static Window _infoWindow;
 
@@ -150,29 +148,21 @@ namespace SyncManager
                 }
             }
 
-
             if (!_openBags && _settings["SyncBags"].AsBool())
             {
-                Task.Factory.StartNew(
-                   async () =>
-                   {
-                       await Task.Delay(10000);
-
-                       List<Item> bags = Inventory.Items
-                           .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                           .ToList();
-
-                       foreach (Item bag in bags)
-                       {
-                           bag.Use();
-                           bag.Use();
-                       }
-                   });
-
-                _openBags = true;
+                Inventory.Backpacks.ForEach(b =>
+                {
+                    if (!b.IsOpen)
+                    {
+                        Item.Use(b.Slot);
+                        Item.Use(b.Slot);
+                    }
+                });
+                if (Inventory.Backpacks.All(b => b.IsOpen))
+                {
+                    _openBags = true;
+                }
             }
-
-
 
             if (Time.NormalTime > _useTimer + 0.1)
             {
@@ -317,21 +307,7 @@ namespace SyncManager
 
             if (_settings["SyncBags"].AsBool())
             {
-                Task.Factory.StartNew(
-                    async () =>
-                    {
-                        await Task.Delay(10000);
-
-                        List<Item> bags = Inventory.Items
-                            .Where(c => c.UniqueIdentity.Type == IdentityType.Container)
-                            .ToList();
-
-                        foreach (Item bag in bags)
-                        {
-                            bag.Use();
-                            bag.Use();
-                        }
-                    });
+                _openBags = false;
             }
         }
         private void Network_N3MessageReceived(object s, N3Message n3Msg)

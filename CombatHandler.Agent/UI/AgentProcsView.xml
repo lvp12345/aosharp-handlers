@@ -3,21 +3,21 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Grim Reaper (Target Hit Health Melee 500, 10 hits, 1s delay)" value="0"/>
-      <RadioButton label="Disable Cuffs (Self Reduce Snare 1083s, Self Reduce Root 1083s, Resist root/snares 20% 15s)" value="1"/>
-      <RadioButton label="No Escape! (Target Restrict Action Movement, 6s delay 6s)" value="2"/>
-      <RadioButton label="Intense Metabolism (Self Modify Nano init 250 60s)" value="3"/>
+      <RadioButton label="Grim Reaper (Target Hit Health Melee 500, 10 hits, 1s delay)" value="1464554561"/>
+      <RadioButton label="Disable Cuffs (Self Reduce Snare 1083s, Self Reduce Root 1083s, Resist root/snares 20% 15s)" value="1347310415"/>
+      <RadioButton label="No Escape! (Target Restrict Action Movement, 6s delay 6s)" value="1162433352"/>
+      <RadioButton label="Intense Metabolism (Self Modify Nano init 250 60s)" value="1229538903"/>
       <RadioButton label="Minor Nanobot Enhance (Self Modify +Damage 15 60s)" value="4"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Notum-Charged Rounds (Self Modify +Damage 200 60s)" value="0"/>
-      <RadioButton label="Laser Aim (Self Modify CriticalIncrease 30 60s)" value="1"/>
-      <RadioButton label="Nano-Enhanced Targeting (Self Modify CriticalIncrease 22 15s)" value="2"/>
-      <RadioButton label="Plasteel Piercing Rounds (Self Modify +Damage 75 60s)" value="3"/>
-      <RadioButton label="Cell Killer (Target Hit Health Melee 75, 20 hits, 1s delay 10s)" value="4"/>
-      <RadioButton label="Improved Focus (Self Modify CriticalIncrease 15 15s)" value="5"/>
-      <RadioButton label="Broken Ankle (Target Restrict Action Movement 3s)" value="6"/>
+      <RadioButton label="Notum-Charged Rounds (Self Modify +Damage 200 60s)" value="1196774223"/>
+      <RadioButton label="Laser Aim (Self Modify CriticalIncrease 30 60s)" value="1111577165"/>
+      <RadioButton label="Nano-Enhanced Targeting (Self Modify CriticalIncrease 22 15s)" value="1095520333"/>
+      <RadioButton label="Plasteel Piercing Rounds (Self Modify +Damage 75 60s)" value="1280136015"/>
+      <RadioButton label="Cell Killer (Target Hit Health Melee 75, 20 hits, 1s delay 10s)" value="1329941332"/>
+      <RadioButton label="Improved Focus (Self Modify CriticalIncrease 15 15s)" value="1413562956"/>
+      <RadioButton label="Broken Ankle (Target Restrict Action Movement 3s)" value="1481851730"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

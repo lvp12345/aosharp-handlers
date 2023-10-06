@@ -4,6 +4,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static CombatHandler.Generic.PerkCondtionProcessors;
@@ -31,8 +32,6 @@ namespace CombatHandler.Doctor
         private static View _procView;
         private static View _itemView;
         private static View _perkView;
-
-        //private static bool _asyncToggle = false;
 
         private static double _ncuUpdateTime;
 
@@ -87,14 +86,16 @@ namespace CombatHandler.Doctor
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
             _settings.AddVariable("NanoTransmission", false);
+
             _settings.AddVariable("HealSelection", (int)HealSelection.SingleTeam);
 
             _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
-            _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.None);
-            _settings.AddVariable("DOTB", (int)DOTBDebuffTargetSelection.None);
-            _settings.AddVariable("DOTC", (int)DOTCDebuffTargetSelection.None);
 
-            _settings.AddVariable("Nuking", false);
+            _settings.AddVariable("NukingSelection", (int)NukingSelection.Boss);
+
+            _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.Boss);
+            _settings.AddVariable("DOTB", (int)DOTBDebuffTargetSelection.Boss);
+            _settings.AddVariable("DOTC", (int)DOTCDebuffTargetSelection.Boss);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DangerousCulture);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.MassiveVitaePlan);
@@ -112,20 +113,12 @@ namespace CombatHandler.Doctor
 
             RegisterSettingsWindow("Doctor Handler", "DocSettingsView.xml");
 
-            //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcDoctorDangerousCulture, DangerousCulture, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorAntiseptic, Antiseptic, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorMuscleMemory, MuscleMemory, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorBloodTransfusion, BloodTransfusion, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorRestrictiveBandaging, RestrictiveBandaging, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcDoctorMassiveVitaePlan, MassiveVitaePlan, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorAnatomicBlight, AnatomicBlight, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorHealingCare, HealingCare, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorPathogen, Pathogen, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorAnesthetic, Anesthetic, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, Astringent, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcDoctorInflammation, Inflammation, CombatActionPriority.Low);
+            //Healing
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(),
+                CompleteHealing, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
 
             //Perks
             RegisterPerkProcessor(PerkHash.BattlegroupHeal1, BattleGroupHeal1);
@@ -136,40 +129,82 @@ namespace CombatHandler.Doctor
             RegisterPerkProcessor(PerkHash.NanoTransmission, NanoTransmission);
             RegisterPerkProcessor(PerkHash.CloseCall, CloseCall);
 
-            //Healing
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
-
             //Hots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
-
-            //Buffs
-            RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(), StrengthBuff);
-
-            //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(), NanoResistance);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(), HealDeltaBuff);
 
             RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
             RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
 
             //Debuffs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuff, CombatActionPriority.Medium);
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs,
+                 (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                 => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
+                 CombatActionPriority.Medium);
 
+            //Nukes
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Nuke).OrderByStackingOrder(), SingleTargetNuke, CombatActionPriority.Low);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(), DOTBDebuffTarget, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(), DOTCDebuffTarget, CombatActionPriority.Medium);
+            //Dots
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineA).OrderByStackingOrder(),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DOTA"),
+                CombatActionPriority.Medium
+            );
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOT_LineB).OrderByStackingOrder(),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DOTB"),
+                CombatActionPriority.Medium
+            );
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTStrainC).OrderByStackingOrder(),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DOTC"),
+                CombatActionPriority.Medium
+            );
 
             //Items
             RegisterItemProcessor(new int[] { RelevantItems.SacredTextoftheImmortalOne, RelevantItems.TeachingsoftheImmortalOne }, TOTWHeal);
+
+            //Buffs
+            RegisterSpellProcessor(RelevantNanos.HPBuffs, MaxHealth);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuffSelection"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(),
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NanoResistSelection"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(),
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "HealDeltaBuffSelection"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(),
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "TreatmentBuffSelection"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(),
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
+
+            //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcDoctorDangerousCulture, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorAntiseptic, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorMuscleMemory, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorBloodTransfusion, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorRestrictiveBandaging, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcDoctorMassiveVitaePlan, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorAnatomicBlight, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorHealingCare, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorPathogen, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorAnesthetic, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorAstringent, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcDoctorInflammation, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -202,6 +237,8 @@ namespace CombatHandler.Doctor
         {
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
+
+            //Chat.WriteLine("Received RemainingNCUMessage");
         }
         private void OnGlobalBuffingMessage(int sender, IPCMessage msg)
         {
@@ -211,6 +248,8 @@ namespace CombatHandler.Doctor
 
             _settings[$"Buffing"] = buffMsg.Switch;
             _settings[$"GlobalBuffing"] = buffMsg.Switch;
+
+            //Chat.WriteLine("Received GlobalBuffingMessage");
         }
         private void OnGlobalCompositesMessage(int sender, IPCMessage msg)
         {
@@ -220,6 +259,8 @@ namespace CombatHandler.Doctor
 
             _settings[$"Composites"] = compMsg.Switch;
             _settings[$"GlobalComposites"] = compMsg.Switch;
+
+            //Chat.WriteLine("Received GlobalCompositesMessage");
         }
 
         private void OnGlobalRezMessage(int sender, IPCMessage msg)
@@ -230,6 +271,8 @@ namespace CombatHandler.Doctor
 
             _settings[$"GlobalRez"] = rezMsg.Switch;
             _settings[$"GlobalRez"] = rezMsg.Switch;
+
+            //Chat.WriteLine("Received GlobalRezMessage");
 
         }
 
@@ -479,7 +522,7 @@ namespace CombatHandler.Doctor
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -732,86 +775,21 @@ namespace CombatHandler.Doctor
 
         #region LE Procs
 
-        private bool Antiseptic(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.Antiseptic != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool BloodTransfusion(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.BloodTransfusion != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
-
-        private bool DangerousCulture(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.DangerousCulture != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool MuscleMemory(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.MuscleMemory != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool RestrictiveBandaging(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.RestrictiveBandaging != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool AnatomicBlight(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.AnatomicBlight != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool Anesthetic(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.Anesthetic != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool Astringent(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.Astringent != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool HealingCare(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.HealingCare != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool Inflammation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.Inflammation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool MassiveVitaePlan(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.MassiveVitaePlan != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool Pathogen(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.Pathogen != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
 
         #endregion
 
@@ -995,62 +973,22 @@ namespace CombatHandler.Doctor
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool NanoResistance(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (NanoResistSelection.Team == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool HealDeltaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HealDeltaBuffSelection.Team == (HealDeltaBuffSelection)_settings["HealDeltaBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            if (HealDeltaBuffSelection.None == (HealDeltaBuffSelection)_settings["HealDeltaBuffSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool TreatmentBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (TreatmentBuffSelection.Team == (TreatmentBuffSelection)_settings["TreatmentBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            if (TreatmentBuffSelection.None == (TreatmentBuffSelection)_settings["TreatmentBuffSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
         private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
+        private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
+                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
+
+            if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
         private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1079,146 +1017,27 @@ namespace CombatHandler.Doctor
             return Buff(spell, NanoLine.DoctorShortHPBuffs, ref actionTarget);
         }
 
-        private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
-                return GenericCombatTeamBuff(spell, fightingTarget, ref actionTarget);
-
-            if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
         #endregion
 
-        #region Debuffs
-
-        private bool InitDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-
-            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 10) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (InitDebuffSelection.Boss == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 10) { return false; }
-
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
+        #region Nuke
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
 
-            return ToggledTargetDebuff("Nuking", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
+            if (NukingSelection.None == (NukingSelection)_settings["NukingSelection"].AsInt32()) { return false; }
 
-        private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
-
-            if (DOTADebuffTargetSelection.None == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()) { return false; }
-
-            if (DOTADebuffTargetSelection.Area == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (DOTADebuffTargetSelection.Target == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
-                && fightingTarget != null)
+            if (NukingSelection.Target == (NukingSelection)_settings["NukingSelection"].AsInt32())
             {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
-            if (DOTADebuffTargetSelection.Boss == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
-                 && fightingTarget != null)
+            if (NukingSelection.Boss == (NukingSelection)_settings["NukingSelection"].AsInt32())
             {
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
-
-            return false;
-
-        }
-
-        private bool DOTBDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
-
-            if (DOTBDebuffTargetSelection.None == (DOTBDebuffTargetSelection)_settings["DOTB"].AsInt32()) { return false; }
-
-            if (DOTBDebuffTargetSelection.Area == (DOTBDebuffTargetSelection)_settings["DOTB"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (DOTBDebuffTargetSelection.Target == (DOTBDebuffTargetSelection)_settings["DOTB"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (DOTBDebuffTargetSelection.Boss == (DOTBDebuffTargetSelection)_settings["DOTB"].AsInt32()
-                 && fightingTarget != null)
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
-        private bool DOTCDebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
-
-            if (DOTCDebuffTargetSelection.None == (DOTCDebuffTargetSelection)_settings["DOTC"].AsInt32()) { return false; }
-
-            if (DOTCDebuffTargetSelection.Area == (DOTCDebuffTargetSelection)_settings["DOTC"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (DOTCDebuffTargetSelection.Target == (DOTCDebuffTargetSelection)_settings["DOTC"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (DOTCDebuffTargetSelection.Boss == (DOTCDebuffTargetSelection)_settings["DOTC"].AsInt32()
-                 && fightingTarget != null)
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
             return false;
         }
 
@@ -1232,46 +1051,6 @@ namespace CombatHandler.Doctor
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
-
-        //private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (fightingTarget == null) { return false; }
-
-        //    {
-        //        if (Team.IsInTeam)
-        //        {
-        //            SimpleChar teamMember = DynelManager.Players
-        //                .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-        //                    && c.HealthPercent < 50
-        //                    && c.IsInLineOfSight
-        //                    && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
-        //                    && c.Health > 0)
-        //                .OrderBy(c => c.HealthPercent)
-        //                .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-        //                .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-        //                .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-        //                .FirstOrDefault();
-
-        //            if (teamMember != null)
-        //            {
-        //                actionTarget.ShouldSetTarget = true;
-        //                actionTarget.Target = teamMember;
-        //                return true;
-        //            }
-
-        //            return false;
-        //        }
-
-        //        if (DynelManager.LocalPlayer.HealthPercent < 50)
-        //        {
-        //            actionTarget.ShouldSetTarget = true;
-        //            actionTarget.Target = DynelManager.LocalPlayer;
-        //            return true;
-        //        }
-
-        //        return false;
-        //    }
-        //}
 
         private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1327,46 +1106,6 @@ namespace CombatHandler.Doctor
 
         #region Items
 
-        //private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("TOTWBooks")) { return false; }
-        //    if (Item.HasPendingUse) { return false; }
-        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
-
-        //    if (Team.IsInTeam)
-        //    {
-        //        SimpleChar teamMember = DynelManager.Players
-        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-        //                && c.HealthPercent < 25
-        //                && c.IsInLineOfSight
-        //                && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
-        //                && c.Health > 0)
-        //            .OrderBy(c => c.HealthPercent)
-        //            .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-        //            .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-        //            .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-        //            .FirstOrDefault();
-
-        //        if (teamMember != null)
-        //        {
-        //            actionTarget.ShouldSetTarget = true;
-        //            actionTarget.Target = teamMember;
-        //            return true;
-        //        }
-
-        //        return false;
-        //    }
-
-        //    if (DynelManager.LocalPlayer.HealthPercent < 25)
-        //    {
-        //        actionTarget.ShouldSetTarget = true;
-        //        actionTarget.Target = DynelManager.LocalPlayer;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("TOTWBooks") || Item.HasPendingUse || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis))
@@ -1421,33 +1160,19 @@ namespace CombatHandler.Doctor
 
         #region Misc
 
-        public enum InitBuffSelection
-        {
-            None, Self, Team
-        }
-
-        public enum TreatmentBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum StrengthBuffSelection
-        {
-            None, Self, Team
-        }
         public enum HealSelection
         {
             None, SingleTeam, SingleArea, Team, ImprovedLifeChanneler
         }
-        public enum InitDebuffSelection
-        {
-            None, Target, Area, Boss
-        }
 
+        public enum NukingSelection
+        {
+            None, Target, Boss
+        }
         public enum DOTADebuffTargetSelection
         {
             None, Target, Area, Boss
         }
-
         public enum DOTBDebuffTargetSelection
         {
             None, Target, Area, Boss
@@ -1456,16 +1181,31 @@ namespace CombatHandler.Doctor
         {
             None, Target, Area, Boss
         }
+        public enum InitDebuffSelection
+        {
+            None, Target, Area, Boss
+        }
         public enum ShortHpSelection
         {
             None, Self, Team
         }
 
+        public enum InitBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum TreatmentBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum StrengthBuffSelection
+        {
+            None, Self, Team
+        }
         public enum NanoResistSelection
         {
             None, Self, Team
         }
-
         public enum HealDeltaBuffSelection
         {
             None, Self, Team
@@ -1473,12 +1213,22 @@ namespace CombatHandler.Doctor
 
         public enum ProcType1Selection
         {
-            DangerousCulture, Antiseptic, MuscleMemory, BloodTransfusion, RestrictiveBandaging
+            DangerousCulture = 1111774273,
+            Antiseptic = 1096177490,
+            MuscleMemory = 1313229889,
+            BloodTransfusion = 1145979733,
+            RestrictiveBandaging = 1414547023
         }
 
         public enum ProcType2Selection
         {
-            MassiveVitaePlan, AnatomicBlight, HealingCare, Pathogen, Anesthetic, Astringent, Inflammation
+            MassiveVitaePlan = 1229931077,
+            AnatomicBlight = 1414025031,
+            HealingCare = 1498502234,
+            Pathogen = 1128874835,
+            Anesthetic = 1263289936,
+            Astringent = 1296908628,
+            Inflammation = 1381188174
         }
 
         private static class RelevantNanos

@@ -3,21 +3,21 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Debt Collection (HP Drain 1100 - 1200 Energy-damage 1100-1300 Healing)" value="0"/>
-      <RadioButton label="Accumulated Interest (Skilldrain 204 Weapon- and Nanoskills Drain [10s] Gain 102 AAO Drain [PVM] [30s] 30s)" value="1"/>
-      <RadioButton label="Exchange Product (HP Drain 990 Energy-damage 997 Healing)" value="2"/>
-      <RadioButton label="Unforgiven Debts (Skilldrain 136 Weapon- and Nanoskills Drain [10s] Gain 68 AAO Drain [PVM] [30s] 30s)" value="3"/>
-      <RadioButton label="Unexpected Bonus (HP Drain 300 Energydamage 222 Healing)" value="4"/>
-      <RadioButton label="Rebate (HP Drain 43 Energydamage 18 Healing)" value="5"/>
+      <RadioButton label="Debt Collection (HP Drain 1100 - 1200 Energy-damage 1100-1300 Healing)" value="1431327317"/>
+      <RadioButton label="Accumulated Interest (Skilldrain 204 Weapon- and Nanoskills Drain [10s] Gain 102 AAO Drain [PVM] [30s] 30s)" value="1163084626"/>
+      <RadioButton label="Exchange Product (HP Drain 990 Energy-damage 997 Healing)" value="1096108366"/>
+      <RadioButton label="Unforgiven Debts (Skilldrain 136 Weapon- and Nanoskills Drain [10s] Gain 68 AAO Drain [PVM] [30s] 30s)" value="1380338753"/>
+      <RadioButton label="Unexpected Bonus (HP Drain 300 Energydamage 222 Healing)" value="1430602318"/>
+      <RadioButton label="Rebate (HP Drain 43 Energydamage 18 Healing)" value="1313882454"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Unopened Letter (AC Drain +2067 AC -2098 AC 60s)" value="0"/>
-      <RadioButton label="Rigid Liquidation (Nanodrain 1842 Drain [6x307 every 5sec] 1626 Gain [6x271 every 5sec] 30s) " value="1"/>
-      <RadioButton label="Deplete Assets (AC Drain +1394 AC -1449 AC 60s)" value="2"/>
-      <RadioButton label="Escrow (Nanodrain 798 Drain [6x133 every 5sec] 600 Gain [6x100 every 5sec] 30s)" value="3"/>
-      <RadioButton label="Refinance Loans (AC Drain -200 AC +200 AC [On FightingTarget] 60s)" value="4"/>
-      <RadioButton label="Payment Plan (Skilldrain 9 Weapon- and Nanoskills Drain [10s] Gain 5 AAO Drain [PVM] [30s] 30s)" value="5"/>
+      <RadioButton label="Unopened Letter (AC Drain +2067 AC -2098 AC 60s)" value="1195724622"/>
+      <RadioButton label="Rigid Liquidation (Nanodrain 1842 Drain [6x307 every 5sec] 1626 Gain [6x271 every 5sec] 30s) " value="1145458777"/>
+      <RadioButton label="Deplete Assets (AC Drain +1394 AC -1449 AC 60s)" value="1162039378"/>
+      <RadioButton label="Escrow (Nanodrain 798 Drain [6x133 every 5sec] 600 Gain [6x100 every 5sec] 30s)" value="1179599938"/>
+      <RadioButton label="Refinance Loans (AC Drain -200 AC +200 AC [On FightingTarget] 60s)" value="1145456965"/>
+      <RadioButton label="Payment Plan (Skilldrain 9 Weapon- and Nanoskills Drain [10s] Gain 5 AAO Drain [PVM] [30s] 30s)" value="1348030540"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

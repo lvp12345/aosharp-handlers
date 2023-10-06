@@ -505,7 +505,7 @@ namespace CombatHandler.NanoTechnician
                 _ncuUpdateTime = Time.NormalTime;
             }
 
-            #region Settings
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 

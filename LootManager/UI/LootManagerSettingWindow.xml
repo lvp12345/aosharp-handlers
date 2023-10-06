@@ -9,6 +9,7 @@
 
 				<OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Enabled" layout_borders="Rect(5,5,5,5)"/>
 				<OptionCheckBox label="Delete leftovers" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Delete" layout_borders="Rect(5,5,5,0)"/>
+				<OptionCheckBox label="Exact name" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Exact" layout_borders="Rect(5,5,5,0)"/>
 
 				<Button name="LootManagerInfoView" label="Info" layout_borders="Rect(5,5,5,5)"/>
 			</View>

@@ -488,7 +488,7 @@ namespace CombatHandler.Trader
 
             SyncPetCombat();
 
-            #region Settings
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -1604,17 +1604,10 @@ namespace CombatHandler.Trader
         {
             None, Target, Boss
         }
-
-        public enum EvadesSelection
-        {
-            None, Self, Team
-        }
-
         public enum ModeSelection
         {
             None, All, Adds
         }
-
         public enum ProcType1Selection
         {
             DebtCollection = 1431327317,

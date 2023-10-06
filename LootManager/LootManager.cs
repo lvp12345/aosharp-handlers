@@ -45,6 +45,7 @@ namespace LootManager
 
         private static bool _toggle = false;
 
+        bool isBackpackInfoInitialized = false;
         bool _bagsFull = false;
         bool _bagsInit = false;
         bool foundBagWithSpace = false;
@@ -100,115 +101,232 @@ namespace LootManager
             SaveRules();
             SettingsController.CleanUp();
         }
-        private void UpdateBackpackInfo(Backpack backpack)
-        {
-            // Check if the backpack is already in the dictionary
-            if (backpackDictionary.ContainsKey(backpack.Identity))
-            {
-                // Update the existing entry with new information
-                var existingInfo = backpackDictionary[backpack.Identity];
-                int newFreeSlots = 21 - backpack.Items.Count;
+        //private void UpdateBackpackInfo(Backpack backpack)
+        //{
+        //    // Check if the backpack is already in the dictionary
+        //    if (backpackDictionary.ContainsKey(backpack.Identity))
+        //    {
+        //        // Update the existing entry with new information
+        //        var existingInfo = backpackDictionary[backpack.Identity];
+        //        int newFreeSlots = 21 - backpack.Items.Count;
 
-                // Check if the free slots count has changed
-                if (existingInfo.FreeSlots != newFreeSlots)
-                {
-                    existingInfo.FreeSlots = newFreeSlots;
-                    string itemNames = string.Join(", ", existingInfo.ItemNames);
-                    //Chat.WriteLine($"Updated backpack info - Name: {existingInfo.Name}, Free Slots: {existingInfo.FreeSlots}, Items: {itemNames}");
-                }
+        //        // Check if the free slots count has changed
+        //        if (existingInfo.FreeSlots != newFreeSlots)
+        //        {
+        //            existingInfo.FreeSlots = newFreeSlots;
+        //            string itemNames = string.Join(", ", existingInfo.ItemNames);
+        //            //Chat.WriteLine($"Updated backpack info - Name: {existingInfo.Name}, Free Slots: {existingInfo.FreeSlots}, Items: {itemNames}");
+        //        }
 
-                // Clear the existing item names and add the new ones
-                existingInfo.ItemNames.Clear();
-                foreach (var item in backpack.Items)
-                {
-                    existingInfo.ItemNames.Add(item.Name);
-                }
-            }
-            else
-            {
-                // Add a new entry for the backpack
-                var newInfo = new BackpackInfo
-                {
-                    Name = backpack.Name,
-                    FreeSlots = 21 - backpack.Items.Count,
-                };
+        //        // Clear the existing item names and add the new ones
+        //        existingInfo.ItemNames.Clear();
+        //        foreach (var item in backpack.Items)
+        //        {
+        //            existingInfo.ItemNames.Add(item.Name);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // Add a new entry for the backpack
+        //        var newInfo = new BackpackInfo
+        //        {
+        //            Name = backpack.Name,
+        //            FreeSlots = 21 - backpack.Items.Count,
+        //        };
 
-                // Store the item names
-                foreach (var item in backpack.Items)
-                {
-                    newInfo.ItemNames.Add(item.Name);
-                }
+        //        // Store the item names
+        //        foreach (var item in backpack.Items)
+        //        {
+        //            newInfo.ItemNames.Add(item.Name);
+        //        }
 
-                string itemNames = string.Join(", ", newInfo.ItemNames);
-                backpackDictionary.Add(backpack.Identity, newInfo);
-                //Chat.WriteLine($"Added backpack info - Name: {newInfo.Name}, Free Slots: {newInfo.FreeSlots}, Items: {itemNames}");
-            }
-        }
+        //        string itemNames = string.Join(", ", newInfo.ItemNames);
+        //        backpackDictionary.Add(backpack.Identity, newInfo);
+        //        //Chat.WriteLine($"Added backpack info - Name: {newInfo.Name}, Free Slots: {newInfo.FreeSlots}, Items: {itemNames}");
+        //    }
+        //}
 
         private void MoveItemsToBag()
         {
-            if (!_bagsFull && !_bagsInit)
+            if (!backpackDictionary.Any()) // If no backpacks are available, return
             {
-                // Open all backpacks to set the item count
-                List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
-                foreach (Item bag in bags)
-                {
-                    bag.Use();
-                    bag.Use();
-                }
-
-                // Loop through all backpacks of the right name to check if their item count is 0
-                foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
-                {
-                    // Add or update backpack information in the dictionary
-                    UpdateBackpackInfo(backpack);
-                }
-
-                // Everything will be init for now
-                _bagsInit = true;
+                return;
             }
 
             // Find a backpack with the name containing "loot" and less than 21 items
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+            var availableBackpack = backpackDictionary.FirstOrDefault(backpack => backpack.Value.FreeSlots > 0 && backpack.Value.Name.Contains("loot"));
+
+            if (!availableBackpack.Equals(default(KeyValuePair<Identity, BackpackInfo>)))
             {
-                if (backpack.Items.Count < 21)
+                // Chat.WriteLine($"Found an available backpack: {availableBackpack.Value.Name}");
+
+                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
-                    // Move the items to the backpack with free space
-                    foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                    // Only check to move if there is something to move
+                    if (CheckRules(itemtomove))
                     {
-                        // Only check to move if there is something to move
-                        if (CheckRules(itemtomove))
-                        {
-                            // Move the item to the backpack with free space
-                            itemtomove.MoveToContainer(backpack);
-                            //Chat.WriteLine($"Moved item {itemtomove.Name} to backpack {backpack.Name}");
-                        }
+                        //Chat.WriteLine($"Moving item {itemtomove.Name} to {availableBackpack.Value.Name}");
+
+                        // Move the item to the available backpack with free space
+                        itemtomove.MoveToContainer(availableBackpack.Key);
+
+                        // Decrease the free slot count in the backpackDictionary
+                        availableBackpack.Value.FreeSlots--;
+
+                        Chat.WriteLine($"Item {itemtomove.Name} moved to {availableBackpack.Value.Name}");
+
+                        // No need to check further, break out of the loop - item moved
+                        break;
                     }
-
-                    // Update the dictionary with the new free slot count
-                    UpdateBackpackInfo(backpack);
-
-                    // No need to check further, break out of the loop - all items moved
-                    break;
-                }
-            }
-
-            // Finally check if we still have free space in eligible bags
-            _bagsFull = true;
-            foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
-            {
-                if (backpack.Items.Count < 21)
-                {
-                    _bagsFull = false;
-
-                    // Update the dictionary with the new free slot count
-                    UpdateBackpackInfo(backpack);
-
-                    // No need to check further, break out of the loop
-                    break;
                 }
             }
         }
+
+        private void UpdateBackpackDictionary()
+        {
+            bool dictionaryChanged = false; // Flag to track if there's a change in the dictionary
+
+            foreach (var backpack in Inventory.Backpacks)
+            {
+                int freeSlots = 21 - backpack.Items.Count;
+                if (backpackDictionary.ContainsKey(backpack.Identity))
+                {
+                    // Check if there's a change in free slots
+                    if (backpackDictionary[backpack.Identity].FreeSlots != freeSlots)
+                    {
+                        //Chat.WriteLine($"Updating existing backpack entry: {backpack.Name}, Free Slots: {freeSlots}");
+
+                        // Update the existing entry with new information
+                        backpackDictionary[backpack.Identity].FreeSlots = freeSlots;
+                        dictionaryChanged = true; // Mark dictionary as changed
+                    }
+                }
+                else
+                {
+                    //Chat.WriteLine($"Adding a new backpack entry: {backpack.Name}, Free Slots: {freeSlots}");
+
+                    // Add a new entry for the backpack
+                    backpackDictionary.Add(backpack.Identity, new BackpackInfo
+                    {
+                        Name = backpack.Name,
+                        FreeSlots = freeSlots
+                    });
+                    dictionaryChanged = true; // Mark dictionary as changed
+                }
+            }
+
+            // Only set the flag to indicate that initialization is done if there was a change
+            if (dictionaryChanged)
+            {
+                isBackpackInfoInitialized = true;
+                //Chat.WriteLine("Backpack information updated.");
+            }
+            else
+            {
+                //Chat.WriteLine("No changes in backpack information.");
+            }
+        }
+
+
+        private void InitializeBackpackInfo()
+        {
+            if (isBackpackInfoInitialized)
+            {
+                //Chat.WriteLine("Backpack information is already initialized.");
+                return; // Already initialized, no need to do it again
+            }
+
+            //Chat.WriteLine("Initializing backpack information...");
+
+            // Open all backpacks to set the item count and names
+            List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
+            foreach (Item bag in bags)
+            {
+                bag.Use();
+                bag.Use();
+            }
+
+            // Chat.WriteLine("Backpacks have been opened for initialization.");
+
+            // Loop through all backpacks to update backpackDictionary
+            foreach (Backpack backpack in Inventory.Backpacks)
+            {
+                UpdateBackpackDictionary();
+            }
+
+            //Chat.WriteLine("Backpack information initialization complete.");
+
+            // Set the flag to indicate that initialization is done
+            isBackpackInfoInitialized = true;
+        }
+
+
+        //private void MoveItemsToBag()
+        //{
+        //    if (!_bagsFull && !_bagsInit)
+        //    {
+        //        // Open all backpacks to set the item count
+        //        List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
+        //        foreach (Item bag in bags)
+        //        {
+        //            bag.Use();
+        //            bag.Use();
+        //        }
+
+        //        // Loop through all backpacks of the right name to check if their item count is 0
+        //        foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+        //        {
+        //            // Add or update backpack information in the dictionary
+        //            UpdateBackpackInfo(backpack);
+        //        }
+
+        //        // Everything will be init for now
+        //        _bagsInit = true;
+        //    }
+
+        //    // Find a backpack with the name containing "loot" and less than 21 items
+        //    foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+        //    {
+        //        if (backpack.Items.Count < 21)
+        //        {
+        //            // Move the items to the backpack with free space
+        //            foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+        //            {
+        //                // Only check to move if there is something to move
+        //                if (CheckRules(itemtomove))
+        //                {
+        //                    // Move the item to the backpack with free space
+        //                    itemtomove.MoveToContainer(backpack);
+        //                    //Chat.WriteLine($"Moved item {itemtomove.Name} to backpack {backpack.Name}");
+        //                }
+        //            }
+
+        //            // Update the dictionary with the new free slot count
+        //            UpdateBackpackInfo(backpack);
+
+        //            // No need to check further, break out of the loop - all items moved
+        //            break;
+        //        }
+        //    }
+
+        //// Finally check if we still have free space in eligible bags
+
+        //_bagsFull = true; //? why is this here?
+
+        //    foreach (Backpack backpack in Inventory.Backpacks.Where(c => c.Name.Contains("loot")))
+        //    {
+        //        if (backpack.Items.Count < 21)
+        //        {
+        //            _bagsFull = false;
+
+        //            // Update the dictionary with the new free slot count
+        //            UpdateBackpackInfo(backpack);
+
+        //            // No need to check further, break out of the loop
+        //            break;
+        //        }
+        //    }
+        //}
         private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
 
@@ -230,7 +348,7 @@ namespace LootManager
         public void ProcessCorpses()
         {
             Corpse corpseToOpen = DynelManager.Corpses.FirstOrDefault(c =>
-                c.DistanceFrom(DynelManager.LocalPlayer) < 6 &&
+                c.DistanceFrom(DynelManager.LocalPlayer) < 9 &&
                 !openedCorpses.ContainsKey(c.Position));
 
             if (corpseToOpen != null)
@@ -239,18 +357,17 @@ namespace LootManager
                     && !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
                     && !DynelManager.LocalPlayer.IsAttackPending)
                 {
-                    //if (currentCorpse == null)
-                    //{
                     // Check if it's time to open a new corpse
                     if (openCorpseInterval.Elapsed)
                     {
                         currentCorpse = corpseToOpen;
                         currentCorpse.Open(); // Open the corpseToOpen
                                               //Chat.WriteLine("Opened a corpse.");
-                                              // Reset the closeCorpseInterval when opening a corpse
+
+                        // Reset the closeCorpseInterval when opening a corpse
                         closeCorpseInterval.Reset();
                     }
-                    //}
+
                 }
                 if (currentCorpse != null && closeCorpseInterval.Elapsed)
                 {
@@ -271,18 +388,28 @@ namespace LootManager
             {
                 if (Game.IsZoning)
                 {
-                    _bagsFull = false;
-                    // We zoned so bag counts reset
-                    _bagsInit = false;
+                    //_bagsFull = false;
+                    //// We zoned so bag counts reset
+                    //_bagsInit = false;
                     return;
                 }
 
                 if (_settings["Enabled"].AsBool())
                 {
+                    InitializeBackpackInfo();
+
                     //if (_bagsFull && Inventory.NumFreeSlots == 0)
                     //{
                     //    _settings["Enabled"] = false;
                     //}
+
+                    if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
+                    {
+                        if (Inventory.NumFreeSlots == 0)
+                        {
+                            _settings["Enabled"] = false;
+                        }
+                    }
 
                     if (!_settings["Delete"].AsBool())
                     {
@@ -304,6 +431,7 @@ namespace LootManager
                     }
 
                     MoveItemsToBag();
+                    UpdateBackpackDictionary();
                 }
 
                 #region UI
@@ -312,7 +440,7 @@ namespace LootManager
                 {
                     if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                     {
-                       
+
                         if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
                         {
                             if (addbut.Clicked == null)

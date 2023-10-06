@@ -94,19 +94,21 @@ namespace CombatHandler.Adventurer
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerAesirAbsorption, AesirAbsorption, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, MacheteFlurry, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerSelfPreservation, SelfPreservation, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerSkinProtection, SkinProtection, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerSoothingHerbs, SoothingHerbs, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerFerociousHits, FerociousHits, CombatActionPriority.Low);
+            //type1
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerAesirAbsorption, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSelfPreservation, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSkinProtection, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerFerociousHits, LEProc1, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerHealingHerbs, HealingHerbs, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerCombustion, Combustion, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerCharringBlow, CharringBlow, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerRestoreVigor, RestoreVigor, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteSlice, MacheteSlice, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerBasicDressing, BasicDressing, CombatActionPriority.Low);
+            //type2
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerHealingHerbs, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerCombustion, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerCharringBlow, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerRestoreVigor, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteSlice, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSoothingHerbs, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerBasicDressing, LEProc2, CombatActionPriority.Low);
 
             //Perks
 
@@ -128,7 +130,9 @@ namespace CombatHandler.Adventurer
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
             RegisterSpellProcessor(RelevantNanos.LearningbyDoing, XPBonus);
             RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs, TeamRunSpeedBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(), TreatmentBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(),
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "TreatmentBuffSelectionn"));
 
             //Morphs
             RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
@@ -439,7 +443,7 @@ namespace CombatHandler.Adventurer
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -449,6 +453,8 @@ namespace CombatHandler.Adventurer
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -563,8 +569,6 @@ namespace CombatHandler.Adventurer
                             Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay = bioRegrowthDelayValue;
             }
 
-
-
             if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32())
             {
                 CancelBuffs(RelevantNanos.DragonMorph);
@@ -618,6 +622,8 @@ namespace CombatHandler.Adventurer
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 
@@ -703,82 +709,18 @@ namespace CombatHandler.Adventurer
 
         #region LE Procs
 
-        private bool AesirAbsorption(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.AesirAbsorption != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool FerociousHits(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.FerociousHits != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool MacheteFlurry(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.MacheteFlurry != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool SelfPreservation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.SelfPreservation != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool SkinProtection(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.SkinProtection != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool SoothingHerbs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.SoothingHerbs != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool BasicDressing(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.BasicDressing != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool CharringBlow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.CharringBlow != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool Combustion(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.Combustion != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool HealingHerbs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.HealingHerbs != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool MacheteSlice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.MacheteSlice != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool RestoreVigor(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.RestoreVigor != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
@@ -885,14 +827,14 @@ namespace CombatHandler.Adventurer
 
         protected bool Ranged(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-           return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
         }
 
         protected bool Melee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
         }
-            
+
         private bool Armor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
@@ -931,16 +873,6 @@ namespace CombatHandler.Adventurer
             if (!IsSettingEnabled("RunspeedBuffs")) { return false; }
 
             return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool TreatmentBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (TreatmentBuffSelection.Team == (TreatmentBuffSelection)_settings["TreatmentBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            if (TreatmentBuffSelection.None == (TreatmentBuffSelection)_settings["TreatmentBuffSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #endregion
@@ -988,12 +920,22 @@ namespace CombatHandler.Adventurer
 
         public enum ProcType1Selection
         {
-            AesirAbsorption, MacheteFlurry, SelfPreservation, SkinProtection, FerociousHits
+            AesirAbsorption = 1397705028, 
+            MacheteFlurry = 1296254540, 
+            SelfPreservation = 1145197381, 
+            SkinProtection = 1397049667, 
+            FerociousHits = 1464618305
         }
 
         public enum ProcType2Selection
         {
-            HealingHerbs, Combustion, CharringBlow, RestoreVigor, MacheteSlice, SoothingHerbs, BasicDressing
+            HealingHerbs = 1212237890, 
+            Combustion = 1112822866, 
+            CharringBlow = 1296581199, 
+            RestoreVigor = 1279608914, 
+            MacheteSlice = 1296257868, 
+            SoothingHerbs = 1398032450, 
+            BasicDressing = 1347635282
         }
 
         #endregion

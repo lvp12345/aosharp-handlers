@@ -30,9 +30,6 @@ namespace CombatHandler.MartialArtist
         private static View _itemView;
         private static View _perkView;
 
-        //private static double _singleTauntTick;
-        //private static double _singleTaunt;
-
         private static double _ncuUpdateTime;
 
         public MACombatHandler(string pluginDir) : base(pluginDir)
@@ -100,18 +97,20 @@ namespace CombatHandler.MartialArtist
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, AbsoluteFist, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenKi, StrengthenKi, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDisruptKi, DisruptKi, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSmashingFist, SmashingFist, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenSpirit, StrengthenSpirit, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStingingFist, StingingFist, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenKi, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDisruptKi, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSmashingFist, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenSpirit, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStingingFist, LEProc1, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSelfReconstruction, SelfReconstruction, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, DebilitatingStrike, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistHealingMeditation, HealingMeditation, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAttackLigaments, AttackLigaments, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, MedicinalRemedy, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSelfReconstruction, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistHealingMeditation, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAttackLigaments, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, LEProc2, CombatActionPriority.Low);
+
+
 
             //Perks
             RegisterPerkProcessor(PerkHash.Moonmist, Moonmist, CombatActionPriority.High);
@@ -436,7 +435,7 @@ namespace CombatHandler.MartialArtist
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -446,6 +445,8 @@ namespace CombatHandler.MartialArtist
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -574,6 +575,7 @@ namespace CombatHandler.MartialArtist
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                #endregion
 
                 #region GlobalBuffing
 
@@ -660,76 +662,18 @@ namespace CombatHandler.MartialArtist
 
         #region LE Procs
 
-        private bool AbsoluteFist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.AbsoluteFist != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool DisruptKi(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.DisruptKi != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool SmashingFist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.SmashingFist != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool StingingFist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.StingingFist != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool StrengthenKi(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.StrengthenKi != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool StrengthenSpirit(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.StrengthenSpirit != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool AttackLigaments(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.AttackLigaments != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool DebilitatingStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.DebilitatingStrike != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool HealingMeditation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.HealingMeditation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool MedicinalRemedy(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.MedicinalRemedy != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool SelfReconstruction(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.SelfReconstruction != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
@@ -1014,16 +958,25 @@ namespace CombatHandler.MartialArtist
         {
             TouchOfSaiFung, TheWizdomofHuzzum
         }
-
         public enum ProcType1Selection
         {
-            AbsoluteFist, StrengthenKi, DisruptKi, SmashingFist, StrengthenSpirit, StingingFist
+            AbsoluteFist = 1094862409,
+            StrengthenKi = 1398033225,
+            DisruptKi = 1146243913,
+            SmashingFist = 1397245523,
+            StrengthenSpirit = 1096042573,
+            StingingFist = 1398031955
         }
 
         public enum ProcType2Selection
         {
-            SelfReconstruction, DebilitatingStrike, HealingMeditation, AttackLigaments, MedicinalRemedy
+            SelfReconstruction = 1397510739,
+            DebilitatingStrike = 1145197396,
+            HealingMeditation = 1212960068,
+            AttackLigaments = 1096043593,
+            MedicinalRemedy = 1296388685
         }
+
         public enum DamageTypeSelection
         {
             Melee, Fire, Energy, Chemical
@@ -1037,12 +990,6 @@ namespace CombatHandler.MartialArtist
         {
             None, FormofTessai, FormofRisan
         }
-
-        public enum CritBuffSelection
-        {
-            None, Self, Team
-        }
-
 
         #endregion
     }

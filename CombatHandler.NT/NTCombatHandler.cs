@@ -5,6 +5,7 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace CombatHandler.NanoTechnician
 {
@@ -22,6 +23,7 @@ namespace CombatHandler.NanoTechnician
         private static Window _procWindow;
         private static Window _itemWindow;
         private static Window _debuffWindow;
+        private static Window _calmingWindow;
         private static Window _nukeWindow;
         private static Window _perkWindow;
 
@@ -29,6 +31,7 @@ namespace CombatHandler.NanoTechnician
         private static View _itemView;
         private static View _buffView;
         private static View _debuffView;
+        private static View _calmView;
         private static View _nukeView;
         private static View _perkView;
 
@@ -100,29 +103,47 @@ namespace CombatHandler.NanoTechnician
             _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
             _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
             _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
+            _settings.AddVariable("HackedBlindSelection", (int)HackedBlindSelection.None);
+
+            _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Calm);
+            _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
 
             _settings.AddVariable("AOESelection", (int)AOESelection.None);
 
             RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
 
             //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianThermalReprieve, ThermalReprieve, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianHarvestEnergy, HarvestEnergy, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLayeredAmnesty, LayeredAmnesty, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianSourceTap, SourceTap, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianCircularLogic, CircularLogic, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianThermalReprieve, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianHarvestEnergy, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLayeredAmnesty, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianSourceTap, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianCircularLogic, LEProc1, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianOptimizedLibrary, OptimizedLibrary, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianAcceleratedReality, AcceleratedReality, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLoopingService, LoopingService, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianPoweredNanoFortress, PoweredNanoFortress, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianIncreaseMomentum, IncreaseMomentum, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianUnstableLibrary, UnstableLibrary, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianOptimizedLibrary, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianAcceleratedReality, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLoopingService, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianPoweredNanoFortress, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianIncreaseMomentum, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianUnstableLibrary, LEProc2, CombatActionPriority.Low);
 
+
+
+            //Perks
             RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
 
             //DeTaunt
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt, CombatActionPriority.High);
+
+            //Debuffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.HackedBlind, HackedBlind, CombatActionPriority.High);
+
+            //Calms
+            RegisterSpellProcessor(RelevantNanos.Stun, Stun, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.Calm, Calm, CombatActionPriority.High);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
@@ -145,12 +166,6 @@ namespace CombatHandler.NanoTechnician
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
             RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
-
-            //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
 
             //Dots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.High);
@@ -187,7 +202,7 @@ namespace CombatHandler.NanoTechnician
             BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
             StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
         }
-        public Window[] _windows => new Window[] { _buffWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -246,6 +261,24 @@ namespace CombatHandler.NanoTechnician
                 _debuffWindow = container;
             }
         }
+
+        private void HandleCalmingViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_calmView)) { return; }
+
+                _calmView = View.CreateFromXml(PluginDirectory + "\\UI\\NTCalmingView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Calming", XmlViewName = "NTCalmingView" }, _calmView);
+            }
+            else if (_calmingWindow == null || (_calmingWindow != null && !_calmingWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_calmingWindow, PluginDir, new WindowOptions() { Name = "Calming", XmlViewName = "NTCalmingView" }, _calmView, out var container);
+                _calmingWindow = container;
+            }
+        }
+
         private void HandlePerkViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -461,7 +494,7 @@ namespace CombatHandler.NanoTechnician
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -471,6 +504,8 @@ namespace CombatHandler.NanoTechnician
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -611,12 +646,19 @@ namespace CombatHandler.NanoTechnician
                     debuffView.Clicked = HandleDebuffsViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
+                {
+                    calmView.Tag = SettingsController.settingsWindow;
+                    calmView.Clicked = HandleCalmingViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
                 {
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                #endregion
 
                 #region GlobalBuffing
 
@@ -703,77 +745,18 @@ namespace CombatHandler.NanoTechnician
 
         #region LE Procs
 
-        private bool CircularLogic(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.CircularLogic != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
 
-        private bool HarvestEnergy(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcType1Selection.HarvestEnergy != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool LayeredAmnesty(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.LayeredAmnesty != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool SourceTap(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.SourceTap != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool ThermalReprieve(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.ThermalReprieve != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool AcceleratedReality(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.AcceleratedReality != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool IncreaseMomentum(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.IncreaseMomentum != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool UnstableLibrary(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.UnstableLibrary != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool LoopingService(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.LoopingService != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool PoweredNanoFortress(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.PoweredNanoFortress != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool OptimizedLibrary(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.OptimizedLibrary != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
+                return false;
 
             return LEProc(perk, fightingTarget, ref actionTarget);
         }
@@ -810,57 +793,8 @@ namespace CombatHandler.NanoTechnician
                 || AOESelection.Normal == (AOESelection)_settings["AOESelection"].AsInt32()
                 || fightingTarget == null) { return false; }
 
-            //Task.Factory.StartNew(
-            //    async () =>
-            //    {
-            //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, 100);
-            //        await Task.Delay(444);
-            //        DynelManager.LocalPlayer.SetStat(Stat.AggDef, -100);
-            //    });
-
-            //if (DynelManager.LocalPlayer.GetStat(Stat.AggDef) == 100)
-            //{
-            //    return true;
-            //}
-
             return true;
         }
-
-        //private bool AIDOTNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("AIDot") || fightingTarget == null || !CanCast(spell)) { return false; }
-
-        //    if (fightingTarget.Health < 80000) { return false; }
-
-        //    if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
-
-        //    return true;
-        //}
-
-        //private bool AIDOTNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (AIDotSelection.None == (AIDotSelection)_settings["AIDot"].AsInt32()) { return false; }
-
-        //    if (AIDotSelection.Target == (AIDotSelection)_settings["AIDot"].AsInt32()
-        //        && fightingTarget != null)
-        //    {
-
-        //        if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    if (AIDotSelection.Boss == (AIDotSelection)_settings["AIDot"].AsInt32())
-        //    {
-        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-        //        if (fightingTarget.Buffs.Find(spell.Id, out Buff buff) && buff.RemainingTime > 5) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    return false;
-        //}
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -888,6 +822,118 @@ namespace CombatHandler.NanoTechnician
 
             return false;
 
+        }
+
+        #endregion
+
+        #region Calms
+
+        private bool Stun(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (CalmingSelection.Stun != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
+
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool Calm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (CalmingSelection.Calm != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
+
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion
@@ -928,7 +974,6 @@ namespace CombatHandler.NanoTechnician
 
         }
 
-
         private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
@@ -957,7 +1002,32 @@ namespace CombatHandler.NanoTechnician
             return false;
         }
 
+        private bool HackedBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
 
+            if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+            if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+
+            if (!_drainTarget.Buffs.Contains(RelevantNanos.HackedBlind))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
+        }
 
         #endregion
 
@@ -1125,13 +1195,23 @@ namespace CombatHandler.NanoTechnician
 
         public enum ProcType1Selection
         {
-            ThermalReprieve, HarvestEnergy, LayeredAmnesty, SourceTap, CircularLogic
+            ThermalReprieve = 1347900245,
+            HarvestEnergy = 1128877135,
+            LayeredAmnesty = 1397248588,
+            SourceTap = 1364218711,
+            CircularLogic = 1346851668
         }
 
         public enum ProcType2Selection
         {
-            OptimizedLibrary, AcceleratedReality, LoopingService, PoweredNanoFortress, IncreaseMomentum, UnstableLibrary
+            OptimizedLibrary = 1330465858,
+            AcceleratedReality = 1163086928,
+            LoopingService = 1431522377,
+            PoweredNanoFortress = 1414677832,
+            IncreaseMomentum = 1229147471,
+            UnstableLibrary = 1146311237
         }
+
         public enum BlindSelection
         {
             None, Target, AOE
@@ -1144,6 +1224,10 @@ namespace CombatHandler.NanoTechnician
         {
             None, Target, Boss
         }
+        public enum HackedBlindSelection
+        {
+            None, Target, Boss
+        }
         public enum AOESelection
         {
             None, Normal, VE
@@ -1152,6 +1236,16 @@ namespace CombatHandler.NanoTechnician
         public enum DOTADebuffTargetSelection
         {
             None, Target, Boss
+        }
+
+        public enum CalmingSelection
+        {
+            Stun, Calm
+        }
+
+        public enum ModeSelection
+        {
+            None, All, Adds
         }
 
         private static class RelevantNanos
@@ -1167,6 +1261,11 @@ namespace CombatHandler.NanoTechnician
             public static readonly int[] AOENukes = { 266293, 28638,
                 266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
                 45917, 45937, 28599, 45894, 45943, 28633, 28631 };
+
+            public static readonly int[] HackedBlind = { 253384, 253382, 253380 };
+            public const int Stun = 28625;
+            public static readonly int[] Calm = { 259364, 259365, 259362, 259363, 259366, 259367, 100443, 100441, 259335, 259336, 100442, 100440 };
+
             public const int SuperiorFleetingImmunity = 273386;
             public static readonly int[] AbsorbACBuff = { 270356, 117676, 117675, 117677, 117678, 117679 };
             public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };

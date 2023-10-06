@@ -3,21 +3,21 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Furious Ammunition (Damage Buff +99 60s)" value="0"/>
-      <RadioButton label="Target Acquired (AR Buff +35 AAO 60s)" value="1"/>
-      <RadioButton label="Reconditioned (Self Buff +361 Max HP, HOT 650 [13x50 every 5s] 60s)" value="2"/>
-      <RadioButton label="Concussive Shot (Damage Buff +35 damage 60s)" value="3"/>
-      <RadioButton label="Emergency Bandages (Self Buff +200 Max HP, HOT 325 [13x25 every 5s] 60s) " value="4"/>
-      <RadioButton label="Successful Targeting (AR Buff +23 AAO 60s)" value="5"/>
+      <RadioButton label="Furious Ammunition (Damage Buff +99 60s)" value="1229865293"/>
+      <RadioButton label="Target Acquired (AR Buff +35 AAO 60s)" value="1196573778"/>
+      <RadioButton label="Reconditioned (Self Buff +361 Max HP, HOT 650 [13x50 every 5s] 60s)" value="1398096452"/>
+      <RadioButton label="Concussive Shot (Damage Buff +35 damage 60s)" value="1095188813"/>
+      <RadioButton label="Emergency Bandages (Self Buff +200 Max HP, HOT 325 [13x25 every 5s] 60s) " value="1163018573"/>
+      <RadioButton label="Successful Targeting (AR Buff +23 AAO 60s)" value="1129730888"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Fuse Body Armor (Max Reflect DMG +75 60s)" value="0"/>
-      <RadioButton label="On The Double (Init Buff +150 60s)" value="1"/>
-      <RadioButton label="Graze Jugular Vein (Damage Buff +70 60s)" value="2"/>
-      <RadioButton label="Gear Assault Absorption (Max Reflect DMG +25 60s)" value="3"/>
-      <RadioButton label="Deep Six Initiative (Init Buff +50 60s)" value="4"/>
-      <RadioButton label="Shoot Artery (Damage Buff +15 all damage 60s)" value="5"/>
+      <RadioButton label="Fuse Body Armor (Max Reflect DMG +75 60s)" value="1381190981"/>
+      <RadioButton label="On The Double (Init Buff +150 60s)" value="1179992397"/>
+      <RadioButton label="Graze Jugular Vein (Damage Buff +70 60s)" value="1381256527"/>
+      <RadioButton label="Gear Assault Absorption (Max Reflect DMG +25 60s)" value="1128617037"/>
+      <RadioButton label="Deep Six Initiative (Init Buff +50 60s)" value="1162691137"/>
+      <RadioButton label="Shoot Artery (Damage Buff +15 all damage 60s)" value="1397899609"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

@@ -7,8 +7,7 @@ using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static CombatHandler.Engineer.EngiCombatHandler;
-using static System.Collections.Specialized.BitVector32;
+using System.Text.RegularExpressions;
 
 namespace CombatHandler.Engineer
 {
@@ -127,10 +126,10 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("DamageShields", false);
             _settings.AddVariable("MEBuff", false);
 
-            _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
+            _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.None);
             _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
 
-            _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.ChaoticBox);
+            _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.None);
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ReactiveArmor);
@@ -190,11 +189,11 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.EngineeringBuff, EngineeringBuff);
 
             //Pets
-            //Pet Spawners
+            //pet spawners
             RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Attack).Select(c => c.Key).ToArray(), CastPets);
             RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Support).Select(c => c.Key).ToArray(), CastPets);
 
-            //Pet Buffs
+            //pet buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(), PetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPPetInitiativeBuffs).OrderByStackingOrder(), PetBuff);
@@ -209,17 +208,17 @@ namespace CombatHandler.Engineer
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp, CombatActionPriority.High);
 
-            //Pet Procs
+            //pet procs
             RegisterSpellProcessor(RelevantNanos.MastersBidding,
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                 => GenericPetProc(spell, fightingTarget, ref actionTarget, PetProcSelection.MastersBidding));
-           
+
 
             RegisterSpellProcessor(RelevantNanos.SedativeInjectors,
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                 => GenericPetProc(spell, fightingTarget, ref actionTarget, PetProcSelection.SedativeInjectors));
 
-            //Pet Perks
+            //pet perks
             RegisterPerkProcessor(PerkHash.TauntBox,
                 (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                 => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.TauntBox));
@@ -232,28 +231,32 @@ namespace CombatHandler.Engineer
                 (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                 => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.SiphonBox));
 
-            //Pet Trimmers
+            //pet trimmers
             RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "TauntTrimmer", CanTauntTrim, petType => {
+                PetTrimmer(item, target, ref action, "TauntTrimmer", CanTauntTrim, petType =>
+                {
                     petTrimmedAggressive[petType] = true;
                 }, petType => _lastTrimTime = Time.NormalTime));
 
             RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "AggDefTrimmer", CanAggDefTrim, petType => {
+                PetTrimmer(item, target, ref action, "AggDefTrimmer", CanAggDefTrim, petType =>
+                {
                     petTrimmedAggDef[petType] = true;
                 }, petType => _lastTrimTime = Time.NormalTime));
 
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpoints,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "DivertHpTrimmer", CanDivertHpTrim, petType => {
+                PetTrimmer(item, target, ref action, "DivertHpTrimmer", CanDivertHpTrim, petType =>
+                {
                     petTrimmedHpDiv[petType] = true;
                 }, petType => _lastPetTrimDivertHpTime[petType] = Time.NormalTime));
 
             RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense,
                 (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "DivertOffTrimmer", CanDivertOffTrim, petType => {
+                PetTrimmer(item, target, ref action, "DivertOffTrimmer", CanDivertOffTrim, petType =>
+                {
                     petTrimmedOffDiv[petType] = true;
                 }, petType => _lastPetTrimDivertOffTime[petType] = Time.NormalTime));
 
@@ -1171,7 +1174,7 @@ namespace CombatHandler.Engineer
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool GenericDebuffingAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) 
+        private bool GenericDebuffingAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget)
             actionTarget, DebuffingAuraSelection debuffType)
         {
             DebuffingAuraSelection currentSetting = (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32();
@@ -1263,8 +1266,8 @@ namespace CombatHandler.Engineer
         {
             PetPerkSelection currentSetting = (PetPerkSelection)_settings["PetPerkSelection"].AsInt32();
 
-            if (currentSetting == PetPerkSelection.None || currentSetting != petPerkSelection 
-                ||!CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
+            if (currentSetting == PetPerkSelection.None || currentSetting != petPerkSelection
+                || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
             {
                 return false;
             }
@@ -1310,10 +1313,10 @@ namespace CombatHandler.Engineer
         private bool PetTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget,
                         string settingName, Func<Pet, bool> canTrimFunc, Action<PetType> updateStatus, Action<PetType> updateTime)
         {
-            
+
             if (!IsSettingEnabled(settingName) || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
-            
+
             double currentTime = Time.NormalTime;
             if (
                 (settingName == "DivertHpTrimmer" &&

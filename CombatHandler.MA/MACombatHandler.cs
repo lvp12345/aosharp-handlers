@@ -446,6 +446,8 @@ namespace CombatHandler.MartialArtist
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -573,6 +575,7 @@ namespace CombatHandler.MartialArtist
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                #endregion
 
                 #region GlobalBuffing
 
@@ -987,12 +990,6 @@ namespace CombatHandler.MartialArtist
         {
             None, FormofTessai, FormofRisan
         }
-
-        public enum CritBuffSelection
-        {
-            None, Self, Team
-        }
-
 
         #endregion
     }

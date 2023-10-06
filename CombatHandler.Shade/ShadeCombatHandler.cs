@@ -389,6 +389,8 @@ namespace CombatHandler.Shade
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -504,6 +506,8 @@ namespace CombatHandler.Shade
                     perkView.Tag = SettingsController.settingsWindow;
                     perkView.Clicked = HandlePerkViewClick;
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 

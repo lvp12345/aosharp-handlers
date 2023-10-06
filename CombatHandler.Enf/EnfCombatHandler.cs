@@ -158,7 +158,9 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
             RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TargetedHpBuff);
             RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
-            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength, StrengthBuff);
+            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
 
             //Taunt Tools
             RegisterItemProcessor(244655, 244655, TauntTool);
@@ -480,6 +482,8 @@ namespace CombatHandler.Enf
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -648,6 +652,8 @@ namespace CombatHandler.Enf
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 
@@ -1000,16 +1006,6 @@ namespace CombatHandler.Enf
             if (!IsSettingEnabled("AbsorbACBuff")) { return false; }
 
             return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
-
-            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         #endregion

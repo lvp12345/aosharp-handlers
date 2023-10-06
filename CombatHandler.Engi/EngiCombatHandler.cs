@@ -22,11 +22,7 @@ namespace CombatHandler.Engineer
 
         public static bool _syncPets;
 
-        //private const float DelayBetweenTrims = 1;
-
         private const float DelayBetweenDiverTrims = 305;
-
-        //private bool petTrimmedAggressive = false;
 
         protected Dictionary<PetType, bool> petTrimmedAggressive = new Dictionary<PetType, bool>();
         protected Dictionary<PetType, bool> petTrimmedAggDef = new Dictionary<PetType, bool>();
@@ -132,7 +128,7 @@ namespace CombatHandler.Engineer
             _settings.AddVariable("MEBuff", false);
 
             _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.Damage);
-            _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.Blind);
+            _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
 
             _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.ChaoticBox);
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
@@ -665,6 +661,8 @@ namespace CombatHandler.Engineer
             CancelHostileAuras(RelevantNanos.Blinds);
             CancelHostileAuras(RelevantNanos.ShieldRippers);
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -846,6 +844,8 @@ namespace CombatHandler.Engineer
                     Chat.WriteLine("SyncPets enabled.");
                     syncPetsOnEnabled();
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 
@@ -1171,16 +1171,12 @@ namespace CombatHandler.Engineer
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool GenericDebuffingAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, DebuffingAuraSelection debuffType)
+        private bool GenericDebuffingAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) 
+            actionTarget, DebuffingAuraSelection debuffType)
         {
             DebuffingAuraSelection currentSetting = (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32();
 
-            if (currentSetting != debuffType)
-            {
-                return false;
-            }
-
-            if (fightingTarget == null)
+            if (currentSetting != debuffType || fightingTarget == null)
             {
                 return false;
             }
@@ -1188,25 +1184,24 @@ namespace CombatHandler.Engineer
             switch (debuffType)
             {
                 case DebuffingAuraSelection.Blind:
-                    return DynelManager.NPCs.Any(c => c.Health > 0
-                        && c.FightingTarget?.Buffs.Contains(202732) == false && c.FightingTarget?.Buffs.Contains(214879) == false
-                        && c.FightingTarget?.Buffs.Contains(284620) == false && c.FightingTarget?.Buffs.Contains(216382) == false
-                        && c.FightingTarget?.IsPet == false
-                        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f);
+                case DebuffingAuraSelection.ShieldRipper:
+                    return CheckDebuffCondition();
 
                 case DebuffingAuraSelection.PetSnare:
                     return SnareMobExists() ? spell.IsReady : PetBuff(spell, fightingTarget, ref actionTarget);
 
-                case DebuffingAuraSelection.ShieldRipper:
-                    return DynelManager.NPCs.Any(c => c.Health > 0
-                        && c.FightingTarget?.Buffs.Contains(202732) == false && c.FightingTarget?.Buffs.Contains(214879) == false
-                        && c.FightingTarget?.Buffs.Contains(284620) == false && c.FightingTarget?.Buffs.Contains(216382) == false
-                        && c.FightingTarget?.IsPet == false
-                        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f);
-
                 default:
                     return false;
             }
+        }
+
+        private bool CheckDebuffCondition()
+        {
+            return DynelManager.NPCs.Any(c => c.Health > 0
+                && c.FightingTarget?.Buffs.Contains(202732) == false && c.FightingTarget?.Buffs.Contains(214879) == false
+                && c.FightingTarget?.Buffs.Contains(284620) == false && c.FightingTarget?.Buffs.Contains(216382) == false
+                && c.FightingTarget?.IsPet == false
+                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 9f);
         }
 
         private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -89,6 +89,7 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("WarpPets", false);
 
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
+
             _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
             _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
             _settings.AddVariable("InterruptSelection", (int)InterruptSelection.None);
@@ -154,7 +155,10 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
 
             //Team buffs
-            RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
+            RegisterSpellProcessor(RelevantNanos.MPCompositeNano,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "CompositeNanoSkillsBuffSelection"));
+
             RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
@@ -166,7 +170,10 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MatCre);
             RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MatLoc);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifier);
+             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
+                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
+
             RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
@@ -591,6 +598,8 @@ namespace CombatHandler.Metaphysicist
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -778,6 +787,7 @@ namespace CombatHandler.Metaphysicist
                     syncPetsOnEnabled();
                 }
 
+                #endregion
 
                 #region GlobalBuffing
 
@@ -912,16 +922,6 @@ namespace CombatHandler.Metaphysicist
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (CompositeNanoSkillsBuffSelection.Team == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            if (CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
         private bool MatCre(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
@@ -970,15 +970,7 @@ namespace CombatHandler.Metaphysicist
             return false;
         }
 
-        private bool InterruptModifier(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (InterruptSelection.Team == (InterruptSelection)_settings["InterruptSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            if (InterruptSelection.None == (InterruptSelection)_settings["InterruptSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
+        
 
         #endregion
 
@@ -1318,8 +1310,6 @@ namespace CombatHandler.Metaphysicist
 
         #region Misc
 
-
-
         private Spell[] GetAttackPetsWithSLPetsFirst()
         {
             List<Spell> attackPetsWithoutSL = Spell.GetSpellsForNanoline(NanoLine.AttackPets).Where(spell => !RelevantNanos.SLAttackPets.Contains(spell.Id)).OrderByStackingOrder().ToList();
@@ -1491,10 +1481,7 @@ namespace CombatHandler.Metaphysicist
         {
             None, InducedApathy, MastersBidding
         }
-        public enum CompositeNanoSkillsBuffSelection
-        {
-            None, Self, Team
-        }
+        
         public enum DamageDebuffSelection
         {
             None, Target, Area, Boss
@@ -1515,13 +1502,17 @@ namespace CombatHandler.Metaphysicist
         {
             None, Target, Area, Boss
         }
+        public enum CompositeNanoSkillsBuffSelection
+        {
+            None, Self, Team
+        }
         public enum InterruptSelection
         {
             None, Self, Team
         }
         public enum CostBuffSelection
         {
-            Self, Team
+            None, Self, Team
         }
 
         public enum ProcType1Selection

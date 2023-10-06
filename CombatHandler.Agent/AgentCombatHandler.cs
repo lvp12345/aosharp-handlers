@@ -498,6 +498,8 @@ namespace CombatHandler.Agent
                 _ncuUpdateTime = Time.NormalTime;
             }
 
+            #region UI
+
             var window = SettingsController.FindValidWindow(_windows);
 
             if (window != null && window.IsValid)
@@ -644,6 +646,7 @@ namespace CombatHandler.Agent
                     mpView.Clicked = HandleMPSettingsViewClick;
                 }
 
+                #endregion
 
                 #region GlobalBuffing
 

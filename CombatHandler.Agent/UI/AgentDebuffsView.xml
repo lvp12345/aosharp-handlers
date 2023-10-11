@@ -1,16 +1,27 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="DOT A" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DOTA" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionCheckBox label="Evasion Debuff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__EvasionDebuff" layout_borders="Rect(10,1,5,1)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitDebuffSelection">
-      <RadioButton label="None" value="0"/>
-      <RadioButton label="Target" value="1"/>
-      <RadioButton label="Area" value="2"/>
-    </OptionRadioButtonGroup>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-  </BorderView>
+	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="DOT A" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DOTASelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Target" value="1"/>
+			<RadioButton label="Area" value="2"/>
+			<RadioButton label="Boss" value="3"/>
+		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="Evasion Debuff" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__EvasionDebuffSelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Target" value="1"/>
+			<RadioButton label="Area" value="2"/>
+			<RadioButton label="Boss" value="3"/>
+		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitDebuffSelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Target" value="1"/>
+			<RadioButton label="Area" value="2"/>
+			<RadioButton label="Boss" value="3"/>
+		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>
 </root>

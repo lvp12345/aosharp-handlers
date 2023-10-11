@@ -81,13 +81,12 @@ namespace CombatHandler.Agent
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("DOTA", false);
-            _settings.AddVariable("EvasionDebuff", false);
-
             _settings.AddVariable("CritTeam", false);
 
             _settings.AddVariable("SpawnPets", true);
 
+            _settings.AddVariable("DOTASelection", (int)DOTASelection.None);
+            _settings.AddVariable("EvasionDebuffSelection", (int)EvasionDebuffSelection.None);
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.GrimReaper);
@@ -144,9 +143,17 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, CritIncrease);
 
             //Debuffs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffs, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DOTA, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DOTASelection"), CombatActionPriority.Low);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "EvasionDebuffSelection"), CombatActionPriority.Low);
+
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs,
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"), CombatActionPriority.Medium);
 
             //False Profs
             RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);
@@ -970,32 +977,6 @@ namespace CombatHandler.Agent
 
         #region Debuffs
 
-        private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
-        private bool DOTA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledTargetDebuff("DOTA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool EvasionDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledTargetDebuff("EvasionDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
         #endregion
 
         #region Misc
@@ -1082,9 +1063,17 @@ namespace CombatHandler.Agent
         {
             None, SingleTeam, SingleArea
         }
+        public enum DOTASelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum EvasionDebuffSelection
+        {
+            None, Target, Area, Boss
+        }
         public enum InitDebuffSelection
         {
-            None, Target, Area
+            None, Target, Area, Boss
         }
 
         public enum ProcType1Selection

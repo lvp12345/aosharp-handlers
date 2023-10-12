@@ -75,6 +75,8 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("SharpObjects", false);
             _settings.AddVariable("Grenades", false);
 
+            _settings.AddVariable("ScorpioTauntTool", false);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
@@ -130,6 +132,9 @@ namespace CombatHandler.Soldier
             //Taunts
             RegisterSpellProcessor(RelevantNanos.TimedTauntBuffs, TimedTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.SingleTauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
+
+            //Taunt Tools
+            RegisterItemProcessor(244655, 244655, TauntTool);
 
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);

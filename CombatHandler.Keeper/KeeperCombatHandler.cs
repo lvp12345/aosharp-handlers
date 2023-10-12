@@ -67,6 +67,8 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("SharpObjects", false);
             _settings.AddVariable("Grenades", false);
 
+            _settings.AddVariable("ScorpioTauntTool", false);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
             _settings.AddVariable("Kits", true);
@@ -104,6 +106,9 @@ namespace CombatHandler.Keeper
 
             //Anti-Fear
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), RecastAntiFear);
+
+            //Taunt Tools
+            RegisterItemProcessor(244655, 244655, TauntTool);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder().OrderByStackingOrder(), GlobalGenericBuff);

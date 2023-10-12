@@ -80,6 +80,8 @@ namespace CombatHandler.Enf
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
+            _settings.AddVariable("ScorpioTauntTool", false);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
@@ -100,15 +102,11 @@ namespace CombatHandler.Enf
             _settings.AddVariable("InitiativeBuffs", true);
             _settings.AddVariable("DamageShields", false);
 
-
             _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
 
             _settings.AddVariable("TrollForm", false);
             _settings.AddVariable("EncaseInStone", false);
             _settings.AddVariable("DamagePerk", false);
-
-            _settings.AddVariable("ScorpioTauntTool", false);
-
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
             //LE Procs
@@ -126,8 +124,6 @@ namespace CombatHandler.Enf
             RegisterPerkProcessor(PerkHash.LEProcEnforcerBustKneecaps, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerIgnorePain, LEProc2, CombatActionPriority.Low);
 
-
-
             //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
@@ -135,6 +131,9 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
+           
+            //Taunt Tools
+            RegisterItemProcessor(244655, 244655, TauntTool);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
@@ -161,9 +160,6 @@ namespace CombatHandler.Enf
             RegisterSpellProcessor(RelevantNanos.ProdigiousStrength,
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
-
-            //Taunt Tools
-            RegisterItemProcessor(244655, 244655, TauntTool);
 
             PluginDirectory = pluginDir;
 

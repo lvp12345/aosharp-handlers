@@ -85,6 +85,8 @@ namespace CombatHandler.Generic
 
         public static bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
+        #region targets to not debuff
+
         protected static HashSet<string> debuffTargetsToIgnore = new HashSet<string>
         {
                     "Immortal Guardian",
@@ -184,6 +186,8 @@ namespace CombatHandler.Generic
                     "Flaming Vengeance",
                     "Otacustes"
         };
+
+        #endregion
 
         public static IPCChannel IPCChannel;
         public static Config Config { get; private set; }
@@ -670,34 +674,7 @@ namespace CombatHandler.Generic
 
         #endregion
 
-        #region Debuffs
-
-        public bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
-        {
-            int settingValue = _settings[debuffType].AsInt32();
-
-            if (settingValue == 0) return false;
-
-            if (settingValue == 1 && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
-                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);
-
-            if (settingValue == 3 && fightingTarget != null)
-            {
-                if (fightingTarget.MaxHealth < 1000000) return false;
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
-                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
-        #endregion
-
+       
         #region Extensions
 
         #region Comps
@@ -773,6 +750,22 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Non Combat
+
+        public bool SelfBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
+        {
+            if (!_settings[settingName].AsBool()) { return false; }
+
+            return GenericBuff(spell, ref actionTarget);
+        }
+
+        public bool TeamBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
+        {
+            if (_settings[settingName].AsBool())
+                return GenericTeamBuff(spell, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
 
         protected bool GlobalGenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -880,9 +873,53 @@ namespace CombatHandler.Generic
 
         #endregion
 
+        #region LE Procs
+
+        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
+                return false;
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
+                return false;
+
+            return LEProc(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
         #endregion
 
         #region Debuffs
+
+        public bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
+        {
+            int settingValue = _settings[debuffType].AsInt32();
+
+            if (settingValue == 0) return false;
+
+            if (settingValue == 1 && fightingTarget != null)
+            {
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);
+
+            if (settingValue == 3 && fightingTarget != null)
+            {
+                if (fightingTarget.MaxHealth < 1000000) return false;
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
 
         protected bool TargetDebuff(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

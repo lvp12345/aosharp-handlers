@@ -656,26 +656,6 @@ namespace CombatHandler.Shade
             }
         }
 
-        #region LE Procs
-
-        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Items
 
         private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -759,8 +739,6 @@ namespace CombatHandler.Shade
 
         #endregion
 
-        #region Buffs
-
         #region Procs
 
         private bool InitDebuffProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
@@ -791,7 +769,9 @@ namespace CombatHandler.Shade
 
         #endregion
 
-        //TODO: Delete other FTYS and rename... maybe this works
+        #region Buffs
+
+
 
         private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

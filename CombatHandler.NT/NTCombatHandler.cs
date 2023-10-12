@@ -126,8 +126,6 @@ namespace CombatHandler.NanoTechnician
             RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianIncreaseMomentum, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianUnstableLibrary, LEProc2, CombatActionPriority.Low);
 
-
-
             //Perks
             RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
 
@@ -137,7 +135,11 @@ namespace CombatHandler.NanoTechnician
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(), HaloNanoDebuff, CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "HaloSelection"), CombatActionPriority.High);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.HackedBlind, HackedBlind, CombatActionPriority.High);
 
@@ -960,20 +962,6 @@ namespace CombatHandler.NanoTechnician
 
         #region Debuffs
 
-        private bool HaloNanoDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HaloSelection.None == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return false; }
-
-            if (HaloSelection.Target != (HaloSelection)_settings["HaloSelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (HaloSelection.Boss != (HaloSelection)_settings["HaloSelection"].AsInt32())
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-            return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-        }
-
         private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
@@ -1218,7 +1206,7 @@ namespace CombatHandler.NanoTechnician
         }
         public enum HaloSelection
         {
-            None, Target, Boss
+            None, Target, Area, Boss
         }
         public enum NanoResistSelection
         {

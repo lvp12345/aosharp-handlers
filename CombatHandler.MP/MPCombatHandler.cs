@@ -98,15 +98,15 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("DamageDebuffASelection", (int)DamageDebuffASelection.None);
             _settings.AddVariable("DamageDebuffBSelection", (int)DamageDebuffBSelection.None);
 
-            _settings.AddVariable("Cost", false);
-            _settings.AddVariable("Evades", false);
-            _settings.AddVariable("PistolTeam", false);
-
-            _settings.AddVariable("NanoResistanceDebuff", (int)NanoResistanceDebuffSelection.None);
-            _settings.AddVariable("NanoShutdownDebuff", (int)NanoShutdownDebuffSelection.None);
+            _settings.AddVariable("NanoResistanceDebuffSelection", (int)NanoResistanceDebuffSelection.None);
+            _settings.AddVariable("NanoShutdownDebuffSelection", (int)NanoShutdownDebuffSelection.None);
 
             _settings.AddVariable("CompositesNanoSkills", false);
             _settings.AddVariable("CompositesNanoSkillsTeam", false);
+
+            _settings.AddVariable("Cost", false);
+            _settings.AddVariable("Evades", false);
+            _settings.AddVariable("PistolTeam", false);
 
             _settings.AddVariable("DamagePerk", false);
 
@@ -178,15 +178,30 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
             //Debuffs
+            //nukes
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(), DamageDebuffA, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(), DamageDebuffB, CombatActionPriority.High);
+            //debuffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffSelection"), CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResistanceDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(), NanoShutdownDebuff, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffASelection"), CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffBSelection"), CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoResistanceDebuffSelection"), CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoShutdownDebuffSelection"), CombatActionPriority.High);
 
             //Pets
             RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
@@ -975,136 +990,6 @@ namespace CombatHandler.Metaphysicist
         #endregion
 
         #region Debufs
-
-        private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            int selection = _settings["NanoShutdownDebuff"].AsInt32();
-
-            switch (selection)
-            {
-                case (int)NanoShutdownDebuffSelection.None:
-                    return false;
-
-                case (int)NanoShutdownDebuffSelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case (int)NanoShutdownDebuffSelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case (int)NanoShutdownDebuffSelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            NanoResistanceDebuffSelection selection = (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32();
-
-            switch (selection)
-            {
-                case NanoResistanceDebuffSelection.None:
-                    return false;
-
-                case NanoResistanceDebuffSelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case NanoResistanceDebuffSelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case NanoResistanceDebuffSelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            DamageDebuffSelection selection = (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32();
-
-            switch (selection)
-            {
-                case DamageDebuffSelection.None:
-                    return false;
-
-                case DamageDebuffSelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case DamageDebuffSelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case DamageDebuffSelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool DamageDebuffA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            DamageDebuffASelection selection = (DamageDebuffASelection)_settings["DamageDebuffASelection"].AsInt32();
-
-            switch (selection)
-            {
-                case DamageDebuffASelection.None:
-                    return false;
-
-                case DamageDebuffASelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case DamageDebuffASelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case DamageDebuffASelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool DamageDebuffB(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            DamageDebuffBSelection selection = (DamageDebuffBSelection)_settings["DamageDebuffBSelection"].AsInt32();
-
-            switch (selection)
-            {
-                case DamageDebuffBSelection.None:
-                    return false;
-
-                case DamageDebuffBSelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case DamageDebuffBSelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case DamageDebuffBSelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
 
         #endregion
 

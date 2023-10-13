@@ -151,7 +151,13 @@ namespace CombatHandler.Soldier
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), Shotgun);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HeavyWeaponsBuffs).OrderByStackingOrder(), HeavyWeapon);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamArmorBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(),
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "InitBuff"));
 
             RegisterSpellProcessor(RelevantNanos.ArBuffs, AssaultRifle);
             RegisterSpellProcessor(RelevantNanos.CompositeHeavyArtillery, HeavyCompBuff);
@@ -160,7 +166,6 @@ namespace CombatHandler.Soldier
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RiotControl);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.Precognition, Evades);
@@ -695,26 +700,6 @@ namespace CombatHandler.Soldier
             }
         }
 
-        #region LE Procs
-
-        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Perks
 
         #endregion
@@ -957,15 +942,6 @@ namespace CombatHandler.Soldier
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-
-            if (IsSettingEnabled("InitBuff"))
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("CompHeavyArt"))
@@ -1035,14 +1011,6 @@ namespace CombatHandler.Soldier
             if (!IsSettingEnabled("TeamArmorBuff")) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(162357)) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("TeamArmorBuff"))
-                return GenericTeamBuff(spell, ref actionTarget);
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }

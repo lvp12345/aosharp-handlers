@@ -142,8 +142,7 @@ namespace CombatHandler.Engineer
             Game.TeleportEnded += OnZoned;
 
             //Pet heals
-            RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing);
-            RegisterSpellProcessor(RelevantNanos.PetHealingGreater, PetHealingGreater);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealing).OrderByStackingOrder(), PetHealing);
 
             //Pet Aura 
             //buffing
@@ -172,12 +171,26 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), TeamArmorBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(),
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "DamageShields"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(),
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => SelfBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "ShadowlandReflectBase"));
+
+            RegisterSpellProcessor(RelevantNanos.EngineeringBuff,
+           (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => SelfBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "MEBuff"));
+
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), Grenade);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), ShadowlandReflectBase);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), DamageShields);
-
+            
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
@@ -186,7 +199,6 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GlobalGenericTeamBuff);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GeneralMechanicalEngineeringBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.EngineeringBuff, EngineeringBuff);
 
             //Pets
             //pet spawners
@@ -199,8 +211,13 @@ namespace CombatHandler.Engineer
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPPetInitiativeBuffs).OrderByStackingOrder(), PetBuff);
             RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, PetBuff);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(), PetArmorBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetDefensiveNanos);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(),
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => SettingPetBuff(buffSpell, fightingTarget, ref actionTarget, "PetArmorBuff"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(),
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => SettingPetBuff(buffSpell, fightingTarget, ref actionTarget, "PetDefensiveNanos"));
 
             RegisterSpellProcessor(RelevantNanos.ShieldOfObedientServant, ShieldOfTheObedientServant);
 
@@ -930,41 +947,10 @@ namespace CombatHandler.Engineer
                 }
 
                 #endregion
-
-
             }
-
         }
-
-        #region LE Procs
-
-        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
 
         #region Buffs
-
-        private bool TeamArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("TeamArmorBuff"))
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
 
         private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -984,21 +970,6 @@ namespace CombatHandler.Engineer
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
                     || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
-        private bool ShadowlandReflectBase(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("ShadowlandReflectBase")) { return false; }
-
-            return GenericBuff(spell, ref actionTarget);
-        }
-
-        private bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("DamageShields"))
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1032,13 +1003,6 @@ namespace CombatHandler.Engineer
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        private bool EngineeringBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("MEBuff") || DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.EngineeringBuff)) { return false; }
-
-            return GenericBuff(spell, ref actionTarget);
-        }
-
         #endregion
 
         #region Pets
@@ -1047,13 +1011,13 @@ namespace CombatHandler.Engineer
 
         private bool CastPets(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!CanCast(spell)) { return false; }
+
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
 
             if (PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
             {
                 ResetTrimmers();
-
-                if (!CanCast(spell)) { return false; }
 
                 return true;
             }
@@ -1070,17 +1034,9 @@ namespace CombatHandler.Engineer
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
-        private bool PetArmorBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SettingPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
         {
-            if (!IsSettingEnabled("PetArmorBuff")) { return false; }
-
-            return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
-                || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool PetDefensiveNanos(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("PetDefensiveNanos")) { return false; }
+            if (!_settings[settingName].AsBool()) { return false; }
 
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
@@ -1121,25 +1077,6 @@ namespace CombatHandler.Engineer
         #region Healing
 
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone()) { return false; }
-
-            foreach (Pet pet in DynelManager.LocalPlayer.Pets)
-            {
-                if (pet.Character == null) continue;
-
-                if (pet.Character.HealthPercent <= 90)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = pet.Character;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool PetHealingGreater(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone()) { return false; }
 
@@ -1483,7 +1420,7 @@ namespace CombatHandler.Engineer
             public const int SympatheticReactiveCocoon = 154550;
             public const int IntrusiveAuraCancellation = 204372;
             public const int BoostedTendons = 269463;
-            public const int PetHealingGreater = 270351;
+            //public const int PetHealingGreater = 270351;
             public const int PetWarp = 209488;
             public static readonly int[] Warps = {
                 209488
@@ -1504,7 +1441,7 @@ namespace CombatHandler.Engineer
             public static readonly int[] DamageAura = { 154560, 154561 };
             public static readonly int[] ArmorAura = { 154562, 154563, 154564, 154565, 154566, 154567 };
             public static readonly int[] ReflectAura = { 154557, 154558, 154559 };
-            public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
+            //public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
             public static readonly int[] EngineeringBuff = { 273346, 227667, 227657 };
 

@@ -591,24 +591,6 @@ namespace CombatHandler.Fixer
             }
         }
 
-        #region LE Procs
-        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        #endregion
-
         #region Buffs
 
         private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

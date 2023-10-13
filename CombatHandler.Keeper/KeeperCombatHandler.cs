@@ -130,7 +130,9 @@ namespace CombatHandler.Keeper
             RegisterSpellProcessor(RelevantNanos.ReaperAuras, ReaperAura);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, AAOBuffs);
+            RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked,
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "AAOBuffs"));
 
             PluginDirectory = pluginDir;
 
@@ -600,26 +602,6 @@ namespace CombatHandler.Keeper
             }
         }
 
-        #region LE Procs
-
-        protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
-                return false;
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Anti-Fear
 
         private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -697,14 +679,6 @@ namespace CombatHandler.Keeper
         #endregion
 
         #region Team Buffs
-
-        private bool AAOBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("AAOBuffs"))
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
 
         #endregion
 

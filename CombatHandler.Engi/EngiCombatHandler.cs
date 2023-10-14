@@ -491,12 +491,12 @@ namespace CombatHandler.Engineer
             {
                 if (window.Views.Contains(_petCommandView)) { return; }
 
-                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetCommandView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView);
+                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPetCommandView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "EngineerPetCommandView" }, _petCommandView);
             }
             else if (_petCommandWindow == null || (_petCommandWindow != null && !_petCommandWindow.IsValid))
             {
-                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView, out var container);
+                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "EngineerPetCommandView" }, _petCommandView, out var container);
                 _petCommandWindow = container;
             }
         }
@@ -828,7 +828,7 @@ namespace CombatHandler.Engineer
                     }
 
                     //follow
-                    if (window.FindView("CombatHandlertPetFollow", out Button PetFollow))
+                    if (window.FindView("CombatHandlerPetFollow", out Button PetFollow))
                     {
                         PetFollow.Tag = window;
                         PetFollow.Clicked = PetFollowClicked;

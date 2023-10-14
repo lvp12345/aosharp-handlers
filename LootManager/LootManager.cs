@@ -63,7 +63,9 @@ namespace LootManager
                 _settings.AddVariable("Delete", false);
                 _settings.AddVariable("Exact", false);
 
-                Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
+                _settings["Enabled"] = false;
+
+               Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     _settings["Enabled"] = !_settings["Enabled"].AsBool();
                     Chat.WriteLine($"Enabled : {_settings["Enabled"]}");
@@ -86,53 +88,42 @@ namespace LootManager
         }
         public override void Teardown()
         {
-            var originalEnabledValue = _settings["Enabled"].AsBool();
-            _settings["Enabled"] = false; // Set to default value
-
             Config.Save();
             SaveRules();
             SettingsController.CleanUp();
-
-            _settings["Enabled"] = originalEnabledValue; // Revert back to original value after saving
         }
         private void MoveItemsToBag()
         {
-            if (!backpackDictionary.Any()) // If no backpacks are available, return
+            if (!backpackDictionary.Any())
             {
                 return;
             }
 
-            // Find a backpack with the name containing "loot" and less than 21 items
-            var availableBackpack = backpackDictionary.FirstOrDefault(backpack => backpack.Value.FreeSlots > 0 && backpack.Value.Name.Contains("loot"));
+            var availableBackpack = backpackDictionary.FirstOrDefault(backpack =>
+                 backpack.Value.FreeSlots > 0 &&
+                 backpack.Value.FreeSlots <= 21);
 
             if (!availableBackpack.Equals(default(KeyValuePair<Identity, BackpackInfo>)))
             {
-                // Chat.WriteLine($"Found an available backpack: {availableBackpack.Value.Name}");
-
                 foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
-                    // Only check to move if there is something to move
                     if (CheckRules(itemtomove))
                     {
-                        //Chat.WriteLine($"Moving item {itemtomove.Name} to {availableBackpack.Value.Name}");
-
-                        // Move the item to the available backpack with free space
                         itemtomove.MoveToContainer(availableBackpack.Key);
-
-                        // Decrease the free slot count in the backpackDictionary
                         availableBackpack.Value.FreeSlots--;
-
-                        //Chat.WriteLine($"Item {itemtomove.Name} moved to {availableBackpack.Value.Name}");
-
-                        // No need to check further, break out of the loop - item moved
+                        break;
+                    }
+                    if (availableBackpack.Value.FreeSlots == 0)
+                    {
                         break;
                     }
                 }
             }
         }
+
         private void UpdateBackpackDictionary()
         {
-            bool dictionaryChanged = false; // Flag to track if there's a change in the dictionary
+            bool dictionaryChanged = false;
 
             foreach (var backpack in Inventory.Backpacks.Where(b => b.Name.Contains("loot")))
             {
@@ -142,17 +133,14 @@ namespace LootManager
                     // Check if there's a change in free slots
                     if (backpackDictionary[backpack.Identity].FreeSlots != freeSlots)
                     {
-                        //Chat.WriteLine($"Updating existing backpack entry: {backpack.Name}, Free Slots: {freeSlots}");
-
                         // Update the existing entry with new information
                         backpackDictionary[backpack.Identity].FreeSlots = freeSlots;
                         dictionaryChanged = true; // Mark dictionary as changed
+                        SaveBackpackDictionaryToJson();
                     }
                 }
                 else
                 {
-                    //Chat.WriteLine($"Adding a new backpack entry: {backpack.Name}, Free Slots: {freeSlots}");
-
                     // Add a new entry for the backpack
                     backpackDictionary.Add(backpack.Identity, new BackpackInfo
                     {
@@ -160,6 +148,7 @@ namespace LootManager
                         FreeSlots = freeSlots
                     });
                     dictionaryChanged = true; // Mark dictionary as changed
+                    SaveBackpackDictionaryToJson();
                 }
             }
 
@@ -167,37 +156,28 @@ namespace LootManager
             if (dictionaryChanged)
             {
                 isBackpackInfoInitialized = true;
-                //Chat.WriteLine("Backpack information updated.");
             }
         }
         private void InitializeBackpackInfo()
         {
             if (isBackpackInfoInitialized)
             {
-                //Chat.WriteLine("Backpack information is already initialized.");
                 return; // Already initialized, no need to do it again
             }
 
-            //Chat.WriteLine("Initializing backpack information...");
-
             // Open all backpacks to set the item count and names
             List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
+
             foreach (Item bag in bags)
             {
                 bag.Use();
                 bag.Use();
             }
-
-            // Chat.WriteLine("Backpacks have been opened for initialization.");
-
             // Loop through all backpacks to update backpackDictionary
             foreach (Backpack backpack in Inventory.Backpacks)
             {
                 UpdateBackpackDictionary();
             }
-
-            //Chat.WriteLine("Backpack information initialization complete.");
-
             // Set the flag to indicate that initialization is done
             isBackpackInfoInitialized = true;
         }
@@ -271,14 +251,13 @@ namespace LootManager
             {
                 if (Game.IsZoning)
                 {
+                    isBackpackInfoInitialized = false;
                     return;
                 }
 
                 if (_settings["Enabled"].AsBool())
                 {
                     InitializeBackpackInfo();
-
-
 
                     if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
                     {
@@ -351,7 +330,6 @@ namespace LootManager
         }
         private void InfoView(object s, ButtonBase button)
         {
-
             _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\LootManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
                 windowStyle: WindowStyle.Default,
@@ -431,12 +409,10 @@ namespace LootManager
                 iEntry++;
             }
 
-
             _itemName.Text = "";
             _itemMinQL.Text = "1";
             _itemMaxQL.Text = "500";
             txErr.Text = "";
-
         }
         private void remButtonClicked(object sender, ButtonBase e)
         {
@@ -514,6 +490,42 @@ namespace LootManager
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+        }
+
+        private void SaveBackpackDictionaryToJson()
+        {
+            try
+            {
+                // Create a list to store the serialized BackpackInfoData objects
+                List<BackpackInfo> backpackInfoList = new List<BackpackInfo>();
+
+                // Convert each BackpackInfo object in backpackDictionary to BackpackInfoData and add to the list
+                foreach (var backpackInfo in backpackDictionary.Values)
+                {
+                    backpackInfoList.Add(new BackpackInfo
+                    {
+                        Name = backpackInfo.Name,
+                        FreeSlots = backpackInfo.FreeSlots,
+                        ItemNames = backpackInfo.ItemNames
+                    });
+                }
+
+                // Serialize the list to JSON
+                string json = JsonConvert.SerializeObject(backpackInfoList, Formatting.Indented);
+
+                // Define the path for the JSON file
+                string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\" +
+                    $"{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\BackpackInfo.json";
+
+                // Write the JSON data to the file
+                File.WriteAllText(filename, json);
+
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions that may occur during the save process
+                Chat.WriteLine("Error while saving backpackDictionary to JSON: " + ex.Message);
+            }
         }
         private void LoadRules()
         {

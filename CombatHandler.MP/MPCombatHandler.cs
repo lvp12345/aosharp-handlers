@@ -408,12 +408,12 @@ namespace CombatHandler.Metaphysicist
             {
                 if (window.Views.Contains(_petCommandView)) { return; }
 
-                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetCommandView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView);
+                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\MPPetCommandView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "MPPetCommandView" }, _petCommandView);
             }
             else if (_petCommandWindow == null || (_petCommandWindow != null && !_petCommandWindow.IsValid))
             {
-                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView, out var container);
+                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "MPPetCommandView" }, _petCommandView, out var container);
                 _petCommandWindow = container;
             }
         }

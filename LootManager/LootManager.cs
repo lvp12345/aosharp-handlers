@@ -33,6 +33,8 @@ namespace LootManager
 
         private Dictionary<Identity, BackpackInfo> backpackDictionary = new Dictionary<Identity, BackpackInfo>();
 
+        Corpse corpseToClose = null;
+
         protected Settings _settings;
         public static Settings _settingsItems;
 
@@ -128,6 +130,7 @@ namespace LootManager
             foreach (var backpack in Inventory.Backpacks.Where(b => b.Name.Contains("loot")))
             {
                 int freeSlots = 21 - backpack.Items.Count;
+
                 if (backpackDictionary.ContainsKey(backpack.Identity))
                 {
                     // Check if there's a change in free slots
@@ -158,6 +161,7 @@ namespace LootManager
                 isBackpackInfoInitialized = true;
             }
         }
+
         private void InitializeBackpackInfo()
         {
             if (isBackpackInfoInitialized)
@@ -173,14 +177,15 @@ namespace LootManager
                 bag.Use();
                 bag.Use();
             }
-            // Loop through all backpacks to update backpackDictionary
-            foreach (Backpack backpack in Inventory.Backpacks)
-            {
-                UpdateBackpackDictionary();
-            }
+            //// Loop through all backpacks to update backpackDictionary
+            //foreach (Backpack backpack in Inventory.Backpacks)
+            //{
+            //    UpdateBackpackDictionary();
+            //}
             // Set the flag to indicate that initialization is done
             isBackpackInfoInitialized = true;
         }
+
         private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
 
@@ -199,7 +204,6 @@ namespace LootManager
                     item.Delete();
             }
         }
-        Corpse corpseToClose = null;
 
         public void ProcessCorpses()
         {
@@ -252,6 +256,7 @@ namespace LootManager
                 if (Game.IsZoning)
                 {
                     isBackpackInfoInitialized = false;
+
                     return;
                 }
 
@@ -278,16 +283,16 @@ namespace LootManager
 
                         if (corpse != null)
                         {
-                            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast && Time.NormalTime > _lootingTimer + 2)
+                            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast 
+                                && Time.NormalTime > _lootingTimer + 2)
                             {
                                 corpse.Open();
                                 _lootingTimer = Time.NormalTime;
                             }
                         }
                     }
-
-                    MoveItemsToBag();
                     UpdateBackpackDictionary();
+                    MoveItemsToBag();
                 }
 
                 #region UI

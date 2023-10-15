@@ -1181,20 +1181,27 @@ namespace CombatHandler.Engineer
 
         private bool AuraCancellation(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            // This already checks if fightingTarget is null
             if (fightingTarget != null) { return false; }
 
-            actionTarget.Target = DynelManager.LocalPlayer.Pets
-                .Where(c => c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff))
-                .FirstOrDefault().Character;
+            // Check if DynelManager.LocalPlayer.Pets is null or if it contains a null pet
+            if (DynelManager.LocalPlayer.Pets == null) { return false; }
 
-            if (actionTarget.Target != null)
+            // Safely search for the pet and then the character
+            var pet = DynelManager.LocalPlayer.Pets
+                .FirstOrDefault(c => c != null && c.Character != null && c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff));
+
+            // Check if the pet was found and if its Character is not null
+            if (pet != null && pet.Character != null)
             {
+                actionTarget.Target = pet.Character;
                 actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
             return false;
         }
+
 
         #endregion
 

@@ -1036,6 +1036,50 @@ namespace CombatHandler.Bureaucrat
 
         #endregion
 
+        #region Perks
+
+        protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+
+            if (Time.NormalTime > CycleXpPerks + CycleXpPerksDelay)
+            {
+                CycleXpPerks = Time.NormalTime;
+
+                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+                if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                    return PerkCondtionProcessors.LeadershipPerk(perk);
+            }
+
+            return false;
+        }
+
+        protected bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                return PerkCondtionProcessors.GovernancePerk(perk);
+
+            return false;
+        }
+        protected bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                return PerkCondtionProcessors.TheDirectorPerk(perk);
+
+            return false;
+        }
+
+        #endregion
+
         #region Buffs
 
         private bool PistolSelfOnly(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

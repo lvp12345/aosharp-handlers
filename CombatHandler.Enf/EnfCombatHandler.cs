@@ -917,7 +917,7 @@ namespace CombatHandler.Enf
         private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             // Check if there is a fighting target or if the spell ID should be ignored
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id))
+            if (DynelManager.LocalPlayer.FightingTarget != null)
             {
                 return false;
             }

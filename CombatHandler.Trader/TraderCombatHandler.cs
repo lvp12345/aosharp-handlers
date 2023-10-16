@@ -755,6 +755,15 @@ namespace CombatHandler.Trader
             return Volunteer(perk, fightingTarget, ref actionTarget);
         }
 
+        protected bool Volunteer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+            return PerkCondtionProcessors.VolunteerPerk(perk, ref actionTarget);
+        }
+
         #endregion
 
         #region Healing

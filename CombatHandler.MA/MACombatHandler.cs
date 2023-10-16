@@ -681,6 +681,19 @@ namespace CombatHandler.MartialArtist
 
         #endregion
 
+        #region Perks
+
+        protected bool Moonmist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perk.IsAvailable || fightingTarget == null) { return false; }
+
+            if (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2) { return false; }
+
+            return PerkCondtionProcessors.CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
         #region Items
 
         private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -66,7 +66,7 @@ namespace CombatHandler.Generic
         public static int KitNanoPercentage = 0;
         public static string StimTargetName = string.Empty;
 
-        private double CycleXpPerks = 0;
+        public double CycleXpPerks = 0;
         private double CycleSpherePerk = 0;
         private double CycleWitOfTheAtroxPerk = 0;
         private double CycleBioRegrowthPerk = 0;
@@ -203,7 +203,6 @@ namespace CombatHandler.Generic
 
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
-
 
             RegisterPerkProcessors();
             RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
@@ -352,15 +351,6 @@ namespace CombatHandler.Generic
 
         #region Perks
 
-        protected bool LEProc(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
-
-            return BuffPerk(perk, fightingTarget, ref actionTarget);
-        }
-
         protected bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable || fightingTarget == null) { return false; }
@@ -419,142 +409,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool BattleGroupHeal1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable || !InCombat()) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= BattleGroupHeal1Percentage)
-                    .ToList();
-
-                if (dyingTeamMember.Count >= 1)
-                    return BattleGroupHealPerk1(perk);
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent > BattleGroupHeal1Percentage) { return false; }
-
-            return BattleGroupHealPerk1(perk);
-        }
-
-        protected bool BattleGroupHeal2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable || !InCombat()) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= BattleGroupHeal2Percentage)
-                    .ToList();
-
-                if (dyingTeamMember.Count >= 1)
-                {
-                    return BattleGroupHealPerk2(perk);
-                }
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent > BattleGroupHeal2Percentage) { return false; }
-
-            return BattleGroupHealPerk2(perk);
-        }
-
-        protected bool BattleGroupHeal3(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable || !InCombat()) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= BattleGroupHeal3Percentage)
-                    .ToList();
-
-                if (dyingTeamMember.Count >= 1)
-                {
-                    return BattleGroupHealPerk3(perk);
-                }
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent > BattleGroupHeal3Percentage) { return false; }
-
-            return BattleGroupHealPerk3(perk);
-        }
-
-        protected bool BattleGroupHeal4(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable || !InCombat()) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                List<SimpleChar> dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= BattleGroupHeal4Percentage)
-                    .ToList();
-
-                if (dyingTeamMember.Count >= 1)
-                {
-                    return BattleGroupHealPerk4(perk);
-                }
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent > BattleGroupHeal4Percentage) { return false; }
-
-            return BattleGroupHealPerk4(perk);
-        }
-
-
-        protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
-
-            if (Time.NormalTime > CycleXpPerks + CycleXpPerksDelay)
-            {
-                CycleXpPerks = Time.NormalTime;
-
-                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-                if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
-                    return LeadershipPerk(perk);
-            }
-
-            return false;
-        }
-
-        protected bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-            if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
-                return GovernancePerk(perk);
-
-            return false;
-        }
-        protected bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
-
-            if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
-                return TheDirectorPerk(perk);
-
-            return false;
-        }
-
-        protected bool Volunteer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
-
-            return VolunteerPerk(perk, ref actionTarget);
-        }
-
         protected bool CyclePerks(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable || fightingTarget == null) { return false; }
@@ -585,15 +439,6 @@ namespace CombatHandler.Generic
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent >= 75) { return false; }
-
-            return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-        }
-
-        protected bool Moonmist(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable || fightingTarget == null) { return false; }
-
-            if (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
@@ -674,13 +519,13 @@ namespace CombatHandler.Generic
 
         #endregion
 
-       
+
         #region Extensions
 
         #region Comps
         protected bool CompositeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Composites") || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (!IsSettingEnabled("Composites") || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
 
             if (SpellChecksPlayer(spell, spell.Nanoline))
             {
@@ -696,7 +541,7 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("Composites") || IsInsideInnerSanctum()) { return false; }
 
-            return GenericBuff(spell, ref actionTarget); ;
+            return CompositeBuff(spell, fightingTarget, ref actionTarget);
         }
         #endregion
 
@@ -704,17 +549,10 @@ namespace CombatHandler.Generic
 
         #region Combat
 
-        protected bool GenericCombatTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
         protected bool CombatBuff(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id) ||
+                DynelManager.LocalPlayer.FightingTarget == null) { return false; }
 
             if (SpellChecksPlayer(spell, nanoline))
             {
@@ -728,7 +566,8 @@ namespace CombatHandler.Generic
 
         protected bool CombatTeamBuff(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id) || 
+                DynelManager.LocalPlayer.FightingTarget == null) { return false; }
 
             SimpleChar target = DynelManager.Players
                 .Where(c => c.IsInLineOfSight
@@ -751,52 +590,28 @@ namespace CombatHandler.Generic
 
         #region Non Combat
 
-        public bool SelfBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
-        {
-            if (!_settings[settingName].AsBool()) { return false; }
-
-            return GenericBuff(spell, ref actionTarget);
-        }
-
-        public bool TeamBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
-        {
-            if (_settings[settingName].AsBool())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-
         protected bool GlobalGenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             return GenericBuff(spell, ref actionTarget);
         }
 
-        protected bool GlobalGenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public bool SelfBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
         {
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        protected bool GenericBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (!_settings[settingName].AsBool()) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
-        protected bool GenericTeamBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool GenericBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
-
-            if (Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }
 
         protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
 
             if (SpellChecksPlayer(spell, nanoline))
             {
@@ -808,9 +623,32 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        protected bool GlobalGenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return GenericTeamBuff(spell, ref actionTarget);
+        }
+
+        public bool TeamBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
+        {
+            if (_settings[settingName].AsBool() && Team.IsInTeam)
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool GenericTeamBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+
+            if (Team.IsInTeam)
+                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
         protected bool TeamBuff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
 
             SimpleChar target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
@@ -834,23 +672,97 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool GenericTeamBuffExclusion(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //protected bool GenericTeamBuffExclusion(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
+        //    if (Team.IsInTeam)
+        //        return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+        //    return Buff(spell, spell.Nanoline, ref actionTarget);
+        //}
+
+        //protected bool BuffExclusion(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
+        //    if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+
+        //    if (SpellChecksPlayer(spell, nanoline))
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = DynelManager.LocalPlayer;
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
+
+        public bool GenericSelectionBuff(Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
-            if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+            int settingValue = _settings[selectionSetting].AsInt32();
 
-            if (Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+            if (settingValue == 0) return false;
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            if (settingValue == 2) return TeamBuff(buffSpell, buffSpell.Nanoline, ref actionTarget);
+
+            return Buff(buffSpell, buffSpell.Nanoline, ref actionTarget);
         }
 
-        protected bool BuffExclusion(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
+            if (Team.IsInTeam)
+            {
+                SimpleChar target = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .FirstOrDefault();
 
-            if (SpellChecksPlayer(spell, nanoline))
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return Buff(spell, spell.Nanoline, ref actionTarget); ;
+        }
+
+        protected bool FindMemberWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell)) { return false; }
+
+            if (Team.IsInTeam)
+            {
+                SimpleChar teamMember = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0)
+                    .OrderBy(c => c.HealthPercent)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
+                    .FirstOrDefault();
+
+                if (teamMember != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = teamMember;
+                    return true;
+                }
+
+                return false;
+            }
+
+
+            if (DynelManager.LocalPlayer.HealthPercent <= healthPercentThreshold)
             {
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
@@ -860,15 +772,29 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public bool GenericSelectionBuff(Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        protected bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            int settingValue = _settings[selectionSetting].AsInt32();
+            if (!CanCast(spell)) { return false; }
 
-            if (settingValue == 0) return false;
+            SimpleChar player = DynelManager.Players
+                .Where(c => c.HealthPercent <= healthPercentThreshold
+                    && c.IsInLineOfSight
+                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                    && c.Health > 0)
+                .OrderBy(c => c.HealthPercent)
+                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
+                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
+                    .FirstOrDefault();
 
-            if (settingValue == 2) return GenericTeamBuff(buffSpell, ref actionTarget);
+            if (player != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = player;
+                return true;
+            }
 
-            return Buff(buffSpell, buffSpell.Nanoline, ref actionTarget);
+            return false;
         }
 
         #endregion
@@ -880,7 +806,17 @@ namespace CombatHandler.Generic
             if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
                 return false;
 
-            return LEProc(perk, fightingTarget, ref actionTarget);
+            if (!perk.IsAvailable)
+                return false;
+
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any())
+                return false;
+
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name))
+                return false;
+
+            actionTarget = (DynelManager.LocalPlayer, true);
+            return true;
         }
 
         protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -888,7 +824,17 @@ namespace CombatHandler.Generic
             if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
                 return false;
 
-            return LEProc(perk, fightingTarget, ref actionTarget);
+            if (!perk.IsAvailable)
+                return false;
+
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any())
+                return false;
+
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name))
+                return false;
+
+            actionTarget = (DynelManager.LocalPlayer, true);
+            return true;
         }
 
         #endregion
@@ -1000,58 +946,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        #endregion
-
-        #region NanoSkills Buff
-
-        protected bool GenericNanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
-
-            if (Team.IsInTeam)
-                return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
-
-            return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-        }
-
-        protected bool NanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
-
-            if (SpellChecksNanoSkillsPlayer(spell, fightingTarget))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            return false;
-        }
-
-        protected bool NanoSkillsTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (fightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id)) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                SimpleChar target = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        && SpellChecksNanoSkillsOther(spell, c))
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            return false;
-        }
         #endregion
 
         #region Weapon Type
@@ -1586,94 +1480,6 @@ namespace CombatHandler.Generic
 
         #region Checks
 
-        protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                SimpleChar target = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        && SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget); ;
-        }
-
-        protected bool FindMemberWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!CanCast(spell)) { return false; }
-
-            if (Team.IsInTeam)
-            {
-                SimpleChar teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0)
-                    .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-                    .FirstOrDefault();
-
-                if (teamMember != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = teamMember;
-                    return true;
-                }
-
-                return false;
-            }
-
-
-            if (DynelManager.LocalPlayer.HealthPercent <= healthPercentThreshold)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            return false;
-        }
-
-        protected bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!CanCast(spell)) { return false; }
-
-            SimpleChar player = DynelManager.Players
-                .Where(c => c.HealthPercent <= healthPercentThreshold
-                    && c.IsInLineOfSight
-                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                    && c.Health > 0)
-                .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-                    .FirstOrDefault();
-
-            if (player != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = player;
-                return true;
-            }
-
-            return false;
-        }
-
         protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
@@ -1781,6 +1587,32 @@ namespace CombatHandler.Generic
                     buff.Remove();
             }
         }
+
+        // Helper to check if the player is fighting
+        private bool IsPlayerFighting()
+        {
+            return DynelManager.LocalPlayer.FightingTarget != null;
+        }
+
+        // Helper to check if a nano should be ignored
+        private bool ShouldIgnoreNano(Spell spell)
+        {
+            return RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id);
+        }
+
+        // Helper to check if a setting is enabled and if spell can be cast
+        private bool CanPerformAction(string settingName, Spell spell)
+        {
+            return IsSettingEnabled(settingName) && CanCast(spell);
+        }
+
+        // Helper to set the actionTarget
+        private void SetActionTarget(ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, SimpleChar target)
+        {
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = target;
+        }
+
 
         protected bool IsSettingEnabled(string settingName)
         {
@@ -2176,7 +2008,7 @@ namespace CombatHandler.Generic
             public const int InnerSanctumDebuff = 206387;
             public const int InsightIntoSL = 268610;
             public const int BlightedFlesh = 305492;
-            public static int[] IgnoreNanos = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
+            public static int[] ShrinkingGrowingflesh = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
             public static int[] AAOTransfer = new[] { 301524, 301520, 267263, 267265 };
             public static int[] KeeperStrStamAgiBuff = new[] { 211158, 211160, 211162, 273365 };
 

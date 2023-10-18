@@ -117,8 +117,20 @@ namespace CombatHandler.Doctor
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(),
                 CompleteHealing, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
+
+            RegisterSpellProcessor(RelevantNanos.Heals,
+                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                       GenericHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                       CombatActionPriority.High);
+
+            RegisterSpellProcessor(RelevantNanos.TeamHeals,
+                                   (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                                   GenericHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                                   CombatActionPriority.High);
+
+
+            //RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
+            //RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
 
             //Perks
             RegisterPerkProcessor(PerkHash.BattlegroupHeal1, BattleGroupHeal1);
@@ -801,35 +813,6 @@ namespace CombatHandler.Doctor
             return false;
         }
 
-        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (HealPercentage == 0) { return false; }
-
-        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-        //    {
-        //        if (Team.IsInTeam)
-        //        {
-        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
-        //                .Where(c => Team.Members
-        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-        //                     && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-        //                .ToList();
-
-        //            if (dyingTeamMember.Count >= 4) { return false; }
-        //        }
-
-        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        //    }
-
-        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-        //    {
-        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        //    }
-
-        //    return false;
-        //}
-
         private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (HealPercentage == 0)
@@ -871,36 +854,6 @@ namespace CombatHandler.Doctor
             return false;
         }
 
-        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (HealPercentage == 0) { return false; }
-
-        //    if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
-        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-        //    {
-        //        if (Spell.List.Any(c => c.Id == 275011)) { return false; }
-
-        //        if (Team.IsInTeam)
-        //        {
-        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
-        //                .Where(c => Team.Members
-        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-        //                        && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-        //                .ToList();
-
-        //            if (dyingTeamMember.Count >= 1)
-        //            {
-        //                return CanCast(spell);
-        //            }
-        //        }
-        //    }
-
-        //    return false;
-        //}
-
         private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (HealPercentage == 0)
@@ -940,6 +893,31 @@ namespace CombatHandler.Doctor
             return false;
         }
 
+        private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+
+            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+            {
+                if (Team.IsInTeam)
+                {
+                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
+                        .Where(c => Team.Members
+                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                             && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+                        .ToList();
+
+                    if (dyingTeamMember.Count >= 4)
+                    {
+                        return CanCast(spell);
+                    }
+                }
+            }
+
+            return Buff(spell, NanoLine.DoctorShortHPBuffs, ref actionTarget);
+        }
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -975,31 +953,7 @@ namespace CombatHandler.Doctor
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
 
-        private bool ImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HealSelection.ImprovedLifeChanneler == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                if (Team.IsInTeam)
-                {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                             && c.HealthPercent <= 85 && c.HealthPercent >= 50)
-                        .ToList();
-
-                    if (dyingTeamMember.Count >= 4)
-                    {
-                        return CanCast(spell);
-                    }
-                }
-            }
-
-            return Buff(spell, NanoLine.DoctorShortHPBuffs, ref actionTarget);
-        }
+       
 
         #endregion
 

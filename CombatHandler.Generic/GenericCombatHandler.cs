@@ -278,7 +278,7 @@ namespace CombatHandler.Generic
             if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
             {
                 //We are melee
-                RegisterSpellProcessor(RelevantGenericNanos.CompositeMartial, CompositeBuffExcludeInnerSanctum);
+                RegisterSpellProcessor(RelevantGenericNanos.CompositeMartial, CompositeBuff);
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeMelee, CompositeBuff);
                 RegisterSpellProcessor(RelevantGenericNanos.CompositePhysicalSpecial, CompositeBuff);
             }
@@ -519,13 +519,18 @@ namespace CombatHandler.Generic
 
         #endregion
 
-
-        #region Extensions
-
         #region Comps
         protected bool CompositeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Composites") || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+            if (!IsSettingEnabled("Composites") || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id))
+            {
+                return false;
+            }
+
+            if (spell.Id == RelevantGenericNanos.CompositeMartial && IsInsideInnerSanctum())
+            {
+                return false;
+            }
 
             if (SpellChecksPlayer(spell, spell.Nanoline))
             {
@@ -537,12 +542,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool CompositeBuffExcludeInnerSanctum(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Composites") || IsInsideInnerSanctum()) { return false; }
-
-            return CompositeBuff(spell, fightingTarget, ref actionTarget);
-        }
         #endregion
 
         #region Buffs
@@ -1032,7 +1031,6 @@ namespace CombatHandler.Generic
 
         #endregion
 
-        #endregion
 
         #region Items
 

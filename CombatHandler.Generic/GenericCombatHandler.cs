@@ -11,9 +11,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using static CombatHandler.Generic.PerkCondtionProcessors;
+using System.IO;
 
 namespace CombatHandler.Generic
 {
@@ -322,10 +325,47 @@ namespace CombatHandler.Generic
             CancelAllBuffs();
         }
 
+        
+        //public void SaveSpellToFileIfNotExists()
+        //{
+        //    string directoryPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\Generic\\{DynelManager.LocalPlayer.Name}";
+        //    string filePath = Path.Combine(directoryPath, "SpellList.txt");
+
+        //    if (!File.Exists(filePath))
+        //    {
+        //        File.Create(filePath).Dispose();
+        //    }
+
+        //    foreach (Spell spell in Spell.List)
+        //    {
+        //        List<SpellData> spellDataList = spell.UseModifiers; // Get the SpellData list for the spell
+
+        //        foreach (SpellData spellData in spellDataList)
+        //        {
+        //            string spellInfo = $"Spell Name: {spell.Name}, Function: {spellData.Function}";
+
+        //            // Append SpellData properties to the spellInfo
+        //            foreach (var prop in spellData.Properties)
+        //            {
+        //                spellInfo += $", {prop.Key}: {prop.Value}";
+        //            }
+
+        //            string fileContent = File.ReadAllText(filePath);
+
+        //            if (!fileContent.Contains(spellInfo))
+        //            {
+        //                File.AppendAllText(filePath, spellInfo + Environment.NewLine);
+        //            }
+        //        }
+        //    }
+        //}
+
         protected override void OnUpdate(float deltaTime)
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
                 return;
+
+            //SaveSpellToFileIfNotExists();
 
             base.OnUpdate(deltaTime);
 
@@ -364,7 +404,6 @@ namespace CombatHandler.Generic
 
         protected bool ToggledDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-
             if (!IsSettingEnabled("DamagePerk")) { return false; }
 
             return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
@@ -478,11 +517,50 @@ namespace CombatHandler.Generic
 
         #region Healing
 
-        //TODO: Add UI
+        public bool GenericHealing(Spell spell, SimpleChar fightingTarget,ref (SimpleChar Target, bool ShouldSetTarget) actionTarget,
+                                    string selectionSetting)
+        {
+            if (HealPercentage == 0)
+            {
+                return false;
+            }
+
+            int healSelection = _settings[selectionSetting].AsInt32();
+
+            if (healSelection == 0)
+            {
+                return false;
+            }
+
+            if (healSelection == 3 || healSelection == 4)
+            {
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            }
+            else if (healSelection == 1)
+            {
+                if (Team.IsInTeam)
+                {
+                    int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+                    int count = DynelManager.Characters.Count(c =>
+                        Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                        && c.HealthPercent <= 90 && c.HealthPercent >= 30);
+                    if (count >= 4)
+                    {
+                        return false;
+                    }
+                }
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            }
+            else if (healSelection == 2)
+            {
+                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            }
+
+            return false;
+        }
+
         private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
-
             if (Team.IsInTeam)
             {
                 SimpleChar teamMember = DynelManager.Players
@@ -506,7 +584,6 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-
             if (DynelManager.LocalPlayer.HealthPercent <= 30)
             {
                 actionTarget.ShouldSetTarget = true;
@@ -519,8 +596,7 @@ namespace CombatHandler.Generic
 
         #endregion
 
-
-        #region Extensions
+        #region Buffs
 
         #region Comps
         protected bool CompositeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -544,8 +620,6 @@ namespace CombatHandler.Generic
             return CompositeBuff(spell, fightingTarget, ref actionTarget);
         }
         #endregion
-
-        #region Buffs
 
         #region Combat
 
@@ -1029,8 +1103,6 @@ namespace CombatHandler.Generic
 
             return false;
         }
-
-        #endregion
 
         #endregion
 

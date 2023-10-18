@@ -596,11 +596,6 @@ namespace CombatHandler.Generic
 
         #endregion
 
-
-        #region Extensions
-
-
-
         #region Comps
         protected bool CompositeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -918,8 +913,6 @@ namespace CombatHandler.Generic
 
         #endregion
 
-        #endregion
-
         #region Debuffs
 
         public bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
@@ -1108,8 +1101,6 @@ namespace CombatHandler.Generic
 
             return false;
         }
-
-        #endregion
 
         #endregion
 

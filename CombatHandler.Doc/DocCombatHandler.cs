@@ -128,9 +128,15 @@ namespace CombatHandler.Doctor
                                    GenericHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
                                    CombatActionPriority.High);
 
+            RegisterSpellProcessor(RelevantNanos.ImprovedLC,
+                                   (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                                   GenericHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                                   CombatActionPriority.High);
+
 
             //RegisterSpellProcessor(RelevantNanos.Heals, Healing, CombatActionPriority.High);
             //RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
+            //RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
 
             //Perks
             RegisterPerkProcessor(PerkHash.BattlegroupHeal1, BattleGroupHeal1);
@@ -144,7 +150,7 @@ namespace CombatHandler.Doctor
             //Hots
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
-            RegisterSpellProcessor(RelevantNanos.ImprovedLC, ImprovedLifeChanneler);
+            
             RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
 
             //Debuffs
@@ -1041,7 +1047,7 @@ namespace CombatHandler.Doctor
 
         protected bool BattleGroupHeal1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable || !InCombat()) { return false; }
+            if (!perk.IsAvailable || !Spell.List.Any(spell => spell.IsReady) || !InCombat()) { return false; }
 
             if (Team.IsInTeam)
             {
@@ -1061,7 +1067,7 @@ namespace CombatHandler.Doctor
 
         protected bool BattleGroupHeal2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable || !InCombat()) { return false; }
+            if (!perk.IsAvailable || !Spell.List.Any(spell => spell.IsReady) || !InCombat()) { return false; }
 
             if (Team.IsInTeam)
             {
@@ -1083,7 +1089,7 @@ namespace CombatHandler.Doctor
 
         protected bool BattleGroupHeal3(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable || !InCombat()) { return false; }
+            if (!perk.IsAvailable || !Spell.List.Any(spell => spell.IsReady) || !InCombat()) { return false; }
 
             if (Team.IsInTeam)
             {
@@ -1105,7 +1111,7 @@ namespace CombatHandler.Doctor
 
         protected bool BattleGroupHeal4(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable || !InCombat()) { return false; }
+            if (!perk.IsAvailable || !Spell.List.Any(spell => spell.IsReady) || !InCombat()) { return false; }
 
             if (Team.IsInTeam)
             {

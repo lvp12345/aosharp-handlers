@@ -544,7 +544,7 @@ namespace CombatHandler.Generic
                     int count = DynelManager.Characters.Count(c =>
                         Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent <= 90 && c.HealthPercent >= 30);
-                    if (count >= 4)
+                    if (count >= 2)
                     {
                         return false;
                     }

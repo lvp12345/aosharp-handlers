@@ -123,8 +123,17 @@ namespace CombatHandler.Agent
 
 
             //Healing
-            RegisterSpellProcessor(RelevantNanos.Healing, Healing, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.CompleteHealing, CompleteHealing, CombatActionPriority.High);
+
+            RegisterSpellProcessor(RelevantNanos.Heals,
+                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                       GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                       CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
+                        (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                        GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                        CombatActionPriority.High);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GlobalGenericBuff);
@@ -755,18 +764,18 @@ namespace CombatHandler.Agent
 
         #region Healing
 
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1029,7 +1038,7 @@ namespace CombatHandler.Agent
             public static int TeamCH = 42409; //Add logic later
             public const int TiredLimbs = 99578;
             public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder().Where(spell => spell.Id != TiredLimbs).ToArray();
-            public static int[] Healing = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
+            public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
                 43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
                 28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
@@ -1041,7 +1050,7 @@ namespace CombatHandler.Agent
         }
         public enum HealSelection
         {
-            None, SingleTeam, SingleArea
+            None, SingleTeam, SingleArea, Team
         }
         public enum DOTASelection
         {

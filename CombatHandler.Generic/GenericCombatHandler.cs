@@ -296,7 +296,6 @@ namespace CombatHandler.Generic
 
             Game.TeleportEnded += TeleportEnded;
             Team.TeamRequest += Team_TeamRequest;
-            //Network.N3MessageSent += OnN3MessageSent;
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
 
             Chat.RegisterCommand("reform", ReformCommand);
@@ -924,7 +923,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name))
                 return false;
 
-            actionTarget = (DynelManager.LocalPlayer, true);
+            //actionTarget = (DynelManager.LocalPlayer, false);
             return true;
         }
 
@@ -942,7 +941,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name))
                 return false;
 
-            actionTarget = (DynelManager.LocalPlayer, true);
+           // actionTarget = (DynelManager.LocalPlayer, false);
             return true;
         }
 

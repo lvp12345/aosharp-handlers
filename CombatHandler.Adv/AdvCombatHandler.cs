@@ -93,29 +93,18 @@ namespace CombatHandler.Adventurer
 
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
-            //LE Procs
-            //type1
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerAesirAbsorption, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerSelfPreservation, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerSkinProtection, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerFerociousHits, LEProc1, CombatActionPriority.Low);
-
-            //type2
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerHealingHerbs, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerCombustion, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerCharringBlow, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerRestoreVigor, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteSlice, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerSoothingHerbs, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAdventurerBasicDressing, LEProc2, CombatActionPriority.Low);
-
-            //Perks
-
             //Healing
-            RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHealing, CombatActionPriority.High);
+            
+            RegisterSpellProcessor(RelevantNanos.Heals,
+                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                       GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                       CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
+                        (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                        GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                        CombatActionPriority.High);
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._1HEdgedBuff).OrderByStackingOrder(), Melee);
@@ -145,6 +134,23 @@ namespace CombatHandler.Adventurer
             RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
             RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
             RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
+
+            //LE Procs
+            //type1
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerAesirAbsorption, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteFlurry, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSelfPreservation, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSkinProtection, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerFerociousHits, LEProc1, CombatActionPriority.Low);
+
+            //type2
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerHealingHerbs, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerCombustion, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerCharringBlow, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerRestoreVigor, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteSlice, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerSoothingHerbs, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAdventurerBasicDressing, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -709,26 +715,26 @@ namespace CombatHandler.Adventurer
 
         #region Healing
 
-        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
+        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+        //    if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
-            return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        }
+        //    return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //}
 
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -861,7 +867,7 @@ namespace CombatHandler.Adventurer
 
         private static class RelevantNanos
         {
-            public static int[] HEALS = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
+            public static int[] Heals = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
                 136678, 136679, 136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
                 82064, 26695 };
 
@@ -886,7 +892,7 @@ namespace CombatHandler.Adventurer
 
         public enum HealSelection
         {
-            None, SingleTeam, SingleArea
+            None, SingleTeam, SingleArea, Team
         }
         public enum MorphSelection
         {

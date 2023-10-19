@@ -517,8 +517,7 @@ namespace CombatHandler.Generic
 
         #region Healing
 
-        public bool GenericHealing(Spell spell, SimpleChar fightingTarget,ref (SimpleChar Target, bool ShouldSetTarget) actionTarget,
-                                    string selectionSetting)
+        public bool GenericTargetHealing(Spell spell, SimpleChar fightingTarget,ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
             if (HealPercentage == 0)
             {
@@ -527,16 +526,11 @@ namespace CombatHandler.Generic
 
             int healSelection = _settings[selectionSetting].AsInt32();
 
-            if (healSelection == 0)
+            if (healSelection == 0) //None
             {
                 return false;
             }
-
-            if (healSelection == 3 || healSelection == 4)
-            {
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-            }
-            else if (healSelection == 1)
+            if (healSelection == 1) //SingleTeam
             {
                 if (Team.IsInTeam)
                 {
@@ -551,13 +545,54 @@ namespace CombatHandler.Generic
                 }
                 return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
-            else if (healSelection == 2)
+
+            if (healSelection == 2) //SingleArea
             {
                 return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
 
             return false;
         }
+
+        public bool GenericTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        {
+            if (HealPercentage == 0)
+            {
+                return false;
+            }
+
+            int healSelection = _settings[selectionSetting].AsInt32();
+
+            if (healSelection == 0) // None
+            {
+                return false;
+            }
+
+            // Default to false for the team heal trigger
+            bool shouldTeamHeal = false;
+
+            if (Team.IsInTeam)
+            {
+                int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+
+                // Count the number of team members who need healing
+                int count = DynelManager.Characters.Count(c =>
+                    Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                    && c.HealthPercent <= 90 && c.HealthPercent >= 30);
+
+                // Check if the count criteria or healSelection criteria are met
+                shouldTeamHeal = (count > 2) || (healSelection == 3);
+            }
+
+            // If either the count is more than 2 or healSelection is 3, proceed with team heal
+            if (shouldTeamHeal)
+            {
+                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            }
+
+            return false;
+        }
+
 
         private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

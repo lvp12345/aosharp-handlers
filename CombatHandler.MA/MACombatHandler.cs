@@ -96,27 +96,22 @@ namespace CombatHandler.MartialArtist
 
             RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
-            //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenKi, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDisruptKi, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSmashingFist, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenSpirit, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStingingFist, LEProc1, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSelfReconstruction, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistHealingMeditation, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAttackLigaments, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, LEProc2, CombatActionPriority.Low);
 
             //Perks
             RegisterPerkProcessor(PerkHash.Moonmist, Moonmist, CombatActionPriority.High);
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
             //Heals
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(), Healing, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHealing, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
+                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                       GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                       CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
+                        (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                        GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                        CombatActionPriority.High);
+
 
             //Taunts
             RegisterSpellProcessor(RelevantNanos.Taunts, SingleTargetTaunt, CombatActionPriority.High);
@@ -161,6 +156,21 @@ namespace CombatHandler.MartialArtist
             RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
             RegisterItemProcessor(RelevantItems.StingoftheViper, RelevantItems.StingoftheViper, StingoftheViper);
             RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+
+
+            //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenKi, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDisruptKi, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSmashingFist, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStrengthenSpirit, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistStingingFist, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistSelfReconstruction, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistDebilitatingStrike, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistHealingMeditation, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistAttackLigaments, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMartialArtistMedicinalRemedy, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -659,25 +669,25 @@ namespace CombatHandler.MartialArtist
 
         #region Healing
 
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HealPercentage == 0) { return false; }
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
-            if (HealSelection.SingleArea != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+        //    if (HealSelection.SingleArea != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
-            return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        }
+        //    return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //}
 
-        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()
-                || HealPercentage == 0) { return false; }
+        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()
+        //        || HealPercentage == 0) { return false; }
 
-            return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        }
+        //    return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //}
 
         #endregion
 
@@ -932,7 +942,7 @@ namespace CombatHandler.MartialArtist
 
         public enum HealSelection
         {
-            None, SingleTeam, SingleArea
+            None, SingleTeam, SingleArea, Team
         }
         public enum SingleTauntSelection
         {

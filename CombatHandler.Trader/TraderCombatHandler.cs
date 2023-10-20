@@ -118,12 +118,14 @@ namespace CombatHandler.Trader
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
-            //Perks
-            RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
-            RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
-
             //Pets
             RegisterSpellProcessor(RelevantNanos.DecisionbyCommittee, PetSpawner, CombatActionPriority.High);
+
+            //Root/Snare
+            RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
+
+            //Mezz
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz), Mezz, CombatActionPriority.High);
 
             //Heals
             RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
@@ -141,17 +143,6 @@ namespace CombatHandler.Trader
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
-
-            //Mezz
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz), Mezz, CombatActionPriority.High);
-
-            //Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(), GlobalGenericBuff);
-
-            //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
-            RegisterSpellProcessor(RelevantNanos.UmbralWrangler, UmbralWrangler);
 
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
@@ -176,8 +167,20 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
 
-            //Root/Snare
-            RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
+            //Buffs
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+            //Team Buffs
+            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
+            RegisterSpellProcessor(RelevantNanos.UmbralWrangler,(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "UmbralWrangler"));
+
+            //Perks
+            RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
+            RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
 
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcTraderDebtCollection, LEProc1, CombatActionPriority.Low);
@@ -867,7 +870,7 @@ namespace CombatHandler.Trader
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -887,17 +890,17 @@ namespace CombatHandler.Trader
             if (IsInsideInnerSanctum()) { return false; }
 
             if (Team.IsInTeam && IsSettingEnabled("Evades"))
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget)
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget)
 
                     ; return false;
         }
 
-        private bool UmbralWrangler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("UmbralWrangler")) { return false; }
+        //private bool UmbralWrangler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("UmbralWrangler")) { return false; }
 
-            return GenericBuff(spell, ref actionTarget);
-        }
+        //    return GenericBuff(spell, ref actionTarget);
+        //}
 
         #endregion
 
@@ -1473,7 +1476,7 @@ namespace CombatHandler.Trader
             if (fightingTarget.MaxHealth < 1000000) { return false; }
             if (!spell.IsReady) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         protected void SyncPetCombat()

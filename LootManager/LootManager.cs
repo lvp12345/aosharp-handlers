@@ -284,7 +284,7 @@ namespace LootManager
                         if (corpse != null)
                         {
                             if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast 
-                                && Time.NormalTime > _lootingTimer + 2)
+                                && Time.NormalTime > _lootingTimer + 1)
                             {
                                 corpse.Open();
                                 _lootingTimer = Time.NormalTime;

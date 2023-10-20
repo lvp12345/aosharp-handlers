@@ -87,29 +87,24 @@ namespace CombatHandler.Fixer
 
             RegisterSettingsWindow("Fixer Handler", "FixerSettingsView.xml");
 
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcFixerLucksCalamity, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerDirtyTricks, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerEscapeTheSystem, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerIntenseMetabolism, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerFishInABarrel, LEProc1, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcFixerBootlegRemedies, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerSlipThemAMickey, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerBendingTheRules, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerBackyardBandages, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerFightingChance, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerContaminatedBullets, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcFixerUndergroundSutures, LEProc2, CombatActionPriority.Low);
-
             //Perks
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.NCU, NCU);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerSuppressorBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+            //RegisterSpellProcessor(RelevantNanos.NCU, NCU);
+            RegisterSpellProcessor(RelevantNanos.NCU,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDecrease);
@@ -125,7 +120,9 @@ namespace CombatHandler.Fixer
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
-            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix, GlobalGenericBuff);
+            RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
             //Runspeed
             RegisterSpellProcessor(RelevantNanos.RubiKaRunspeed, RKRunspeed);
@@ -138,6 +135,21 @@ namespace CombatHandler.Fixer
             //Items
             RegisterItemProcessor(RelevantItems.ClusterBullets, Cluster);
             RegisterItemProcessor(RelevantItems.HomingPermorphaBullets, Permorpha);
+
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcFixerLucksCalamity, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerDirtyTricks, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerEscapeTheSystem, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerIntenseMetabolism, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerFishInABarrel, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcFixerBootlegRemedies, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerSlipThemAMickey, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerBendingTheRules, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerBackyardBandages, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerFightingChance, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerContaminatedBullets, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcFixerUndergroundSutures, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -593,10 +605,10 @@ namespace CombatHandler.Fixer
 
         #region Buffs
 
-        private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return Buff(spell, NanoLine.FixerNCUBuff, ref actionTarget);
-        }
+        //private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    return Buff(spell, NanoLine.FixerNCUBuff, ref actionTarget);
+        //}
 
         #endregion
 
@@ -650,14 +662,14 @@ namespace CombatHandler.Fixer
                 CancelBuffs(RelevantNanos.ShadowlandsRunspeed);
             }
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SLRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum() || RunspeedSelection.Shadowlands != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion

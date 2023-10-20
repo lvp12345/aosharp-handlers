@@ -698,6 +698,14 @@ namespace CombatHandler.Generic
 
         #region Non Combat
 
+        public bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+        }
+
         //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(),
         //    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         //                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
@@ -778,47 +786,40 @@ namespace CombatHandler.Generic
         //    return false;
         //}
 
-        protected bool GlobalGenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+
+        //RegisterSpellProcessor(YourSpellList,
+        //    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "YourSettingName"));
+
+
+        protected bool NonComabtTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName = null)
         {
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
+            
+            if (settingName != null && !_settings[settingName].AsBool())
+            {
+                return false;
+            }
 
-        public bool TeamBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
-        {
-            if (_settings[settingName].AsBool() && Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+            if (!Team.IsInTeam)
+            {
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-
-        protected bool GenericTeamBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
-
-            if (Team.IsInTeam)
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            return NonCombatBuff(spell, ref actionTarget);
-        }
-
-        protected bool TeamBuff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+            if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id) || DynelManager.LocalPlayer.FightingTarget != null)
+            {
+                return false;
+            }
 
             SimpleChar target = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        && SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
+                .Where(c => c.IsInLineOfSight
+                    && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                    && c.Health > 0
+                    && SpellChecksOther(spell, spell.Nanoline, c))
+                .FirstOrDefault();
 
             if (target != null)
             {
-                if (spell.Nanoline == NanoLine.CriticalIncreaseBuff && target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
-
-                if (spell.Nanoline == NanoLine.RunspeedBuffs && target.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
-
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = target;
                 return true;
@@ -826,6 +827,56 @@ namespace CombatHandler.Generic
 
             return false;
         }
+
+
+        //protected bool GlobalGenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    return GenericTeamBuff(spell, ref actionTarget);
+        //}
+
+        //public bool TeamBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
+        //{
+        //    if (_settings[settingName].AsBool() && Team.IsInTeam)
+        //        return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+        //    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        //}
+
+        //protected bool GenericTeamBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+
+        //    if (Team.IsInTeam)
+        //        return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+
+        //    return NonCombatBuff(spell, ref actionTarget);
+        //}
+
+        //protected bool TeamBuff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+
+        //    SimpleChar target = DynelManager.Players
+        //            .Where(c => c.IsInLineOfSight
+        //                && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+        //                && c.Health > 0
+        //                && SpellChecksOther(spell, spell.Nanoline, c))
+        //            .FirstOrDefault();
+
+        //    if (target != null)
+        //    {
+        //        if (spell.Nanoline == NanoLine.CriticalIncreaseBuff && target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
+
+        //        if (spell.Nanoline == NanoLine.RunspeedBuffs && target.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = target;
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
 
         //protected bool GenericTeamBuffExclusion(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         //{
@@ -859,7 +910,7 @@ namespace CombatHandler.Generic
 
             if (settingValue == 0) return false;
 
-            if (settingValue == 2) return TeamBuff(buffSpell, buffSpell.Nanoline, ref actionTarget);
+            if (settingValue == 2) return NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget);
 
             return NonCombatBuff(buffSpell, ref actionTarget, fightingTarget);
         }

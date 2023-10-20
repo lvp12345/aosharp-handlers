@@ -104,24 +104,6 @@ namespace CombatHandler.Agent
 
             RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
-            //LE Procs
-            //type1
-            RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentDisableCuffs, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentNoEscape, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentIntenseMetabolism, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentMinorNanobotEnhance, LEProc1, CombatActionPriority.Low);
-
-            //tupe2
-            RegisterPerkProcessor(PerkHash.LEProcAgentNotumChargedRounds, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentLaserAim, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentNanoEnhancedTargeting, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentPlasteelPiercingRounds, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentCellKiller, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentImprovedFocus, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, LEProc2, CombatActionPriority.Low);
-
-
             //Healing
             RegisterSpellProcessor(RelevantNanos.CompleteHealing, CompleteHealing, CombatActionPriority.High);
 
@@ -136,7 +118,6 @@ namespace CombatHandler.Agent
                         CombatActionPriority.High);
 
             //Buffs
-            
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                             => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
@@ -161,8 +142,12 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(RelevantNanos.DOTProcs, DamageProc);
 
             //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, CritIncrease);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget));
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "CritTeam"));
 
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(),
@@ -202,6 +187,22 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Deprive).OrderByStackingOrder(), DepriveDrain, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack).OrderByStackingOrder(), RansackDrain, CombatActionPriority.High);
 
+            //LE Procs
+            //type1
+            RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentDisableCuffs, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentNoEscape, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentIntenseMetabolism, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentMinorNanobotEnhance, LEProc1, CombatActionPriority.Low);
+
+            //tupe2
+            RegisterPerkProcessor(PerkHash.LEProcAgentNotumChargedRounds, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentLaserAim, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentNanoEnhancedTargeting, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentPlasteelPiercingRounds, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentCellKiller, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentImprovedFocus, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -949,13 +950,13 @@ namespace CombatHandler.Agent
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
-        private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("CritTeam"))
-                return GenericTeamBuff(spell, ref actionTarget);
+        //private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsSettingEnabled("CritTeam"))
+        //        return GenericTeamBuff(spell, ref actionTarget);
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
+        //    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        //}
 
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

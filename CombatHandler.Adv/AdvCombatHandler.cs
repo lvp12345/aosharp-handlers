@@ -121,12 +121,19 @@ namespace CombatHandler.Adventurer
              RegisterSpellProcessor(RelevantNanos.ArmorBuffs, Armor);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs, TeamArmor);
-            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
+            RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "TeamArmorBuffs"));
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "DamageShields"));
             RegisterSpellProcessor(RelevantNanos.LearningbyDoing,
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => NonCombatBuff(spell, ref actionTarget, fightingTarget, "XPBonus"));
-            RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs, TeamRunSpeedBuff);
+            RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "RunspeedBuff"));
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(),
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "TreatmentBuffSelection"));
@@ -723,27 +730,6 @@ namespace CombatHandler.Adventurer
 
         #region Healing
 
-        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
-
-        //    if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
-
-        //    return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        //}
-
-        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
-
-        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-        //    return false;
-        //}
-
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || CompleteHealPercentage == 0) { return false; }
@@ -833,33 +819,7 @@ namespace CombatHandler.Adventurer
         {
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        #endregion
-
-        #region Team Buffs
-
-        private bool TeamArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("TeamArmorBuffs"))
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-
-        private bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("DamageShields")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool TeamRunSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("RunspeedBuffs")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
+            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion

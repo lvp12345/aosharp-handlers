@@ -178,11 +178,11 @@ namespace CombatHandler.Engineer
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(),
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
+                    => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "DamageShields"));
+                    => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "DamageShields"));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -210,7 +210,9 @@ namespace CombatHandler.Engineer
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
-                RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GlobalGenericTeamBuff);
+                RegisterSpellProcessor(RelevantNanos.DamageBuffLineA,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GeneralMechanicalEngineeringBuff).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -997,14 +999,6 @@ namespace CombatHandler.Engineer
         }
 
         #region Buffs
-
-        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
 
         private bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

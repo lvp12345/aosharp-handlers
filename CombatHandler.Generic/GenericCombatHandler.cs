@@ -17,11 +17,14 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using static CombatHandler.Generic.PerkCondtionProcessors;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace CombatHandler.Generic
 {
     public class GenericCombatHandler : AOSharp.Core.Combat.CombatHandler
     {
+        public static string previousErrorMessage = string.Empty;
+
         private const float PostZonePetCheckBuffer = 5;
         public int EvadeCycleTimeoutSeconds = 180;
 
@@ -698,7 +701,7 @@ namespace CombatHandler.Generic
 
         #region Non Combat
 
-        public bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
@@ -2454,6 +2457,19 @@ namespace CombatHandler.Generic
             StrengthAbsorbsItemPercentage = e;
             Config.Save();
         }
+
+        public static int GetLineNumber(Exception ex)
+        {
+            var lineNumber = 0;
+
+            var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
+
+            if (lineMatch.Success)
+                lineNumber = int.Parse(lineMatch.Groups[1].Value);
+
+            return lineNumber;
+        }
+
         #endregion
     }
 }

@@ -138,8 +138,8 @@ namespace CombatHandler.NanoTechnician
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Medium);
 
                 //Nukes
-                RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke, CombatActionPriority.Medium);
-                RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Medium);
+                RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
+                RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
                 RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
                 RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
 
@@ -1014,12 +1014,12 @@ namespace CombatHandler.NanoTechnician
 
         private bool HackedBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
+            if (HackedBlindSelection.None == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32()) { return false; }
 
-            if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+            if (HackedBlindSelection.Target == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32())
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+            if (HackedBlindSelection.Boss == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32())
             {
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
 

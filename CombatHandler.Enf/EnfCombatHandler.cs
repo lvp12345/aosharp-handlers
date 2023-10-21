@@ -109,6 +109,58 @@ namespace CombatHandler.Enf
             _settings.AddVariable("DamagePerk", false);
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
+
+            //Troll Form
+            RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
+
+            //Taunts
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
+            RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TauntProc"));
+           
+            //Taunt Tools
+            RegisterItemProcessor(244655, 244655, TauntTool);
+
+            //Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+            //Weapon Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
+            RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
+            RegisterSpellProcessor(RelevantNanos.Melee2HE, Melee2HEBuffWeapon);
+            RegisterSpellProcessor(RelevantNanos.Melee2HB, Melee2HBBuffWeapon);
+            RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleePierceBuffWeapon);
+            RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeEnergyBuffWeapon);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
+
+            //Team buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitiativeBuffs);
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "DamageShields"));
+            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "TargetedHpBuff"));
+            RegisterSpellProcessor(RelevantNanos.AbsorbACBuff,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "AbsorbACBuff"));
+            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
+
             //LE Procs
             RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, LEProc1, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerRagingBlow, LEProc1, CombatActionPriority.Low);
@@ -123,43 +175,6 @@ namespace CombatHandler.Enf
             RegisterPerkProcessor(PerkHash.LEProcEnforcerShrugOffHits, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerBustKneecaps, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcEnforcerIgnorePain, LEProc2, CombatActionPriority.Low);
-
-            //Troll Form
-            RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
-
-            //Taunts
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
-           
-            //Taunt Tools
-            RegisterItemProcessor(244655, 244655, TauntTool);
-
-            //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
-
-            //Weapon Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
-            RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
-            RegisterSpellProcessor(RelevantNanos.Melee2HE, Melee2HEBuffWeapon);
-            RegisterSpellProcessor(RelevantNanos.Melee2HB, Melee2HBBuffWeapon);
-            RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleePierceBuffWeapon);
-            RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeEnergyBuffWeapon);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
-
-            //Team buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitiativeBuffs);
-            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
-            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TargetedHpBuff);
-            RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
-            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength,
-                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
 
             PluginDirectory = pluginDir;
 
@@ -804,13 +819,6 @@ namespace CombatHandler.Enf
             return false;
         }
 
-        private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TauntProc")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
         #endregion
 
         #region Perks
@@ -841,7 +849,7 @@ namespace CombatHandler.Enf
                     return true;
                 }
 
-                return Buff(spell, spell.Nanoline, ref actionTarget);
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
             }
 
             return false;
@@ -909,15 +917,10 @@ namespace CombatHandler.Enf
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.MeleeEnergy);
         }
 
-        //private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
-        //}
-
         private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             // Check if there is a fighting target or if the spell ID should be ignored
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id))
+            if (DynelManager.LocalPlayer.FightingTarget != null)
             {
                 return false;
             }
@@ -959,28 +962,7 @@ namespace CombatHandler.Enf
             if (IsSettingEnabled("InitiativeBuffs"))
                 return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("DamageShields")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool TargetedHpBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TargetedHpBuff")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("AbsorbACBuff")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion

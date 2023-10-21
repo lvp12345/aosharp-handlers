@@ -72,7 +72,6 @@ namespace CombatHandler.Shade
 
             _settings.AddVariable("Kits", true);
 
-            //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.BlackenedLegacy);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.Blackheart);
 
@@ -89,6 +88,61 @@ namespace CombatHandler.Shade
 
             RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
+            //Perks
+            RelevantPerks.SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
+            RelevantPerks.TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
+            RelevantPerks.PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
+            RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
+
+            //Spells
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaress, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealthDrain).OrderByStackingOrder(), HealthDrain);
+            RegisterSpellProcessor(RelevantNanos.SpiritDrain, SpiritSiphon);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+            RegisterSpellProcessor(RelevantNanos.ShadeDmgProc,(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DamageProc"));
+            RegisterSpellProcessor(RelevantNanos.ShadeStunProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "StunProc"));
+            RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "InitDebuffProc"));
+            RegisterSpellProcessor(RelevantNanos.ShadeDOTProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DOTProc"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
+
+            //Items
+            RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
+            RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+
             //LE Proc
             RegisterPerkProcessor(PerkHash.LEProcShadeBlackenedLegacy, LEProc1, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcShadeSiphonBeing, LEProc1, CombatActionPriority.Low);
@@ -104,40 +158,6 @@ namespace CombatHandler.Shade
             RegisterPerkProcessor(PerkHash.LEProcShadeMisdirection, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcShadeDeviousSpirit, LEProc2, CombatActionPriority.Low);
 
-
-            //Perks
-            RelevantPerks.SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
-            RelevantPerks.TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
-            RelevantPerks.PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
-            RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
-
-            //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaress, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealthDrain).OrderByStackingOrder(), HealthDrain);
-            RegisterSpellProcessor(RelevantNanos.SpiritDrain, SpiritSiphon);
-
-            //Items
-            RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-
-            RegisterSpellProcessor(RelevantNanos.ShadeDmgProc, DamageProc);
-            RegisterSpellProcessor(RelevantNanos.ShadeStunProc, StunProc);
-            RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc, InitDebuffProc);
-            RegisterSpellProcessor(RelevantNanos.ShadeDOTProc, DOTProc);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
-
-            RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
 
             PluginDirectory = pluginDir;
 
@@ -741,37 +761,9 @@ namespace CombatHandler.Shade
 
         #region Procs
 
-        private bool InitDebuffProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (!IsSettingEnabled("InitDebuffProc")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actiontarget);
-        }
-
-        private bool DamageProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (!IsSettingEnabled("DamageProc")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actiontarget);
-        }
-        private bool DOTProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (!IsSettingEnabled("DOTProc")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actiontarget);
-        }
-        private bool StunProc(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (!IsSettingEnabled("StunProc")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actiontarget);
-        }
-
         #endregion
 
         #region Buffs
-
-
 
         private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -794,7 +786,7 @@ namespace CombatHandler.Shade
                     CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
                 }
 
-                return GenericTeamBuff(spell, ref actionTarget);
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
             }
 
             return false;
@@ -820,7 +812,7 @@ namespace CombatHandler.Shade
 
             if (fightingTarget == null) { return false; }
 
-            return GenericTeamBuff(spell, ref actionTarget);
+            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

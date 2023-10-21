@@ -132,51 +132,6 @@ namespace CombatHandler.Metaphysicist
 
             RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
 
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistNanobotContingentArrest, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistThoughtfulMeans, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistRegainFocus, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEconomicNanobotUse, LEProc1, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuperEgoStrike, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuppressFury, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEgoStrike, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistMindWail, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, LEProc2, CombatActionPriority.Low);
-
-
-
-            //Self buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
-
-            //Team buffs
-            RegisterSpellProcessor(RelevantNanos.MPCompositeNano,
-                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "CompositeNanoSkillsBuffSelection"));
-
-            RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
-
-            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
-
-            RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
-            RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
-            RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PsyMod);
-            RegisterSpellProcessor(RelevantNanos.SenImpBuffs, SenImp);
-            RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MatCre);
-            RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MatLoc);
-
-             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
-                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
-
-            RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
-
             //Debuffs
             //nukes
             RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
@@ -203,6 +158,40 @@ namespace CombatHandler.Metaphysicist
                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoShutdownDebuffSelection"), CombatActionPriority.High);
 
+            //Buffs
+            //self buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvades);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+            //team buffs
+            RegisterSpellProcessor(RelevantNanos.MPCompositeNano,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "CompositeNanoSkillsBuffSelection"));
+
+            RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
+
+            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+
+            RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
+            RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
+            RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PsyMod);
+            RegisterSpellProcessor(RelevantNanos.SenImpBuffs, SenImp);
+            RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MatCre);
+            RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MatLoc);
+
+             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
+                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
+
+            RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
+
+            
             //Pets
             RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
@@ -227,6 +216,22 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
+
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistNanobotContingentArrest, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistThoughtfulMeans, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistRegainFocus, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEconomicNanobotUse, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuperEgoStrike, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuppressFury, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEgoStrike, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistMindWail, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, LEProc2, CombatActionPriority.Low);
+
 
             PluginDirectory = pluginDir;
 
@@ -1086,7 +1091,7 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            return GenericBuff(spell, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1094,7 +1099,7 @@ namespace CombatHandler.Metaphysicist
             if (CostBuffSelection.Team == (CostBuffSelection)_settings["CostBuffSelection"].AsInt32())
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool MatCre(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1145,6 +1150,55 @@ namespace CombatHandler.Metaphysicist
             return false;
         }
 
+        protected bool GenericNanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
+
+            if (Team.IsInTeam)
+                return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
+
+            return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool NanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
+
+            if (SpellChecksNanoSkillsPlayer(spell, fightingTarget))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
+
+        protected bool NanoSkillsTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
+
+            if (Team.IsInTeam)
+            {
+                SimpleChar target = DynelManager.Players
+                    .Where(c => c.IsInLineOfSight
+                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0
+                        && SpellChecksNanoSkillsOther(spell, c))
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region Team Buffs
@@ -1153,17 +1207,9 @@ namespace CombatHandler.Metaphysicist
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("Evades"))
-                return GenericTeamBuff(spell, ref actionTarget);
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
-        }
-
-        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
         #endregion

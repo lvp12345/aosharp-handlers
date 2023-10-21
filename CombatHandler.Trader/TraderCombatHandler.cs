@@ -118,47 +118,31 @@ namespace CombatHandler.Trader
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcTraderDebtCollection, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderAccumulatedInterest, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderExchangeProduct, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderUnforgivenDebts, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderUnexpectedBonus, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderRebate, LEProc1, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcTraderUnopenedLetter, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderRigidLiquidation, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderDepleteAssets, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderEscrow, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderRefinanceLoans, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderPaymentPlan, LEProc2, CombatActionPriority.Low);
-
-            //Perks
-            RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
-            RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
-
             //Pets
             RegisterSpellProcessor(RelevantNanos.DecisionbyCommittee, PetSpawner, CombatActionPriority.High);
 
-            //Heals
-            RegisterSpellProcessor(RelevantNanos.Heal, Healing);
-            RegisterSpellProcessor(RelevantNanos.TeamHeal, TeamHealing);
-            RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal, CombatActionPriority.High);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
+            //Root/Snare
+            RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
 
             //Mezz
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz), Mezz, CombatActionPriority.High);
 
-            //Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(), GlobalGenericBuff);
+            //Heals
+            RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal, CombatActionPriority.High);
 
-            //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
-            RegisterSpellProcessor(RelevantNanos.UmbralWrangler, UmbralWrangler);
+            RegisterSpellProcessor(RelevantNanos.Heals,
+                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                       GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                       CombatActionPriority.High);
+
+            RegisterSpellProcessor(RelevantNanos.TeamHeals,
+                        (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                        GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                        CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
 
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
@@ -183,10 +167,35 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
 
-            //Root/Snare
-            RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
+            //Buffs
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
+            //Team Buffs
+            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
+            RegisterSpellProcessor(RelevantNanos.UmbralWrangler,(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "UmbralWrangler"));
 
+            //Perks
+            RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
+            RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
+
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcTraderDebtCollection, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderAccumulatedInterest, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderExchangeProduct, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderUnforgivenDebts, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderUnexpectedBonus, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderRebate, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcTraderUnopenedLetter, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderRigidLiquidation, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderDepleteAssets, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderEscrow, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderRefinanceLoans, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderPaymentPlan, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -755,6 +764,15 @@ namespace CombatHandler.Trader
             return Volunteer(perk, fightingTarget, ref actionTarget);
         }
 
+        protected bool Volunteer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+            return PerkCondtionProcessors.VolunteerPerk(perk, ref actionTarget);
+        }
+
         #endregion
 
         #region Healing
@@ -768,64 +786,64 @@ namespace CombatHandler.Trader
             return false;
         }
 
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HealPercentage == 0) { return false; }
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                if (Team.IsInTeam)
-                {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                             && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-                        .ToList();
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        if (Team.IsInTeam)
+        //        {
+        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //                .Where(c => Team.Members
+        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                     && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+        //                .ToList();
 
-                    if (dyingTeamMember.Count >= 4) { return false; }
-                }
+        //            if (dyingTeamMember.Count >= 4) { return false; }
+        //        }
 
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-            }
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    }
 
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-            }
+        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
-        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HealPercentage == 0) { return false; }
+        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
 
-            if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                if (Spell.List.Any(c => c.Id == 275011)) { return false; }
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        if (Spell.List.Any(c => c.Id == 275011)) { return false; }
 
-                if (Team.IsInTeam)
-                {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-                        .ToList();
+        //        if (Team.IsInTeam)
+        //        {
+        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //                .Where(c => Team.Members
+        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                        && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+        //                .ToList();
 
-                    if (dyingTeamMember.Count >= 1)
-                    {
-                        return CanCast(spell);
-                    }
-                }
-            }
+        //            if (dyingTeamMember.Count >= 1)
+        //            {
+        //                return CanCast(spell);
+        //            }
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -852,7 +870,7 @@ namespace CombatHandler.Trader
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -872,17 +890,17 @@ namespace CombatHandler.Trader
             if (IsInsideInnerSanctum()) { return false; }
 
             if (Team.IsInTeam && IsSettingEnabled("Evades"))
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget)
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget)
 
                     ; return false;
         }
 
-        private bool UmbralWrangler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("UmbralWrangler")) { return false; }
+        //private bool UmbralWrangler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("UmbralWrangler")) { return false; }
 
-            return GenericBuff(spell, ref actionTarget);
-        }
+        //    return GenericBuff(spell, ref actionTarget);
+        //}
 
         #endregion
 
@@ -1458,7 +1476,7 @@ namespace CombatHandler.Trader
             if (fightingTarget.MaxHealth < 1000000) { return false; }
             if (!spell.IsReady) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         protected void SyncPetCombat()
@@ -1514,11 +1532,11 @@ namespace CombatHandler.Trader
                 76484, 76491, 76494, 76499, 76571, 76503, 76651, 76614, 76656,
                 76653, 76679, 76681, 76684, 76686, 76691, 76688, 76717, 76715,
                 76720, 76722, 76724, 76727, 76729, 76732, 76742};
-            public static int[] Heal = { 273410, 252155, 121496, 121500, 121501, 121499,
+            public static int[] Heals = { 273410, 252155, 121496, 121500, 121501, 121499,
                 121502, 121495, 121492, 121506, 121494, 121493, 121504, 121498, 121503,
                 76653, 76679, 76681, 76684, 76686, 76691, 76688, 76717, 76715,
                 121497, 121505};
-            public static int[] TeamHeal = { 118245, 118230, 118232, 118231, 118235, 118233,
+            public static int[] TeamHeals = { 118245, 118230, 118232, 118231, 118235, 118233,
                 118234, 118238, 118236, 118237, 118241, 118239, 118240, 118243, 118244,
                 118242, 43374};
         }

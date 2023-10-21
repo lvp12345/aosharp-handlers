@@ -93,6 +93,63 @@ namespace CombatHandler.Adventurer
 
             RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
+            //Healing
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
+            
+            RegisterSpellProcessor(RelevantNanos.Heals,
+                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                       GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                       CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
+                        (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                        GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                        CombatActionPriority.High);
+
+            //Buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._1HEdgedBuff).OrderByStackingOrder(), Melee);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Ranged);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(),
+            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
+            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(),
+            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+             RegisterSpellProcessor(RelevantNanos.ArmorBuffs, Armor);
+
+            //Team Buffs
+            RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "TeamArmorBuffs"));
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "DamageShields"));
+            RegisterSpellProcessor(RelevantNanos.LearningbyDoing,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "XPBonus"));
+            RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "RunspeedBuff"));
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(),
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "TreatmentBuffSelection"));
+
+            //Morphs
+            RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
+            RegisterSpellProcessor(RelevantNanos.LeetMorph, LeetMorph);
+            RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
+            RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
+
+            //Morph Buffs
+            RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
+            RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
+            RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
+            RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
+
             //LE Procs
             //type1
             RegisterPerkProcessor(PerkHash.LEProcAdventurerAesirAbsorption, LEProc1, CombatActionPriority.Low);
@@ -109,42 +166,6 @@ namespace CombatHandler.Adventurer
             RegisterPerkProcessor(PerkHash.LEProcAdventurerMacheteSlice, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcAdventurerSoothingHerbs, LEProc2, CombatActionPriority.Low);
             RegisterPerkProcessor(PerkHash.LEProcAdventurerBasicDressing, LEProc2, CombatActionPriority.Low);
-
-            //Perks
-
-            //Healing
-            RegisterSpellProcessor(RelevantNanos.HEALS, Healing, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), CompleteHealing, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), TeamHealing, CombatActionPriority.High);
-
-            //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._1HEdgedBuff).OrderByStackingOrder(), Melee);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Ranged);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(RelevantNanos.ArmorBuffs, Armor);
-
-            //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs, TeamArmor);
-            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
-            RegisterSpellProcessor(RelevantNanos.LearningbyDoing, XPBonus);
-            RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs, TeamRunSpeedBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FirstAidAndTreatmentBuff).OrderByStackingOrder(),
-                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "TreatmentBuffSelection"));
-
-            //Morphs
-            RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
-            RegisterSpellProcessor(RelevantNanos.LeetMorph, LeetMorph);
-            RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
-            RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
-
-            //Morph Buffs
-            RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
-            RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
-            RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
-            RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
 
             PluginDirectory = pluginDir;
 
@@ -709,27 +730,6 @@ namespace CombatHandler.Adventurer
 
         #region Healing
 
-        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
-
-            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
-
-            return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        }
-
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
-
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-            return false;
-        }
-
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Buffing") || !CanCast(spell) || CompleteHealPercentage == 0) { return false; }
@@ -747,25 +747,25 @@ namespace CombatHandler.Adventurer
         {
             if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool LeetMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool WolfMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool SaberMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool WolfAgility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -774,7 +774,7 @@ namespace CombatHandler.Adventurer
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool SaberDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -782,7 +782,7 @@ namespace CombatHandler.Adventurer
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool LeetCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -790,7 +790,7 @@ namespace CombatHandler.Adventurer
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool DragonScales(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -798,7 +798,7 @@ namespace CombatHandler.Adventurer
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -819,40 +819,7 @@ namespace CombatHandler.Adventurer
         {
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        #endregion
-
-        #region Team Buffs
-
-        private bool TeamArmor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("TeamArmorBuffs"))
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("DamageShields")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool XPBonus(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("XPBonus")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool TeamRunSpeedBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("RunspeedBuffs")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
+            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -861,7 +828,7 @@ namespace CombatHandler.Adventurer
 
         private static class RelevantNanos
         {
-            public static int[] HEALS = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
+            public static int[] Heals = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
                 136678, 136679, 136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
                 82064, 26695 };
 
@@ -886,7 +853,7 @@ namespace CombatHandler.Adventurer
 
         public enum HealSelection
         {
-            None, SingleTeam, SingleArea
+            None, SingleTeam, SingleArea, Team
         }
         public enum MorphSelection
         {

@@ -4,6 +4,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -41,168 +42,195 @@ namespace CombatHandler.NanoTechnician
 
         public NTCombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+            try
+            {
+                IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+                IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentageChangedEvent += NanoAegisPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentageChangedEvent += NullitySpherePercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentageChangedEvent += IzgimmersWealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentageChangedEvent += NanoAegisPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentageChangedEvent += NullitySpherePercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentageChangedEvent += IzgimmersWealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
-            _settings.AddVariable("Buffing", true);
-            _settings.AddVariable("Composites", true);
+                _settings.AddVariable("Buffing", true);
+                _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("GlobalBuffing", true);
-            _settings.AddVariable("GlobalComposites", true);
-            _settings.AddVariable("GlobalRez", true);
+                _settings.AddVariable("GlobalBuffing", true);
+                _settings.AddVariable("GlobalComposites", true);
+                _settings.AddVariable("GlobalRez", true);
 
-            _settings.AddVariable("DeTaunt", false);
+                _settings.AddVariable("DeTaunt", false);
 
-            _settings.AddVariable("Illusionist", false);
-            _settings.AddVariable("NotumGraft", false);
-            _settings.AddVariable("SharpObjects", true);
-            _settings.AddVariable("Grenades", true);
+                _settings.AddVariable("Illusionist", false);
+                _settings.AddVariable("NotumGraft", false);
+                _settings.AddVariable("SharpObjects", true);
+                _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
-            _settings.AddVariable("Kits", true);
+                _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("CycleAbsorbs", false);
+                _settings.AddVariable("CycleAbsorbs", false);
 
-            _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.None);
+                _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.None);
 
-            _settings.AddVariable("Pierce", false);
-            _settings.AddVariable("FlimFocus", false);
+                _settings.AddVariable("Pierce", false);
+                _settings.AddVariable("FlimFocus", false);
 
-            _settings.AddVariable("NanoHOTTeam", false);
-            _settings.AddVariable("CostTeam", false);
-            _settings.AddVariable("AbsorbACBuff", false);
-            _settings.AddVariable("Evades", false);
-            _settings.AddVariable("NFRangeBuff", false);
+                _settings.AddVariable("NanoHOTTeam", false);
+                _settings.AddVariable("CostTeam", false);
+                _settings.AddVariable("AbsorbACBuff", false);
+                _settings.AddVariable("Evades", false);
+                _settings.AddVariable("NFRangeBuff", false);
 
-            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ThermalReprieve);
-            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.OptimizedLibrary);
+                _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ThermalReprieve);
+                _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.OptimizedLibrary);
 
-            _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
-            _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
-            _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
-            _settings.AddVariable("HackedBlindSelection", (int)HackedBlindSelection.None);
+                _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
+                _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
+                _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
+                _settings.AddVariable("HackedBlindSelection", (int)HackedBlindSelection.None);
 
-            _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Calm);
-            _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
+                _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Calm);
+                _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
 
-            _settings.AddVariable("AOESelection", (int)AOESelection.None);
+                _settings.AddVariable("AOESelection", (int)AOESelection.None);
 
-            RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
+                RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
 
-            //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianThermalReprieve, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianHarvestEnergy, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLayeredAmnesty, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianSourceTap, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianCircularLogic, LEProc1, CombatActionPriority.Low);
+                //DeTaunt
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt, CombatActionPriority.High);
 
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianOptimizedLibrary, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianAcceleratedReality, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLoopingService, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianPoweredNanoFortress, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianIncreaseMomentum, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianUnstableLibrary, LEProc2, CombatActionPriority.Low);
+                //Calms
+                RegisterSpellProcessor(RelevantNanos.Stun, Stun, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.Calm, Calm, CombatActionPriority.High);
 
-            //Perks
-            RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
+                //Debuffs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
 
-            //DeTaunt
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "HaloSelection"), CombatActionPriority.High);
 
-            //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.HackedBlind, HackedBlind, CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(),
-               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "HaloSelection"), CombatActionPriority.High);
+                //Dots
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Medium);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.HackedBlind, HackedBlind, CombatActionPriority.High);
+                //Nukes
+                RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke, CombatActionPriority.Medium);
+                RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Medium);
+                RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
+                RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
 
-            //Calms
-            RegisterSpellProcessor(RelevantNanos.Stun, Stun, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.Calm, Calm, CombatActionPriority.High);
+                //Perks
+                RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
 
-            //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth, CombatActionPriority.High);
-
-            RegisterSpellProcessor(RelevantNanos.NanobotShelter, GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDamageMultiplierBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), NFRangeBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), MatCreaBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(), GlobalGenericBuff);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHOT);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), CycleAbsorbs);
-
-            //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
-            RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
-
-            //Dots
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Medium);
-
-            //Nukes
-            RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Medium);
-            RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
-            RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
-
-            //Items
-            RegisterItemProcessor(new int[] { RelevantItems.NotumGraft, RelevantItems.NotumSplice }, NotumItem);
-            RegisterItemProcessor(RelevantItems.WilloftheIllusionist, RelevantItems.WilloftheIllusionist, Illusionist);
+                //Buffs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
+                RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth, CombatActionPriority.High);
 
 
-            PluginDirectory = pluginDir;
+                RegisterSpellProcessor(RelevantNanos.NanobotShelter,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDamageMultiplierBuffs).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), NFRangeBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), MatCreaBuff);
 
-            CycleAbsorbsDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay;
-            NanoAegisPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentage;
-            NullitySpherePercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage;
-            IzgimmersWealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentage;
-            StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
-            StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
-            StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
-            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
-            CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
-            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
-            SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
-            SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
-            TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
-            TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
-            BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
-            StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHOT);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), CycleAbsorbs);
+
+                //Team Buffs
+                RegisterSpellProcessor(RelevantNanos.AbsorbACBuff,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "AbsorbACBuff"));
+                RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
+
+                //Items
+                RegisterItemProcessor(new int[] { RelevantItems.NotumGraft, RelevantItems.NotumSplice }, NotumItem);
+                RegisterItemProcessor(RelevantItems.WilloftheIllusionist, RelevantItems.WilloftheIllusionist, Illusionist);
+
+                //LE Procs
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianThermalReprieve, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianHarvestEnergy, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLayeredAmnesty, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianSourceTap, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianCircularLogic, LEProc1, CombatActionPriority.Low);
+
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianOptimizedLibrary, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianAcceleratedReality, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianLoopingService, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianPoweredNanoFortress, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianIncreaseMomentum, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcNanoTechnicianUnstableLibrary, LEProc2, CombatActionPriority.Low);
+
+                PluginDirectory = pluginDir;
+
+                CycleAbsorbsDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay;
+                NanoAegisPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentage;
+                NullitySpherePercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage;
+                IzgimmersWealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentage;
+                StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
+                StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
+                StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
+                KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+                KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+                CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
+                CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
+                SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
+                SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
+                TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
+                TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
+                BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
+                StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow, _perkWindow };
 
@@ -491,257 +519,271 @@ namespace CombatHandler.NanoTechnician
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 3.0)
-                return;
-
-            base.OnUpdate(deltaTime);
-
-            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+            try
             {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 3.0)
+                    return;
 
-                IPCChannel.Broadcast(ncuMessage);
+                base.OnUpdate(deltaTime);
 
-                OnRemainingNCUMessage(0, ncuMessage);
+                if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+                {
+                    RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
-                _ncuUpdateTime = Time.NormalTime;
+                    IPCChannel.Broadcast(ncuMessage);
+
+                    OnRemainingNCUMessage(0, ncuMessage);
+
+                    _ncuUpdateTime = Time.NormalTime;
+                }
+
+                #region UI
+
+                var window = SettingsController.FindValidWindow(_windows);
+
+                if (window != null && window.IsValid)
+                {
+                    window.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
+                    window.FindView("NanoAegisPercentageBox", out TextInputView nanoAegisInput);
+                    window.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
+                    window.FindView("IzgimmersWealthPercentageBox", out TextInputView izWealthInput);
+                    window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                    window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                    window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                    window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                    window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+                    window.FindView("SphereDelayBox", out TextInputView sphereInput);
+                    window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+                    window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+                    window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
+                    window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+                    if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
+                        if (int.TryParse(absorbsInput.Text, out int absorbsValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay != absorbsValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay = absorbsValue;
+
+                    if (nanoAegisInput != null && !string.IsNullOrEmpty(nanoAegisInput.Text))
+                        if (int.TryParse(nanoAegisInput.Text, out int nanoAegisValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentage != nanoAegisValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentage = nanoAegisValue;
+
+                    if (nullSphereInput != null && !string.IsNullOrEmpty(nullSphereInput.Text))
+                        if (int.TryParse(nullSphereInput.Text, out int nullSphereValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage != nullSphereValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage = nullSphereValue;
+
+                    if (izWealthInput != null && !string.IsNullOrEmpty(izWealthInput.Text))
+                        if (int.TryParse(izWealthInput.Text, out int izWealthValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentage != izWealthValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentage = izWealthValue;
+                    if (stimTargetInput != null)
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
+
+                    if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
+                        if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
+
+                    if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
+                        if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
+
+                    if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                        if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+
+                    if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                        if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+
+                    if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
+                        if (int.TryParse(sphereInput.Text, out int sphereValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
+
+                    if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
+                        if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+
+                    if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
+                        if (int.TryParse(selfHealInput.Text, out int selfHealValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
+
+                    if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
+                        if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
+
+                    if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
+                        if (int.TryParse(teamHealInput.Text, out int teamHealValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
+
+                    if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
+                        if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
+
+                    if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
+                        if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
+
+                    if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
+                        if (int.TryParse(strengthInput.Text, out int strengthValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                }
+
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                {
+
+                    if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                    {
+                        itemView.Tag = SettingsController.settingsWindow;
+                        itemView.Clicked = HandleItemViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                    {
+                        perkView.Tag = SettingsController.settingsWindow;
+                        perkView.Clicked = HandlePerkViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("NukesView", out Button nukeView))
+                    {
+                        nukeView.Tag = SettingsController.settingsWindow;
+                        nukeView.Clicked = HandleNukesViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsWindow;
+                        buffView.Clicked = HandleBuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsWindow;
+                        debuffView.Clicked = HandleDebuffsViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
+                    {
+                        calmView.Tag = SettingsController.settingsWindow;
+                        calmView.Clicked = HandleCalmingViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                    {
+                        procView.Tag = SettingsController.settingsWindow;
+                        procView.Clicked = HandleProcViewClick;
+                    }
+
+                    #endregion
+
+                    #region GlobalBuffing
+
+                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                    {
+                        IPCChannel.Broadcast(new GlobalBuffingMessage()
+                        {
+                            Switch = false
+                        });
+
+                        ToggleBuffing = false;
+                        _settings["Buffing"] = false;
+                        _settings["GlobalBuffing"] = false;
+                    }
+
+                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                    {
+                        IPCChannel.Broadcast(new GlobalBuffingMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleBuffing = true;
+                        _settings["Buffing"] = true;
+                        _settings["GlobalBuffing"] = true;
+                    }
+
+                    #endregion
+
+                    #region Global Composites
+
+                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                    {
+                        IPCChannel.Broadcast(new GlobalCompositesMessage()
+                        {
+                            Switch = false
+                        });
+
+                        ToggleComposites = false;
+                        _settings["Composites"] = false;
+                        _settings["GlobalComposites"] = false;
+                    }
+                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                    {
+                        IPCChannel.Broadcast(new GlobalCompositesMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleComposites = true;
+                        _settings["Composites"] = true;
+                        _settings["GlobalComposites"] = true;
+                    }
+
+                    #endregion
+
+                    #region Global Resurrection
+
+                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                    {
+                        IPCChannel.Broadcast(new GlobalRezMessage()
+                        {
+
+                            Switch = false
+                        });
+
+                        ToggleRez = false;
+                        _settings["GlobalRez"] = false;
+                    }
+                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                    {
+                        IPCChannel.Broadcast(new GlobalRezMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleRez = true;
+                        _settings["GlobalRez"] = true;
+                    }
+
+                    #endregion
+                }
             }
-
-            #region UI
-
-            var window = SettingsController.FindValidWindow(_windows);
-
-            if (window != null && window.IsValid)
+            catch (Exception ex)
             {
-                window.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
-                window.FindView("NanoAegisPercentageBox", out TextInputView nanoAegisInput);
-                window.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
-                window.FindView("IzgimmersWealthPercentageBox", out TextInputView izWealthInput);
-                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
-                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
-                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
-                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
-                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
-                window.FindView("SphereDelayBox", out TextInputView sphereInput);
-                window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
-                window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
-                window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
 
-                if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
-                    if (int.TryParse(absorbsInput.Text, out int absorbsValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay != absorbsValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay = absorbsValue;
-
-                if (nanoAegisInput != null && !string.IsNullOrEmpty(nanoAegisInput.Text))
-                    if (int.TryParse(nanoAegisInput.Text, out int nanoAegisValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentage != nanoAegisValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentage = nanoAegisValue;
-
-                if (nullSphereInput != null && !string.IsNullOrEmpty(nullSphereInput.Text))
-                    if (int.TryParse(nullSphereInput.Text, out int nullSphereValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage != nullSphereValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage = nullSphereValue;
-
-                if (izWealthInput != null && !string.IsNullOrEmpty(izWealthInput.Text))
-                    if (int.TryParse(izWealthInput.Text, out int izWealthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentage != izWealthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].IzgimmersWealthPercentage = izWealthValue;
-                if (stimTargetInput != null)
-                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
-
-                if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
-                    if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
-
-                if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
-                    if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
-
-                if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
-                    if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
-
-                if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
-                    if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
-
-                if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
-                    if (int.TryParse(sphereInput.Text, out int sphereValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
-
-                if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
-                    if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
-
-                if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
-                    if (int.TryParse(selfHealInput.Text, out int selfHealValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
-
-                if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
-                    if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
-
-                if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
-                    if (int.TryParse(teamHealInput.Text, out int teamHealValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
-
-                if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
-                    if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
-
-                if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
-                    if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
-
-                if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
-                    if (int.TryParse(strengthInput.Text, out int strengthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
-            }
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
-            {
-
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                if (errorMessage != previousErrorMessage)
                 {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
                 }
-
-                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
-                {
-                    perkView.Tag = SettingsController.settingsWindow;
-                    perkView.Clicked = HandlePerkViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("NukesView", out Button nukeView))
-                {
-                    nukeView.Tag = SettingsController.settingsWindow;
-                    nukeView.Clicked = HandleNukesViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HandleBuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
-                {
-                    debuffView.Tag = SettingsController.settingsWindow;
-                    debuffView.Clicked = HandleDebuffsViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
-                {
-                    calmView.Tag = SettingsController.settingsWindow;
-                    calmView.Clicked = HandleCalmingViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
-                }
-
-                #endregion
-
-                #region GlobalBuffing
-
-                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleBuffing = false;
-                    _settings["Buffing"] = false;
-                    _settings["GlobalBuffing"] = false;
-                }
-
-                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleBuffing = true;
-                    _settings["Buffing"] = true;
-                    _settings["GlobalBuffing"] = true;
-                }
-
-                #endregion
-
-                #region Global Composites
-
-                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleComposites = false;
-                    _settings["Composites"] = false;
-                    _settings["GlobalComposites"] = false;
-                }
-                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleComposites = true;
-                    _settings["Composites"] = true;
-                    _settings["GlobalComposites"] = true;
-                }
-
-                #endregion
-
-                #region Global Resurrection
-
-                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-
-                        Switch = false
-                    });
-
-                    ToggleRez = false;
-                    _settings["GlobalRez"] = false;
-                }
-                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleRez = true;
-                    _settings["GlobalRez"] = true;
-                }
-
-                #endregion
             }
         }
 
@@ -1047,7 +1089,7 @@ namespace CombatHandler.NanoTechnician
 
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantIgnoreNanos.CompNanoSkills)) { return false; }
 
-            return GenericBuff(spell, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool NanoHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1055,7 +1097,7 @@ namespace CombatHandler.NanoTechnician
             if (IsSettingEnabled("NanoHOTTeam"))
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1063,7 +1105,7 @@ namespace CombatHandler.NanoTechnician
             if (IsSettingEnabled("CostTeam"))
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1093,7 +1135,7 @@ namespace CombatHandler.NanoTechnician
                 return true;
             }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1107,20 +1149,20 @@ namespace CombatHandler.NanoTechnician
 
         #region Team Buffs
 
-        private bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("AbsorbACBuff"))
-                return GenericTeamBuff(spell, ref actionTarget);
+        //private bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsSettingEnabled("AbsorbACBuff"))
+        //        return GenericTeamBuff(spell, ref actionTarget);
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("Evades"))
-                return GenericTeamBuff(spell, ref actionTarget);
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -1130,7 +1172,7 @@ namespace CombatHandler.NanoTechnician
             if (IsSettingEnabled("NFRangeBuff"))
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion

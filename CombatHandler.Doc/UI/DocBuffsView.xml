@@ -9,6 +9,8 @@
 		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<OptionCheckBox label="Short HOT" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortHOT" layout_borders="Rect(10,1,5,1)"/>
 		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<OptionCheckBox label="Short HP" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamImprovedLifeChanneler" layout_borders="Rect(10,1,5,1)"/>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 			<OptionRadioButtonGroup label="Nano Resist" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoResistSelection">
 				<RadioButton label="None" value="0"/>

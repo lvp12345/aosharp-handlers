@@ -59,7 +59,7 @@ namespace CombatHandler.Engineer
 
         private static double _ncuUpdateTime;
 
-        public static string previousErrorMessage = string.Empty;
+        
 
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -1554,16 +1554,5 @@ namespace CombatHandler.Engineer
 
         #endregion
 
-        public static int GetLineNumber(Exception ex)
-        {
-            var lineNumber = 0;
-
-            var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
-
-            if (lineMatch.Success)
-                lineNumber = int.Parse(lineMatch.Groups[1].Value);
-
-            return lineNumber;
-        }
     }
 }

@@ -105,6 +105,7 @@ namespace CombatHandler.NanoTechnician
 
                 _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
                 _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
+                _settings.AddVariable("LickOfThePestSelection", (int)LickOfThePestSelection.None);
                 _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
                 _settings.AddVariable("HackedBlindSelection", (int)HackedBlindSelection.None);
 
@@ -124,14 +125,24 @@ namespace CombatHandler.NanoTechnician
 
                 //Debuffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
+
                 RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(),
                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "HaloSelection"), CombatActionPriority.High);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResist, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.HackedBlind, HackedBlind, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.LickofthePest,
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "LickOfThePestSelection"), CombatActionPriority.High);
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoResistSelection"), CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.HackedBlind,
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "HackedBlindSelection"), CombatActionPriority.High);
 
                 //Dots
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.High);
@@ -984,60 +995,75 @@ namespace CombatHandler.NanoTechnician
 
         #region Debuffs
 
-        private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
+        //private bool HaloNanoDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HaloSelection.None == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return false; }
 
-            if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    if (HaloSelection.Target != (HaloSelection)_settings["HaloSelection"].AsInt32()
+        //        || fightingTarget == null || !CanCast(spell)) { return false; }
 
-            if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+        //    if (HaloSelection.Boss != (HaloSelection)_settings["HaloSelection"].AsInt32())
+        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+        //    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+        //}
 
 
+        //private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
 
-            if (!_drainTarget.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
-            }
+        //    if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            return false;
-        }
+        //    if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+        //    {
+        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-        private bool HackedBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HackedBlindSelection.None == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32()) { return false; }
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
 
-            if (HackedBlindSelection.Target == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32())
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-            if (HackedBlindSelection.Boss == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
 
 
-            if (!_drainTarget.Buffs.Contains(RelevantNanos.HackedBlind))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = _drainTarget;
-                return true;
-            }
 
-            return false;
-        }
+        //    if (!_drainTarget.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA))
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = _drainTarget;
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
+
+        //private bool HackedBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HackedBlindSelection.None == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32()) { return false; }
+
+        //    if (HackedBlindSelection.Target == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32())
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+        //    if (HackedBlindSelection.Boss == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32())
+        //    {
+        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //    }
+
+        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+
+        //    if (!_drainTarget.Buffs.Contains(RelevantNanos.HackedBlind))
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = _drainTarget;
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
 
         #endregion
 
@@ -1230,13 +1256,17 @@ namespace CombatHandler.NanoTechnician
         {
             None, Target, Area, Boss
         }
+        public enum LickOfThePestSelection
+        {
+            None, Target, Area, Boss
+        }
         public enum NanoResistSelection
         {
-            None, Target, Boss
+            None, Target, Area, Boss
         }
         public enum HackedBlindSelection
         {
-            None, Target, Boss
+            None, Target, Area, Boss
         }
         public enum AOESelection
         {
@@ -1275,6 +1305,7 @@ namespace CombatHandler.NanoTechnician
             public static readonly int[] HackedBlind = { 253384, 253382, 253380 };
             public const int Stun = 28625;
             public static readonly int[] Calm = { 259364, 259365, 259362, 259363, 259366, 259367, 100443, 100441, 259335, 259336, 100442, 100440 };
+            public static int LickofthePest = 201937;
 
             public const int SuperiorFleetingImmunity = 273386;
             public static readonly int[] AbsorbACBuff = { 270356, 117676, 117675, 117677, 117678, 117679 };

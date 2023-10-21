@@ -59,7 +59,7 @@ namespace CombatHandler.Engineer
 
         private static double _ncuUpdateTime;
 
-        public static string previousErrorMessage = string.Empty;
+        
 
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -178,32 +178,45 @@ namespace CombatHandler.Engineer
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(),
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
+                    => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "DamageShields"));
+                    => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "DamageShields"));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(),
-                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => SelfBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "ShadowlandReflectBase"));
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "ShadowlandReflectBase"));
 
                 RegisterSpellProcessor(RelevantNanos.EngineeringBuff,
-               (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => SelfBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "MEBuff"));
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "MEBuff"));
 
-
+               
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GrenadeBuffs).OrderByStackingOrder(), Grenade);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(), GlobalGenericBuff);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(), GlobalGenericBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
-                RegisterSpellProcessor(RelevantNanos.BoostedTendons, GlobalGenericBuff);
-                RegisterSpellProcessor(RelevantNanos.DamageBuffLineA, GlobalGenericTeamBuff);
+                
+                RegisterSpellProcessor(RelevantNanos.BoostedTendons,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                       => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GeneralMechanicalEngineeringBuff).OrderByStackingOrder(), GlobalGenericBuff);
+                RegisterSpellProcessor(RelevantNanos.DamageBuffLineA,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget));
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.GeneralMechanicalEngineeringBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
                 //Pets
                 //pet spawners
@@ -987,14 +1000,6 @@ namespace CombatHandler.Engineer
 
         #region Buffs
 
-        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-        }
-
         private bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam && IsSettingEnabled("GrenadeTeam"))
@@ -1035,7 +1040,7 @@ namespace CombatHandler.Engineer
                 }
             }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -1143,7 +1148,7 @@ namespace CombatHandler.Engineer
                 return false;
             }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool GenericDebuffingAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget)
@@ -1549,16 +1554,5 @@ namespace CombatHandler.Engineer
 
         #endregion
 
-        public static int GetLineNumber(Exception ex)
-        {
-            var lineNumber = 0;
-
-            var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
-
-            if (lineMatch.Success)
-                lineNumber = int.Parse(lineMatch.Groups[1].Value);
-
-            return lineNumber;
-        }
     }
 }

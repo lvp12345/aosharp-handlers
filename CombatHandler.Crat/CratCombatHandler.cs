@@ -210,8 +210,8 @@ namespace CombatHandler.Bureaucrat
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(),
             (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "CutRedTape"));
-
+                => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "CutRedTape"));
+ 
             //Buff Aura   AAOAAD, Crit, NanoResist
             RegisterSpellProcessor(RelevantNanos.AadBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
                 GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.AAOAAD));
@@ -1036,6 +1036,50 @@ namespace CombatHandler.Bureaucrat
 
         #endregion
 
+        #region Perks
+
+        protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+
+            if (Time.NormalTime > CycleXpPerks + CycleXpPerksDelay)
+            {
+                CycleXpPerks = Time.NormalTime;
+
+                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+                if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                    return PerkCondtionProcessors.LeadershipPerk(perk);
+            }
+
+            return false;
+        }
+
+        protected bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                return PerkCondtionProcessors.GovernancePerk(perk);
+
+            return false;
+        }
+        protected bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
+
+            if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                return PerkCondtionProcessors.TheDirectorPerk(perk);
+
+            return false;
+        }
+
+        #endregion
+
         #region Buffs
 
         private bool PistolSelfOnly(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1048,7 +1092,7 @@ namespace CombatHandler.Bureaucrat
             if (IsSettingEnabled("NanoDeltaTeam"))
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool PsyIntBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1056,15 +1100,7 @@ namespace CombatHandler.Bureaucrat
             if (IsSettingEnabled("NeuronalStimulatorTeam"))
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -1080,7 +1116,7 @@ namespace CombatHandler.Bureaucrat
                 return false;
             }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool GenericDebuffingAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, DebuffingAuraSelection debuffType)

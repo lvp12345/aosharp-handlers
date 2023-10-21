@@ -108,21 +108,6 @@ namespace CombatHandler.Soldier
 
             RegisterSettingsWindow("Soldier Handler", "SoldierSettingsView.xml");
 
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierTargetAcquired, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierReconditioned, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierConcussiveShot, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierEmergencyBandages, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierSuccessfulTargeting, LEProc1, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcSoldierFuseBodyArmor, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierOnTheDouble, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierGrazeJugularVein, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierGearAssaultAbsorption, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierDeepSixInitiative, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcSoldierShootArtery, LEProc2, CombatActionPriority.Low);
-
             //DeTaunt
             RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);
 
@@ -139,36 +124,64 @@ namespace CombatHandler.Soldier
             //Spells
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => !c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(), SLReflects);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "ShadowlandReflect"));
 
             RegisterSpellProcessor(RelevantNanos.Phalanx, Phalanx);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(), NotumGrenades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SiphonBox683).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "NotumGrenades"));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), Shotgun);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HeavyWeaponsBuffs).OrderByStackingOrder(), HeavyWeapon);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(),
             (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
+                => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
             (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => TeamBuffBasedOnSetting(buffSpell, fightingTarget, ref actionTarget, "InitBuff"));
+                => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuff"));
 
             RegisterSpellProcessor(RelevantNanos.ArBuffs, AssaultRifle);
             RegisterSpellProcessor(RelevantNanos.CompositeHeavyArtillery, HeavyCompBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(), GlobalGenericBuff);
-
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RiotControl);
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.Precognition, Evades);
+
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierTargetAcquired, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierReconditioned, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierConcussiveShot, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierEmergencyBandages, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierSuccessfulTargeting, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcSoldierFuseBodyArmor, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierOnTheDouble, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierGrazeJugularVein, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierGearAssaultAbsorption, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierDeepSixInitiative, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcSoldierShootArtery, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -904,7 +917,7 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -939,7 +952,7 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -989,19 +1002,14 @@ namespace CombatHandler.Soldier
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
         }
-        private bool SLReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("ShadowlandReflect")) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
         private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (RKReflectSelection.RubiKa == (RKReflectSelection)_settings["RKReflectSelection"].AsInt32())
-                return Buff(spell, spell.Nanoline, ref actionTarget);
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
 
             if (RKReflectSelection.RubiKaTeam == (RKReflectSelection)_settings["RKReflectSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }
@@ -1012,15 +1020,9 @@ namespace CombatHandler.Soldier
 
             if (DynelManager.LocalPlayer.Buffs.Contains(162357)) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
-        private bool NotumGrenades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("NotumGrenades")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
 
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
@@ -1041,7 +1043,7 @@ namespace CombatHandler.Soldier
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("Evades"))
-                return GenericTeamBuff(spell, ref actionTarget);
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
         }

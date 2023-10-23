@@ -657,11 +657,12 @@ namespace CombatHandler.Fixer
         {
             if (IsInsideInnerSanctum() || RunspeedSelection.RubiKa != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
 
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.ShadowlandsRunspeed))
             {
                 CancelBuffs(RelevantNanos.ShadowlandsRunspeed);
             }
-
             return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 

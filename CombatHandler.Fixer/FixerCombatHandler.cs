@@ -101,11 +101,8 @@ namespace CombatHandler.Fixer
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                             => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
-            //RegisterSpellProcessor(RelevantNanos.NCU, NCU);
-            RegisterSpellProcessor(RelevantNanos.NCU,
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-
+            RegisterSpellProcessor(RelevantNanos.NCU, NCU);
+           
             //Debuffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs).OrderByStackingOrder(), EvasionDecrease);
 
@@ -605,10 +602,24 @@ namespace CombatHandler.Fixer
 
         #region Buffs
 
-        //private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    return Buff(spell, NanoLine.FixerNCUBuff, ref actionTarget);
-        //}
+        private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return Buff(spell, NanoLine.FixerNCUBuff, ref actionTarget);
+        }
+
+        protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+
+            if (SpellChecksPlayer(spell, nanoline))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
 
         #endregion
 

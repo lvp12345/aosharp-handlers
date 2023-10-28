@@ -74,11 +74,11 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int BattleGroupHeal4Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4Percentage : 50;
         [JsonIgnore]
-        public int DuckAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].DuckAbsorbsItemPercentage : 70;
+        public int DuckAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].DuckAbsorbsItemPercentage : 40;
         [JsonIgnore]
-        public int BodyDevAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage : 65;
+        public int BodyDevAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage : 55;
         [JsonIgnore]
-        public int StrengthAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage : 85;
+        public int StrengthAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage : 70;
         [JsonIgnore]
         public int CycleBioRegrowthDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay : 1;
         [JsonIgnore]

@@ -22,6 +22,7 @@ namespace CombatHandler.Trader
         private static Window _debuffWindow;
         private static Window _healingWindow;
         private static Window _procWindow;
+        private static Window _mezzWindow;
         private static Window _itemWindow;
         private static Window _perkWindow;
 
@@ -29,6 +30,7 @@ namespace CombatHandler.Trader
         private static View _debuffView;
         private static View _healingView;
         private static View _procView;
+        private static View _mezzView;
         private static View _itemView;
         private static View _perkView;
 
@@ -76,7 +78,7 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("Kits", true);
 
-            
+
             _settings.AddVariable("HealthDrain", false);
             _settings.AddVariable("LEDrainHeal", false);
 
@@ -110,49 +112,37 @@ namespace CombatHandler.Trader
             _settings.AddVariable("MyEnemySelection", (int)MyEnemySelection.Target);
             _settings.AddVariable("NanoHealSelection", (int)NanoHealSelection.Combat);
 
+            _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
+
             _settings.AddVariable("Root", false);
 
             RegisterSettingsWindow("Trader Handler", "TraderSettingsView.xml");
 
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcTraderDebtCollection, DebtCollection, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderAccumulatedInterest, AccumulatedInterest, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderExchangeProduct, ExchangeProduct, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderUnforgivenDebts, UnforgivenDebts, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderUnexpectedBonus, UnexpectedBonus, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderRebate, Rebate, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcTraderUnopenedLetter, UnopenedLetter, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderRigidLiquidation, RigidLiquidation, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderDepleteAssets, DepleteAssets, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderEscrow, Escrow, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderRefinanceLoans, RefinanceLoans, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcTraderPaymentPlan, PaymentPlan, CombatActionPriority.Low);
-
-            //Perks
-            //RegisterPerkProcessor(PerkHash.LegShot, LegShot);
-            RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
-            RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
-
             //Pets
             RegisterSpellProcessor(RelevantNanos.DecisionbyCommittee, PetSpawner, CombatActionPriority.High);
 
+            //Root/Snare
+            RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
+
+            //Mezz
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz), Mezz, CombatActionPriority.High);
+
             //Heals
-            RegisterSpellProcessor(RelevantNanos.Heal, Healing);
-            RegisterSpellProcessor(RelevantNanos.TeamHeal, TeamHealing);
             RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal, CombatActionPriority.High);
 
+            RegisterSpellProcessor(RelevantNanos.Heals,
+                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                       GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                       CombatActionPriority.High);
+
+            RegisterSpellProcessor(RelevantNanos.TeamHeals,
+                        (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                        GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                        CombatActionPriority.High);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SLNanopointDrain).OrderByStackingOrder(), SLNanoDrain);
-
-            //Buffs
-            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(), GlobalGenericBuff);
-
-            //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
-            RegisterSpellProcessor(RelevantNanos.UmbralWrangler, UmbralWrangler);
 
             //Team Nano heal (Rouse Outfit nanoline)
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoPointHeals).OrderByStackingOrder(), NanoHeal, CombatActionPriority.Medium);
@@ -177,10 +167,35 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
 
-            //Root/Snare
-            RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
+            //Buffs
+            RegisterSpellProcessor(RelevantNanos.ImprovedQuantumUncertanity, ImprovedQuantumUncertanity);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuff_LineC).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
-            
+            //Team Buffs
+            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity, Evades);
+            RegisterSpellProcessor(RelevantNanos.UmbralWrangler,(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "UmbralWrangler"));
+
+            //Perks
+            RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
+            RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
+
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcTraderDebtCollection, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderAccumulatedInterest, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderExchangeProduct, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderUnforgivenDebts, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderUnexpectedBonus, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderRebate, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcTraderUnopenedLetter, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderRigidLiquidation, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderDepleteAssets, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderEscrow, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderRefinanceLoans, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcTraderPaymentPlan, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -200,7 +215,7 @@ namespace CombatHandler.Trader
             BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
             StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
         }
-        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _mezzWindow, _healingWindow, _buffWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -256,6 +271,23 @@ namespace CombatHandler.Trader
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "TraderBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+            }
+        }
+
+        private void HandleMezzViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_mezzView)) { return; }
+
+                _mezzView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderMezzView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Mezz", XmlViewName = "TraderMezzView" }, _mezzView);
+            }
+            else if (_mezzWindow == null || (_mezzWindow != null && !_mezzWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_mezzWindow, PluginDir, new WindowOptions() { Name = "Mezz", XmlViewName = "TraderMezzView" }, _mezzView, out var container);
+                _mezzWindow = container;
             }
         }
 
@@ -452,7 +484,7 @@ namespace CombatHandler.Trader
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -463,9 +495,9 @@ namespace CombatHandler.Trader
                 _ncuUpdateTime = Time.NormalTime;
             }
 
-            SynchronizePetCombatStateWithOwner();
+            SyncPetCombat();
 
-            #region Settings
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -562,7 +594,7 @@ namespace CombatHandler.Trader
                             Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
             }
 
-            #endregion
+
 
             if ((RansackSelection.Area == (RansackSelection)_settings["RansackSelection"].AsInt32()
                 || DepriveSelection.Area == (DepriveSelection)_settings["DepriveSelection"].AsInt32()
@@ -603,6 +635,12 @@ namespace CombatHandler.Trader
                     healingView.Clicked = HandleHealingViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("MezzView", out Button mezzView))
+                {
+                    mezzView.Tag = SettingsController.settingsWindow;
+                    mezzView.Clicked = HandleMezzViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
                 {
                     buffView.Tag = SettingsController.settingsWindow;
@@ -620,6 +658,8 @@ namespace CombatHandler.Trader
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
+
+                #endregion
 
                 #region GlobalBuffing
 
@@ -704,89 +744,6 @@ namespace CombatHandler.Trader
             }
         }
 
-        #region LE Procs
-
-        private bool AccumulatedInterest(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.AccumulatedInterest != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool DebtCollection(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.DebtCollection != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool ExchangeProduct(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.ExchangeProduct != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool Rebate(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.Rebate != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool UnexpectedBonus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.UnexpectedBonus != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool UnforgivenDebts(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.UnforgivenDebts != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool DepleteAssets(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.DepleteAssets != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool Escrow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.Escrow != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool RefinanceLoans(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.RefinanceLoans != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool RigidLiquidation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.RigidLiquidation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool UnopenedLetter(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.UnopenedLetter != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool PaymentPlan(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.PaymentPlan != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Perks
 
         private bool Sacrifice(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -807,6 +764,15 @@ namespace CombatHandler.Trader
             return Volunteer(perk, fightingTarget, ref actionTarget);
         }
 
+        protected bool Volunteer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
+
+            return PerkCondtionProcessors.VolunteerPerk(perk, ref actionTarget);
+        }
+
         #endregion
 
         #region Healing
@@ -820,64 +786,64 @@ namespace CombatHandler.Trader
             return false;
         }
 
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HealPercentage == 0) { return false; }
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                if (Team.IsInTeam)
-                {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                             && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-                        .ToList();
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        if (Team.IsInTeam)
+        //        {
+        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //                .Where(c => Team.Members
+        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                     && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+        //                .ToList();
 
-                    if (dyingTeamMember.Count >= 4) { return false; }
-                }
+        //            if (dyingTeamMember.Count >= 4) { return false; }
+        //        }
 
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-            }
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    }
 
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-            }
+        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
-        private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (HealPercentage == 0) { return false; }
+        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (HealPercentage == 0) { return false; }
 
-            if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-            {
-                if (Spell.List.Any(c => c.Id == 275011)) { return false; }
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //    {
+        //        if (Spell.List.Any(c => c.Id == 275011)) { return false; }
 
-                if (Team.IsInTeam)
-                {
-                    List<SimpleChar> dyingTeamMember = DynelManager.Characters
-                        .Where(c => Team.Members
-                            .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-                                .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-                        .ToList();
+        //        if (Team.IsInTeam)
+        //        {
+        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
+        //                .Where(c => Team.Members
+        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
+        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                        && c.HealthPercent <= 90 && c.HealthPercent >= 30)
+        //                .ToList();
 
-                    if (dyingTeamMember.Count >= 1)
-                    {
-                        return CanCast(spell);
-                    }
-                }
-            }
+        //            if (dyingTeamMember.Count >= 1)
+        //            {
+        //                return CanCast(spell);
+        //            }
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -904,7 +870,7 @@ namespace CombatHandler.Trader
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -924,17 +890,17 @@ namespace CombatHandler.Trader
             if (IsInsideInnerSanctum()) { return false; }
 
             if (Team.IsInTeam && IsSettingEnabled("Evades"))
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget)
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget)
 
                     ; return false;
         }
 
-        private bool UmbralWrangler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("UmbralWrangler")) { return false; }
+        //private bool UmbralWrangler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("UmbralWrangler")) { return false; }
 
-            return GenericBuff(spell, ref actionTarget);
-        }
+        //    return GenericBuff(spell, ref actionTarget);
+        //}
 
         #endregion
 
@@ -998,7 +964,7 @@ namespace CombatHandler.Trader
 
             if (namesToCheck.Any(name => fightingTarget?.Name.Contains(name) ?? false))
             {
-                
+
                 return false;
             }
 
@@ -1415,6 +1381,64 @@ namespace CombatHandler.Trader
 
         #endregion
 
+        #region Mezz
+
+        private bool Mezz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if (ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
+
+            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            {
+                SimpleChar target = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Roots
         private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1449,10 +1473,34 @@ namespace CombatHandler.Trader
         {
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
             if (fightingTarget == null) { return false; }
-            if (fightingTarget?.MaxHealth < 1000000) { return false; }
-            if (!spell.IsReady) { return false; }   
+            if (fightingTarget.MaxHealth < 1000000) { return false; }
+            if (!spell.IsReady) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+
+        protected void SyncPetCombat()
+        {
+
+            foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
+                SyncPetCombat(_pet);
+
+        }
+
+        private void SyncPetCombat(Pet pet)
+        {
+            if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
+                pet?.Follow();
+
+            if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
+            {
+                if (pet?.Character.IsAttacking == false)
+                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+
+                if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
+                    && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
+                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+            }
         }
 
         #endregion
@@ -1484,11 +1532,11 @@ namespace CombatHandler.Trader
                 76484, 76491, 76494, 76499, 76571, 76503, 76651, 76614, 76656,
                 76653, 76679, 76681, 76684, 76686, 76691, 76688, 76717, 76715,
                 76720, 76722, 76724, 76727, 76729, 76732, 76742};
-            public static int[] Heal = { 273410, 252155, 121496, 121500, 121501, 121499,
+            public static int[] Heals = { 273410, 252155, 121496, 121500, 121501, 121499,
                 121502, 121495, 121492, 121506, 121494, 121493, 121504, 121498, 121503,
                 76653, 76679, 76681, 76684, 76686, 76691, 76688, 76717, 76715,
                 121497, 121505};
-            public static int[] TeamHeal = { 118245, 118230, 118232, 118231, 118235, 118233,
+            public static int[] TeamHeals = { 118245, 118230, 118232, 118231, 118235, 118233,
                 118234, 118238, 118236, 118237, 118241, 118239, 118240, 118243, 118244,
                 118242, 43374};
         }
@@ -1554,19 +1602,28 @@ namespace CombatHandler.Trader
         {
             None, Target, Boss
         }
+        public enum ModeSelection
+        {
+            None, All, Adds
+        }
         public enum ProcType1Selection
         {
-            DebtCollection, AccumulatedInterest, ExchangeProduct, UnforgivenDebts, UnexpectedBonus, Rebate
-        }
-
-        public enum EvadesSelection
-        {
-            None, Self, Team
+            DebtCollection = 1431327317,
+            AccumulatedInterest = 1163084626,
+            ExchangeProduct = 1096108366,
+            UnforgivenDebts = 1380338753,
+            UnexpectedBonus = 1430602318,
+            Rebate = 1313882454
         }
 
         public enum ProcType2Selection
         {
-            UnopenedLetter, RigidLiquidation, DepleteAssets, Escrow, RefinanceLoans, PaymentPlan
+            UnopenedLetter = 1195724622,
+            RigidLiquidation = 1145458777,
+            DepleteAssets = 1162039378,
+            Escrow = 1179599938,
+            RefinanceLoans = 1145456965,
+            PaymentPlan = 1348030540
         }
 
         #endregion

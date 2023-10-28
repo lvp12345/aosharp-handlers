@@ -80,6 +80,8 @@ namespace CombatHandler.Enf
             _settings.AddVariable("SharpObjects", true);
             _settings.AddVariable("Grenades", true);
 
+            _settings.AddVariable("ScorpioTauntTool", false);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
             _settings.AddVariable("Kits", true);
@@ -100,31 +102,13 @@ namespace CombatHandler.Enf
             _settings.AddVariable("InitiativeBuffs", true);
             _settings.AddVariable("DamageShields", false);
 
-
             _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
 
             _settings.AddVariable("TrollForm", false);
             _settings.AddVariable("EncaseInStone", false);
             _settings.AddVariable("DamagePerk", false);
-
-            _settings.AddVariable("ScorpioTauntTool", false);
-
             RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
-            //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, VortexOfHate, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerRagingBlow, RagingBlow, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerShieldOfTheOgre, ShieldOfTheOgre, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireRage, InspireRage, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerAirOfHatred, AirOfHatred, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerTearLigaments, TearLigaments, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerVileRage, VileRage, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerViolationBuffer, ViolationBuffer, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, InspireIre, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerShrugOffHits, ShrugOffHits, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerBustKneecaps, BustKneecaps, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcEnforcerIgnorePain, IgnorePain, CombatActionPriority.Low);
 
             //Troll Form
             RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
@@ -132,17 +116,28 @@ namespace CombatHandler.Enf
             //Taunts
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(), TauntProc);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TauntProc"));
+           
+            //Taunt Tools
+            RegisterItemProcessor(244655, 244655, TauntTool);
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
             RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
             //Weapon Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
             RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
             RegisterSpellProcessor(RelevantNanos.Melee2HE, Melee2HEBuffWeapon);
@@ -153,13 +148,33 @@ namespace CombatHandler.Enf
 
             //Team buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitiativeBuffs);
-            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields, DamageShields);
-            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff, TargetedHpBuff);
-            RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, AbsorbACBuff);
-            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength, StrengthBuff);
+            RegisterSpellProcessor(RelevantNanos.TargetedDamageShields,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "DamageShields"));
+            RegisterSpellProcessor(RelevantNanos.TargetedHpBuff,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "TargetedHpBuff"));
+            RegisterSpellProcessor(RelevantNanos.AbsorbACBuff,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "AbsorbACBuff"));
+            RegisterSpellProcessor(RelevantNanos.ProdigiousStrength,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
 
-            //Taunt Tools
-            RegisterItemProcessor(244655, 244655, TauntTool);
+            //LE Procs
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerVortexOfHate, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerRagingBlow, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerShieldOfTheOgre, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireRage, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerAirOfHatred, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerTearLigaments, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerVileRage, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerViolationBuffer, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerInspireIre, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerShrugOffHits, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerBustKneecaps, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcEnforcerIgnorePain, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -467,7 +482,7 @@ namespace CombatHandler.Enf
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -477,6 +492,8 @@ namespace CombatHandler.Enf
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -647,6 +664,8 @@ namespace CombatHandler.Enf
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                #endregion
+
                 #region GlobalBuffing
 
                 if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
@@ -730,92 +749,6 @@ namespace CombatHandler.Enf
             }
         }
 
-
-        #region LE Procs
-
-        private bool InspireRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.InspireRage != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool RagingBlow(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.RagingBlow != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool ShieldOfTheOgre(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.Shieldoftheogre != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool TearLigaments(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.TearLigaments != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool VileRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.VileRage != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool VortexOfHate(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.VortexofHate != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool AirOfHatred(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.Airofhatred != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool BustKneecaps(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.BustKneecaps != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool IgnorePain(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.IgnorePain != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool InspireIre(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.InspireIre != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool ShrugOffHits(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.ShrugOffHits != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool ViolationBuffer(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.ViolationBuffer != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Taunts
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -886,13 +819,6 @@ namespace CombatHandler.Enf
             return false;
         }
 
-        private bool TauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TauntProc")) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
         #endregion
 
         #region Perks
@@ -923,7 +849,7 @@ namespace CombatHandler.Enf
                     return true;
                 }
 
-                return Buff(spell, spell.Nanoline, ref actionTarget);
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
             }
 
             return false;
@@ -991,15 +917,10 @@ namespace CombatHandler.Enf
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.MeleeEnergy);
         }
 
-        //private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    return Buff(spell, NanoLine.DamageChangeBuffs, ref actionTarget);
-        //}
-
         private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             // Check if there is a fighting target or if the spell ID should be ignored
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.IgnoreNanos.Contains(spell.Id))
+            if (DynelManager.LocalPlayer.FightingTarget != null)
             {
                 return false;
             }
@@ -1041,38 +962,7 @@ namespace CombatHandler.Enf
             if (IsSettingEnabled("InitiativeBuffs"))
                 return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool DamageShields(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("DamageShields")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool TargetedHpBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("TargetedHpBuff")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool AbsorbACBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("AbsorbACBuff")) { return false; }
-
-            return GenericTeamBuff(spell, ref actionTarget);
-        }
-
-        private bool StrengthBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (StrengthBuffSelection.None == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32()) { return false; }
-
-            if (StrengthBuffSelection.Team == (StrengthBuffSelection)_settings["StrengthBuffSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -1104,13 +994,24 @@ namespace CombatHandler.Enf
 
         public enum ProcType1Selection
         {
-            VortexofHate, RagingBlow, Shieldoftheogre, InspireRage, Airofhatred, TearLigaments, VileRage
+            VortexofHate = 1112689735,
+            RagingBlow = 1380532823,
+            Shieldoftheogre = 1229867077,
+            InspireRage = 1230197319,
+            Airofhatred = 1413827655,
+            TearLigaments = 1111577427,
+            VileRage = 1230195026
         }
 
         public enum ProcType2Selection
         {
-            ViolationBuffer, InspireIre, ShrugOffHits, BustKneecaps, IgnorePain
+            ViolationBuffer = 1112886085,
+            InspireIre = 1112754266,
+            ShrugOffHits = 1447973709,
+            BustKneecaps = 1480807238,
+            IgnorePain = 1229410377
         }
+
         public enum SingleTauntsSelection
         {
             None, Target, Area

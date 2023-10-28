@@ -67,6 +67,8 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("SharpObjects", false);
             _settings.AddVariable("Grenades", false);
 
+            _settings.AddVariable("ScorpioTauntTool", false);
+
             _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
             _settings.AddVariable("Kits", true);
@@ -87,33 +89,36 @@ namespace CombatHandler.Keeper
 
             RegisterPerkProcessors();
 
-
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousSmite, RighteousSmite, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperSymbioticBypass, SymbioticBypass, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperVirtuousReaper, VirtuousReaper, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperIgnoreTheUnrepentant, IgnoreTheUnrepentant, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperPureStrike, PureStrike, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperEschewTheFaithless, EschewTheFaithless, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousStrike, RighteousStrike, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcKeeperHonorRestored, HonorRestored, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperAmbientPurification, AmbientPurification, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperBenevolentBarrier, BenevolentBarrier, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperSubjugation, Subjugation, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcKeeperFaithfulReconstruction, FaithfulReconstruction, CombatActionPriority.Low);
-
             //Anti-Fear
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), RecastAntiFear);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "RecastAntiFear"));
+
+            //Taunt Tools
+            RegisterItemProcessor(244655, 244655, TauntTool);
 
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder().OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._2HEdgedBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fury).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperDeflect_RiposteBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperEvade_Dodge_DuckBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperStr_Stam_AgiBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._2HEdgedBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fury).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperDeflect_RiposteBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperEvade_Dodge_DuckBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperStr_Stam_AgiBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
             //Auras
             RegisterSpellProcessor(RelevantNanos.HealAuras, HpAura);
@@ -126,7 +131,24 @@ namespace CombatHandler.Keeper
             RegisterSpellProcessor(RelevantNanos.ReaperAuras, ReaperAura);
 
             //Team Buffs
-            RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked, AAOBuffs);
+            RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked,
+            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "AAOBuffs"));
+
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousSmite, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperSymbioticBypass, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperVirtuousReaper, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperIgnoreTheUnrepentant, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperPureStrike, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperEschewTheFaithless, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousStrike, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcKeeperHonorRestored, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperAmbientPurification, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperBenevolentBarrier, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperSubjugation, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcKeeperFaithfulReconstruction, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -369,7 +391,7 @@ namespace CombatHandler.Keeper
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -379,6 +401,8 @@ namespace CombatHandler.Keeper
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -507,6 +531,8 @@ namespace CombatHandler.Keeper
                     procView.Clicked = HandleProcViewClick;
                 }
 
+                #endregion
+
                 #region GlobalBuffing
 
                 if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
@@ -592,98 +618,14 @@ namespace CombatHandler.Keeper
             }
         }
 
-        #region LE Procs
-
-        private bool EschewTheFaithless(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.EschewTheFaithless != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool IgnoreTheUnrepentant(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.IgnoreTheUnrepentant != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool PureStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.PureStrike != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool RighteousSmite(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.RighteousSmite != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool RighteousStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.RighteousStrike != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool SymbioticBypass(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.SymbioticBypass != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool VirtuousReaper(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.VirtuousReaper != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool AmbientPurification(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.AmbientPurification != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool BenevolentBarrier(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.BenevolentBarrier != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool FaithfulReconstruction(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.FaithfulReconstruction != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool HonorRestored(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.HonorRestored != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool Subjugation(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.Subjugation != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Anti-Fear
 
-        private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("RecastAntiFear")) { return true; }
+        //private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsSettingEnabled("RecastAntiFear")) { return true; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
+        //    return Buff(spell, spell.Nanoline, ref actionTarget);
+        //}
 
         #endregion
 
@@ -698,69 +640,61 @@ namespace CombatHandler.Keeper
         {
             if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool NpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet1Selection.Nano != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool BarrierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet3Selection.Reflect != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool ImminenceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet3Selection.AAO != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool EnervateAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet2Selection.DeRoot != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool VengeanceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet2Selection.Damage != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool SanctifierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet4Selection.Sanc != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool ReaperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (AuraSet4Selection.Reaper != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
 
         #region Team Buffs
-
-        private bool AAOBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("AAOBuffs"))
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
 
         #endregion
 
@@ -853,12 +787,22 @@ namespace CombatHandler.Keeper
 
         public enum ProcType1Selection
         {
-            RighteousSmite, SymbioticBypass, VirtuousReaper, IgnoreTheUnrepentant, PureStrike, EschewTheFaithless, RighteousStrike
+            RighteousSmite = 1179013701,
+            SymbioticBypass = 138053716,
+            VirtuousReaper = 1179144773,
+            IgnoreTheUnrepentant = 1163154517,
+            PureStrike = 1163088981,
+            EschewTheFaithless = 1146770517,
+            RighteousStrike = 1179931461
         }
 
         public enum ProcType2Selection
         {
-            HonorRestored, AmbientPurification, BenevolentBarrier, Subjugation, FaithfulReconstruction
+            HonorRestored = 1129202757,
+            AmbientPurification = 1178945877,
+            BenevolentBarrier = 1380537172,
+            Subjugation = 1380467279,
+            FaithfulReconstruction = 1398232143
         }
 
         #endregion

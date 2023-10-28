@@ -89,6 +89,7 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("WarpPets", false);
 
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
+
             _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
             _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
             _settings.AddVariable("InterruptSelection", (int)InterruptSelection.None);
@@ -97,15 +98,15 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("DamageDebuffASelection", (int)DamageDebuffASelection.None);
             _settings.AddVariable("DamageDebuffBSelection", (int)DamageDebuffBSelection.None);
 
-            _settings.AddVariable("Cost", false);
-            _settings.AddVariable("Evades", false);
-            _settings.AddVariable("PistolTeam", false);
-
-            _settings.AddVariable("NanoResistanceDebuff", (int)NanoResistanceDebuffSelection.None);
-            _settings.AddVariable("NanoShutdownDebuff", (int)NanoShutdownDebuffSelection.None);
+            _settings.AddVariable("NanoResistanceDebuffSelection", (int)NanoResistanceDebuffSelection.None);
+            _settings.AddVariable("NanoShutdownDebuffSelection", (int)NanoShutdownDebuffSelection.None);
 
             _settings.AddVariable("CompositesNanoSkills", false);
             _settings.AddVariable("CompositesNanoSkillsTeam", false);
+
+            _settings.AddVariable("Cost", false);
+            _settings.AddVariable("Evades", false);
+            _settings.AddVariable("PistolTeam", false);
 
             _settings.AddVariable("DamagePerk", false);
 
@@ -131,31 +132,51 @@ namespace CombatHandler.Metaphysicist
 
             RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
 
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistNanobotContingentArrest, NanobotContingentArrest, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, AnticipatedEvasion, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistThoughtfulMeans, ThoughtfulMeans, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistRegainFocus, RegainFocus, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEconomicNanobotUse, EconomicNanobotUse, CombatActionPriority.Low);
+            //Debuffs
+            //nukes
+            RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
+            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
 
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuperEgoStrike, SuperEgoStrike, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuppressFury, SuppressFury, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEgoStrike, EgoStrike, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistMindWail, MindWail, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, SowDoubt, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, SowDespair, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, DiffuseRage, CombatActionPriority.Low);
+            //debuffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffSelection"), CombatActionPriority.High);
 
-            //Self buffs
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffASelection"), CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffBSelection"), CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoResistanceDebuffSelection"), CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoShutdownDebuffSelection"), CombatActionPriority.High);
+
+            //Buffs
+            //self buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
-            //Team buffs
-            RegisterSpellProcessor(RelevantNanos.MPCompositeNano, CompositeNanoBuff);
+            //team buffs
+            RegisterSpellProcessor(RelevantNanos.MPCompositeNano,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "CompositeNanoSkillsBuffSelection"));
+
             RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
             RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+
             RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
             RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
             RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PsyMod);
@@ -163,23 +184,14 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MatCre);
             RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MatLoc);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(), InterruptModifier);
+             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
+                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
+
             RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
-            //Debuffs
-            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaphysicistMindDamageNanoDebuffs).OrderByStackingOrder(), WarmUpNuke);
-            RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
-
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(), DamageDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(), DamageDebuffA, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(), DamageDebuffB, CombatActionPriority.High);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(), NanoResistanceDebuff, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(), NanoShutdownDebuff, CombatActionPriority.High);
-
+            
             //Pets
             RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
@@ -204,6 +216,22 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
             //Pet Perks
+
+            //LE Proc
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistNanobotContingentArrest, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistThoughtfulMeans, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistRegainFocus, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEconomicNanobotUse, LEProc1, CombatActionPriority.Low);
+
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuperEgoStrike, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuppressFury, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEgoStrike, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistMindWail, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, LEProc2, CombatActionPriority.Low);
+
 
             PluginDirectory = pluginDir;
 
@@ -385,12 +413,12 @@ namespace CombatHandler.Metaphysicist
             {
                 if (window.Views.Contains(_petCommandView)) { return; }
 
-                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\BureaucratPetCommandView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView);
+                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\MPPetCommandView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "MPPetCommandView" }, _petCommandView);
             }
             else if (_petCommandWindow == null || (_petCommandWindow != null && !_petCommandWindow.IsValid))
             {
-                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "BureaucratPetCommandView" }, _petCommandView, out var container);
+                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "MPPetCommandView" }, _petCommandView, out var container);
                 _petCommandWindow = container;
             }
         }
@@ -579,7 +607,7 @@ namespace CombatHandler.Metaphysicist
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -589,6 +617,8 @@ namespace CombatHandler.Metaphysicist
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -777,6 +807,7 @@ namespace CombatHandler.Metaphysicist
                     syncPetsOnEnabled();
                 }
 
+                #endregion
 
                 #region GlobalBuffing
 
@@ -861,91 +892,6 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
-        #region LE Procs
-
-
-        private bool AnticipatedEvasion(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.AnticipatedEvasion != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool EconomicNanobotUse(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.EconomicNanobotUse != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool NanobotContingentArrest(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.NanobotContingentArrest != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool RegainFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.RegainFocus != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool ThoughtfulMeans(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.ThoughtfulMeans != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool DiffuseRage(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.DiffuseRage != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool EgoStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.EgoStrike != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool MindWail(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.MindWail != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool SowDespair(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.SowDespair != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool SowDoubt(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.SowDoubt != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool SuperEgoStrike(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.SuperEgoStrike != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool SuppressFury(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.SuppressFury != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Nukes
         private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -967,220 +913,32 @@ namespace CombatHandler.Metaphysicist
 
         #endregion
 
-        #region Buffs
-        private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (CostBuffSelection.Team == (CostBuffSelection)_settings["CostBuffSelection"].AsInt32())
-                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool CompositeNanoBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (CompositeNanoSkillsBuffSelection.Team == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericTeamBuff(spell, ref actionTarget);
-
-            if (CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        private bool MatCre(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
-        private bool PsyMod(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
-        private bool MatLoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
-        private bool SenImp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
-        private bool BioMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
-        private bool MattMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-
-            return false;
-        }
-
-        private bool InterruptModifier(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (InterruptSelection.Team == (InterruptSelection)_settings["InterruptSelection"].AsInt32())
-                return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-            if (InterruptSelection.None == (InterruptSelection)_settings["InterruptSelection"].AsInt32()) { return false; }
-
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-
-        #endregion
-
         #region Debufs
-
-        private bool NanoShutdownDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            int selection = _settings["NanoShutdownDebuff"].AsInt32();
-
-            switch (selection)
-            {
-                case (int)NanoShutdownDebuffSelection.None:
-                    return false;
-
-                case (int)NanoShutdownDebuffSelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case (int)NanoShutdownDebuffSelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case (int)NanoShutdownDebuffSelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool NanoResistanceDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            NanoResistanceDebuffSelection selection = (NanoResistanceDebuffSelection)_settings["NanoResistanceDebuff"].AsInt32();
-
-            switch (selection)
-            {
-                case NanoResistanceDebuffSelection.None:
-                    return false;
-
-                case NanoResistanceDebuffSelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case NanoResistanceDebuffSelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case NanoResistanceDebuffSelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool DamageDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            DamageDebuffSelection selection = (DamageDebuffSelection)_settings["DamageDebuffSelection"].AsInt32();
-
-            switch (selection)
-            {
-                case DamageDebuffSelection.None:
-                    return false;
-
-                case DamageDebuffSelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case DamageDebuffSelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case DamageDebuffSelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool DamageDebuffA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            DamageDebuffASelection selection = (DamageDebuffASelection)_settings["DamageDebuffASelection"].AsInt32();
-
-            switch (selection)
-            {
-                case DamageDebuffASelection.None:
-                    return false;
-
-                case DamageDebuffASelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case DamageDebuffASelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case DamageDebuffASelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
-
-        private bool DamageDebuffB(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            DamageDebuffBSelection selection = (DamageDebuffBSelection)_settings["DamageDebuffBSelection"].AsInt32();
-
-            switch (selection)
-            {
-                case DamageDebuffBSelection.None:
-                    return false;
-
-                case DamageDebuffBSelection.Area:
-                    return AreaDebuff(spell, ref actionTarget);
-
-                case DamageDebuffBSelection.Target:
-                    if (fightingTarget != null && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-
-                case DamageDebuffBSelection.Boss:
-                    if (fightingTarget != null && fightingTarget.MaxHealth >= 1000000 && !debuffTargetsToIgnore.Contains(fightingTarget.Name))
-                        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-                    break;
-            }
-
-            return false;
-        }
 
         #endregion
 
         #region Pets
+
+        private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
+            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("MezzPet")) { return false; }
+
+            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
+            return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
+        }
 
         #region Buffs
 
@@ -1333,7 +1091,112 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            return GenericBuff(spell, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+
+        private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (CostBuffSelection.Team == (CostBuffSelection)_settings["CostBuffSelection"].AsInt32())
+                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+
+        private bool MatCre(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+
+            return false;
+        }
+
+        private bool PsyMod(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+
+            return false;
+        }
+
+        private bool MatLoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+
+            return false;
+        }
+
+        private bool SenImp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+
+            return false;
+        }
+
+        private bool BioMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+
+            return false;
+        }
+
+        private bool MattMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+
+            return false;
+        }
+
+        protected bool GenericNanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
+
+            if (Team.IsInTeam)
+                return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
+
+            return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+        }
+
+        protected bool NanoSkillsBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
+
+            if (SpellChecksNanoSkillsPlayer(spell, fightingTarget))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
+
+        protected bool NanoSkillsTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget != null) { return false; }
+
+            if (Team.IsInTeam)
+            {
+                SimpleChar target = DynelManager.Players
+                    .Where(c => c.IsInLineOfSight
+                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0
+                        && SpellChecksNanoSkillsOther(spell, c))
+                    .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion
@@ -1344,43 +1207,14 @@ namespace CombatHandler.Metaphysicist
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("Evades"))
-                return GenericTeamBuff(spell, ref actionTarget);
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
 
             return false;
-        }
-
-        private bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
-
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
         #endregion
 
         #region Misc
-
-        private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("MezzPet")) { return false; }
-
-            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
-        }
 
         private Spell[] GetAttackPetsWithSLPetsFirst()
         {
@@ -1399,7 +1233,6 @@ namespace CombatHandler.Metaphysicist
             return null;
         }
 
-        //Ewww
         private SimpleChar GetTargetToHeal()
         {
             if (DynelManager.LocalPlayer.HealthPercent < 90)
@@ -1424,9 +1257,9 @@ namespace CombatHandler.Metaphysicist
             else
             {
                 Pet dyingPet = DynelManager.LocalPlayer.Pets
-                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social)
+                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
                      .Where(pet => pet.Character.HealthPercent < 80)
-                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
                      .OrderBy(pet => pet.Character.HealthPercent)
                      .FirstOrDefault();
 
@@ -1437,19 +1270,6 @@ namespace CombatHandler.Metaphysicist
             }
 
             return null;
-        }
-
-        private SimpleChar GetTargetToMezz()
-        {
-            //Ewww
-            return DynelManager.Characters
-                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                .Where(c => DynelManager.LocalPlayer.FightingTarget.Identity != c.Identity)
-                .Where(c => !c.IsPlayer).Where(c => !c.IsPet) //Is not player of a pet
-                .Where(c => c.IsAttacking) //Is in combat
-                .Where(c => c.IsValid).Where(c => c.IsInLineOfSight).Where(c => c.DistanceFrom(DynelManager.LocalPlayer) <= 15f) //Is in range for debuff
-                .FirstOrDefault();
         }
 
         private void AssignTargetToHealPet()
@@ -1492,6 +1312,22 @@ namespace CombatHandler.Metaphysicist
                     }
                 }
             }
+        }
+
+        private SimpleChar GetTargetToMezz()
+        {
+
+            return DynelManager.Characters
+                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
+                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
+                .Where(c => DynelManager.LocalPlayer.FightingTarget.Identity != c.Identity)
+                .Where(c => !c.IsPlayer)
+                .Where(c => !c.IsPet) //Is not player of a pet
+                .Where(c => c.IsAttacking) //Is in combat
+                .Where(c => c.IsValid)
+                .Where(c => c.IsInLineOfSight)
+                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) <= 15f) //Is in range for debuff
+                .FirstOrDefault();
         }
 
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
@@ -1551,10 +1387,7 @@ namespace CombatHandler.Metaphysicist
         {
             None, InducedApathy, MastersBidding
         }
-        public enum CompositeNanoSkillsBuffSelection
-        {
-            None, Self, Team
-        }
+        
         public enum DamageDebuffSelection
         {
             None, Target, Area, Boss
@@ -1575,24 +1408,37 @@ namespace CombatHandler.Metaphysicist
         {
             None, Target, Area, Boss
         }
+        public enum CompositeNanoSkillsBuffSelection
+        {
+            None, Self, Team
+        }
         public enum InterruptSelection
         {
             None, Self, Team
         }
         public enum CostBuffSelection
         {
-            Self, Team
+            None, Self, Team
         }
-
 
         public enum ProcType1Selection
         {
-            NanobotContingentArrest, AnticipatedEvasion, ThoughtfulMeans, RegainFocus, EconomicNanobotUse
+            NanobotContingentArrest = 1178949448,
+            AnticipatedEvasion = 1398228037,
+            ThoughtfulMeans = 1163284553,
+            RegainFocus = 1229673298,
+            EconomicNanobotUse = 1162302292
         }
 
         public enum ProcType2Selection
         {
-            SuperEgoStrike, SuppressFury, EgoStrike, MindWail, SowDoubt, SowDespair, DiffuseRage
+            SuperEgoStrike = 1380271683,
+            SuppressFury = 1397703763,
+            EgoStrike = 1196837713,
+            MindWail = 1212240981,
+            SowDoubt = 1398228047,
+            SowDespair = 1347310663,
+            DiffuseRage = 1296385093
         }
 
         //private enum SummonedWeaponSelection

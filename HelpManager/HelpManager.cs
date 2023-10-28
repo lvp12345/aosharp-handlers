@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace HelpManager
 {
@@ -27,6 +26,8 @@ namespace HelpManager
 
         private static int SitPercentage;
 
+        private Stopwatch _kitTimer = new Stopwatch();
+
         private static bool _init = false;
 
         private static double _updateTick;
@@ -37,6 +38,8 @@ namespace HelpManager
         private static double _morphPathingTimer;
         private static double _bellyPathingTimer;
         private static double _zixMorphTimer;
+
+        private static double _uiDelay;
 
         public static bool Sitting = false;
         public static bool HealingPet = false;
@@ -114,7 +117,7 @@ namespace HelpManager
 
             Game.OnUpdate += OnUpdate;
 
-            _settings.AddVariable("AutoSit", true);
+            _settings.AddVariable("AutoSit", false);
 
             _settings.AddVariable("MorphPathing", false);
             _settings.AddVariable("BellyPathing", false);
@@ -167,35 +170,27 @@ namespace HelpManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+           if (_settings["AutoSit"].AsBool())
             {
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                SettingsController.settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
-
-                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                SitAndUseKit();
+            }
+                
+            if (Time.NormalTime > _zixMorphTimer + 3)
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
                 {
-                    if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
-                    {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
-                    }
+                    CancelBuffs(RelevantNanos.ZixMorph);
                 }
 
-                if (sitPercentageInput != null && !string.IsNullOrEmpty(sitPercentageInput.Text))
-                {
-                    if (int.TryParse(sitPercentageInput.Text, out int sitPercentageValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage != sitPercentageValue)
-                    {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage = sitPercentageValue;
-                    }
-                }
+                _zixMorphTimer = Time.NormalTime;
+            }
 
-                if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
-                {
-                    infoView.Tag = SettingsController.settingsWindow;
-                    infoView.Clicked = InfoView;
-                }
+            if (Time.NormalTime > _sitPetUpdateTimer + 2)
+            {
+                if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
+                    ListenerPetSit();
+
+                _sitPetUpdateTimer = Time.NormalTime;
             }
 
             if (_settings["BellyPathing"].AsBool() && Time.NormalTime > _bellyPathingTimer + 1)
@@ -262,31 +257,42 @@ namespace HelpManager
                 _shapeUsedTimer = Time.NormalTime;
             }
 
+            #region UI
 
-            if (Time.NormalTime > _sitUpdateTimer + 0.5)
+            if (Time.NormalTime > _uiDelay + 1.0)
             {
-                ListenerSit();
-
-                _sitUpdateTimer = Time.NormalTime;
-            }
-
-            if (Time.NormalTime > _zixMorphTimer + 3)
-            {
-                if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
-                    CancelBuffs(RelevantNanos.ZixMorph);
+                    SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                    SettingsController.settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
+
+                    if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                    {
+                        if (int.TryParse(channelInput.Text, out int channelValue)
+                            && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+                        }
+                    }
+
+                    if (sitPercentageInput != null && !string.IsNullOrEmpty(sitPercentageInput.Text))
+                    {
+                        if (int.TryParse(sitPercentageInput.Text, out int sitPercentageValue)
+                            && Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage != sitPercentageValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage = sitPercentageValue;
+                        }
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
+                    {
+                        infoView.Tag = SettingsController.settingsWindow;
+                        infoView.Clicked = InfoView;
+                    }
                 }
-
-                _zixMorphTimer = Time.NormalTime;
+                _uiDelay = Time.NormalTime;
             }
-
-            if (Time.NormalTime > _sitPetUpdateTimer + 2)
-            {
-                if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
-                    ListenerPetSit();
-
-                _sitPetUpdateTimer = Time.NormalTime;
-            }
+            #endregion
         }
 
         private void OnYalmCast(int sender, IPCMessage msg)
@@ -428,66 +434,93 @@ namespace HelpManager
 
                     MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
 
-                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
+                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit
+                        && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
                     {
-                        kit.Use(healpet.Character, true);
-                        Task.Factory.StartNew(
-                            async () =>
-                            {
-                                await Task.Delay(100);
-                                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                            });
+
+                        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+
                         _sitPetUsedTimer = Time.NormalTime;
                     }
                 }
             }
         }
 
-        private void ListenerSit()
+        private void SitAndUseKit()
         {
+            if (InCombat())
+                return;
+
             Spell spell = Spell.List.FirstOrDefault(x => x.IsReady);
+            Item kit = Inventory.Items.FirstOrDefault(x => RelevantItems.Kits.Contains(x.Id));
+            var localPlayer = DynelManager.LocalPlayer;
 
-            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.Id)).FirstOrDefault();
+            if (kit == null || spell == null)
+                return;
 
-            if (kit == null) { return; }
-
-            if (spell != null && _settings["AutoSit"].AsBool())
+            if (!localPlayer.Buffs.Contains(280488) && CanUseSitKit())
             {
-                if (!DynelManager.LocalPlayer.Buffs.Contains(280488) && CanUseSitKit())
+                HandleMovementState();
+            }
+
+            if (localPlayer.MovementState == MovementState.Sit && (!_kitTimer.IsRunning || _kitTimer.ElapsedMilliseconds >= 2000))
+            {
+                if (localPlayer.NanoPercent < 90 || localPlayer.HealthPercent < 90)
                 {
-                    if (spell != null && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment) && Sitting == false
-                        && DynelManager.LocalPlayer.MovementState != MovementState.Sit)
-                    {
-                        if (DynelManager.LocalPlayer.NanoPercent < SitPercentage || DynelManager.LocalPlayer.HealthPercent < SitPercentage)
-                        {
-                            Task.Factory.StartNew(
-                               async () =>
-                               {
-                                   Sitting = true;
-                                   await Task.Delay(400);
-                                   MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                                   await Task.Delay(800);
-                                   MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                                   await Task.Delay(200);
-                                   Sitting = false;
-                               });
-                        }
-                    }
+                    kit.Use(localPlayer, true);
+                    _kitTimer.Restart();
                 }
             }
         }
 
-        public static void CancelBuffs(int[] buffsToCancel)
+        private void HandleMovementState()
         {
-            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
+            var localPlayer = DynelManager.LocalPlayer;
+
+            bool shouldSit = localPlayer.NanoPercent < 66 || localPlayer.HealthPercent < 66;
+            bool canSit = !localPlayer.Cooldowns.ContainsKey(Stat.Treatment) && localPlayer.MovementState != MovementState.Sit;
+
+            bool shouldStand = localPlayer.NanoPercent > 66 || localPlayer.HealthPercent > 66;
+            bool onCooldown = localPlayer.Cooldowns.ContainsKey(Stat.Treatment);
+
+            if (shouldSit && canSit)
             {
-                if (buffsToCancel.Contains(buff.Id))
-                    buff.Remove();
+                MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+            }
+            else if (shouldStand && onCooldown)
+            {
+                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
             }
         }
 
-        private bool BeingAttacked()
+        private bool CanUseSitKit()
         {
+            if (!DynelManager.LocalPlayer.IsAlive || DynelManager.LocalPlayer.IsMoving || Game.IsZoning)
+            {
+                return false;
+            }
+
+            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.Id != 297274).ToList();
+            if (sitKits.Any())
+            {
+                return sitKits.OrderBy(x => x.QualityLevel).Any(sitKit => MeetsSkillRequirement(sitKit));
+            }
+
+            return Inventory.Find(297274, out Item premSitKit);
+        }
+
+        private bool MeetsSkillRequirement(Item sitKit)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+            int skillReq = sitKit.QualityLevel > 200 ? (sitKit.QualityLevel % 200 * 3) + 1501 : (int)(sitKit.QualityLevel * 7.5f);
+
+            return localPlayer.GetStat(Stat.FirstAid) >= skillReq || localPlayer.GetStat(Stat.Treatment) >= skillReq;
+        }
+
+        public static bool InCombat()
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
             if (Team.IsInTeam)
             {
                 return DynelManager.Characters
@@ -497,36 +530,20 @@ namespace HelpManager
 
             return DynelManager.Characters
                     .Any(c => c.FightingTarget != null
-                        && c.FightingTarget.Name == DynelManager.LocalPlayer.Name);
+                        && c.FightingTarget.Name == localPlayer.Name)
+                    || localPlayer.GetStat(Stat.NumFightingOpponents) > 0
+                    || Team.IsInCombat()
+                    || localPlayer.FightingTarget != null;
         }
 
-        private bool CanUseSitKit()
+
+        public static void CancelBuffs(int[] buffsToCancel)
         {
-            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.Id != 297274).ToList();
-
-            if (Inventory.Find(297274, out Item premSitKit))
+            foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {
-                if (DynelManager.LocalPlayer.IsAlive && !BeingAttacked() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    && !Team.IsInCombat() && DynelManager.LocalPlayer.FightingTarget == null
-                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning) { return true; }
+                if (buffsToCancel.Contains(buff.Id))
+                    buff.Remove();
             }
-
-            if (!sitKits.Any()) { return false; }
-
-            if (DynelManager.LocalPlayer.IsAlive && !BeingAttacked() && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0
-                    && !Team.IsInCombat() && DynelManager.LocalPlayer.FightingTarget == null
-                    && !DynelManager.LocalPlayer.IsMoving && !Game.IsZoning)
-            {
-                foreach (Item sitKit in sitKits.OrderBy(x => x.QualityLevel))
-                {
-                    int skillReq = (sitKit.QualityLevel > 200 ? (sitKit.QualityLevel % 200 * 3) + 1501 : (int)(sitKit.QualityLevel * 7.5f));
-
-                    if (DynelManager.LocalPlayer.GetStat(Stat.FirstAid) >= skillReq || DynelManager.LocalPlayer.GetStat(Stat.Treatment) >= skillReq)
-                        return true;
-                }
-            }
-
-            return false;
         }
 
         private float PetMaxNanoPool()

@@ -228,9 +228,9 @@ namespace LootManager
                     var itemsInCorpse = corpseToOpen.Container.Items;
 
                     // Opening the corpse
-                    if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast
-                        && !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
-                        && !DynelManager.LocalPlayer.IsAttackPending)
+                    if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
+                        //&& !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
+                        //&& !DynelManager.LocalPlayer.IsAttackPending)
                     {
                         if (openCorpseInterval.Elapsed)
                         {
@@ -291,6 +291,7 @@ namespace LootManager
                             }
                         }
                     }
+
                     UpdateBackpackDictionary();
                     MoveItemsToBag();
                 }

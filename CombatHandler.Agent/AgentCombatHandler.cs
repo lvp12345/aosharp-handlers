@@ -81,13 +81,12 @@ namespace CombatHandler.Agent
 
             _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("DOTA", false);
-            _settings.AddVariable("EvasionDebuff", false);
-
             _settings.AddVariable("CritTeam", false);
 
             _settings.AddVariable("SpawnPets", true);
 
+            _settings.AddVariable("DOTASelection", (int)DOTASelection.None);
+            _settings.AddVariable("EvasionDebuffSelection", (int)EvasionDebuffSelection.None);
             _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.GrimReaper);
@@ -105,45 +104,63 @@ namespace CombatHandler.Agent
 
             RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
-            //LE Procs
-            RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, GrimReaper, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentDisableCuffs, DisableCuffs, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentNoEscape, NoEscape, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentIntenseMetabolism, IntenseMetabolism, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentMinorNanobotEnhance, MinorNanobotEnhance, CombatActionPriority.Low);
-
-            RegisterPerkProcessor(PerkHash.LEProcAgentNotumChargedRounds, NotumChargedRounds, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentLaserAim, LaserAim, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentNanoEnhancedTargeting, NanoEnhancedTargeting, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentPlasteelPiercingRounds, PlasteelPiercingRounds, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentCellKiller, CellKiller, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentImprovedFocus, ImprovedFocus, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, BrokenAnkle, CombatActionPriority.Low);
-
             //Healing
-            RegisterSpellProcessor(RelevantNanos.Healing, Healing, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.CompleteHealing, CompleteHealing, CombatActionPriority.High);
 
+            RegisterSpellProcessor(RelevantNanos.Heals,
+                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                       GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                       CombatActionPriority.High);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
+                        (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                        GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                        CombatActionPriority.High);
+
             //Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AimedShotBuffs).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(), GlobalGenericBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExecutionerBuff).OrderByStackingOrder(), GlobalGenericBuff);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AimedShotBuffs).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalIncreaseBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExecutionerBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgentProcBuff).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RifleBuffs).OrderByStackingOrder(), Rifle);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgentProcBuff).OrderByStackingOrder(), GlobalGenericBuff);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcentrationCriticalLine).OrderByStackingOrder(), Concentration, CombatActionPriority.Medium);
             RegisterSpellProcessor(RelevantNanos.DetauntProcs, DetauntProc);
             RegisterSpellProcessor(RelevantNanos.DOTProcs, DamageProc);
 
             //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(), GlobalGenericTeamBuff);
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, CritIncrease);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(),
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget));
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "CritTeam"));
 
             //Debuffs
-            RegisterSpellProcessor(RelevantNanos.InitDebuffs, InitDebuffs, CombatActionPriority.Medium);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(), DOTA, CombatActionPriority.Low);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent), EvasionDebuff, CombatActionPriority.Low);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(),
+                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DOTASelection"), CombatActionPriority.Low);
+
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent).OrderByStackingOrder(),
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "EvasionDebuffSelection"), CombatActionPriority.Low);
+
+            RegisterSpellProcessor(RelevantNanos.InitDebuffs,
+               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"), CombatActionPriority.Medium);
 
             //False Profs
             RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);
@@ -170,6 +187,22 @@ namespace CombatHandler.Agent
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Deprive).OrderByStackingOrder(), DepriveDrain, CombatActionPriority.High);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack).OrderByStackingOrder(), RansackDrain, CombatActionPriority.High);
 
+            //LE Procs
+            //type1
+            RegisterPerkProcessor(PerkHash.LEProcAgentGrimReaper, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentDisableCuffs, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentNoEscape, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentIntenseMetabolism, LEProc1, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentMinorNanobotEnhance, LEProc1, CombatActionPriority.Low);
+
+            //tupe2
+            RegisterPerkProcessor(PerkHash.LEProcAgentNotumChargedRounds, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentLaserAim, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentNanoEnhancedTargeting, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentPlasteelPiercingRounds, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentCellKiller, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentImprovedFocus, LEProc2, CombatActionPriority.Low);
+            RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, LEProc2, CombatActionPriority.Low);
 
             PluginDirectory = pluginDir;
 
@@ -484,7 +517,7 @@ namespace CombatHandler.Agent
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 0.5f)
+            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -494,6 +527,8 @@ namespace CombatHandler.Agent
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
+            #region UI
 
             var window = SettingsController.FindValidWindow(_windows);
 
@@ -641,6 +676,7 @@ namespace CombatHandler.Agent
                     mpView.Clicked = HandleMPSettingsViewClick;
                 }
 
+                #endregion
 
                 #region GlobalBuffing
 
@@ -740,104 +776,20 @@ namespace CombatHandler.Agent
             }
         }
 
-        #region LE Procs
-
-        private bool DisableCuffs(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.DisableCuffs != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool GrimReaper(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.GrimReaper != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool IntenseMetabolism(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.IntenseMetabolism != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool MinorNanobotEnhance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.MinorNanobotEnhance != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool NoEscape(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType1Selection.NoEscape != (ProcType1Selection)_settings["ProcType1Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool BrokenAnkle(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.BrokenAnkle != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool CellKiller(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.CellKiller != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool ImprovedFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.ImprovedFocus != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool LaserAim(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.LaserAim != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        private bool NanoEnhancedTargeting(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.NanoEnhancedTargeting != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool NotumChargedRounds(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.NotumChargedRounds != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-        private bool PlasteelPiercingRounds(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcType2Selection.PlasteelPiercingRounds != (ProcType2Selection)_settings["ProcType2Selection"].AsInt32()) { return false; }
-
-            return LEProc(perk, fightingTarget, ref actionTarget);
-        }
-
-        #endregion
-
         #region Healing
 
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
+        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
-            if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
+        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -995,64 +947,34 @@ namespace CombatHandler.Agent
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.SteadyNerves, out Buff SN)) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
-        private bool DamageA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return GenericTeamBuff(spell, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
-        private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("CritTeam"))
-                return GenericTeamBuff(spell, ref actionTarget);
+        //private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsSettingEnabled("CritTeam"))
+        //        return GenericTeamBuff(spell, ref actionTarget);
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
-        }
+        //    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        //}
 
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ProcSelection.DeTaunt != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool DamageProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ProcSelection.Damage != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
 
         #region Debuffs
-
-        private bool InitDebuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (InitDebuffSelection.Area == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32())
-                return AreaDebuff(spell, ref actionTarget);
-
-            if (InitDebuffSelection.Target == (InitDebuffSelection)_settings["InitDebuffSelection"].AsInt32()
-                && fightingTarget != null)
-            {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
-        private bool DOTA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledTargetDebuff("DOTA", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool EvasionDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledTargetDebuff("EvasionDebuff", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
 
         #endregion
 
@@ -1126,7 +1048,7 @@ namespace CombatHandler.Agent
             public static int TeamCH = 42409; //Add logic later
             public const int TiredLimbs = 99578;
             public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder().Where(spell => spell.Id != TiredLimbs).ToArray();
-            public static int[] Healing = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
+            public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
                 43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
                 43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
                 28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
@@ -1138,21 +1060,41 @@ namespace CombatHandler.Agent
         }
         public enum HealSelection
         {
-            None, SingleTeam, SingleArea
+            None, SingleTeam, SingleArea, Team
+        }
+        public enum DOTASelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum EvasionDebuffSelection
+        {
+            None, Target, Area, Boss
         }
         public enum InitDebuffSelection
         {
-            None, Target, Area
+            None, Target, Area, Boss
         }
+
         public enum ProcType1Selection
         {
-            GrimReaper, DisableCuffs, NoEscape, IntenseMetabolism, MinorNanobotEnhance
+            GrimReaper = 1464554561,
+            DisableCuffs = 1347310415,
+            NoEscape = 1162433352,
+            IntenseMetabolism = 1229538903,
+            MinorNanobotEnhance = 1464160321
         }
 
         public enum ProcType2Selection
         {
-            NotumChargedRounds, LaserAim, NanoEnhancedTargeting, PlasteelPiercingRounds, CellKiller, ImprovedFocus, BrokenAnkle
+            NotumChargedRounds = 1196774223,
+            LaserAim = 1111577165,
+            NanoEnhancedTargeting = 1095520333,
+            PlasteelPiercingRounds = 1280136015,
+            CellKiller = 1329941332,
+            ImprovedFocus = 1413562956,
+            BrokenAnkle = 1481851730
         }
+
         public enum ProcSelection
         {
             None, Damage, DeTaunt

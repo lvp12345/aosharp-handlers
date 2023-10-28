@@ -3,21 +3,21 @@
   <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Dangerous Culture (DOT 11 250 Poison-damage [15x750 every 2sec] 30s)" value="0"/>
-      <RadioButton label="Antiseptic (Healing 1133 - 1533)" value="1"/>
-      <RadioButton label="Muscle Memory (Self Nano Init Buff 250 60s)" value="2"/>
-      <RadioButton label="Blood Transfusion (Healing 327-551)" value="3"/>
-      <RadioButton label="Restrictive Bandaging (Healing 21-37)" value="4"/>
+      <RadioButton label="Dangerous Culture (DOT 11 250 Poison-damage [15x750 every 2sec] 30s)" value="1111774273"/>
+      <RadioButton label="Antiseptic (Healing 1133 - 1533)" value="1096177490"/>
+      <RadioButton label="Muscle Memory (Self Nano Init Buff 250 60s)" value="1313229889"/>
+      <RadioButton label="Blood Transfusion (Healing 327-551)" value="1145979733"/>
+      <RadioButton label="Restrictive Bandaging (Healing 21-37)" value="1414547023"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Massive Vitae Plan (Self HealEff 25% 60s)" value="0"/>
-      <RadioButton label="Anatomic Blight (Init Debuff -569 60s)" value="1"/>
-      <RadioButton label="Healing Care (Healing [Team] 434-820)" value="2"/>
-      <RadioButton label="Pathogen (DOT 1 3375 Poison-damage [15x225 every 2sec] 30s)" value="3"/>
-      <RadioButton label="Anesthetic (Self HealEff +15% 60s)" value="4"/>
-      <RadioButton label="Astringent (Init Debuff -350 20s) " value="5"/>
-      <RadioButton label="Inflammation (DOT 300 Poison-damage [20x15 every 2sec] 30s)" value="6"/>
+      <RadioButton label="Massive Vitae Plan (Self HealEff 25% 60s)" value="1229931077"/>
+      <RadioButton label="Anatomic Blight (Init Debuff -569 60s)" value="1414025031"/>
+      <RadioButton label="Healing Care (Healing [Team] 434-820)" value="1498502234"/>
+      <RadioButton label="Pathogen (DOT 1 3375 Poison-damage [15x225 every 2sec] 30s)" value="1128874835"/>
+      <RadioButton label="Anesthetic (Self HealEff +15% 60s)" value="1263289936"/>
+      <RadioButton label="Astringent (Init Debuff -350 20s) " value="1296908628"/>
+      <RadioButton label="Inflammation (DOT 300 Poison-damage [20x15 every 2sec] 30s)" value="1381188174"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

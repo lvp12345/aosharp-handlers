@@ -94,25 +94,6 @@ namespace CombatHandler.Generic
             return ShouldInstallPrimedDevice(fightingTarget, RelevantEffects.SuppressivePrimerBuff);
         }
 
-        //public static bool StarFallPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (fightingTarget == null || (fightingTarget.MaxHealth < 1000000 && fightingTarget.HealthPercent < 5)) { return false; }
-
-        //    if (PerkAction.Find(PerkHash.Combust, out PerkAction combust) && !combust.IsAvailable) { return false; }
-
-        //    actionTarget.ShouldSetTarget = true;
-        //    return DamagePerk(perkAction, fightingTarget, ref actionTarget);
-        //}
-        //public static bool QuickShotPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (fightingTarget == null || (fightingTarget.MaxHealth < 1000000 && fightingTarget.HealthPercent < 5)) { return false; }
-
-        //    if (PerkAction.Find("Double Shot", out PerkAction doubleShot) && !doubleShot.IsAvailable) { return false; }
-
-        //    actionTarget.ShouldSetTarget = true;
-        //    return DamagePerk(perkAction, fightingTarget, ref actionTarget);
-        //}
-
         private static bool ShouldInstallPrimedDevice(SimpleChar fightingTarget, int primerBuffId)
         {
             if (fightingTarget == null) { return false; }
@@ -131,45 +112,6 @@ namespace CombatHandler.Generic
             if (fightingTarget == null) { return false; }
 
             return true;
-        }
-
-        public static bool BattleGroupHealPerk1(PerkAction perkAction)
-        {
-            return perkAction.IsAvailable;
-        }
-
-        public static bool BattleGroupHealPerk2(PerkAction perkAction)
-        {
-            PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
-
-            if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false)
-                return perkAction.IsAvailable;
-
-            return false;
-        }
-
-        public static bool BattleGroupHealPerk3(PerkAction perkAction)
-        {
-            PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
-            PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
-
-            if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false && _bgHeal2Team?.IsAvailable == false && _bgHeal2Team?.IsExecuting == false)
-                return perkAction.IsAvailable;
-
-            return false;
-        }
-
-        public static bool BattleGroupHealPerk4(PerkAction perkAction)
-        {
-            PerkAction.Find("Battlegroup Heal 1", out PerkAction _bgHeal1Team);
-            PerkAction.Find("Battlegroup Heal 2", out PerkAction _bgHeal2Team);
-            PerkAction.Find("Battlegroup Heal 3", out PerkAction _bgHeal3Team);
-
-            if (_bgHeal1Team?.IsAvailable == false && _bgHeal1Team?.IsExecuting == false && _bgHeal2Team?.IsAvailable == false && _bgHeal2Team?.IsExecuting == false
-                && _bgHeal3Team?.IsAvailable == false && _bgHeal3Team?.IsExecuting == false)
-                return perkAction.IsAvailable;
-
-            return false;
         }
 
         public static bool LeadershipPerk(PerkAction perkAction)
@@ -238,26 +180,9 @@ namespace CombatHandler.Generic
             return true;
         }
 
-
-        //public static bool BuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //        foreach (Buff buff in DynelManager.LocalPlayer.Buffs.AsEnumerable())
-        //    {
-        //        if (buff.Name == perkAction.Name) { return false; }
-        //    }
-
-        //    actionTarget.Target = DynelManager.LocalPlayer;
-        //    actionTarget.ShouldSetTarget = true;
-        //    return true;
-        //}
-
         public static bool SelfHealPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            //if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
-            //    return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
-
+            
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
@@ -268,11 +193,7 @@ namespace CombatHandler.Generic
 
         public static bool SelfNanoPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            //if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
-            //    return GenericPerk(perk, DynelManager.LocalPlayer, ref actionTarget);
-
+            
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
@@ -283,8 +204,6 @@ namespace CombatHandler.Generic
 
         public static bool TeamHealPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
             if (Team.IsInTeam)
             {
                 SimpleChar _person = DynelManager.Players
@@ -309,8 +228,7 @@ namespace CombatHandler.Generic
 
         public static bool TeamNanoPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
+            
             if (Team.IsInTeam)
             {
                 SimpleChar _person = DynelManager.Players

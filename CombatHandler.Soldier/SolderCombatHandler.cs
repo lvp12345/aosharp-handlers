@@ -99,6 +99,7 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.None);
 
             _settings.AddVariable("NotumGrenades", false);
+            _settings.AddVariable("MajorEvasionBuffs", false);
 
             _settings.AddVariable("LegShot", false);
             _settings.AddVariable("DamagePerk", false);
@@ -137,7 +138,7 @@ namespace CombatHandler.Soldier
                     => NonCombatBuff(spell, ref actionTarget, fightingTarget, "NotumGrenades"));
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, "MajorEvasionBuffs"));
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierFullAutoBuff).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                             => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));

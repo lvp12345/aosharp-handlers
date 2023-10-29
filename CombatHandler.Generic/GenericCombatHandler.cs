@@ -1055,17 +1055,17 @@ namespace CombatHandler.Generic
         {
             int settingValue = _settings[debuffType].AsInt32();
 
-            if (settingValue == 0) return false;
+            if (settingValue == 0) return false;//none
 
-            if (settingValue == 1 && fightingTarget != null)
+            if (settingValue == 1 && fightingTarget != null)//target
             {
                 if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
                 return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
             }
 
-            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);
+            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);//area
 
-            if (settingValue == 3 && fightingTarget != null)
+            if (settingValue == 3 && fightingTarget != null)//boss
             {
                 if (fightingTarget.MaxHealth < 1000000) return false;
                 if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;

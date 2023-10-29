@@ -1688,7 +1688,7 @@ namespace CombatHandler.Bureaucrat
             public const int ShacklesofObedience = 82463;
             public const int CompositeMartialProwess = 302158;
             public const int CompositeMelee = 223360;
-            public static readonly int[] CorporateLeadership = { 205433, 205435, 205437, 205439 };
+            public static readonly int[] CorporateLeadership = { 205439, 205437, 205435, 205433 };
             public const int PetWarp = 209488;
             public static readonly int[] Warps = {
                 209488

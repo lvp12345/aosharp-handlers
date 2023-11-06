@@ -703,9 +703,8 @@ namespace CombatHandler.Generic
 
         protected bool InsightintotheShadowlands(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantGenericNanos.InsightIntoSL))
+            if (Playfield.IsShadowlands && !DynelManager.LocalPlayer.Buffs.Contains(RelevantGenericNanos.InsightIntoSL))
             {
-                //Chat.WriteLine("is calling");
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;

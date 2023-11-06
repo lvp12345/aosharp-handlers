@@ -1,35 +1,36 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-	  <View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-		  <OptionCheckBox label="(Local) Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Buffing" layout_borders="Rect(10,1,5,1)"/>
-		  <OptionCheckBox label="(Local) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
-		  <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-	  </View>
-	  <View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-		  <OptionCheckBox label="Zazen Stance" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Zazen" layout_borders="Rect(10,1,5,1)"/>
-		  <OptionCheckBox label="Short Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortDamage" layout_borders="Rect(10,1,5,1)"/>
-		  <OptionCheckBox label="RunSpeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RunSpeed" layout_borders="Rect(10,1,5,1)"/>
-		  <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-		  <OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Evades" layout_borders="Rect(10,1,5,1)"/>
-		  <OptionCheckBox label="(Team) Crit" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CritBuff" layout_borders="Rect(10,1,5,1)"/>
-		  <OptionCheckBox label="(Team) Armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamArmorBuffs" layout_borders="Rect(10,1,5,1)"/>
-		  <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-	  </View>
-	  <View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-		  <OptionRadioButtonGroup label="Damage Types" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DamageTypeSelection">
-			  <RadioButton label="Melee" value="0"/>
-			  <RadioButton label="Fire" value="1"/>
-			  <RadioButton label="Energy" value="2"/>
-			  <RadioButton label="Chemical" value="3"/>
-		  </OptionRadioButtonGroup>>
-		  <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-		  <OptionRadioButtonGroup label="(Self) Evade Type" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SelfEvadeSelection">
-			  <RadioButton label="Percent (Evade-ClsC)" value="0"/>
-			  <RadioButton label="Target" value="1"/>
-		  </OptionRadioButtonGroup>>
-	  </View>
-    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-  </BorderView>
+	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionCheckBox label="(Local) Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Buffing" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Local) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionCheckBox label="Zazen Stance" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Zazen" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="Short Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortDamage" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="RunSpeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RunSpeed" layout_borders="Rect(10,1,5,1)"/>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+			<OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Evades" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Crit" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CritBuff" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Armor" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamArmorBuffs" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Insight into the Shadowlands" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLMap" layout_borders="Rect(10,1,5,1)"/>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Damage Types" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DamageTypeSelection">
+				<RadioButton label="Melee" value="0"/>
+				<RadioButton label="Fire" value="1"/>
+				<RadioButton label="Energy" value="2"/>
+				<RadioButton label="Chemical" value="3"/>
+			</OptionRadioButtonGroup>>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+			<OptionRadioButtonGroup label="(Self) Evade Type" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SelfEvadeSelection">
+				<RadioButton label="Percent (Evade-ClsC)" value="0"/>
+				<RadioButton label="Target" value="1"/>
+			</OptionRadioButtonGroup>>
+		</View>
+		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>
 </root>

@@ -13,6 +13,7 @@
 		<OptionCheckBox label="(Team) Armor Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamArmorBuff" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Evades" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="(Team) Initiative Buffs" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitBuff" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="(Team) Insight into the Shadowlands" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLMap" layout_borders="Rect(10,1,5,1)"/>
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>>
 		<OptionCheckBox label="(Team) AAO" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AAO" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="(Team) Pistol" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PistolTeam" layout_borders="Rect(10,1,5,1)"/>

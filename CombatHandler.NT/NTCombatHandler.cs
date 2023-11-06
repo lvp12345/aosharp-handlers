@@ -148,8 +148,8 @@ namespace CombatHandler.NanoTechnician
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Medium);
 
                 //Nukes
-                //RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
-                //RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
+                RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
+                RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
 
                 RegisterSpellProcessor(RelevantNanos.RKAOENukes,
                     (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1003,16 +1003,19 @@ namespace CombatHandler.NanoTechnician
         {
             if (HaloSelection.None == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return false; }
 
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
+
             if (fightingTarget != null && fightingTarget.Buffs.Contains(NanoLine.HaloNanoDebuff)) { return false; }
 
-            if (HaloSelection.Target != (HaloSelection)_settings["HaloSelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (HaloSelection.Target == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return true; }
+      
+            if (HaloSelection.Boss == (HaloSelection)_settings["HaloSelection"].AsInt32()
+                && fightingTarget?.MaxHealth > 1000000)
+            {
+                return true;
+            }
 
-            if (HaloSelection.Boss != (HaloSelection)_settings["HaloSelection"].AsInt32())
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-            return true;
-
+            return false;
         }
 
         #endregion

@@ -77,6 +77,7 @@ namespace CombatHandler.Shade
 
             _settings.AddVariable("Runspeed", false);
             _settings.AddVariable("RunspeedTeam", false);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("InitDebuffProc", false);
             _settings.AddVariable("DamageProc", false);

@@ -88,6 +88,7 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("ArmorBuffSelection", (int)ArmorBuffSelection.None);
             _settings.AddVariable("CritBuff", false);
             _settings.AddVariable("TeamArmorBuffs", false);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("Zazen", false);
 

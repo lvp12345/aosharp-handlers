@@ -207,8 +207,6 @@ namespace CombatHandler.Generic
 
             _settings = new Settings("CombatHandler");
 
-            _settings.AddVariable("SLMap", false);
-
             IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
             IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 

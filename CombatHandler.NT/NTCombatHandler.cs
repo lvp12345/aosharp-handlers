@@ -100,6 +100,7 @@ namespace CombatHandler.NanoTechnician
                 _settings.AddVariable("AbsorbACBuff", false);
                 _settings.AddVariable("Evades", false);
                 _settings.AddVariable("NFRangeBuff", false);
+                _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ThermalReprieve);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.OptimizedLibrary);

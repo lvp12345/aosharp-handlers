@@ -129,6 +129,7 @@ namespace CombatHandler.Engineer
                 _settings.AddVariable("GrenadeTeam", true);
                 _settings.AddVariable("ShadowlandReflectBase", true);
                 _settings.AddVariable("DamageShields", false);
+                _settings.AddVariable("SLMap", false);
                 _settings.AddVariable("MEBuff", false);
 
                 _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.None);

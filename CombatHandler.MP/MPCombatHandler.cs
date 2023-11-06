@@ -134,7 +134,7 @@ namespace CombatHandler.Metaphysicist
 
             //Debuffs
             //nukes
-            RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke);
+            RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke,CombatActionPriority.High);
             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
 
             //debuffs
@@ -906,7 +906,7 @@ namespace CombatHandler.Metaphysicist
         {
             if (fightingTarget == null || !IsSettingEnabled("Nukes") || !CanCast(spell)) { return false; }
 
-            if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
+            //if (!fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
 
             return true;
         }

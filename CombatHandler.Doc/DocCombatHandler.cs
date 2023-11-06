@@ -111,6 +111,7 @@ namespace CombatHandler.Doctor
                 _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
                 _settings.AddVariable("ShortHOT", false);
                 _settings.AddVariable("TeamImprovedLifeChanneler", true);
+                _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("CH", true);
                 _settings.AddVariable("LockCH", false);

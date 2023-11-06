@@ -90,6 +90,8 @@ namespace CombatHandler.Adventurer
                 _settings.AddVariable("DamageShields", false);
                 _settings.AddVariable("XPBonus", false);
                 _settings.AddVariable("RunspeedBuffs", false);
+                _settings.AddVariable("SLMap", false);
+
                 _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.None);
 
                 _settings.AddVariable("CH", false);

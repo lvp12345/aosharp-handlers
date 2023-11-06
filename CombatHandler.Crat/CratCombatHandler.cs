@@ -124,6 +124,7 @@ namespace CombatHandler.Bureaucrat
             _settings.AddVariable("PistolTeam", false);
             _settings.AddVariable("NeuronalStimulatorTeam", false);
             _settings.AddVariable("CutRedTape", false);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);

@@ -101,6 +101,7 @@ namespace CombatHandler.Enf
             _settings.AddVariable("TargetedHpBuff", true);
             _settings.AddVariable("InitiativeBuffs", true);
             _settings.AddVariable("DamageShields", false);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
 

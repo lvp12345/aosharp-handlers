@@ -74,6 +74,7 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("Kits", true);
 
             _settings.AddVariable("RecastAntiFear", false);
+            _settings.AddVariable("SLMap", false);
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RighteousSmite);

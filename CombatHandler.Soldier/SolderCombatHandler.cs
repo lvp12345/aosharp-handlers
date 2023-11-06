@@ -92,6 +92,7 @@ namespace CombatHandler.Soldier
             _settings.AddVariable("PistolTeam", false);
             _settings.AddVariable("CompHeavyArt", false);
             _settings.AddVariable("RiotControl", false);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
             _settings.AddVariable("TimedTauntsSelection", (int)TimedTauntsSelection.None);

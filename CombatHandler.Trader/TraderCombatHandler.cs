@@ -84,6 +84,7 @@ namespace CombatHandler.Trader
 
             _settings.AddVariable("Evades", false);
             _settings.AddVariable("UmbralWrangler", false);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DebtCollection);
             _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.UnopenedLetter);

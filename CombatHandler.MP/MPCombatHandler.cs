@@ -107,6 +107,7 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("Cost", false);
             _settings.AddVariable("Evades", false);
             _settings.AddVariable("PistolTeam", false);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("DamagePerk", false);
 

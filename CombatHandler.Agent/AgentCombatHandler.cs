@@ -96,6 +96,8 @@ namespace CombatHandler.Agent
 
             _settings.AddVariable("CH", false);
 
+            _settings.AddVariable("SLMap", false);
+
             _settings.AddVariable("ProcSelection", (int)ProcSelection.Damage);
 
             _settings.AddVariable("Concentration", false);

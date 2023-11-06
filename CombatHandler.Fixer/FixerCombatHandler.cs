@@ -74,6 +74,7 @@ namespace CombatHandler.Fixer
 
             _settings.AddVariable("ShortHOT", false);
             _settings.AddVariable("LongHOTSelection", (int)LongHOTSelection.None);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("RunspeedSelection", (int)RunspeedSelection.None);
             _settings.AddVariable("ArmorSelection", (int)ArmorSelection.None);

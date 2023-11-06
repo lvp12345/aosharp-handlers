@@ -703,9 +703,9 @@ namespace CombatHandler.Generic
 
         protected bool InsightintotheShadowlands(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Playfield.IsShadowlands && !DynelManager.LocalPlayer.Buffs.Contains(RelevantGenericNanos.InsightIntoSL))
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantGenericNanos.InsightIntoSL))
             {
-                Chat.WriteLine("is calling");
+                //Chat.WriteLine("is calling");
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
@@ -2225,7 +2225,9 @@ namespace CombatHandler.Generic
             public const int CompositeRanged = 223348;
             public const int CompositeRangedSpecial = 223364;
             public const int InnerSanctumDebuff = 206387;
+
             public const int InsightIntoSL = 268610;
+
             public const int BlightedFlesh = 305492;
             public static int[] ShrinkingGrowingflesh = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
             public static int[] AAOTransfer = new[] { 301524, 301520, 267263, 267265 };

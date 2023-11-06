@@ -279,7 +279,7 @@ namespace CombatHandler.Generic
             RegisterSpellProcessor(RelevantGenericNanos.CompositeUtility, CompositeBuff);
             RegisterSpellProcessor(RelevantGenericNanos.CompositeMartialProwess, CompositeBuff);
 
-            RegisterSpellProcessor(RelevantGenericNanos.InsightIntoSL, CompositeBuff);
+            RegisterSpellProcessor(RelevantGenericNanos.InsightIntoSL, InsightintotheShadowlands);
 
             if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
             {
@@ -700,6 +700,18 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Non Combat
+
+        protected bool InsightintotheShadowlands(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Playfield.IsShadowlands && !DynelManager.LocalPlayer.Buffs.Contains(RelevantGenericNanos.InsightIntoSL))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
 
         protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

@@ -280,8 +280,8 @@ namespace CombatHandler.Generic
             RegisterSpellProcessor(RelevantGenericNanos.CompositeMartialProwess, CompositeBuff);
 
             RegisterSpellProcessor(RelevantGenericNanos.InsightIntoSL,
-            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => NonCombatBuff(spell, ref actionTarget, fightingTarget, "SLMap"));
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "SLMap"));
 
             if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
             {

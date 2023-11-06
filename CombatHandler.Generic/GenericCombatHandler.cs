@@ -705,6 +705,7 @@ namespace CombatHandler.Generic
         {
             if (Playfield.IsShadowlands && !DynelManager.LocalPlayer.Buffs.Contains(RelevantGenericNanos.InsightIntoSL))
             {
+                Chat.WriteLine("is calling");
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;

@@ -1388,14 +1388,17 @@ namespace CombatHandler.Generic
             if (targetSelection == StimTargetSelection.None) { return false; }
 
             // Logic for Self target selection
-            if (targetSelection == StimTargetSelection.Self &&
-                DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 595f) == null &&
-                (DynelManager.LocalPlayer.MissingHealth >= StimHealthPercentage || DynelManager.LocalPlayer.MissingNano >= StimNanoPercentage))
+            if (targetSelection == StimTargetSelection.Self)
             {
-                target = DynelManager.LocalPlayer;
+                var player = DynelManager.LocalPlayer;
+
+                if (player.HealthPercent <= StimHealthPercentage || player.NanoPercent <= StimNanoPercentage)
+                {
+                    target = DynelManager.LocalPlayer;
+                }
             }
             // Logic for Team target selection
-            else if (targetSelection == StimTargetSelection.Team)
+            if (targetSelection == StimTargetSelection.Team)
             {
                 target = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance) &&
@@ -1408,7 +1411,7 @@ namespace CombatHandler.Generic
                     .FirstOrDefault();
             }
             // Logic for Target target selection
-            else if (targetSelection == StimTargetSelection.Target)
+            if (targetSelection == StimTargetSelection.Target)
             {
                 target = DynelManager.Players
                     .FirstOrDefault(c => c.IsInLineOfSight &&

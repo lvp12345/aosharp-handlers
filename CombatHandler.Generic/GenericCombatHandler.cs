@@ -239,8 +239,8 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
 
-            RegisterItemProcessor(RelevantGenericItems.RingofPurifyingFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.RingofBlightedFlesh, RelevantGenericItems.RingofBlightedFlesh, BlightedFlesh);
+            RegisterItemProcessor(RelevantGenericItems.RingofTatteredFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
+            RegisterItemProcessor(RelevantGenericItems.RingofWeepingFlesh, RelevantGenericItems.RingofBlightedFlesh, BlightedFlesh);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
 
@@ -2111,9 +2111,11 @@ namespace CombatHandler.Generic
 
                 case RelevantGenericItems.Drone:
                 case RelevantGenericItems.RingofPurifyingFlame:
+                case RelevantGenericItems.RingofTatteredFlame:
                     return Stat.MaterialCreation;
 
                 case RelevantGenericItems.RingofBlightedFlesh:
+                case RelevantGenericItems.RingofWeepingFlesh:
                     return Stat.BiologicalMetamorphosis;
 
                 case RelevantGenericItems.WenWen:
@@ -2197,9 +2199,13 @@ namespace CombatHandler.Generic
             public const int FallenStar = 244214;
             public const int TearOfOedipus = 244216;
 
+            public const int RingofTatteredFlame = 204593;
             public const int RingofPurifyingFlame = 305493;
-            public const int BloodthrallRing = 305495;
+
+            public const int RingofWeepingFlesh = 204595;
             public const int RingofBlightedFlesh = 305491;
+
+            public const int BloodthrallRing = 305495;
 
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
 

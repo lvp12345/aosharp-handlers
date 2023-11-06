@@ -7,6 +7,7 @@ using CombatHandler.Generic;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FollowTargetMessage;
 
 namespace CombatHandler.NanoTechnician
 {
@@ -128,9 +129,7 @@ namespace CombatHandler.NanoTechnician
 
                 RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HaloNanoDebuff).OrderByStackingOrder(),
-                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "HaloSelection"), CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.HaloNanoDebuff, HaloNanoDebuff, CombatActionPriority.High);
 
                 RegisterSpellProcessor(RelevantNanos.LickofthePest,
                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -151,8 +150,18 @@ namespace CombatHandler.NanoTechnician
                 //Nukes
                 RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
                 RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
-                RegisterSpellProcessor(RelevantNanos.AOENukes, AOENuke);
-                RegisterSpellProcessor(RelevantNanos.VolcanicEruption, VolcanicEruption);
+
+                RegisterSpellProcessor(RelevantNanos.RKAOENukes,
+                    (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.RK));
+
+                RegisterSpellProcessor(RelevantNanos.SLAOENukes,
+                     (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.SL));
+
+                RegisterSpellProcessor(new[] { RelevantNanos.VolcanicEruption },
+                     (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.VE));
 
                 //Perks
                 RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
@@ -800,17 +809,12 @@ namespace CombatHandler.NanoTechnician
 
         #region Nukes
 
-        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, AOESelection aoeType)
         {
-            if (AOESelection.Normal != (AOESelection)_settings["AOESelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
+            var aoeSelection = (AOESelection)_settings["AOESelection"].AsInt32();
 
-            return true;
-        }
-        private bool VolcanicEruption(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (AOESelection.VE != (AOESelection)_settings["AOESelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (fightingTarget == null || !CanCast(spell) || aoeSelection != aoeType)
+                return false;
 
             return true;
         }
@@ -824,9 +828,9 @@ namespace CombatHandler.NanoTechnician
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AOESelection.VE == (AOESelection)_settings["AOESelection"].AsInt32()
-                || AOESelection.Normal == (AOESelection)_settings["AOESelection"].AsInt32()
-                || fightingTarget == null) { return false; }
+
+            if (AOESelection.None != (AOESelection)_settings["AOESelection"].AsInt32()
+                    || fightingTarget == null) { return false; }
 
             return true;
         }
@@ -995,75 +999,24 @@ namespace CombatHandler.NanoTechnician
 
         #region Debuffs
 
-        //private bool HaloNanoDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (HaloSelection.None == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return false; }
+        private bool HaloNanoDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HaloSelection.None == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return false; }
 
-        //    if (HaloSelection.Target != (HaloSelection)_settings["HaloSelection"].AsInt32()
-        //        || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
 
-        //    if (HaloSelection.Boss != (HaloSelection)_settings["HaloSelection"].AsInt32())
-        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
+            if (fightingTarget != null && fightingTarget.Buffs.Contains(NanoLine.HaloNanoDebuff)) { return false; }
 
-        //    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            if (HaloSelection.Target == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return true; }
+      
+            if (HaloSelection.Boss == (HaloSelection)_settings["HaloSelection"].AsInt32()
+                && fightingTarget?.MaxHealth > 1000000)
+            {
+                return true;
+            }
 
-        //}
-
-
-        //private bool NanoResist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (NanoResistSelection.None == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32()) { return false; }
-
-        //    if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-        //    if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
-        //    {
-        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-
-
-        //    if (!_drainTarget.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA))
-        //    {
-        //        actionTarget.ShouldSetTarget = true;
-        //        actionTarget.Target = _drainTarget;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-        //private bool HackedBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (HackedBlindSelection.None == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32()) { return false; }
-
-        //    if (HackedBlindSelection.Target == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32())
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-
-        //    if (HackedBlindSelection.Boss == (HackedBlindSelection)_settings["HackedBlindSelection"].AsInt32())
-        //    {
-        //        if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-        //        return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //    }
-
-        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
-
-
-        //    if (!_drainTarget.Buffs.Contains(RelevantNanos.HackedBlind))
-        //    {
-        //        actionTarget.ShouldSetTarget = true;
-        //        actionTarget.Target = _drainTarget;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
+            return false;
+        }
 
         #endregion
 
@@ -1270,7 +1223,7 @@ namespace CombatHandler.NanoTechnician
         }
         public enum AOESelection
         {
-            None, Normal, VE
+            None, RK, SL, VE
         }
 
         public enum DOTADebuffTargetSelection
@@ -1295,17 +1248,21 @@ namespace CombatHandler.NanoTechnician
             public const int IzgimmersUltimatum = 218168;
             public const int Garuk = 275692;
             public const int PierceReflect = 266287;
-            public const int VolcanicEruption = 28638;
+            
             public const int DarkMovement = 28603;
             public const int BioCocoon = 209802;
-            public static readonly int[] AOENukes = { 266293, 28638,
-                266297, 28637, 28594, 45922, 45906, 45884, 28635, 266298, 28593, 45925, 45940, 45900,28629,
-                45917, 45937, 28599, 45894, 45943, 28633, 28631 };
+
+            public static readonly int[] RKAOENukes = { 28620, 28638, 28637, 28594, 45922, 45906, 45884, 28635, 28593, 45925, 45940, 
+            45900, 28629, 45917, 45937, 28599, 45894, 45943, 28633, 28631};
+            public static readonly int[] SLAOENukes = { 266293, 266294, 266295, 266296, 266297, 266298 };
+            public const int VolcanicEruption = 28638;
 
             public static readonly int[] HackedBlind = { 253384, 253382, 253380 };
+            public static readonly int[] HaloNanoDebuff = { 45239, 45238, 45224 };
             public const int Stun = 28625;
             public static readonly int[] Calm = { 259364, 259365, 259362, 259363, 259366, 259367, 100443, 100441, 259335, 259336, 100442, 100440 };
             public static int LickofthePest = 201937;
+
 
             public const int SuperiorFleetingImmunity = 273386;
             public static readonly int[] AbsorbACBuff = { 270356, 117676, 117675, 117677, 117678, 117679 };

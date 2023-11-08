@@ -75,16 +75,13 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UseItem, OnUseItemMessage);
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatOpen, OnNpcChatOpenMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatClose, OnNpcChatCloseMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChatAnswer, OnNpcChatAnswerMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
 
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
@@ -194,73 +191,6 @@ namespace SyncManager
             Chat.WriteLine("Syncmanager disabled.");
         }
 
-        private void OnJumpMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            if (!_settings["Toggle"].AsBool())
-                return;
-
-            JumpMessage jumpMsg = (JumpMessage)msg;
-
-            if (Playfield.Identity.Instance != jumpMsg.PlayfieldId)
-                return;
-
-            MovementController.Instance.SetMovement(jumpMsg.MoveType);
-        }
-
-        private void OnMoveMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            if (!_settings["Toggle"].AsBool())
-                return;
-
-            MoveMessage moveMsg = (MoveMessage)msg;
-
-            if (Playfield.Identity.Instance != moveMsg.PlayfieldId)
-                return;
-
-            DynelManager.LocalPlayer.Position = moveMsg.Position;
-            DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
-            MovementController.Instance.SetMovement(moveMsg.MoveType);
-        }
-
-        private void OnTradeMessage(int sender, IPCMessage msg)
-        {
-            if (Game.IsZoning)
-                return;
-
-            if (!_settings["Toggle"].AsBool())
-                return;
-
-            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
-
-            if (charTradeIpcMsg.Action == TradeAction.Confirm)
-            {
-                Network.Send(new TradeMessage()
-                {
-                    Unknown1 = 2,
-                    Action = (TradeAction)3,
-                });
-            }
-            else if (charTradeIpcMsg.Action == TradeAction.Accept)
-            {
-                Network.Send(new TradeMessage()
-                {
-                    Unknown1 = 2,
-                    Action = (TradeAction)1,
-                });
-            }
-        }
 
         private void OnZoned(object s, EventArgs e)
         {
@@ -273,68 +203,35 @@ namespace SyncManager
                 _openBags = false;
             }
         }
-        private void Network_N3MessageReceived(object s, N3Message n3Msg)
-        {
-            if (!_settings["SyncTrade"].AsBool()) { return; }
 
-            if (!_settings["Toggle"].AsBool())
-                return;
+       
 
-            if (n3Msg.N3MessageType == N3MessageType.Trade)
-            {
-                TradeMessage tradeMsg = (TradeMessage)n3Msg;
+        #region OutgoingCommunication
 
-                if (tradeMsg.Action == TradeAction.Accept)
-                {
-                    Network.Send(new TradeMessage()
-                    {
-                        Unknown1 = 2,
-                        Action = (TradeAction)3,
-                    });
-                }
-                if (tradeMsg.Action == TradeAction.Confirm)
-                {
-                    Network.Send(new TradeMessage()
-                    {
-                        Unknown1 = 2,
-                        Action = (TradeAction)1,
-                    });
-                }
-            }
-        }
         private void Network_N3MessageSent(object s, N3Message n3Msg)
         {
             if (!IsActiveCharacter() || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
 
             if (!_settings["Toggle"].AsBool())
                 return;
-
+            //Sync move
             if (n3Msg.N3MessageType == N3MessageType.CharDCMove)
             {
                 CharDCMoveMessage charDCMoveMsg = (CharDCMoveMessage)n3Msg;
 
-                if (charDCMoveMsg.MoveType == MovementAction.JumpStart && !_settings["SyncMove"].AsBool())
-                {
-                    IPCChannel.Broadcast(new JumpMessage()
-                    {
-                        MoveType = charDCMoveMsg.MoveType,
-                        PlayfieldId = Playfield.Identity.Instance,
-                    });
-                }
-                else
-                {
-                    if (!_settings["SyncMove"].AsBool()) { return; }
+                if (!_settings["SyncMove"].AsBool()) { return; }
 
-                    IPCChannel.Broadcast(new MoveMessage()
-                    {
-                        MoveType = charDCMoveMsg.MoveType,
-                        PlayfieldId = Playfield.Identity.Instance,
-                        Position = charDCMoveMsg.Position,
-                        Rotation = charDCMoveMsg.Heading
-                    });
-                }
+                IPCChannel.Broadcast(new MoveMessage()
+                {
+                    MoveType = charDCMoveMsg.MoveType,
+                    PlayfieldId = Playfield.Identity.Instance,
+                    Position = charDCMoveMsg.Position,
+                    Rotation = charDCMoveMsg.Heading
+                });
+
             }
-            else if (n3Msg.N3MessageType == N3MessageType.LookAt)
+
+            else if (n3Msg.N3MessageType == N3MessageType.LookAt) // what is this for? what are we sending the target ?
             {
                 LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
                 IPCChannel.Broadcast(new TargetMessage()
@@ -342,6 +239,8 @@ namespace SyncManager
                     Target = lookAtMsg.Target
                 });
             }
+
+            //sync attack
             else if (n3Msg.N3MessageType == N3MessageType.Attack)
             {
                 AttackMessage attackMsg = (AttackMessage)n3Msg;
@@ -358,22 +257,7 @@ namespace SyncManager
                     Start = false
                 });
             }
-            else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
-            {
-                if (!_settings["SyncMove"].AsBool()) { return; }
-
-                CharacterActionMessage charActionMsg = (CharacterActionMessage)n3Msg;
-
-                if (charActionMsg.Action != CharacterActionType.StandUp) { return; }
-
-                IPCChannel.Broadcast(new MoveMessage()
-                {
-                    MoveType = MovementAction.LeaveSit,
-                    PlayfieldId = Playfield.Identity.Instance,
-                    Position = DynelManager.LocalPlayer.Position,
-                    Rotation = DynelManager.LocalPlayer.Rotation
-                });
-            }
+            //sync use
             else if (n3Msg.N3MessageType == N3MessageType.GenericCmd)
             {
                 GenericCmdMessage genericCmdMsg = (GenericCmdMessage)n3Msg;
@@ -449,37 +333,123 @@ namespace SyncManager
                     }
                 }
             }
+
+            // sync chat
             else if (n3Msg.N3MessageType == N3MessageType.KnubotOpenChatWindow)
             {
                 if (!_settings["SyncChat"].AsBool()) { return; }
 
                 KnuBotOpenChatWindowMessage n3OpenChatMessage = (KnuBotOpenChatWindowMessage)n3Msg;
-                IPCChannel.Broadcast(new NpcChatOpenMessage()
-                {
-                    Target = n3OpenChatMessage.Target
-                });
-            }
-            else if (n3Msg.N3MessageType == N3MessageType.KnubotCloseChatWindow)
-            {
-                if (!_settings["SyncChat"].AsBool()) { return; }
-
                 KnuBotCloseChatWindowMessage n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
-                IPCChannel.Broadcast(new NpcChatCloseMessage()
-                {
-                    Target = n3CloseChatMessage.Target
-                });
-            }
-            else if (n3Msg.N3MessageType == N3MessageType.KnubotAnswer)
-            {
-                if (!_settings["SyncChat"].AsBool()) { return; }
-
                 KnuBotAnswerMessage n3AnswerMsg = (KnuBotAnswerMessage)n3Msg;
-                IPCChannel.Broadcast(new NpcChatAnswerMessage()
+
+                // When opening NPC chat
+                IPCChannel.Broadcast(new NpcChatIPCMessage
+                {
+                    Target = n3OpenChatMessage.Target,
+                    OpenClose = true
+                });
+
+                // When closing NPC chat
+                IPCChannel.Broadcast(new NpcChatIPCMessage
+                {
+                    Target = n3CloseChatMessage.Target,
+                    OpenClose = false
+                });
+
+                // When answering NPC chat
+                IPCChannel.Broadcast(new NpcChatIPCMessage
                 {
                     Target = n3AnswerMsg.Target,
-                    Answer = n3AnswerMsg.Answer
+                    Answer = n3AnswerMsg.Answer // OpenClose is null by default
                 });
             }
+        }
+
+        //sync trade
+        private void OnTradeMessage(int sender, IPCMessage msg)
+        {
+            if (Game.IsZoning)
+                return;
+
+            if (!_settings["Toggle"].AsBool())
+                return;
+
+            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
+
+            if (charTradeIpcMsg.Action == TradeAction.Confirm)
+            {
+                Network.Send(new TradeMessage()
+                {
+                    Unknown1 = 2,
+                    Action = (TradeAction)3,
+                });
+            }
+            else if (charTradeIpcMsg.Action == TradeAction.Accept)
+            {
+                Network.Send(new TradeMessage()
+                {
+                    Unknown1 = 2,
+                    Action = (TradeAction)1,
+                });
+            }
+        }
+
+
+        #endregion
+
+        #region IncomingCommunication
+
+        //sync trade
+        private void Network_N3MessageReceived(object s, N3Message n3Msg)
+        {
+            if (!_settings["SyncTrade"].AsBool()) { return; }
+
+            if (!_settings["Toggle"].AsBool())
+                return;
+
+            if (n3Msg.N3MessageType == N3MessageType.Trade)
+            {
+                TradeMessage tradeMsg = (TradeMessage)n3Msg;
+
+                if (tradeMsg.Action == TradeAction.Accept)
+                {
+                    Network.Send(new TradeMessage()
+                    {
+                        Unknown1 = 2,
+                        Action = (TradeAction)3,
+                    });
+                }
+                if (tradeMsg.Action == TradeAction.Confirm)
+                {
+                    Network.Send(new TradeMessage()
+                    {
+                        Unknown1 = 2,
+                        Action = (TradeAction)1,
+                    });
+                }
+            }
+        }
+
+        private void OnMoveMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow)
+                return;
+
+            if (Game.IsZoning)
+                return;
+
+            if (!_settings["Toggle"].AsBool())
+                return;
+
+            MoveMessage moveMsg = (MoveMessage)msg;
+
+            if (Playfield.Identity.Instance != moveMsg.PlayfieldId)
+                return;
+
+            DynelManager.LocalPlayer.Position = moveMsg.Position;
+            DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
+            MovementController.Instance.SetMovement(moveMsg.MoveType);
         }
 
         private void OnAttackMessage(int sender, IPCMessage msg)
@@ -745,30 +715,38 @@ namespace SyncManager
             useDynel = useMsg.Target;
         }
 
-        private void OnNpcChatOpenMessage(int sender, IPCMessage msg)
+        private void OnNpcChatMessage(int sender, IPCMessage msg)
         {
-            NpcChatOpenMessage message = (NpcChatOpenMessage)msg;
-            NpcDialog.Open(message.Target);
-        }
+            var chatMsg = (NpcChatIPCMessage)msg;
 
-        private void OnNpcChatCloseMessage(int sender, IPCMessage msg)
-        {
-            NpcChatCloseMessage message = (NpcChatCloseMessage)msg;
-            KnuBotCloseChatWindowMessage closeChatMessage = new KnuBotCloseChatWindowMessage()
+            // If OpenClose is true, open the chat.
+            if (chatMsg.OpenClose == true)
             {
-                Unknown1 = 2,
-                Unknown2 = 0,
-                Unknown3 = 0,
-                Target = message.Target
-            };
-            Network.Send(closeChatMessage);
+                NpcDialog.Open(chatMsg.Target);
+            }
+            // If OpenClose is false, close the chat.
+            else if (chatMsg.OpenClose == false)
+            {
+                Network.Send(new KnuBotCloseChatWindowMessage
+                {
+                    Unknown1 = 2,
+                    Unknown2 = 0,
+                    Unknown3 = 0,
+                    Target = chatMsg.Target
+                });
+            }
+            // If OpenClose is null, it's an answer message.
+            else if (chatMsg.OpenClose == null && chatMsg.Answer.HasValue)
+            {
+                NpcDialog.SelectAnswer(chatMsg.Target, chatMsg.Answer.Value);
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid NPC Chat Message");
+            }
         }
 
-        private void OnNpcChatAnswerMessage(int sender, IPCMessage msg)
-        {
-            NpcChatAnswerMessage message = (NpcChatAnswerMessage)msg;
-            NpcDialog.SelectAnswer(message.Target, message.Answer);
-        }
+        #endregion
 
         #endregion
 

@@ -102,32 +102,6 @@ namespace SyncManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            //if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.F2) && !_init)
-            //{
-            //    _init = true;
-
-            //    Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\SyncManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
-
-            //    SettingsController.settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "Sync Manager", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
-
-            //    if (SettingsController.settingsWindow != null && !SettingsController.settingsWindow.IsVisible)
-            //    {
-            //        foreach (string settingsName in SettingsController.settingsWindows.Keys.Where(x => x.Contains("Sync Manager")))
-            //        {
-            //            SettingsController.AppendSettingsTab(settingsName, SettingsController.settingsWindow);
-
-            //            SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-
-            //            if (channelInput != null)
-            //                channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
-            //        }
-            //    }
-
-            //    _init = false;
-            //}
-
-
-
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
@@ -286,18 +260,7 @@ namespace SyncManager
                     Action = (TradeAction)1,
                 });
             }
-
-            //TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
-            //TradeMessage charTradeMsg = new TradeMessage()
-            //{
-            //    Unknown1 = charTradeIpcMsg.Unknown1,
-            //    Action = charTradeIpcMsg.Action,
-            //    Target = charTradeIpcMsg.Target,
-            //    Container = charTradeIpcMsg.Container,
-            //};
-            //Network.Send(charTradeMsg);
         }
-
 
         private void OnZoned(object s, EventArgs e)
         {
@@ -392,34 +355,6 @@ namespace SyncManager
                 StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
                 IPCChannel.Broadcast(new StopAttackIPCMessage());
             }
-            //else if (n3Msg.N3MessageType == N3MessageType.Trade)
-            //{
-            //    if (!_settings["SyncTrade"].AsBool()) { return; }
-
-            //    TradeMessage charTradeIpcMsg = (TradeMessage)n3Msg;
-
-            //    if (charTradeIpcMsg.Action == TradeAction.Confirm)
-            //    {
-            //        IPCChannel.Broadcast(new TradeHandleMessage()
-            //        {
-            //            Unknown1 = charTradeIpcMsg.Unknown1,
-            //            Action = charTradeIpcMsg.Action,
-            //            Target = charTradeIpcMsg.Target,
-            //            Container = charTradeIpcMsg.Container,
-            //        });
-            //    }
-
-            //    if (charTradeIpcMsg.Action == TradeAction.Accept)
-            //    {
-            //        IPCChannel.Broadcast(new TradeHandleMessage()
-            //        {
-            //            Unknown1 = charTradeIpcMsg.Unknown1,
-            //            Action = charTradeIpcMsg.Action,
-            //            Target = charTradeIpcMsg.Target,
-            //            Container = charTradeIpcMsg.Container,
-            //        });
-            //    }
-            //}
             else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
             {
                 if (!_settings["SyncMove"].AsBool()) { return; }
@@ -564,9 +499,6 @@ namespace SyncManager
         {
             if (IsActiveWindow)
                 return;
-
-            //if (!_settings["Toggle"].AsBool())
-            //    return;
 
             if (Game.IsZoning)
                 return;
@@ -904,7 +836,6 @@ namespace SyncManager
                 Chat.WriteLine(e.Message);
             }
         }
-
 
         private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
         {

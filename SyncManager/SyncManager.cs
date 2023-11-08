@@ -10,10 +10,12 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SyncManager.IPCMessages;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
 
 namespace SyncManager
 {
@@ -33,7 +35,7 @@ namespace SyncManager
 
         public static bool _openBags = false;
         private static bool _init = false;
-        public static bool Toggle = false;
+        public static bool Enable = false;
 
         private static double _useTimer;
 
@@ -59,23 +61,21 @@ namespace SyncManager
             Network.N3MessageReceived += Network_N3MessageReceived;
             Game.TeleportEnded += OnZoned;
 
-            _settings.AddVariable("Toggle", true);
+            _settings.AddVariable("Enable", true);
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
             _settings.AddVariable("SyncChat", false);
             _settings.AddVariable("SyncTrade", false);
 
-            _settings["Toggle"] = true;
+            _settings["Enable"] = true;
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.Start, OnStartMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Stop, OnStopMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.StartStop, OnStartStopMessage); ;
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Jump, OnJumpMessage);
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.StopAttack, OnStopAttackMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
@@ -147,52 +147,52 @@ namespace SyncManager
                 _useTimer = Time.NormalTime;
             }
 
-            if (_settings["Toggle"].AsBool() && !Toggle)
+            if (!_settings["Enable"].AsBool() && Enable)
             {
-
-                IPCChannel.Broadcast(new StartMessage());
-
-                Chat.WriteLine("SyncManager enabled.");
+                IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = false });
+                Stop();
+            }
+            if (_settings["Enable"].AsBool() && !Enable)
+            {
+                IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = true });
                 Start();
             }
-            if (!_settings["Toggle"].AsBool() && Toggle)
-            {
-                Stop();
-                Chat.WriteLine("SyncManager disabled.");
-                IPCChannel.Broadcast(new StopMessage());
-            }
-
         }
 
         #region Callbacks
-        private void OnStartMessage(int sender, IPCMessage msg)
+
+        private void OnStartStopMessage(int sender, IPCMessage msg)
         {
-            Toggle = true;
-            _settings["Toggle"] = true;
-        }
-
-        private void OnStopMessage(int sender, IPCMessage msg)
-        {
-            StopMessage stopMsg = (StopMessage)msg;
-
-            Toggle = false;
-
-            _settings["Toggle"] = false;
-
+            if (msg is StartStopIPCMessage startStopMessage)
+            {
+                if (startStopMessage.IsStarting)
+                {
+                    // Update the setting and start the process.
+                    _settings["Enable"] = true;
+                    Start();
+                }
+                else
+                {
+                    // Update the setting and stop the process.
+                    _settings["Enable"] = false;
+                    Stop();
+                }
+            }
         }
 
         private void Start()
         {
-            Toggle = true;
+            Enable = true;
+
+            Chat.WriteLine("Syncmanager enabled.");
         }
 
         private void Stop()
         {
-            Toggle = false;
+            Enable = false;
 
-            _settings["Toggle"] = false;
+            Chat.WriteLine("Syncmanager disabled.");
         }
-
 
         private void OnJumpMessage(int sender, IPCMessage msg)
         {
@@ -345,15 +345,18 @@ namespace SyncManager
             else if (n3Msg.N3MessageType == N3MessageType.Attack)
             {
                 AttackMessage attackMsg = (AttackMessage)n3Msg;
-                IPCChannel.Broadcast(new AttackIPCMessage()
+                IPCChannel.Broadcast(new AttackIPCMessage
                 {
-                    Target = attackMsg.Target
+                    Target = attackMsg.Target,
+                    Start = true
                 });
             }
             else if (n3Msg.N3MessageType == N3MessageType.StopFight)
             {
-                StopFightMessage stopAttackMsg = (StopFightMessage)n3Msg;
-                IPCChannel.Broadcast(new StopAttackIPCMessage());
+                IPCChannel.Broadcast(new AttackIPCMessage
+                {
+                    Start = false
+                });
             }
             else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
             {
@@ -490,20 +493,16 @@ namespace SyncManager
             if (Game.IsZoning)
                 return;
 
-            AttackIPCMessage attackMsg = (AttackIPCMessage)msg;
-            Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
-            DynelManager.LocalPlayer.Attack(targetDynel, true);
-        }
-
-        private void OnStopAttackMessage(int sender, IPCMessage msg)
-        {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
-
-            DynelManager.LocalPlayer.StopAttack();
+            var attackMsg = (AttackIPCMessage)msg;
+            if (attackMsg.Start)
+            {
+                Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
+                DynelManager.LocalPlayer.Attack(targetDynel, true);
+            }
+            else
+            {
+                DynelManager.LocalPlayer.StopAttack();
+            }
         }
 
         private void OnUseItemMessage(int sender, IPCMessage msg)
@@ -811,22 +810,19 @@ namespace SyncManager
             {
                 if (param.Length < 1)
                 {
-                    if (!_settings["Toggle"].AsBool() && !Toggle)
+                    if (!_settings["Enable"].AsBool())
                     {
-
-                        IPCChannel.Broadcast(new StartMessage());
-
-                        _settings["Toggle"] = true;
-                        Chat.WriteLine("SyncManager enabled.");
+                        _settings["Enable"] = true;
+                        IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = true });
                         Start();
-
                     }
                     else
                     {
+                        _settings["Enable"] = false;
+                        IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = false });
                         Stop();
-                        Chat.WriteLine("SyncManager disabled.");
-                        IPCChannel.Broadcast(new StopMessage());
                     }
+                    return;
                 }
 
                 Config.Save();

@@ -64,9 +64,7 @@
     <Compile Include="IPCMessages\NpcChatCloseMessage.cs" />
     <Compile Include="IPCMessages\NpcChatOpenMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
-    <Compile Include="IPCMessages\StartMessage.cs" />
-    <Compile Include="IPCMessages\StopAttackIPCMessage.cs" />
-    <Compile Include="IPCMessages\StopMessage.cs" />
+    <Compile Include="IPCMessages\StartStopIPCMessage.cs" />
     <Compile Include="IPCMessages\TargetMessage.cs" />
     <Compile Include="IPCMessages\TradeHandleMessage.cs" />
     <Compile Include="IPCMessages\UsableMessage.cs" />

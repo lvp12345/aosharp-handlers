@@ -7,7 +7,6 @@
         Attack = 203,
         Use = 205,
         NpcChat = 206,
-        UseItem = 209,
         Trade = 210,
         StartStop = 211
     }

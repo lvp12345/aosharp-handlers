@@ -4,7 +4,7 @@
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Sync movement - sync each characters movements." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="Sync bags - sync opening bags. (Will open on inject and on toggle)" layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Sync bags - sync opening bags. (Will open on inject and on Enable)" layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Sync use - sync using items, use with sync bags to use items from bags." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
@@ -15,13 +15,13 @@
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="/sync - toggles enable/disable." layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="/syncattack - toggles sync attack." layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="/syncmove - toggles sync movement." layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="/syncbags - toggles sync bags." layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="/syncuse - toggles sync use." layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="/syncchat - toggles sync chat." layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="/synctrade - toggles sync trading. (Not working currently)" layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/sync - Enable/disable." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/syncattack - Enables sync attack." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/syncmove - Enables sync movement." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/syncbags - Enables sync bags." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/syncuse - Enables sync use." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/syncchat - Enables sync chat." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/synctrade - Enables sync trading. (Not working currently)" layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 	</BorderView>
 </root>

@@ -181,14 +181,14 @@ namespace SyncManager
         {
             Enable = true;
 
-            Chat.WriteLine("Syncmanager enabled.");
+            //Chat.WriteLine("Syncmanager enabled.");
         }
 
         private void Stop()
         {
             Enable = false;
 
-            Chat.WriteLine("Syncmanager disabled.");
+            //Chat.WriteLine("Syncmanager disabled.");
         }
 
 

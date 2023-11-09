@@ -70,18 +70,12 @@ namespace SyncManager
 
             _settings["Enable"] = true;
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.StartStop, OnStartStopMessage); ;
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
-
+            IPCChannel.RegisterCallback((int)IPCOpcode.StartStop, OnStartStopMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
-
+            IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.UseItem, OnUseItemMessage);
-
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
@@ -91,7 +85,6 @@ namespace SyncManager
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
-
 
             Chat.WriteLine("SyncManager Loaded!");
             Chat.WriteLine("/syncmanager for settings.");
@@ -191,10 +184,8 @@ namespace SyncManager
             //Chat.WriteLine("Syncmanager disabled.");
         }
 
-
         private void OnZoned(object s, EventArgs e)
         {
-
             if (!_settings["Enable"].AsBool())
                 return;
 
@@ -203,8 +194,6 @@ namespace SyncManager
                 _openBags = false;
             }
         }
-
-
 
         #region OutgoingCommunication
 
@@ -241,7 +230,6 @@ namespace SyncManager
                             PlayfieldId = Playfield.Identity.Instance,
                             Position = DynelManager.LocalPlayer.Position,
                             Rotation = DynelManager.LocalPlayer.Rotation
-
                         });
                     }
                 }
@@ -265,6 +253,7 @@ namespace SyncManager
                         Start = true
                     });
                 }
+
                 if (n3Msg.N3MessageType == N3MessageType.StopFight)
                 {
                     IPCChannel.Broadcast(new AttackIPCMessage
@@ -273,83 +262,40 @@ namespace SyncManager
                     });
                 }
 
-                //sync use
-                if (_settings["SyncUse"].AsBool())
+                if (_settings["SyncUse"].AsBool() && n3Msg.N3MessageType == N3MessageType.GenericCmd)
                 {
-                    if (n3Msg.N3MessageType == N3MessageType.GenericCmd)
+                    GenericCmdMessage genericCmdMsg = (GenericCmdMessage)n3Msg;
+                    
+                    if (genericCmdMsg.Action == GenericCmdAction.Use && genericCmdMsg.Target.Type == IdentityType.Terminal)
                     {
-                        GenericCmdMessage genericCmdMsg = (GenericCmdMessage)n3Msg;
-
-                        Dynel target = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == genericCmdMsg.Target);
-
-                        if (genericCmdMsg.Action == GenericCmdAction.Use && genericCmdMsg.Target.Type == IdentityType.Terminal)
+                        UseMessage useMsg = new UseMessage()
                         {
-                            IPCChannel.Broadcast(new UseMessage()
+                            Target = genericCmdMsg.Target,
+                            PfId = Playfield.ModelIdentity.Instance
+                        };
+                        Chat.WriteLine($"Sending UseMessage: Target={useMsg.Target}, PfId={useMsg.PfId}");
+                        IPCChannel.Broadcast(useMsg);
+                    }
+                    else if (genericCmdMsg.Action == GenericCmdAction.Use)
+                    {
+                        BroadcastUsableMessage(FindItem(genericCmdMsg.Target), Identity.None);
+                    }
+                    else if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
+                    {
+                        Item item = FindItem(genericCmdMsg.Source.Value);
+                        RingName ringName = GetRingNameFromItemName(item.Name);
+
+                        if (ringName != RingName.Unknown)
+                        {
+                            UseMessage useMsg = new UseMessage()
                             {
                                 Target = genericCmdMsg.Target,
-                                PfId = Playfield.ModelIdentity.Instance
-                            });
-                        }
-                        else if (genericCmdMsg.Action == GenericCmdAction.Use)
-                        {
-                            if (Inventory.Find(genericCmdMsg.Target, out Item item) && item.UniqueIdentity == Identity.None && !IsOther(item))
-                            {
-                                IPCChannel.Broadcast(new UsableMessage()
-                                {
-                                    ItemLowId = item.LowId,
-                                    ItemHighId = item.HighId,
-                                });
-                            }
-                            else
-                            {
-                                foreach (Backpack bag in Inventory.Backpacks)
-                                {
-                                    _bagItem = bag.Items
-                                        .Where(c => c.Slot.Instance == genericCmdMsg.Target.Instance)
-                                        .FirstOrDefault();
+                                RingName = ringName
+                            };
 
-                                    if (_bagItem != null)
-                                    {
-                                        IPCChannel.Broadcast(new UsableMessage()
-                                        {
-                                            ItemLowId = _bagItem.LowId,
-                                            ItemHighId = _bagItem.HighId
-                                        });
-                                    }
-                                }
-                            }
+                            IPCChannel.Broadcast(useMsg);
                         }
-                        else if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
-                        {
-                            if (Inventory.Find(genericCmdMsg.Source.Value, out Item item))
-                            {
-                                IPCChannel.Broadcast(new UsableMessage()
-                                {
-                                    ItemLowId = item.LowId,
-                                    ItemHighId = item.HighId,
-                                    Target = genericCmdMsg.Target
-                                });
-                            }
-                            else
-                            {
-                                foreach (Backpack bag in Inventory.Backpacks)
-                                {
-                                    _bagItem = bag.Items
-                                        .Where(c => c.Slot.Instance == genericCmdMsg.Source.Value.Instance)
-                                        .FirstOrDefault();
-
-                                    if (_bagItem != null)
-                                    {
-                                        IPCChannel.Broadcast(new UsableMessage()
-                                        {
-                                            ItemLowId = _bagItem.LowId,
-                                            ItemHighId = _bagItem.HighId,
-                                            Target = genericCmdMsg.Target
-                                        });
-                                    }
-                                }
-                            }
-                        }
+                        else { BroadcastUsableMessage(FindItem(genericCmdMsg.Source.Value), genericCmdMsg.Target); }
                     }
                 }
 
@@ -371,7 +317,7 @@ namespace SyncManager
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = n3AnswerMsg.Target,
-                            OpenClose = true, 
+                            OpenClose = true,
                             Answer = n3AnswerMsg.Answer
                         });
                     }
@@ -421,7 +367,6 @@ namespace SyncManager
                         });
                     }
                 }
-
             }
         }
 
@@ -453,9 +398,40 @@ namespace SyncManager
             }
         }
 
-
         #endregion
 
+        private Item FindItem(Identity target)
+        {
+            return Inventory.Find(target, out Item item) ? item :
+                   Inventory.Backpacks
+                            .SelectMany(b => b.Items)
+                            .FirstOrDefault(i => i.Slot.Instance == target.Instance);
+        }
+
+        private void BroadcastUsableMessage(Item item, Identity target)
+        {
+            if (item == null) return;
+
+            UseMessage usableMsg = new UseMessage()
+            {
+                ItemId = item.Id,
+                ItemHighId = item.HighId,
+                Target = target,
+                //Name = item.Name
+            };
+            Chat.WriteLine($"Sending UseMessage: ItemId={usableMsg.ItemId}, ItemHighId={usableMsg.ItemHighId}, Target={usableMsg.Target}");
+            IPCChannel.Broadcast(usableMsg);
+        }
+        private RingName GetRingNameFromItemName(string itemName)
+        {
+            if (itemName.Contains("Pure Novictum Ring")) return RingName.PureNovictumRing;
+            if (itemName.Contains("Rimy Ring")) return RingName.RimyRing;
+            if (itemName.Contains("Achromic Ring")) return RingName.AchromicRing;
+            if (itemName.Contains("Sanguine Ring")) return RingName.SanguineRing;
+            if (itemName.Contains("Caliginous Ring")) return RingName.CaliginousRing;
+
+            return RingName.Unknown; // Default return value for non-ring items
+        }
         #region IncomingCommunication
 
         //sync trade
@@ -506,11 +482,7 @@ namespace SyncManager
 
         private void OnAttackMessage(int sender, IPCMessage msg)
         {
-            if (IsActiveWindow)
-                return;
-
-            if (Game.IsZoning)
-                return;
+            if (IsActiveWindow || Game.IsZoning)  return;
 
             var attackMsg = (AttackIPCMessage)msg;
             if (attackMsg.Start)
@@ -524,245 +496,210 @@ namespace SyncManager
             }
         }
 
-        private void OnUseItemMessage(int sender, IPCMessage msg)
+        private void TryUseItem(string itemName, Identity target)
         {
-            if (!_settings["SyncUse"].AsBool() || IsActiveWindow || Game.IsZoning) { return; }
+            Item itemToUse = Inventory.Items.FirstOrDefault(c => c.Name.Contains(itemName)) ??
+                             Inventory.Backpacks.SelectMany(b => b.Items).FirstOrDefault(c => c.Name.Contains(itemName));
 
-            if (!_settings["Enable"].AsBool())
-                return;
-
-            UsableMessage usableMsg = (UsableMessage)msg;
-
-            if (usableMsg.ItemLowId == 291043 || usableMsg.ItemLowId == 291043 || usableMsg.ItemLowId == 204103 || usableMsg.ItemLowId == 204104 ||
-                usableMsg.ItemLowId == 204105 || usableMsg.ItemLowId == 204106 || usableMsg.ItemLowId == 204107 || usableMsg.ItemHighId == 204107 ||
-                usableMsg.ItemLowId == 303138 || usableMsg.ItemLowId == 303141 || usableMsg.ItemLowId == 303137 || usableMsg.ItemHighId == 303136 ||
-                usableMsg.ItemLowId == 204698 || usableMsg.ItemLowId == 204653 || usableMsg.ItemLowId == 206013 || usableMsg.ItemLowId == 267168 ||
-                usableMsg.ItemLowId == 267167 || usableMsg.ItemLowId == 305476 || usableMsg.ItemLowId == 305478 || usableMsg.ItemLowId == 303179)
-                return;
-
-            if (usableMsg.ItemLowId == 226308 || usableMsg.ItemLowId == 226290 || usableMsg.ItemLowId == 226291 || usableMsg.ItemLowId == 226307 || usableMsg.ItemLowId == 226288)
+            if (itemToUse != null)
             {
-                Item NoviRings = Inventory.Items
-                    .Where(c => c.Name.Contains("Pure Novictum Ring"))
-                    .FirstOrDefault();
-
-                if (NoviRings != null)
-                {
-                    useItem = new Identity(IdentityType.Inventory, NoviRings.Slot.Instance);
-                    useOnDynel = usableMsg.Target;
-                    usableMsg.Target = Identity.None;
-                }
-                else
-                {
-                    foreach (Backpack bag in Inventory.Backpacks)
-                    {
-                        _bagItem = bag.Items
-                            .Where(c => c.Name.Contains("Pure Novictum Ring"))
-                            .FirstOrDefault();
-
-                        if (_bagItem != null)
-                        {
-                            useItem = _bagItem.Slot;
-                            useOnDynel = usableMsg.Target;
-                            usableMsg.Target = Identity.None;
-                        }
-                    }
-                }
-            }
-            if (usableMsg.ItemLowId == 226188 || usableMsg.ItemLowId == 226189 || usableMsg.ItemLowId == 226190 || usableMsg.ItemLowId == 226191 || usableMsg.ItemLowId == 226192)
-            {
-                Item RimyRings = Inventory.Items
-                .Where(c => c.Name.Contains("Rimy Ring for"))
-                .FirstOrDefault();
-
-                if (RimyRings != null)
-                {
-                    useItem = new Identity(IdentityType.Inventory, RimyRings.Slot.Instance);
-                    useOnDynel = usableMsg.Target;
-                    usableMsg.Target = Identity.None;
-                }
-                else
-                {
-                    foreach (Backpack bag in Inventory.Backpacks)
-                    {
-                        _bagItem = bag.Items
-                            .Where(c => c.Name.Contains("Rimy Ring for"))
-                            .FirstOrDefault();
-
-                        if (_bagItem != null)
-                        {
-                            useItem = _bagItem.Slot;
-                            useOnDynel = usableMsg.Target;
-                            usableMsg.Target = Identity.None;
-                        }
-                    }
-                }
-            }
-            if (usableMsg.ItemLowId == 226065 || usableMsg.ItemLowId == 226066 || usableMsg.ItemLowId == 226067 || usableMsg.ItemLowId == 226068 || usableMsg.ItemLowId == 226069)
-            {
-                Item AchromRings = Inventory.Items
-                .Where(c => c.Name.Contains("Achromic Ring for"))
-                .FirstOrDefault();
-
-                if (AchromRings != null)
-                {
-                    useItem = new Identity(IdentityType.Inventory, AchromRings.Slot.Instance);
-                    useOnDynel = usableMsg.Target;
-                    usableMsg.Target = Identity.None;
-                }
-                else
-                {
-                    foreach (Backpack bag in Inventory.Backpacks)
-                    {
-                        _bagItem = bag.Items
-                            .Where(c => c.Name.Contains("Achromic Ring for"))
-                            .FirstOrDefault();
-
-                        if (_bagItem != null)
-                        {
-                            useItem = _bagItem.Slot;
-                            useOnDynel = usableMsg.Target;
-                            usableMsg.Target = Identity.None;
-                        }
-                    }
-                }
-            }
-            if (usableMsg.ItemLowId == 226287 || usableMsg.ItemLowId == 226293 || usableMsg.ItemLowId == 226294 || usableMsg.ItemLowId == 226295 || usableMsg.ItemLowId == 226306)
-            {
-                Item SangRings = Inventory.Items
-                .Where(c => c.Name.Contains("Sanguine Ring for"))
-                .FirstOrDefault();
-
-                if (SangRings != null)
-                {
-                    useItem = new Identity(IdentityType.Inventory, SangRings.Slot.Instance);
-                    useOnDynel = usableMsg.Target;
-                    usableMsg.Target = Identity.None;
-                }
-                else
-                {
-                    foreach (Backpack bag in Inventory.Backpacks)
-                    {
-                        _bagItem = bag.Items
-                            .Where(c => c.Name.Contains("Sanguine Ring for"))
-                            .FirstOrDefault();
-
-                        if (_bagItem != null)
-                        {
-                            useItem = _bagItem.Slot;
-                            useOnDynel = usableMsg.Target;
-                            usableMsg.Target = Identity.None;
-                        }
-                    }
-                }
-            }
-            if (usableMsg.ItemLowId == 226125 || usableMsg.ItemLowId == 226127 || usableMsg.ItemLowId == 226126 || usableMsg.ItemLowId == 226023 || usableMsg.ItemLowId == 226005)
-            {
-                Item CaligRings = Inventory.Items
-                .Where(c => c.Name.Contains("Caliginous Ring"))
-                .FirstOrDefault();
-
-                if (CaligRings != null)
-                {
-                    useItem = new Identity(IdentityType.Inventory, CaligRings.Slot.Instance);
-                    useOnDynel = usableMsg.Target;
-                    usableMsg.Target = Identity.None;
-                }
-                else
-                {
-                    foreach (Backpack bag in Inventory.Backpacks)
-                    {
-                        _bagItem = bag.Items
-                            .Where(c => c.Name.Contains("Caliginous Ring"))
-                            .FirstOrDefault();
-
-                        if (_bagItem != null)
-                        {
-                            useItem = _bagItem.Slot;
-                            useOnDynel = usableMsg.Target;
-                            usableMsg.Target = Identity.None;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (usableMsg.Target == Identity.None)
-                {
-                    if (Inventory.Find(usableMsg.ItemLowId, usableMsg.ItemHighId, out Item item))
-                    {
-                        Network.Send(new GenericCmdMessage()
-                        {
-                            Unknown = 1,
-                            Action = GenericCmdAction.Use,
-                            User = DynelManager.LocalPlayer.Identity,
-                            Target = new Identity(IdentityType.Inventory, item.Slot.Instance)
-                        });
-                    }
-                    else
-                    {
-                        foreach (Backpack bag in Inventory.Backpacks)
-                        {
-                            _bagItem = bag.Items
-                                .Where(c => c.HighId == usableMsg.ItemHighId)
-                                .FirstOrDefault();
-
-                            if (_bagItem != null)
-                            {
-                                Network.Send(new GenericCmdMessage()
-                                {
-                                    Unknown = 1,
-                                    Action = GenericCmdAction.Use,
-                                    User = DynelManager.LocalPlayer.Identity,
-                                    Target = _bagItem.Slot
-                                });
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (Inventory.Find(usableMsg.ItemLowId, usableMsg.ItemHighId, out Item item))
-                    {
-                        useItem = new Identity(IdentityType.Inventory, item.Slot.Instance);
-                        useOnDynel = usableMsg.Target;
-                        usableMsg.Target = Identity.None;
-                    }
-                    else
-                    {
-                        foreach (Backpack bag in Inventory.Backpacks)
-                        {
-                            _bagItem = bag.Items
-                                .Where(c => c.HighId == usableMsg.ItemHighId)
-                                .FirstOrDefault();
-
-                            if (_bagItem != null)
-                            {
-                                Network.Send(new GenericCmdMessage()
-                                {
-                                    Unknown = 1,
-                                    Action = GenericCmdAction.UseItemOnItem,
-                                    User = DynelManager.LocalPlayer.Identity,
-                                    Target = usableMsg.Target,
-                                    Source = _bagItem.Slot
-                                });
-                            }
-                        }
-                    }
-                }
+                useItem = new Identity(IdentityType.Inventory, itemToUse.Slot.Instance);
+                useOnDynel = target;
+                target = Identity.None;
             }
         }
+
+        //private void OnUseMessage(int sender, IPCMessage msg)
+        //{
+        //    if (IsActiveWindow || Game.IsZoning) { return; }
+
+        //    UseMessage usableMsg = (UseMessage)msg;
+
+        //    if (usableMsg.ItemId == 291043 || usableMsg.ItemId == 291043 || usableMsg.ItemId == 204103 || usableMsg.ItemId == 204104 ||
+        //        usableMsg.ItemId == 204105 || usableMsg.ItemId == 204106 || usableMsg.ItemId == 204107 || usableMsg.ItemHighId == 204107 ||
+        //        usableMsg.ItemId == 303138 || usableMsg.ItemId == 303141 || usableMsg.ItemId == 303137 || usableMsg.ItemHighId == 303136 ||
+        //        usableMsg.ItemId == 204698 || usableMsg.ItemId == 204653 || usableMsg.ItemId == 206013 || usableMsg.ItemId == 267168 ||
+        //        usableMsg.ItemId == 267167 || usableMsg.ItemId == 305476 || usableMsg.ItemId == 305478 || usableMsg.ItemId == 303179)
+        //        return;
+
+        //    bool ring = usableMsg.Name.Contains("Pure Novictum Ring") ||
+        //    usableMsg.Name.Contains("Rimy Ring") ||
+        //    usableMsg.Name.Contains("Achromic Ring") ||
+        //    usableMsg.Name.Contains("Sanguine Ring") ||
+        //    usableMsg.Name.Contains("Caliginous Ring");
+
+        //    if (ring)
+        //    {
+        //        TryUseItem(usableMsg.Name, usableMsg.Target);
+        //    }
+        //    else if (usableMsg.Target.Type == IdentityType.Terminal)
+        //    {
+        //        useDynel = usableMsg.Target;
+        //    }
+        //    else
+        //    {
+        //        if (usableMsg.Target == Identity.None)
+        //        {
+        //            if (Inventory.Find(usableMsg.ItemId, usableMsg.ItemHighId, out Item item))
+        //            {
+        //                Network.Send(new GenericCmdMessage()
+        //                {
+        //                    Unknown = 1,
+        //                    Action = GenericCmdAction.Use,
+        //                    User = DynelManager.LocalPlayer.Identity,
+        //                    Target = new Identity(IdentityType.Inventory, item.Slot.Instance)
+        //                });
+        //            }
+        //            else
+        //            {
+        //                foreach (Backpack bag in Inventory.Backpacks)
+        //                {
+        //                    _bagItem = bag.Items
+        //                        .Where(c => c.HighId == usableMsg.ItemHighId)
+        //                        .FirstOrDefault();
+
+        //                    if (_bagItem != null)
+        //                    {
+        //                        Network.Send(new GenericCmdMessage()
+        //                        {
+        //                            Unknown = 1,
+        //                            Action = GenericCmdAction.Use,
+        //                            User = DynelManager.LocalPlayer.Identity,
+        //                            Target = _bagItem.Slot
+        //                        });
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (Inventory.Find(usableMsg.ItemId, usableMsg.ItemHighId, out Item item))
+        //            {
+        //                useItem = new Identity(IdentityType.Inventory, item.Slot.Instance);
+        //                useOnDynel = usableMsg.Target;
+        //                usableMsg.Target = Identity.None;
+        //            }
+        //            else
+        //            {
+        //                foreach (Backpack bag in Inventory.Backpacks)
+        //                {
+        //                    _bagItem = bag.Items
+        //                        .Where(c => c.HighId == usableMsg.ItemHighId)
+        //                        .FirstOrDefault();
+
+        //                    if (_bagItem != null)
+        //                    {
+        //                        Network.Send(new GenericCmdMessage()
+        //                        {
+        //                            Unknown = 1,
+        //                            Action = GenericCmdAction.UseItemOnItem,
+        //                            User = DynelManager.LocalPlayer.Identity,
+        //                            Target = usableMsg.Target,
+        //                            Source = _bagItem.Slot
+        //                        });
+        //                    }
+        //                }
+        //            }
+        //        } 
+        //    }
+        //}
 
         private void OnUseMessage(int sender, IPCMessage msg)
         {
-            if (IsActiveWindow || Game.IsZoning) { return; }
+            if (IsActiveWindow || Game.IsZoning)
+            {
+                Chat.WriteLine("Ignoring UseMessage because the game window is active or zoning is in progress.");
+                return;
+            }
 
             UseMessage useMsg = (UseMessage)msg;
 
-            if (useMsg.PfId != Playfield.ModelIdentity.Instance) { return; }
+            Chat.WriteLine($"Received UseMessage: ItemId={useMsg.ItemId}, ItemHighId={useMsg.ItemHighId}, Target={useMsg.Target}");
 
-            useDynel = useMsg.Target;
+            int[] ignoredItemIds = { 291043, 204103, 204104, 204105, 204106, 204107, 303138, 303141, 303137, 204698, 204653, 206013, 267168, 267167, 305476, 305478, 303179 };
+
+            if (ignoredItemIds.Contains(useMsg.ItemId) || ignoredItemIds.Contains(useMsg.ItemHighId))
+            {
+                Chat.WriteLine("UseMessage ignored because the item is in the ignored list.");
+                return;
+            }
+
+            if (useMsg.RingName != RingName.Unknown)
+            {
+                string ringName = Enum.GetName(typeof(RingName), useMsg.RingName);
+                Chat.WriteLine($"Recognized a ring with name: {ringName}. Attempting to use it.");
+                TryUseItem(ringName, useMsg.Target);
+            }
+            else if (useMsg.Target.Type == IdentityType.Terminal)
+            {
+                Chat.WriteLine("The target is a terminal. Setting useDynel to the target.");
+                useDynel = useMsg.Target;
+            }
+            else
+            {
+                Chat.WriteLine("Processing a non-ring item.");
+                ProcessNonRingItem(useMsg);
+            }
         }
+
+
+        private void ProcessNonRingItem(UseMessage usableMsg)
+        {
+            // Try to find the item in the inventory.
+            if (Inventory.Find(usableMsg.ItemId, usableMsg.ItemHighId, out Item item))
+            {
+                Chat.WriteLine($"Item found in inventory: {item.Name} (Slot: {item.Slot}). Sending use command.");
+                SendUseCommand(item.Slot, usableMsg.Target);
+            }
+            else
+            {
+                Chat.WriteLine($"Item with ID: {usableMsg.ItemId} or High ID: {usableMsg.ItemHighId} not found in main inventory. Checking backpacks.");
+                bool foundInBackpack = false;
+
+                // Search through each backpack for the item.
+                foreach (Backpack bag in Inventory.Backpacks)
+                {
+                    Item _bagItem = bag.Items.FirstOrDefault(c => c.HighId == usableMsg.ItemHighId);
+                    if (_bagItem != null)
+                    {
+                        Chat.WriteLine($"Item found in backpack: {_bagItem.Name} (Slot: {_bagItem.Slot}). Sending use command.");
+                        SendUseCommand(_bagItem.Slot, usableMsg.Target);
+                        foundInBackpack = true;
+                        break; // Item found, no need to check further backpacks.
+                    }
+                }
+
+                // If the item was not found in any backpack, log that the item is missing.
+                if (!foundInBackpack)
+                {
+                    Chat.WriteLine($"Item with High ID: {usableMsg.ItemHighId} not found in any backpacks.");
+                }
+            }
+        }
+
+
+        private void SendUseCommand(Identity slot, Identity target)
+        {
+            // Determine the action based on whether a target is specified.
+            var action = target == Identity.None ? GenericCmdAction.Use : GenericCmdAction.UseItemOnItem;
+
+            // Log what action is going to be taken.
+            Chat.WriteLine($"Preparing to send command: {(action == GenericCmdAction.Use ? "Use" : "UseItemOnItem")} for Slot: {slot}, Target: {target}");
+
+            // Send the command.
+            Network.Send(new GenericCmdMessage()
+            {
+                Unknown = 1,
+                Action = action,
+                User = DynelManager.LocalPlayer.Identity,
+                Target = target,
+                Source = slot
+            });
+
+            // Log that the command was sent.
+            Chat.WriteLine($"Command sent: {(action == GenericCmdAction.Use ? "Use" : "UseItemOnItem")} for Slot: {slot}, Target: {target}");
+        }
+
 
         private void OnNpcChatMessage(int sender, IPCMessage msg)
         {
@@ -796,7 +733,7 @@ namespace SyncManager
 
             if (chatMsg.IsTrade)
             {
-                
+
             }
 
             if (chatMsg.IsFinishTrade)
@@ -840,6 +777,17 @@ namespace SyncManager
         {
             SettingsController.CleanUp();
         }
+
+        public enum RingName
+        {
+            Unknown = 0, 
+            PureNovictumRing,
+            RimyRing,
+            AchromicRing,
+            SanguineRing,
+            CaliginousRing
+        }
+
 
         private void SyncManagerCommand(string command, string[] param, ChatWindow chatWindow)
         {
@@ -961,7 +909,7 @@ namespace SyncManager
 
         public static bool IsOther(Item item)
         {
-            return item.LowId == 305476 || item.LowId == 204698 || item.LowId == 156576 || item.LowId == 267168 || item.LowId == 267167
+            return item.Id == 305476 || item.Id == 204698 || item.Id == 156576 || item.Id == 267168 || item.Id == 267167
                 || item.Name.Contains("Health");
         }
 

@@ -126,7 +126,7 @@ namespace CombatHandler.Trader
             RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
 
             //Mezz
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz), Mezz, CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz).OrderByStackingOrder(), Mezz, CombatActionPriority.High);
 
             //Heals
             RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);

@@ -1848,7 +1848,7 @@ namespace CombatHandler.Generic
         public bool AttackingMob(SimpleChar mob)
         {
             if (Team.IsInTeam)
-                return Team.Members.Any(c => c.Character?.FightingTarget?.Identity == c.Identity);
+                return Team.Members.Any(c => c.Character?.FightingTarget?.Identity == mob.Identity);
 
             return DynelManager.LocalPlayer.FightingTarget?.Identity == mob.Identity;
         }

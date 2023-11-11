@@ -66,6 +66,7 @@ namespace LootManager
                 _settings.AddVariable("Enabled", false);
                 _settings.AddVariable("Delete", false);
                 _settings.AddVariable("Exact", false);
+                _settings.AddVariable("Disable", false);
 
                 LoadRules();
 
@@ -270,15 +271,17 @@ namespace LootManager
                 {
                     InitializeBackpackInfo();
 
-                    if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
+                    if (_settings["Disable"].AsBool())
                     {
-                        if (Inventory.NumFreeSlots == 0 && Time.AONormalTime > _inventorySpaceReminder + 3000)
+                        if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
                         {
-                            //_settings["Enabled"] = false;
-                            Chat.WriteLine($"No free inventory space!!!");
+                            if (Inventory.NumFreeSlots == 0)
+                            {
+                                _settings["Enabled"] = false;
+                            }
                         }
                     }
-
+                    
                     if (!_settings["Delete"].AsBool())
                     {
                         ProcessCorpses();

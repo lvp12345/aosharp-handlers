@@ -69,10 +69,14 @@ namespace LootManager
 
                             if (settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView) &&
                                 settingsWindow.FindView("_itemMinQL", out TextInputView _itemMinQL) &&
-                                settingsWindow.FindView("_itemMaxQL", out TextInputView _itemMaxQL))
+                                settingsWindow.FindView("_itemMaxQL", out TextInputView _itemMaxQL) &&
+                                settingsWindow.FindView("_itemQuantity", out TextInputView _itemQuantity)
+                                )
                             {
                                 _itemMinQL.Text = "1";
                                 _itemMaxQL.Text = "500";
+                                _itemQuantity.Text = "999";
+
                                 _multiListView.DeleteAllChildren();
                                 int iEntry = 0;
                                 foreach (Rule r in LootManager.Rules)
@@ -81,7 +85,8 @@ namespace LootManager
                                     entry.FindChild("ItemName", out TextView tx);
 
                                     string scope = r.Global ? "Global" : "Local";
-                                    tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
+                                    // tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
+                                    tx.Text = $"{(iEntry + 1).ToString()} - {scope} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
 
                                     _multiListView.AddChild(entry, false);
                                     iEntry++;

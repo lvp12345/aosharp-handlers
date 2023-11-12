@@ -367,10 +367,10 @@ namespace SyncManager
                     {
                         KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
 
-                        Chat.WriteLine($"KnuBotTradeMessage Sent: Unknown: {tradeMsg.Unknown}, Unknown1 {tradeMsg.Unknown1}, " +
-                            $"Unknown2: { tradeMsg.Unknown2}, Unknown3: { tradeMsg.Unknown3} Unknown4: {tradeMsg.Unknown4}, " +
-                            $"Target: {tradeMsg.Target},  Container: {tradeMsg.Container}, Identity: {tradeMsg.Identity}, " +
-                            $"N3MessageType: {tradeMsg.N3MessageType}, PacketType: {tradeMsg.PacketType}");
+                        //Chat.WriteLine($"KnuBotTradeMessage Sent: Unknown: {tradeMsg.Unknown}, Unknown1 {tradeMsg.Unknown1}, " +
+                        //    $"Unknown2: { tradeMsg.Unknown2}, Unknown3: { tradeMsg.Unknown3} Unknown4: {tradeMsg.Unknown4}, " +
+                        //    $"Target: {tradeMsg.Target},  Container: {tradeMsg.Container}, Identity: {tradeMsg.Identity}, " +
+                        //    $"N3MessageType: {tradeMsg.N3MessageType}, PacketType: {tradeMsg.PacketType}");
 
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
@@ -437,7 +437,7 @@ namespace SyncManager
         //sync trade
         private void Network_N3MessageReceived(object s, N3Message n3Msg)
         {
-            //if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) return;
+            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) return;
 
             if (n3Msg.N3MessageType == N3MessageType.Trade)
             {
@@ -459,51 +459,6 @@ namespace SyncManager
                         Action = (TradeAction)1,
                     });
                 }
-            }
-
-            if (n3Msg.N3MessageType == N3MessageType.KnubotStartTrade)
-            {
-                KnuBotStartTradeMessage startTradeMsg = (KnuBotStartTradeMessage)n3Msg;
-               
-                IPCChannel.Broadcast(new NpcChatIPCMessage
-                {
-                    Target = startTradeMsg.Target,
-                    OpenClose = true,
-                    IsStartTrade = true,
-                    NumberOfItemSlotsInTradeWindow = startTradeMsg.NumberOfItemSlotsInTradeWindow
-                });
-            }
-
-            if (n3Msg.N3MessageType == N3MessageType.KnubotTrade)
-            {
-                KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
-
-                Chat.WriteLine($"KnuBotTradeMessage Received: Unknown: {tradeMsg.Unknown}, Unknown1 {tradeMsg.Unknown1}, " +
-                             $"Unknown2: {tradeMsg.Unknown2}, Unknown3: {tradeMsg.Unknown3} Unknown4: {tradeMsg.Unknown4}, " +
-                             $"Target: {tradeMsg.Target},  Container: {tradeMsg.Container}, Identity: {tradeMsg.Identity}, " +
-                             $"N3MessageType: {tradeMsg.N3MessageType}, PacketType: {tradeMsg.PacketType}");
-
-                IPCChannel.Broadcast(new NpcChatIPCMessage
-                {
-                    Target = tradeMsg.Target,
-                    OpenClose = true,
-                    IsTrade = true,
-                    Container = tradeMsg.Container
-                });
-            }
-
-            if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
-            {
-                KnuBotFinishTradeMessage finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
-               
-                IPCChannel.Broadcast(new NpcChatIPCMessage
-                {
-                    Target = finishTradeMsg.Target,
-                    OpenClose = true,
-                    IsFinishTrade = true,
-                    Decline = finishTradeMsg.Decline,
-                    Amount = finishTradeMsg.Amount
-                });
             }
         }
 

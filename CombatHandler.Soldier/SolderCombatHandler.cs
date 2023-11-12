@@ -897,7 +897,7 @@ namespace CombatHandler.Soldier
 
         private bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("AAO")) { return false; }
+            if (IsSettingEnabled("AAO")) 
             {
                 if (Team.IsInTeam)
                 {
@@ -924,7 +924,7 @@ namespace CombatHandler.Soldier
 
         private bool RiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("RiotControl")) { return false; }
+            if (IsSettingEnabled("RiotControl")) 
             {
                 if (Team.IsInTeam)
                 {

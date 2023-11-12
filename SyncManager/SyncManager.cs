@@ -47,6 +47,8 @@ namespace SyncManager
         private Dictionary<RingName, string> _ringNameToItemNameMap;
         private Dictionary<string, RingName> _itemNameToRingNameMap;
 
+        
+
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
@@ -63,6 +65,7 @@ namespace SyncManager
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
             Network.N3MessageReceived += Network_N3MessageReceived;
+
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("Enable", true);
@@ -350,6 +353,7 @@ namespace SyncManager
                     if (n3Msg.N3MessageType == N3MessageType.KnubotStartTrade)
                     {
                         KnuBotStartTradeMessage startTradeMsg = (KnuBotStartTradeMessage)n3Msg;
+                        
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = startTradeMsg.Target,
@@ -358,9 +362,16 @@ namespace SyncManager
                             NumberOfItemSlotsInTradeWindow = startTradeMsg.NumberOfItemSlotsInTradeWindow
                         });
                     }
+
                     if (n3Msg.N3MessageType == N3MessageType.KnubotTrade)
                     {
                         KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
+
+                        Chat.WriteLine($"KnuBotTradeMessage Sent: Unknown: {tradeMsg.Unknown}, Unknown1 {tradeMsg.Unknown1}, " +
+                            $"Unknown2: { tradeMsg.Unknown2}, Unknown3: { tradeMsg.Unknown3} Unknown4: {tradeMsg.Unknown4}, " +
+                            $"Target: {tradeMsg.Target},  Container: {tradeMsg.Container}, Identity: {tradeMsg.Identity}, " +
+                            $"N3MessageType: {tradeMsg.N3MessageType}, PacketType: {tradeMsg.PacketType}");
+
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = tradeMsg.Target,
@@ -369,9 +380,11 @@ namespace SyncManager
                             Container = tradeMsg.Container
                         });
                     }
+
                     if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
                     {
                         KnuBotFinishTradeMessage finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
+                        
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = finishTradeMsg.Target,
@@ -380,8 +393,8 @@ namespace SyncManager
                             Decline = finishTradeMsg.Decline,
                             Amount = finishTradeMsg.Amount
                         });
-
                     }
+
                     if (n3Msg.N3MessageType == N3MessageType.KnubotCloseChatWindow)
                     {
                         KnuBotCloseChatWindowMessage n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
@@ -396,34 +409,6 @@ namespace SyncManager
             }
         }
 
-        //sync trade
-        private void OnTradeMessage(int sender, IPCMessage msg)
-        {
-            if (Game.IsZoning)
-                return;
-
-            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) return;
-
-            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
-
-            if (charTradeIpcMsg.Action == TradeAction.Confirm)
-            {
-                Network.Send(new TradeMessage()
-                {
-                    Unknown1 = 2,
-                    Action = (TradeAction)3,
-                });
-            }
-            else if (charTradeIpcMsg.Action == TradeAction.Accept)
-            {
-                Network.Send(new TradeMessage()
-                {
-                    Unknown1 = 2,
-                    Action = (TradeAction)1,
-                });
-            }
-        }
-
         #endregion
 
         private Item FindItem(Identity target)
@@ -433,6 +418,7 @@ namespace SyncManager
                             .SelectMany(b => b.Items)
                             .FirstOrDefault(i => i.Slot.Instance == target.Instance);
         }
+
 
         private void BroadcastUsableMessage(Item item, Identity target)
         {
@@ -444,14 +430,14 @@ namespace SyncManager
                 ItemHighId = item.HighId,
                 Target = target,
             };
-            Chat.WriteLine($"Sending UseMessage: ItemId={usableMsg.ItemId}, ItemHighId={usableMsg.ItemHighId}, Target={usableMsg.Target}");
+            //Chat.WriteLine($"Sending UseMessage: ItemId={usableMsg.ItemId}, ItemHighId={usableMsg.ItemHighId}, Target={usableMsg.Target}");
             IPCChannel.Broadcast(usableMsg);
         }
 
         //sync trade
         private void Network_N3MessageReceived(object s, N3Message n3Msg)
         {
-            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) return;
+            //if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) return;
 
             if (n3Msg.N3MessageType == N3MessageType.Trade)
             {
@@ -473,6 +459,51 @@ namespace SyncManager
                         Action = (TradeAction)1,
                     });
                 }
+            }
+
+            if (n3Msg.N3MessageType == N3MessageType.KnubotStartTrade)
+            {
+                KnuBotStartTradeMessage startTradeMsg = (KnuBotStartTradeMessage)n3Msg;
+               
+                IPCChannel.Broadcast(new NpcChatIPCMessage
+                {
+                    Target = startTradeMsg.Target,
+                    OpenClose = true,
+                    IsStartTrade = true,
+                    NumberOfItemSlotsInTradeWindow = startTradeMsg.NumberOfItemSlotsInTradeWindow
+                });
+            }
+
+            if (n3Msg.N3MessageType == N3MessageType.KnubotTrade)
+            {
+                KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
+
+                Chat.WriteLine($"KnuBotTradeMessage Received: Unknown: {tradeMsg.Unknown}, Unknown1 {tradeMsg.Unknown1}, " +
+                             $"Unknown2: {tradeMsg.Unknown2}, Unknown3: {tradeMsg.Unknown3} Unknown4: {tradeMsg.Unknown4}, " +
+                             $"Target: {tradeMsg.Target},  Container: {tradeMsg.Container}, Identity: {tradeMsg.Identity}, " +
+                             $"N3MessageType: {tradeMsg.N3MessageType}, PacketType: {tradeMsg.PacketType}");
+
+                IPCChannel.Broadcast(new NpcChatIPCMessage
+                {
+                    Target = tradeMsg.Target,
+                    OpenClose = true,
+                    IsTrade = true,
+                    Container = tradeMsg.Container
+                });
+            }
+
+            if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
+            {
+                KnuBotFinishTradeMessage finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
+               
+                IPCChannel.Broadcast(new NpcChatIPCMessage
+                {
+                    Target = finishTradeMsg.Target,
+                    OpenClose = true,
+                    IsFinishTrade = true,
+                    Decline = finishTradeMsg.Decline,
+                    Amount = finishTradeMsg.Amount
+                });
             }
         }
 
@@ -512,6 +543,34 @@ namespace SyncManager
             }
         }
 
+        //sync trade
+        private void OnTradeMessage(int sender, IPCMessage msg)
+        {
+            if (Game.IsZoning)
+                return;
+
+            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) return;
+
+            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
+
+            if (charTradeIpcMsg.Action == TradeAction.Confirm)
+            {
+                Network.Send(new TradeMessage()
+                {
+                    Unknown1 = 2,
+                    Action = (TradeAction)3,
+                });
+            }
+            else if (charTradeIpcMsg.Action == TradeAction.Accept)
+            {
+                Network.Send(new TradeMessage()
+                {
+                    Unknown1 = 2,
+                    Action = (TradeAction)1,
+                });
+            }
+        }
+
         private void OnUseMessage(int sender, IPCMessage msg)
         {
             if (IsActiveWindow || Game.IsZoning) { return; }
@@ -531,7 +590,7 @@ namespace SyncManager
             }
             else
             {
-                if (useMsg.Target.Type == IdentityType.Terminal )
+                if (useMsg.Target.Type == IdentityType.Terminal)
                 {
                     useDynel = useMsg.Target;
                 }

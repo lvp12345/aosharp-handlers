@@ -78,6 +78,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\MPNukesView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\MPPetCommandView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -17,6 +17,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
+using System.Windows.Interop;
 
 namespace SyncManager
 {
@@ -47,7 +48,7 @@ namespace SyncManager
         private Dictionary<RingName, string> _ringNameToItemNameMap;
         private Dictionary<string, RingName> _itemNameToRingNameMap;
 
-        
+
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -73,6 +74,7 @@ namespace SyncManager
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
             _settings.AddVariable("SyncChat", false);
+            _settings.AddVariable("NPCTrade", false);
             _settings.AddVariable("SyncTrade", false);
 
             _settings["Enable"] = true;
@@ -80,6 +82,7 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.StartStop, OnStartStopMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Target, Lookat);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
@@ -253,14 +256,16 @@ namespace SyncManager
                     }
                 }
 
-                if (n3Msg.N3MessageType == N3MessageType.LookAt) // what is this for? what are we sending the target ?
+                if (n3Msg.N3MessageType == N3MessageType.LookAt)
                 {
                     LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
 
                     IPCChannel.Broadcast(new TargetMessage()
                     {
                         Target = lookAtMsg.Target
-                    });
+
+                        
+                    }) ;
                 }
 
                 //sync attack
@@ -350,10 +355,15 @@ namespace SyncManager
                             Answer = n3AnswerMsg.Answer
                         });
                     }
+                    
+                }
+
+                if (_settings["NPCTrade"].AsBool())
+                {
                     if (n3Msg.N3MessageType == N3MessageType.KnubotStartTrade)
                     {
                         KnuBotStartTradeMessage startTradeMsg = (KnuBotStartTradeMessage)n3Msg;
-                        
+
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = startTradeMsg.Target,
@@ -384,7 +394,7 @@ namespace SyncManager
                     if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
                     {
                         KnuBotFinishTradeMessage finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
-                        
+
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = finishTradeMsg.Target,
@@ -480,6 +490,20 @@ namespace SyncManager
             DynelManager.LocalPlayer.Position = moveMsg.Position;
             DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
             MovementController.Instance.SetMovement(moveMsg.MoveType);
+        }
+
+        private void Lookat(int sender, IPCMessage look)
+        {
+            TargetMessage targetMsg = (TargetMessage)look;
+
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (!localPlayer.IsAttacking && !localPlayer.IsAttackPending
+                && localPlayer.FightingTarget == null //&& targetMsg.Target == null
+                && Spell.List.Any(spell => spell.IsReady) && !Spell.HasPendingCast)
+            {
+                Targeting.SetTarget(targetMsg.Target);
+            }
         }
 
         private void OnAttackMessage(int sender, IPCMessage msg)

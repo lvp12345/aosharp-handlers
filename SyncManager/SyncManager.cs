@@ -470,14 +470,18 @@ namespace SyncManager
         {
             if (item == null) return;
 
-            UseMessage usableMsg = new UseMessage()
+            if (!IsOther(item))
             {
-                ItemId = item.Id,
-                ItemHighId = item.HighId,
-                Target = target,
-            };
-            //Chat.WriteLine($"Sending UseMessage: ItemId={usableMsg.ItemId}, ItemHighId={usableMsg.ItemHighId}, Target={usableMsg.Target}");
-            IPCChannel.Broadcast(usableMsg);
+                UseMessage usableMsg = new UseMessage()
+                {
+                    ItemId = item.Id,
+                    ItemHighId = item.HighId,
+                    Target = target,
+                };
+                //Chat.WriteLine($"Sending UseMessage: ItemId={usableMsg.ItemId}, ItemHighId={usableMsg.ItemHighId}, Target={usableMsg.Target}");
+                IPCChannel.Broadcast(usableMsg);
+            }
+            
         }
 
         //sync trade

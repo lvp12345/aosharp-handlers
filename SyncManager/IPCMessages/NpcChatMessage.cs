@@ -1,4 +1,6 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using SmokeLounge.AOtomation.Messaging.GameData;
 using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
@@ -35,7 +37,7 @@ namespace SyncManager.IPCMessages
         public int Amount { get; set; }
 
         [AoMember(10)]
-        public Identity TradeItem { get; set; }
+        public DummyItem TradeItem { get; set; }
 
     }
 }

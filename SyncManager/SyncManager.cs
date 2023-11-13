@@ -48,6 +48,7 @@ namespace SyncManager
         private Dictionary<RingName, string> _ringNameToItemNameMap;
         private Dictionary<string, RingName> _itemNameToRingNameMap;
 
+        private Dictionary<Item, Identity> inventoryItems = new Dictionary<Item, Identity>();
 
 
         [DllImport("user32.dll")]
@@ -145,6 +146,18 @@ namespace SyncManager
                     ListenerUseSync();
                 }
                 _useTimer = Time.NormalTime;
+            }
+            if (IsActiveCharacter())
+            {
+                foreach (Item item in Inventory.Items)
+                {
+                    Identity itemSlot = item.Slot;
+
+                    if (!inventoryItems.ContainsKey(item))
+                    {
+                        inventoryItems.Add(item, itemSlot);
+                    }
+                }
             }
 
             if (!_settings["Enable"].AsBool() && Enable)
@@ -355,7 +368,16 @@ namespace SyncManager
                             Answer = n3AnswerMsg.Answer
                         });
                     }
-                    
+                    if (n3Msg.N3MessageType == N3MessageType.KnubotCloseChatWindow)
+                    {
+                        KnuBotCloseChatWindowMessage n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
+                        IPCChannel.Broadcast(new NpcChatIPCMessage
+                        {
+                            Target = n3CloseChatMessage.Target,
+                            OpenClose = false,
+                            Answer = -1
+                        });
+                    }
                 }
 
                 if (_settings["NPCTrade"].AsBool())
@@ -377,23 +399,48 @@ namespace SyncManager
                     {
                         KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
 
-                        //Chat.WriteLine($"KnuBotTradeMessage Sent: Unknown: {tradeMsg.Unknown}, Unknown1 {tradeMsg.Unknown1}, " +
-                        //    $"Unknown2: { tradeMsg.Unknown2}, Unknown3: { tradeMsg.Unknown3} Unknown4: {tradeMsg.Unknown4}, " +
-                        //    $"Target: {tradeMsg.Target},  Container: {tradeMsg.Container}, Identity: {tradeMsg.Identity}, " +
-                        //    $"N3MessageType: {tradeMsg.N3MessageType}, PacketType: {tradeMsg.PacketType}");
+                        // Create a set of current inventory items for comparison
+                        var currentInventoryItems = new HashSet<Item>(Inventory.Items);
 
+                        // Find the items that are in the dictionary but not in the current inventory
+                        var tradeItems = inventoryItems.Where(pair => !currentInventoryItems.Contains(pair.Key))
+                                                       .Select(pair => pair.Key) // Selecting the Item itself
+                                                       .ToList();
+
+                        // Select the first trade item, if any
+                        var tradeItem = tradeItems.FirstOrDefault();
+
+                        // Assuming each Item object has an Id property
+                        //var tradeItemId = tradeItem.Id; // Get the ID of the item
+
+                        //Chat.WriteLine($"Sending item ID: {tradeItem.Name}");
+
+                        // Broadcast the message with the ID of the trade item
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = tradeMsg.Target,
                             OpenClose = true,
                             IsTrade = true,
-                            Container = tradeMsg.Container
+                            Container = tradeMsg.Container,
+                            TradeItem = tradeItem // Send the item ID here
                         });
                     }
+
 
                     if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
                     {
                         KnuBotFinishTradeMessage finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
+
+                        // Create a set of current inventory items for comparison
+                        var currentInventoryItems = new HashSet<Item>(Inventory.Items);
+
+                        // Remove items from the dictionary that are no longer in the inventory
+                        var itemsToRemove = inventoryItems.Keys.Where(item => !currentInventoryItems.Contains(item)).ToList();
+
+                        foreach (var item in itemsToRemove)
+                        {
+                            inventoryItems.Remove(item);
+                        }
 
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
@@ -405,16 +452,6 @@ namespace SyncManager
                         });
                     }
 
-                    if (n3Msg.N3MessageType == N3MessageType.KnubotCloseChatWindow)
-                    {
-                        KnuBotCloseChatWindowMessage n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
-                        IPCChannel.Broadcast(new NpcChatIPCMessage
-                        {
-                            Target = n3CloseChatMessage.Target,
-                            OpenClose = false,
-                            Answer = -1
-                        });
-                    }
                 }
             }
         }
@@ -428,7 +465,6 @@ namespace SyncManager
                             .SelectMany(b => b.Items)
                             .FirstOrDefault(i => i.Slot.Instance == target.Instance);
         }
-
 
         private void BroadcastUsableMessage(Item item, Identity target)
         {
@@ -644,7 +680,15 @@ namespace SyncManager
 
             if (chatMsg.IsTrade)
             {
+                //Identity item = chatMsg.TradeItem.Id;
+                //Item tradeItem = FindItem(chatMsg.TradeItem.Id);
 
+                //Chat.WriteLine($"Item: {chatMsg.TradeItem}");
+
+                //Network.Send(new KnuBotTradeMessage()
+                //{
+                //    Container =chatMsg.TradeItem,
+                //});
             }
 
             if (chatMsg.IsFinishTrade)
@@ -662,7 +706,6 @@ namespace SyncManager
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
 
-            //TODO: Change in config so it saves when needed to - interface name -> INotifyPropertyChanged
             Config.Save();
         }
         protected void RegisterSettingsWindow(string settingsName, string xmlName)

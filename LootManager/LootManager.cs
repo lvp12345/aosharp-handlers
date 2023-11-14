@@ -447,7 +447,7 @@ namespace LootManager
                 entry.FindChild("ItemName", out TextView _textView);
                 string globalscope = r.Global ? "G" : "L";
  
-                _textView.Text = $"{iEntry + 1.ToString()} - {globalscope} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
+                _textView.Text = $"{(iEntry + 1).ToString()} - {globalscope} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
 
                 _multiListView.AddChild(entry, false);
                 iEntry++;

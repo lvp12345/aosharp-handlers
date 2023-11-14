@@ -1816,14 +1816,6 @@ namespace CombatHandler.Generic
             return IsSettingEnabled(settingName) && CanCast(spell);
         }
 
-        // Helper to set the actionTarget
-        private void SetActionTarget(ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, SimpleChar target)
-        {
-            actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = target;
-        }
-
-
         protected bool IsSettingEnabled(string settingName)
         {
             return _settings[settingName].AsBool();

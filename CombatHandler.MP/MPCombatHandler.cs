@@ -3,6 +3,7 @@ using AOSharp.Core;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -87,7 +88,8 @@ namespace CombatHandler.Metaphysicist
             _settings.AddVariable("SyncPets", true);
             _settings.AddVariable("SpawnPets", true);
             _settings.AddVariable("BuffPets", true);
-            _settings.AddVariable("MezzPet", false);
+            _settings.AddVariable("CEPetBuff", false);
+            _settings.AddVariable("MezzPet", false);    
             _settings.AddVariable("WarpPets", false);
 
             _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
@@ -196,7 +198,6 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
-            
             //Pets
             RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
@@ -210,10 +211,14 @@ namespace CombatHandler.Metaphysicist
             RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, EvasionPet);
             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
             RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
+
+            RegisterSpellProcessor(RelevantNanos.MPCompositeNano, MezzPetMochies);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetSeed);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealingConstructEmpowerment).OrderByStackingOrder(), HealPetSeed);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AggressiveConstructEmpowerment).OrderByStackingOrder(), AttackPetSeed);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPAttackPetDamageType).OrderByStackingOrder(), DamageTypePet);
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), NanoResistancePet);
             RegisterSpellProcessor(RelevantNanos.PetDefensive, DefensivePet);
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealDelta843).OrderByStackingOrder(), HealDeltaPet);
@@ -979,19 +984,28 @@ namespace CombatHandler.Metaphysicist
 
         #region Buffs
 
+        private bool MezzPetMochies(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return PetTargetBuff(NanoLine.SenseImpBuff, PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
         private bool MezzPetSeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MesmerizationConstructEmpowerment);
+            if (!_settings["CEPetBuff"].AsBool()) { return false; }
+
+            return PetTargetBuff(NanoLine.MesmerizationConstructEmpowerment, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         private bool HealPetSeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.HealingConstructEmpowerment);
+            if (!_settings["CEPetBuff"].AsBool()) { return false; }
+            return PetTargetBuff(NanoLine.HealingConstructEmpowerment, PetType.Heal, spell, fightingTarget, ref actionTarget);
         }
 
         private bool AttackPetSeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.AggressiveConstructEmpowerment);
+            if (!_settings["CEPetBuff"].AsBool()) { return false; }
+            return PetTargetBuff(NanoLine.AggressiveConstructEmpowerment, PetType.Attack, spell, fightingTarget, ref actionTarget);
         }
 
         private bool DamageTypePet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

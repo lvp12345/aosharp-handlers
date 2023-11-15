@@ -102,10 +102,8 @@ namespace CombatHandler.MartialArtist
             RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
             //Heals
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
-                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                       GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
-                       CombatActionPriority.High);
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder()
+                , Healing, CombatActionPriority.High);
 
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
                         (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
@@ -696,25 +694,32 @@ namespace CombatHandler.MartialArtist
 
         #region Healing
 
-        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (HealPercentage == 0) { return false; }
+        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HealPercentage == 0) { return false; }
 
-        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
-        //    if (HealSelection.SingleArea != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+            if (!spell.IsReady)
+            {
+                NanoLine alternativeLine = spell.Nanoline == NanoLine.SingleTargetHealing ? NanoLine.TeamHealing : NanoLine.SingleTargetHealing;
+                var alternativeSpells = Spell.GetSpellsForNanoline(alternativeLine).OrderByStackingOrder();
+                foreach (var altSpell in alternativeSpells)
+                {
+                    if (altSpell.IsReady)
+                    {
+                        spell = altSpell;
+                        break;
+                    }
+                }
+            }
+            if (!spell.IsReady)
+            {
+                return false;
+            }
 
-        //    return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        //}
-
-        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()
-        //        || HealPercentage == 0) { return false; }
-
-        //    return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        //}
+            return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+        }
 
         #endregion
 

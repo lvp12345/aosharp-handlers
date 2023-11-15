@@ -11,5 +11,9 @@ namespace SyncManager.IPCMessages
 
         [AoMember(0)]
         public Identity Target { get; set; }
+
+        [AoMember(1)]
+        public bool Start { get; set; }
+
     }
 }

@@ -13,6 +13,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using AOSharp.Core.Misc;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Reflection;
 
 namespace LootManager
 {
@@ -44,6 +46,8 @@ namespace LootManager
 
         bool isBackpackInfoInitialized = false;
 
+        private double _inventorySpaceReminder;
+
         public override void Run(string pluginDir)
         {
             try
@@ -59,22 +63,23 @@ namespace LootManager
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
-                LoadRules();
-
                 _settings.AddVariable("Enabled", false);
                 _settings.AddVariable("Delete", false);
                 _settings.AddVariable("Exact", false);
+                _settings.AddVariable("Disable", false);
 
-                _settings["Enabled"] = false;
+                LoadRules();
 
-               Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("lm", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     _settings["Enabled"] = !_settings["Enabled"].AsBool();
-                    Chat.WriteLine($"Enabled : {_settings["Enabled"]}");
                 });
 
                 Chat.WriteLine("Loot Manager loaded!");
                 Chat.WriteLine("/lootmanager for settings. /lm to enable/disable");
+                string _lootManagerEnabled = _settings["Enabled"].AsBool() ? "Enabled" : "Disabled";
+                Chat.WriteLine($"Loot Manager is currently {_lootManagerEnabled}");
+
             }
             catch (Exception ex)
             {
@@ -198,8 +203,10 @@ namespace LootManager
                 if (Inventory.NumFreeSlots <= 1)
                     return;
 
-                if (CheckRules(item))
+                if (CheckRules(item, true))
+                {
                     item.MoveToInventory();
+                }
                 else if (_settings["Delete"].AsBool())
                     item.Delete();
             }
@@ -248,7 +255,7 @@ namespace LootManager
                 }
             }
         }
-
+             
         private void OnUpdate(object sender, float deltaTime)
         {
             try
@@ -264,14 +271,17 @@ namespace LootManager
                 {
                     InitializeBackpackInfo();
 
-                    if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
+                    if (_settings["Disable"].AsBool())
                     {
-                        if (Inventory.NumFreeSlots == 0)
+                        if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
                         {
-                            _settings["Enabled"] = false;
+                            if (Inventory.NumFreeSlots == 0)
+                            {
+                                _settings["Enabled"] = false;
+                            }
                         }
                     }
-
+                    
                     if (!_settings["Delete"].AsBool())
                     {
                         ProcessCorpses();
@@ -294,10 +304,10 @@ namespace LootManager
 
                     UpdateBackpackDictionary();
                     MoveItemsToBag();
+                    _inventorySpaceReminder = Time.AONormalTime;
                 }
 
                 #region UI
-
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
 
@@ -319,7 +329,6 @@ namespace LootManager
                         infoView.Clicked = InfoView;
                     }
                 }
-
                 #endregion
             }
             catch (Exception ex)
@@ -334,6 +343,7 @@ namespace LootManager
                 }
             }
         }
+
         private void InfoView(object s, ButtonBase button)
         {
             _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\LootManagerInfoView.xml",
@@ -343,13 +353,16 @@ namespace LootManager
 
             _infoWindow.Show(true);
         }
+
         private void addButtonClicked(object sender, ButtonBase e)
         {
-            SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
+            //SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
 
             SettingsController.settingsWindow.FindView("tivName", out TextInputView _itemName);
             SettingsController.settingsWindow.FindView("_itemMinQL", out TextInputView _itemMinQL);
             SettingsController.settingsWindow.FindView("_itemMaxQL", out TextInputView _itemMaxQL);
+            SettingsController.settingsWindow.FindView("_itemQuantity", out TextInputView _itemQuantity);
+            //SettingsController.settingsWindow.FindView("_itemBagName", out TextInputView _itemBagName);
 
             SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
 
@@ -361,6 +374,7 @@ namespace LootManager
 
             int minql = 0;
             int maxql = 0;
+            int quantity = 0;
             try
             {
                 minql = Convert.ToInt32(_itemMinQL.Text);
@@ -387,14 +401,43 @@ namespace LootManager
                 txErr.Text = "Max Quality must be 500!";
                 return;
             }
+            try
+            {
+                quantity = Convert.ToInt32(_itemQuantity.Text);
+            }
+            catch
+            {
+                txErr.Text = "Quantity entries must be numbers!";
+                return;
+            }
+            if (maxql > 999)
+            {
+                txErr.Text = "Max Quantity must be 999!";
+                return;
+            }
 
             SettingsController.settingsWindow.FindView("chkGlobal", out Checkbox chkGlobal);
             bool GlobalScope = chkGlobal.IsChecked;
 
+            //_multiListView.DeleteAllChildren();
+
+            Rules.Add(new Rule(_itemName.Text.Trim(), _itemMinQL.Text, _itemMaxQL.Text, GlobalScope, _itemQuantity.Text, "Bag Name"));
+            
+            _itemName.Text = "";
+            _itemMinQL.Text = "1";
+            _itemMaxQL.Text = "500";
+            _itemQuantity.Text = "999";
+            txErr.Text = "";
+            SaveRules();
+            RefreshList();
+        }
+
+        private static void RefreshList()
+        {
+            SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
+            
             _multiListView.DeleteAllChildren();
-
-            Rules.Add(new Rule(_itemName.Text.Trim(), _itemMinQL.Text, _itemMaxQL.Text, GlobalScope));
-
+            
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
 
             int iEntry = 0;
@@ -402,32 +445,22 @@ namespace LootManager
             {
                 View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
                 entry.FindChild("ItemName", out TextView _textView);
-                string globalscope = "";
-                if (r.Global)
-                    globalscope = "G";
-                else
-                    globalscope = "L";
-
-                //entry.Tag = iEntry;
-                _textView.Text = (iEntry + 1).ToString() + " - " + globalscope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + " ] - " + r.Name;
+                string globalscope = r.Global ? "G" : "L";
+ 
+                _textView.Text = $"{(iEntry + 1).ToString()} - {globalscope} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
 
                 _multiListView.AddChild(entry, false);
                 iEntry++;
             }
-
-            _itemName.Text = "";
-            _itemMinQL.Text = "1";
-            _itemMaxQL.Text = "500";
-            txErr.Text = "";
+            Chat.WriteLine($"Refreshed {Rules.Count} rules");
         }
+
         private void remButtonClicked(object sender, ButtonBase e)
         {
             try
             {
-                SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
 
                 SettingsController.settingsWindow.FindView("tivindex", out TextInputView txIndex);
-
                 SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
 
                 if (txIndex.Text.Trim() == "")
@@ -456,30 +489,12 @@ namespace LootManager
 
                 Rules.RemoveAt(index);
 
-                _multiListView.DeleteAllChildren();
+                //_multiListView.DeleteAllChildren();
                 //viewitems.Clear();
 
-                int iEntry = 0;
-                foreach (Rule r in Rules)
-                {
-                    View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
-                    entry.FindChild("ItemName", out TextView tx);
-
-                    //entry.Tag = iEntry;
-
-                    string scope = "";
-                    if (r.Global)
-                        scope = "G";
-                    else
-                        scope = "L";
-                    tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "] - " + r.Name;
-
-
-                    _multiListView.AddChild(entry, false);
-                    iEntry++;
-                }
-
                 txErr.Text = "";
+                SaveRules();
+                RefreshList();
             }
             catch (Exception ex)
             {
@@ -493,6 +508,7 @@ namespace LootManager
                 }
             }
         }
+ 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
@@ -533,6 +549,7 @@ namespace LootManager
                 Chat.WriteLine("Error while saving backpackDictionary to JSON: " + ex.Message);
             }
         }
+
         private void LoadRules()
         {
             Rules = new List<Rule>();
@@ -557,9 +574,12 @@ namespace LootManager
                     rule.Global = false;
                     Rules.Add(rule);
                 }
+                Chat.WriteLine($"Loaded {scopedRules.Count.ToString()}");
             }
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
+            
         }
+
         private void SaveRules()
         {
             List<Rule> GlobalRules = new List<Rule>();
@@ -576,8 +596,10 @@ namespace LootManager
             filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
             rulesJson = JsonConvert.SerializeObject(ScopeRules);
             File.WriteAllText(filename, rulesJson);
+            Chat.WriteLine($"Saved {ScopeRules.Count.ToString()} Rules");
         }
-        public bool CheckRules(Item item)
+
+        public bool CheckRules(Item item, bool updateRule = false)
         {
             foreach (Rule rule in Rules)
             {
@@ -585,8 +607,10 @@ namespace LootManager
                 {
                     if (String.Equals(item.Name, rule.Name, StringComparison.OrdinalIgnoreCase) &&
                         item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
-                        item.QualityLevel <= Convert.ToInt32(rule.Hql))
+                        item.QualityLevel <= Convert.ToInt32(rule.Hql) &&
+                        Convert.ToInt32(rule.Quantity) >= 1)
                     {
+                        UpdateRule(rule, updateRule);
                         return true;
                     }
                 }
@@ -594,14 +618,32 @@ namespace LootManager
                 {
                     if (item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
                         item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
-                        item.QualityLevel <= Convert.ToInt32(rule.Hql))
+                        item.QualityLevel <= Convert.ToInt32(rule.Hql) &&
+                        Convert.ToInt32(rule.Quantity) >= 1
+                        )
                     {
+                        UpdateRule(rule, updateRule);
                         return true;
                     }
                 }
             }
             return false;
         }
+
+        private void UpdateRule(Rule rule, bool update)
+        {
+            if (!update) return;
+            rule.Quantity = (Convert.ToInt32(rule.Quantity) - 1).ToString();
+            Chat.WriteLine($"Rule {rule.Name} - {rule.Quantity}");
+            if (Convert.ToInt32(rule.Quantity) == 0)
+            {
+                Chat.WriteLine($"Removing Rule {rule.Name}");
+                Rules.Remove(rule);
+            }
+            SaveRules();
+            RefreshList();
+        }
+
         public static int GetLineNumber(Exception ex)
         {
             var lineNumber = 0;
@@ -624,6 +666,7 @@ namespace LootManager
         [FieldOffset(0x9C)]
         public IntPtr Name;
     }
+
     public class BackpackInfo
     {
         public string Name { get; set; }
@@ -644,6 +687,7 @@ namespace LootManager
             ItemNames = new List<string>();
         }
     }
+
     public class RemoveItemModel
     {
         public MultiListView MultiListView;
@@ -651,16 +695,20 @@ namespace LootManager
         public View ViewSettings;
         public View ViewButton;
     }
+
     public class SettingsViewModel
     {
         public string Type;
         public MultiListView MultiListView;
         public Dictionary<ItemModel, MultiListViewItem> Dictionary;
     }
+
     public class ItemModel
     {
         public string ItemName;
         public int LowId;
         public int HighId;
+        public int Quantity;
+        public string BagName;
     }
 }

@@ -240,7 +240,12 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
 
             RegisterItemProcessor(RelevantGenericItems.RingofPurifyingFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.RingofBlightedFlesh, RelevantGenericItems.RingofBlightedFlesh, BlightedFlesh);
+            RegisterItemProcessor(RelevantGenericItems.RingofBlightedFlesh, RelevantGenericItems.RingofBlightedFlesh, DamageItem);
+
+            RegisterItemProcessor(RelevantGenericItems.RingofEternalNight, RelevantGenericItems.RingofEternalNight, DamageItem);
+
+            RegisterItemProcessor(RelevantGenericItems.RingofTatteredFlame, RelevantGenericItems.RingofTatteredFlame, DamageItem);
+            RegisterItemProcessor(RelevantGenericItems.RingofWeepingFlesh, RelevantGenericItems.RingofWeepingFlesh, DamageItem);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
 
@@ -279,7 +284,9 @@ namespace CombatHandler.Generic
             RegisterSpellProcessor(RelevantGenericNanos.CompositeUtility, CompositeBuff);
             RegisterSpellProcessor(RelevantGenericNanos.CompositeMartialProwess, CompositeBuff);
 
-            RegisterSpellProcessor(RelevantGenericNanos.InsightIntoSL, CompositeBuff);
+            RegisterSpellProcessor(RelevantGenericNanos.InsightIntoSL,
+                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "SLMap"));
 
             if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
             {
@@ -1261,13 +1268,16 @@ namespace CombatHandler.Generic
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null && fightingTarget.IsInAttackRange();
         }
 
-        protected virtual bool BlightedFlesh(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        bool BlightedFlesh(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))
+                && fightingTarget == null
+                && (fightingTarget.Buffs.Contains(RelevantGenericNanos.BlightedFlesh) || fightingTarget.Buffs.Contains(RelevantGenericNanos.WeepingFlesh))
+                && !fightingTarget.IsInAttackRange()) { return false; }
 
-            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))
-                && fightingTarget != null
-                && !fightingTarget.Buffs.Contains(RelevantGenericNanos.BlightedFlesh)
-                && fightingTarget.IsInAttackRange();
+            actionTarget.Target = fightingTarget;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         protected bool TotwDmgShoulder(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1368,84 +1378,78 @@ namespace CombatHandler.Generic
 
         private bool HealthAndNanoStim(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            bool hasFreeStims = HasFreeStimsInInventory();
 
-            if (StimTargetSelection.Team == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
-                    || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                    || DynelManager.LocalPlayer.Buffs.Contains(280470)
-                    || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
-
-                SimpleChar teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage)
-                        && c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
-                        && c.Health > 0)
-                    .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
-                    .FirstOrDefault();
-
-                if (teamMember != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = teamMember;
-
-                    return true;
-                }
-
-                return false;
-            }
-
-            if (StimTargetSelection.Target == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
-                    || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
-                    || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                    || DynelManager.LocalPlayer.Buffs.Contains(280470)
-                    || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
-
-                SimpleChar player = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage)
-                        && c.Name == StimTargetName
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
-                        && c.Health > 0)
-                    .FirstOrDefault();
-
-                if (player != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = player;
-                    return true;
-                }
-
-                return false;
-            }
-            if (StimTargetSelection.None == (StimTargetSelection)_settings["StimTargetSelection"].AsInt32()) { return false; }
-
+            // Common pre-check for cooldowns and debuffs
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)
-                            || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
-                            || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)
-                            || DynelManager.LocalPlayer.Buffs.Contains(280470) || DynelManager.LocalPlayer.Buffs.Contains(258231)) { return false; }
+            || DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) >= 1
+            || (!hasFreeStims && (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root)
+            || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)))
+            || DynelManager.LocalPlayer.Buffs.Contains(280470)
+            || DynelManager.LocalPlayer.Buffs.Contains(258231))
+            {
+                return false;
+            }
 
-            int targetHealing = item.UseModifiers
-                    .Where(x => x is SpellData.Healing hx && hx.ApplyOn == SpellModifierTarget.Target)
-                    .Cast<SpellData.Healing>()
-                    .Sum(x => x.Average);
+            StimTargetSelection targetSelection = (StimTargetSelection)_settings["StimTargetSelection"].AsInt32();
+            SimpleChar target = null;
 
-            if (DynelManager.LocalPlayer.Buffs.FirstOrDefault(c => c.Id == 275130 && c.RemainingTime >= 595f) == null
-                && (DynelManager.LocalPlayer.MissingHealth >= targetHealing || DynelManager.LocalPlayer.MissingNano >= targetHealing))
+            // If None is selected, we return false right away
+            if (targetSelection == StimTargetSelection.None) { return false; }
+
+            // Logic for Self target selection
+            if (targetSelection == StimTargetSelection.Self)
+            {
+                var player = DynelManager.LocalPlayer;
+
+                if (player.HealthPercent <= StimHealthPercentage || player.NanoPercent <= StimNanoPercentage)
+                {
+                    target = DynelManager.LocalPlayer;
+                }
+            }
+            // Logic for Team target selection
+            if (targetSelection == StimTargetSelection.Team)
+            {
+                target = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance) &&
+                                (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage) &&
+                                c.IsInLineOfSight &&
+                                c.DistanceFrom(DynelManager.LocalPlayer) < 10f &&
+                                c.Health > 0)
+                    .OrderByDescending(c => c.Profession == Profession.Doctor || c.Profession == Profession.Enforcer || c.Profession == Profession.Soldier)
+                    .ThenBy(c => c.HealthPercent)
+                    .FirstOrDefault();
+            }
+            // Logic for Target target selection
+            if (targetSelection == StimTargetSelection.Target)
+            {
+                target = DynelManager.Players
+                    .FirstOrDefault(c => c.IsInLineOfSight &&
+                                         (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage) &&
+                                         c.Name == StimTargetName &&
+                                         c.DistanceFrom(DynelManager.LocalPlayer) < 10f &&
+                                         c.Health > 0);
+            }
+
+            if (target != null)
             {
                 actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-
+                actionTarget.Target = target;
                 return true;
+            }
+
+            return false;
+        }
+
+        private bool HasFreeStimsInInventory()
+        {
+            int[] freeStimIds = new int[] { 204103, 204104, 204105, 204106, 204107 };
+
+            // Check in the main inventory.
+            foreach (Item item in Inventory.Items.Where(item => item.Slot.Type == IdentityType.Inventory))
+            {
+                if (freeStimIds.Contains(item.Id))
+                    return true;
             }
 
             return false;
@@ -1812,14 +1816,6 @@ namespace CombatHandler.Generic
             return IsSettingEnabled(settingName) && CanCast(spell);
         }
 
-        // Helper to set the actionTarget
-        private void SetActionTarget(ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, SimpleChar target)
-        {
-            actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = target;
-        }
-
-
         protected bool IsSettingEnabled(string settingName)
         {
             return _settings[settingName].AsBool();
@@ -1844,7 +1840,7 @@ namespace CombatHandler.Generic
         public bool AttackingMob(SimpleChar mob)
         {
             if (Team.IsInTeam)
-                return Team.Members.Any(c => c.Character?.FightingTarget?.Identity == c.Identity);
+                return Team.Members.Any(c => c.Character?.FightingTarget?.Identity == mob.Identity);
 
             return DynelManager.LocalPlayer.FightingTarget?.Identity == mob.Identity;
         }
@@ -2025,6 +2021,8 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.UponAWaveOfSummerHigh:
                     return Stat.Riposte;
 
+                case RelevantGenericItems.RingofEternalNight:
+                    return Stat.SensoryImprovement;
 
                 case RelevantGenericItems.BlessedWithThunderLow:
                 case RelevantGenericItems.BlessedWithThunderHigh:
@@ -2049,9 +2047,11 @@ namespace CombatHandler.Generic
 
                 case RelevantGenericItems.Drone:
                 case RelevantGenericItems.RingofPurifyingFlame:
+                case RelevantGenericItems.RingofTatteredFlame:
                     return Stat.MaterialCreation;
 
                 case RelevantGenericItems.RingofBlightedFlesh:
+                case RelevantGenericItems.RingofWeepingFlesh:
                     return Stat.BiologicalMetamorphosis;
 
                 case RelevantGenericItems.WenWen:
@@ -2135,9 +2135,15 @@ namespace CombatHandler.Generic
             public const int FallenStar = 244214;
             public const int TearOfOedipus = 244216;
 
+            public const int RingofTatteredFlame = 204593;
             public const int RingofPurifyingFlame = 305493;
-            public const int BloodthrallRing = 305495;
+
+            public const int RingofWeepingFlesh = 204595;
             public const int RingofBlightedFlesh = 305491;
+
+            public const int RingofEternalNight = 204598;
+
+            public const int BloodthrallRing = 305495;
 
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
 
@@ -2212,8 +2218,12 @@ namespace CombatHandler.Generic
             public const int CompositeRanged = 223348;
             public const int CompositeRangedSpecial = 223364;
             public const int InnerSanctumDebuff = 206387;
+
             public const int InsightIntoSL = 268610;
+
             public const int BlightedFlesh = 305492;
+            public const int WeepingFlesh = 204594;
+
             public static int[] ShrinkingGrowingflesh = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
             public static int[] AAOTransfer = new[] { 301524, 301520, 267263, 267265 };
             public static int[] KeeperStrStamAgiBuff = new[] { 211158, 211160, 211162, 273365 };

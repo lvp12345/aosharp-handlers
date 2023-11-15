@@ -6,8 +6,9 @@
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<OptionRadioButtonGroup label="Area Nukes" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AOESelection">
 			<RadioButton label="None" value="0"/>
-			<RadioButton label="Normal" value="1"/>
-			<RadioButton label="VE" value="2"/>
+			<RadioButton label="Rk" value="1"/>
+			<RadioButton label="SL" value="2"/>
+			<RadioButton label="VE" value="3"/>
 		</OptionRadioButtonGroup>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<OptionRadioButtonGroup label="AI Dot" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DOTA">

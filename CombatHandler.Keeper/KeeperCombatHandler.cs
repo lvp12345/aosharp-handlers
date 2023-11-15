@@ -74,6 +74,7 @@ namespace CombatHandler.Keeper
             _settings.AddVariable("Kits", true);
 
             _settings.AddVariable("RecastAntiFear", false);
+            _settings.AddVariable("SLMap", false);
 
             //LE Proc
             _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RighteousSmite);
@@ -90,9 +91,10 @@ namespace CombatHandler.Keeper
             RegisterPerkProcessors();
 
             //Anti-Fear
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "RecastAntiFear"));
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(), RecastAntiFear);
+            //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperFearImmunity).OrderByStackingOrder(),
+            //    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+            //        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "RecastAntiFear"));
 
             //Taunt Tools
             RegisterItemProcessor(244655, 244655, TauntTool);
@@ -620,12 +622,26 @@ namespace CombatHandler.Keeper
 
         #region Anti-Fear
 
-        //private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IsSettingEnabled("RecastAntiFear")) { return true; }
+        private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("RecastAntiFear")) { return true; }
 
-        //    return Buff(spell, spell.Nanoline, ref actionTarget);
-        //}
+            return Buff(spell, spell.Nanoline, ref actionTarget);
+        }
+
+        protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+
+            if (SpellChecksPlayer(spell, nanoline))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
 
         #endregion
 

@@ -2,6 +2,7 @@
 using AOSharp.Common.Unmanaged.Interfaces;
 using AOSharp.Core;
 using AOSharp.Core.UI;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,7 +18,12 @@ namespace ResearchManager
 
         public static string PluginDir;
 
-        //private static string _perkName = N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal));
+        private bool enabled => _settings["Toggle"].AsBool();
+        private bool includeApotheosis => _settings["IncludeApotheosis"].AsBool();
+        private ModeSelection mode => (ModeSelection)_settings["ModeSelection"].AsInt32();
+        private float updateInterval = 10;
+
+        public static List<int> apotheosis = Enumerable.Range(10002, 10).ToList();
 
         public override void Run(string pluginDir)
         {
@@ -27,6 +33,9 @@ namespace ResearchManager
             Game.OnUpdate += OnUpdate;
 
             _settings.AddVariable("Toggle", false);
+            _settings.AddVariable("IncludeApotheosis", false);
+            _settings.AddVariable("ModeSelection", (int)ModeSelection.HighestFirst);
+            _settings.AddVariable("UpdateInterval", 10);
 
             RegisterSettingsWindow("Research Manager", $"ResearchManagerSettingWindow.xml");
 
@@ -46,64 +55,41 @@ namespace ResearchManager
 
         private void OnUpdate(object s, float deltaTime)
         {
+            if (!enabled || Game.IsZoning || Time.NormalTime < _tick + updateInterval)
+                return;
 
-            if (_settings["Toggle"].AsBool() && !Game.IsZoning
-                && Time.NormalTime > _tick + 3f)
+            _tick = Time.NormalTime;
+
+            var availableGoals = Research.Goals.Where(goal => goal.Available && (includeApotheosis || !apotheosis.Contains(goal.ResearchId)));
+            var researchPerks = Perk.GetByInstance(availableGoals.Select(goal => goal.ResearchId)).ToDictionary(perk => perk.Instance, perk => perk);
+
+            if (mode == ModeSelection.LowestFirst)
             {
-                _tick = Time.NormalTime;
-
-                if (_asyncToggle == false && (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0
-                    || !Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                        == N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
-                        .FirstOrDefault().Available))
-                {
-                    Task.Factory.StartNew(
-                        async () =>
-                        {
-                            _asyncToggle = true;
-
-                            ResearchGoal _next = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-                                != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal))
-                                && c.Available)
-                                .FirstOrDefault();
-
-                            await Task.Delay(200);
-                            Research.Train(_next.ResearchId);
-                            //Chat.WriteLine($"Changing to line - {N3EngineClientAnarchy.GetPerkName(_next.ResearchId)} [{_next.ResearchId}]");
-                            await Task.Delay(200);
-
-                            _asyncToggle = false;
-                        });
-                }
-
+                availableGoals = availableGoals.OrderBy(goal => researchPerks[goal.ResearchId].Level).ThenByDescending(goal => N3EngineClientAnarchy.GetPerkProgress((uint)goal.ResearchId));
             }
 
-            //if (_settings["Toggle"].AsBool() && !Game.IsZoning)
-            //{
+            if (mode == ModeSelection.HighestFirst)
+            {
+                availableGoals = availableGoals.OrderByDescending(goal => researchPerks[goal.ResearchId].Level).ThenByDescending(goal => N3EngineClientAnarchy.GetPerkProgress((uint)goal.ResearchId));
+            }
 
-            //    if (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) > 0
-            //        && _perkName != N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal)))
-            //    {
-            //        _perkName = N3EngineClientAnarchy.GetPerkName(DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal));
-            //    }
+            if (availableGoals.Count() > 0)
+            {
+                ResearchGoal goal = availableGoals.First();
 
-            //    if (!Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId) == _perkName)
-            //            .FirstOrDefault().Available
-            //        || (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) == 0
-            //            && !Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId) == _perkName)
-            //                .FirstOrDefault().Available))
-            //    {
-            //        ResearchGoal _next = Research.Goals.Where(c => N3EngineClientAnarchy.GetPerkName(c.ResearchId)
-            //            != _perkName && c.Available)
-            //            .OrderBy(c => c.ResearchId)
-            //            .FirstOrDefault();
+                if (DynelManager.LocalPlayer.GetStat(Stat.PersonalResearchGoal) != goal.ResearchId)
+                {
+                    Research.Train(goal.ResearchId);
+                }
+            }
 
-            //        Research.Train(_next.ResearchId);
-            //    }
-            //}
-
-
+            return;
         }
 
+        enum ModeSelection
+        {
+            LowestFirst,
+            HighestFirst
+        }
     }
 }

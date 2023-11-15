@@ -88,6 +88,7 @@ namespace CombatHandler.MartialArtist
             _settings.AddVariable("ArmorBuffSelection", (int)ArmorBuffSelection.None);
             _settings.AddVariable("CritBuff", false);
             _settings.AddVariable("TeamArmorBuffs", false);
+            _settings.AddVariable("SLMap", false);
 
             _settings.AddVariable("Zazen", false);
 
@@ -106,7 +107,7 @@ namespace CombatHandler.MartialArtist
                        GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
                        CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
+            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
                         (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
                         GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
                         CombatActionPriority.High);

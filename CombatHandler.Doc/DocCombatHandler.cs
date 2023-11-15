@@ -111,6 +111,7 @@ namespace CombatHandler.Doctor
                 _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
                 _settings.AddVariable("ShortHOT", false);
                 _settings.AddVariable("TeamImprovedLifeChanneler", true);
+                _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("CH", true);
                 _settings.AddVariable("LockCH", false);
@@ -1159,6 +1160,7 @@ namespace CombatHandler.Doctor
             public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
 
             public const int AlphaAndOmega = 42409;
+
             public static int[] Heals = new[]
             { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
                         43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,

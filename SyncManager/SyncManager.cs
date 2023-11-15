@@ -48,8 +48,6 @@ namespace SyncManager
         private Dictionary<RingName, string> _ringNameToItemNameMap;
         private Dictionary<string, RingName> _itemNameToRingNameMap;
 
-        private Dictionary<Item, Identity> inventoryItems = new Dictionary<Item, Identity>();
-
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -147,18 +145,6 @@ namespace SyncManager
                 }
                 _useTimer = Time.NormalTime;
             }
-            if (IsActiveCharacter())
-            {
-                foreach (Item item in Inventory.Items)
-                {
-                    Identity itemSlot = item.Slot;
-
-                    if (!inventoryItems.ContainsKey(item))
-                    {
-                        inventoryItems.Add(item, itemSlot);
-                    }
-                }
-            }
 
             if (!_settings["Enable"].AsBool() && Enable)
             {
@@ -192,13 +178,13 @@ namespace SyncManager
             {
                 if (startStopMessage.IsStarting)
                 {
-                    // Update the setting and start the process.
+                    
                     _settings["Enable"] = true;
                     Start();
                 }
                 else
                 {
-                    // Update the setting and stop the process.
+                    
                     _settings["Enable"] = false;
                     Stop();
                 }
@@ -209,14 +195,12 @@ namespace SyncManager
         {
             Enable = true;
 
-            //Chat.WriteLine("Syncmanager enabled.");
         }
 
         private void Stop()
         {
             Enable = false;
 
-            //Chat.WriteLine("Syncmanager disabled.");
         }
 
         private void OnZoned(object s, EventArgs e)
@@ -327,7 +311,6 @@ namespace SyncManager
 
                         RingName ringName = GetRingNameFromItemName(item?.Name);
 
-                        // Log the ring name if it's not unknown
                         if (ringName != RingName.Unknown)
                         {
                             UseMessage useMsg = new UseMessage()
@@ -399,30 +382,11 @@ namespace SyncManager
                     {
                         KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
 
-                        // Create a set of current inventory items for comparison
-                        var currentInventoryItems = new HashSet<Item>(Inventory.Items);
-
-                        // Find the items that are in the dictionary but not in the current inventory
-                        var tradeItems = inventoryItems.Where(pair => !currentInventoryItems.Contains(pair.Key))
-                                                       .Select(pair => pair.Key) // Selecting the Item itself
-                                                       .ToList();
-
-                        // Select the first trade item, if any
-                        var tradeItem = tradeItems.FirstOrDefault();
-
-                        // Assuming each Item object has an Id property
-                        //var tradeItemId = tradeItem.Id; // Get the ID of the item
-
-                        //Chat.WriteLine($"Sending item ID: {tradeItem.Name}");
-
-                        // Broadcast the message with the ID of the trade item
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = tradeMsg.Target,
                             OpenClose = true,
                             IsTrade = true,
-                            Container = tradeMsg.Container,
-                            TradeItem = tradeItem // Send the item ID here
                         });
                     }
 
@@ -430,17 +394,6 @@ namespace SyncManager
                     if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
                     {
                         KnuBotFinishTradeMessage finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
-
-                        // Create a set of current inventory items for comparison
-                        var currentInventoryItems = new HashSet<Item>(Inventory.Items);
-
-                        // Remove items from the dictionary that are no longer in the inventory
-                        var itemsToRemove = inventoryItems.Keys.Where(item => !currentInventoryItems.Contains(item)).ToList();
-
-                        foreach (var item in itemsToRemove)
-                        {
-                            inventoryItems.Remove(item);
-                        }
 
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
@@ -478,7 +431,6 @@ namespace SyncManager
                     ItemHighId = item.HighId,
                     Target = target,
                 };
-                //Chat.WriteLine($"Sending UseMessage: ItemId={usableMsg.ItemId}, ItemHighId={usableMsg.ItemHighId}, Target={usableMsg.Target}");
                 IPCChannel.Broadcast(usableMsg);
             }
             
@@ -539,7 +491,7 @@ namespace SyncManager
             var localPlayer = DynelManager.LocalPlayer;
 
             if (!localPlayer.IsAttacking && !localPlayer.IsAttackPending
-                && localPlayer.FightingTarget == null //&& targetMsg.Target == null
+                && localPlayer.FightingTarget == null
                 && Spell.List.Any(spell => spell.IsReady) && !Spell.HasPendingCast)
             {
                 Targeting.SetTarget(targetMsg.Target);
@@ -670,7 +622,7 @@ namespace SyncManager
             {
                 Network.Send(new KnuBotCloseChatWindowMessage
                 {
-                    Unknown1 = 2, // is always 2, need to look into closing the window
+                    Unknown1 = 2,
                     Unknown2 = 0,
                     Unknown3 = 0,
                     Target = chatMsg.Target
@@ -684,15 +636,7 @@ namespace SyncManager
 
             if (chatMsg.IsTrade)
             {
-                //Identity item = chatMsg.TradeItem.Id;
-                //Item tradeItem = FindItem(chatMsg.TradeItem.Id);
-
-                //Chat.WriteLine($"Item: {chatMsg.TradeItem}");
-
-                //Network.Send(new KnuBotTradeMessage()
-                //{
-                //    Container =chatMsg.TradeItem,
-                //});
+                
             }
 
             if (chatMsg.IsFinishTrade)

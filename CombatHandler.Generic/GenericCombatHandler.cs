@@ -239,8 +239,13 @@ namespace CombatHandler.Generic
             RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
             RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
 
-            RegisterItemProcessor(RelevantGenericItems.RingofTatteredFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.RingofWeepingFlesh, RelevantGenericItems.RingofBlightedFlesh, BlightedFlesh);
+            RegisterItemProcessor(RelevantGenericItems.RingofPurifyingFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
+            RegisterItemProcessor(RelevantGenericItems.RingofBlightedFlesh, RelevantGenericItems.RingofBlightedFlesh, DamageItem);
+
+            RegisterItemProcessor(RelevantGenericItems.RingofEternalNight, RelevantGenericItems.RingofEternalNight, DamageItem);
+
+            RegisterItemProcessor(RelevantGenericItems.RingofTatteredFlame, RelevantGenericItems.RingofTatteredFlame, DamageItem);
+            RegisterItemProcessor(RelevantGenericItems.RingofWeepingFlesh, RelevantGenericItems.RingofWeepingFlesh, DamageItem);
 
             RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
 
@@ -1263,13 +1268,16 @@ namespace CombatHandler.Generic
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null && fightingTarget.IsInAttackRange();
         }
 
-        protected virtual bool BlightedFlesh(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        bool BlightedFlesh(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))
+                && fightingTarget == null
+                && (fightingTarget.Buffs.Contains(RelevantGenericNanos.BlightedFlesh) || fightingTarget.Buffs.Contains(RelevantGenericNanos.WeepingFlesh))
+                && !fightingTarget.IsInAttackRange()) { return false; }
 
-            return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))
-                && fightingTarget != null
-                && !fightingTarget.Buffs.Contains(RelevantGenericNanos.BlightedFlesh)
-                && fightingTarget.IsInAttackRange();
+            actionTarget.Target = fightingTarget;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         protected bool TotwDmgShoulder(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1808,14 +1816,6 @@ namespace CombatHandler.Generic
             return IsSettingEnabled(settingName) && CanCast(spell);
         }
 
-        // Helper to set the actionTarget
-        private void SetActionTarget(ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, SimpleChar target)
-        {
-            actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = target;
-        }
-
-
         protected bool IsSettingEnabled(string settingName)
         {
             return _settings[settingName].AsBool();
@@ -1840,7 +1840,7 @@ namespace CombatHandler.Generic
         public bool AttackingMob(SimpleChar mob)
         {
             if (Team.IsInTeam)
-                return Team.Members.Any(c => c.Character?.FightingTarget?.Identity == c.Identity);
+                return Team.Members.Any(c => c.Character?.FightingTarget?.Identity == mob.Identity);
 
             return DynelManager.LocalPlayer.FightingTarget?.Identity == mob.Identity;
         }
@@ -2021,6 +2021,8 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.UponAWaveOfSummerHigh:
                     return Stat.Riposte;
 
+                case RelevantGenericItems.RingofEternalNight:
+                    return Stat.SensoryImprovement;
 
                 case RelevantGenericItems.BlessedWithThunderLow:
                 case RelevantGenericItems.BlessedWithThunderHigh:
@@ -2139,6 +2141,8 @@ namespace CombatHandler.Generic
             public const int RingofWeepingFlesh = 204595;
             public const int RingofBlightedFlesh = 305491;
 
+            public const int RingofEternalNight = 204598;
+
             public const int BloodthrallRing = 305495;
 
             public const int SteamingHotCupOfEnhancedCoffee = 157296;
@@ -2218,6 +2222,8 @@ namespace CombatHandler.Generic
             public const int InsightIntoSL = 268610;
 
             public const int BlightedFlesh = 305492;
+            public const int WeepingFlesh = 204594;
+
             public static int[] ShrinkingGrowingflesh = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
             public static int[] AAOTransfer = new[] { 301524, 301520, 267263, 267265 };
             public static int[] KeeperStrStamAgiBuff = new[] { 211158, 211160, 211162, 273365 };

@@ -2,7 +2,14 @@
 <root>
   <View view_layout="vertical" name="parent">
     <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-      <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toggle" layout_borders="Rect(10,1,5,1)"/>
-      <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="Research__Toggle" layout_borders="Rect(10,1,5,1)"/>
+    <OptionCheckBox label="Include Apotheosis" opt_category="AOSharp" opt_type="variant" opt_variable="Research__IncludeApotheosis" layout_borders="Rect(10,1,5,1)"/>
+    <View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+      <OptionRadioButtonGroup label="Mode" h_alignment="LEFT" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="Research__ModeSelection">
+        <RadioButton label="Lowest first" value="0"/>
+        <RadioButton label="Highest first" value="1"/>
+      </OptionRadioButtonGroup>
+    </View>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
   </View>
 </root>

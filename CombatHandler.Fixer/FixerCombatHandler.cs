@@ -76,6 +76,7 @@ namespace CombatHandler.Fixer
             _settings.AddVariable("LongHOTSelection", (int)LongHOTSelection.None);
             _settings.AddVariable("SLMap", false);
 
+            _settings.AddVariable("DamageSelection", (int)DamageSelection.None);
             _settings.AddVariable("RunspeedSelection", (int)RunspeedSelection.None);
             _settings.AddVariable("ArmorSelection", (int)ArmorSelection.None);
 
@@ -120,8 +121,9 @@ namespace CombatHandler.Fixer
 
             //Buffs
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget));
+                   (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "DamageSelection"));
+
             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FixerDodgeBuffLine).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                             => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
@@ -899,6 +901,11 @@ namespace CombatHandler.Fixer
         public enum ArmorSelection
         {
             None, ShadowwebSpinner, Grid
+        }
+
+        public enum DamageSelection
+        {
+            None, Self, Team
         }
 
         public enum RunspeedSelection

@@ -561,7 +561,7 @@ namespace SyncManager
             }
             else
             {
-                if (useMsg.Target.Type == IdentityType.Terminal)
+                if (useMsg.Target.Type == IdentityType.Terminal && useMsg.ItemId == 0)
                 {
                     useDynel = useMsg.Target;
                 }

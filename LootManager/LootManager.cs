@@ -412,7 +412,7 @@ namespace LootManager
             }
             if (maxql > 999)
             {
-                txErr.Text = "Max Quantity must be 999!";
+                txErr.Text = "Max Quantity must be no more than 999!";
                 return;
             }
 
@@ -421,7 +421,7 @@ namespace LootManager
 
             //_multiListView.DeleteAllChildren();
 
-            Rules.Add(new Rule(_itemName.Text.Trim(), _itemMinQL.Text, _itemMaxQL.Text, GlobalScope, _itemQuantity.Text, "Bag Name"));
+            Rules.Add(new Rule(_itemName.Text.Trim(), _itemMinQL.Text, _itemMaxQL.Text, GlobalScope, _itemQuantity.Text, "loot"));
             
             _itemName.Text = "";
             _itemMinQL.Text = "1";
@@ -560,7 +560,14 @@ namespace LootManager
                 string rulesJson = File.ReadAllText(filename);
                 Rules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
                 foreach (Rule rule in Rules)
+                {
+                    if (string.IsNullOrEmpty(rule.Quantity))
+                        rule.Quantity = "999";
+                    if (string.IsNullOrEmpty(rule.BagName))
+                        rule.BagName = "loot";
                     rule.Global = true;
+                }
+                    
             }
 
             filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
@@ -572,6 +579,10 @@ namespace LootManager
                 foreach (Rule rule in scopedRules)
                 {
                     rule.Global = false;
+                    if (string.IsNullOrEmpty(rule.Quantity))
+                        rule.Quantity = "999";
+                    if (string.IsNullOrEmpty(rule.BagName))
+                        rule.BagName = "loot";
                     Rules.Add(rule);
                 }
                 Chat.WriteLine($"Loaded {scopedRules.Count.ToString()}");
@@ -632,7 +643,7 @@ namespace LootManager
 
         private void UpdateRule(Rule rule, bool update)
         {
-            if (!update) return;
+            if (!update || Convert.ToInt32(rule.Quantity) == 999) return;
             rule.Quantity = (Convert.ToInt32(rule.Quantity) - 1).ToString();
             Chat.WriteLine($"Rule {rule.Name} - {rule.Quantity}");
             if (Convert.ToInt32(rule.Quantity) == 0)

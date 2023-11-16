@@ -575,11 +575,11 @@ namespace SyncManager
         private void FindUseRing(string itemName, Identity target)
         {
             Item ring = Inventory.Items.FirstOrDefault(c => c.Name.Contains(itemName)) ??
-                             Inventory.Backpacks.SelectMany(b => b.Items).FirstOrDefault(c => c.Name.Contains(itemName));
+                            Inventory.Backpacks.SelectMany(b => b.Items).FirstOrDefault(c => c.Name.Contains(itemName));
 
             if (ring != null)
             {
-                useItem = new Identity(IdentityType.Inventory, ring.Slot.Instance);
+                useItem = ring.Slot;
                 useOnDynel = target;
             }
         }
@@ -598,7 +598,7 @@ namespace SyncManager
                 }
                 else
                 {
-                    useItem = new Identity(IdentityType.Inventory, itemID.Slot.Instance);
+                    useItem = itemID.Slot;
                     useOnDynel = usableMsg.Target;
                 }
             }
@@ -836,7 +836,8 @@ namespace SyncManager
             return item.Id == 305476 || item.Id == 204698 || item.Id == 156576 || item.Id == 267168 || item.Id == 267167
                 || item.Id == 204593 || item.Id == 305492 || item.Id == 204595 || item.Id == 305491 || item.Id == 305478
                 || item.Id == 206013 || item.Id == 204653 || item.Id == 204698 || item.Id == 206015 || item.Id == 305476
-                || item.Id == 267168 || item.Id == 267167 || item.Name.Contains("Health") || item.Name.Contains("Newcomer");
+                || item.Id == 267168 || item.Id == 267167 || item.Name.Contains("Health") || item.Name.Contains("Newcomer")
+                || item.Name.Contains("Backpack");
         }
 
         #endregion

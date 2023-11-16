@@ -586,9 +586,9 @@ namespace SyncManager
 
         private void ProcessIDItem(UseMessage usableMsg)
         {
-            Item itemID = Inventory.Items.FirstOrDefault(i => i.Id == usableMsg.ItemId && i.HighId == usableMsg.ItemHighId) ??
+            Item itemID = Inventory.Items.FirstOrDefault(i => i.Id == usableMsg.ItemId || i.HighId == usableMsg.ItemHighId) ??
                              Inventory.Backpacks.SelectMany(b => b.Items)
-                                                .FirstOrDefault(i => i.Id == usableMsg.ItemId && i.HighId == usableMsg.ItemHighId);
+                                                .FirstOrDefault(i => i.Id == usableMsg.ItemId || i.HighId == usableMsg.ItemHighId);
 
             if (itemID != null)
             {

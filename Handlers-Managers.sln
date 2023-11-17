@@ -39,6 +39,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncManager", "SyncManager\SyncManager.csproj", "{1A01624E-0238-4032-9186-00C0BE281235}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpManager", "HelpManager\HelpManager.csproj", "{5B5488B2-FEC0-4C69-8933-98151C575220}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8CB8419F-3914-49C1-ABA3-78C5D26E8E48} = {8CB8419F-3914-49C1-ABA3-78C5D26E8E48}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResearchManager", "ResearchManager\ResearchManager.csproj", "{B6560BBE-C49A-4ACD-98CC-4E194AF089F4}"
 EndProject

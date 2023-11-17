@@ -70,12 +70,18 @@ namespace HelpManager
                             AppendSettingsTab("Help Manager", settingsWindow);
 
                             settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                            settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
+                            settingsWindow.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                            settingsWindow.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
 
                             if (channelInput != null)
                                 channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
-                            if (sitPercentageInput != null)
-                                sitPercentageInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage}";
+
+                            if (kitHealthInput != null)
+                                kitHealthInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage}";
+
+                            if (kitNanoInput != null)
+                                kitNanoInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage}";
+
                         }
                     }
                     catch (Exception e)

@@ -1064,6 +1064,8 @@ namespace CombatHandler.Metaphysicist
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
+            if (!CanCast(spell)) { return false; }
+
             if (PetProcSelection.InducedApathy != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
@@ -1091,6 +1093,8 @@ namespace CombatHandler.Metaphysicist
         private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (!CanCast(spell)) { return false; }
 
             if (PetProcSelection.MastersBidding != (PetProcSelection)_settings["PetProcSelection"].AsInt32()) { return false; }
 

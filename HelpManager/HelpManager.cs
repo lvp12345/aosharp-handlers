@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using CombatHandler.Generic;
 
 namespace HelpManager
 {
@@ -23,10 +24,6 @@ namespace HelpManager
         private static Pet healpet;
 
         public static string PluginDirectory;
-
-        private static int SitPercentage;
-
-        private Stopwatch _kitTimer = new Stopwatch();
 
         private static bool _init = false;
 
@@ -111,7 +108,8 @@ namespace HelpManager
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentageChangedEvent += SitPercentage_Changed;
+            GenericCombatHandler.Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += GenericCombatHandler.KitHealthPercentage_Changed;
+            GenericCombatHandler.Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += GenericCombatHandler.KitNanoPercentage_Changed;
 
             RegisterSettingsWindow("Help Manager", "HelpManagerSettingWindow.xml");
 
@@ -132,7 +130,8 @@ namespace HelpManager
 
             PluginDirectory = pluginDir;
 
-            SitPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage;
+            GenericCombatHandler.KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+            GenericCombatHandler.KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
         }
 
         public override void Teardown()
@@ -145,11 +144,6 @@ namespace HelpManager
         public static void IPCChannel_Changed(object s, int e)
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
-            Config.Save();
-        }
-        public static void SitPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage = e;
             Config.Save();
         }
 
@@ -170,11 +164,13 @@ namespace HelpManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-           if (_settings["AutoSit"].AsBool())
+            if (_settings["AutoSit"].AsBool())
             {
-                SitAndUseKit();
+                Kits kitsInstance = new Kits();
+
+                kitsInstance.SitAndUseKit();
             }
-                
+
             if (Time.NormalTime > _zixMorphTimer + 3)
             {
                 if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
@@ -264,7 +260,8 @@ namespace HelpManager
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
                     SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                    SettingsController.settingsWindow.FindView("SitPercentageBox", out TextInputView sitPercentageInput);
+                    SettingsController.settingsWindow.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                    SettingsController.settingsWindow.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
 
                     if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
                     {
@@ -275,14 +272,15 @@ namespace HelpManager
                         }
                     }
 
-                    if (sitPercentageInput != null && !string.IsNullOrEmpty(sitPercentageInput.Text))
-                    {
-                        if (int.TryParse(sitPercentageInput.Text, out int sitPercentageValue)
-                            && Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage != sitPercentageValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SitPercentage = sitPercentageValue;
-                        }
-                    }
+                    if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                        if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+
+                    if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                        if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
 
                     if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
                     {
@@ -443,53 +441,6 @@ namespace HelpManager
                         _sitPetUsedTimer = Time.NormalTime;
                     }
                 }
-            }
-        }
-
-        private void SitAndUseKit()
-        {
-            if (InCombat())
-                return;
-
-            Spell spell = Spell.List.FirstOrDefault(x => x.IsReady);
-            Item kit = Inventory.Items.FirstOrDefault(x => RelevantItems.Kits.Contains(x.Id));
-            var localPlayer = DynelManager.LocalPlayer;
-
-            if (kit == null || spell == null)
-                return;
-
-            if (!localPlayer.Buffs.Contains(280488) && CanUseSitKit())
-            {
-                HandleMovementState();
-            }
-
-            if (localPlayer.MovementState == MovementState.Sit && (!_kitTimer.IsRunning || _kitTimer.ElapsedMilliseconds >= 2000))
-            {
-                if (localPlayer.NanoPercent < 90 || localPlayer.HealthPercent < 90)
-                {
-                    kit.Use(localPlayer, true);
-                    _kitTimer.Restart();
-                }
-            }
-        }
-
-        private void HandleMovementState()
-        {
-            var localPlayer = DynelManager.LocalPlayer;
-
-            bool shouldSit = localPlayer.NanoPercent < 66 || localPlayer.HealthPercent < 66;
-            bool canSit = !localPlayer.Cooldowns.ContainsKey(Stat.Treatment) && localPlayer.MovementState != MovementState.Sit;
-
-            bool shouldStand = localPlayer.NanoPercent > 66 || localPlayer.HealthPercent > 66;
-            bool onCooldown = localPlayer.Cooldowns.ContainsKey(Stat.Treatment);
-
-            if (shouldSit && canSit)
-            {
-                MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-            }
-            else if (shouldStand && onCooldown)
-            {
-                MovementController.Instance.SetMovement(MovementAction.LeaveSit);
             }
         }
 

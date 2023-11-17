@@ -66,6 +66,7 @@
     <Compile Include="IPCMessages\YalmOffMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="HelpManager.cs" />
+    <Compile Include="Kits.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />
   </ItemGroup>
@@ -80,6 +81,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CombatHandler.Generic\CombatHandler.Generic.csproj">
+      <Project>{8cb8419f-3914-49c1-aba3-78c5d26e8e48}</Project>
+      <Name>CombatHandler.Generic</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

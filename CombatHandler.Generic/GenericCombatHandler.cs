@@ -1657,8 +1657,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-
-
         protected void SynchronizePetCombatStateWithOwner()
         {
             if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetSyncTime > 1)

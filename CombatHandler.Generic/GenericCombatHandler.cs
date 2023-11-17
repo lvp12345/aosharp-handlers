@@ -1633,6 +1633,8 @@ namespace CombatHandler.Generic
         {
             if (!CanLookupPetsAfterZone()) { return false; }
 
+            if (!CanCast(spell)) { return false; }
+
             return DynelManager.LocalPlayer.Pets
                 .Where(c => c.Character == null || c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare)
                     || c.Character.Buffs.Contains(NanoLine.Mezz)).Any();
@@ -1641,6 +1643,8 @@ namespace CombatHandler.Generic
         protected bool PetTargetBuff(NanoLine buffNanoLine, PetType petType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (!CanCast(spell)) { return false; }
 
             Pet target = DynelManager.LocalPlayer.Pets
                     .Where(c => c.Type == petType

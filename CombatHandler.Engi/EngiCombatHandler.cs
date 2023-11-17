@@ -1087,6 +1087,8 @@ namespace CombatHandler.Engineer
         {
             if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
 
+            if (!CanCast(spell)) { return false; }
+
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
                 if (pet.Character == null) continue;

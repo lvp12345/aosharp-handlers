@@ -721,7 +721,7 @@ namespace CombatHandler.MartialArtist
                 return false;
             }
 
-            return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
         }
 
         #endregion

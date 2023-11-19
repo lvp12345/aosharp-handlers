@@ -170,12 +170,13 @@ namespace CombatHandler.MartialArtist
 
             //Team Buffs
             RegisterSpellProcessor(RelevantNanos.TargetEvades, Evades);
+
             RegisterSpellProcessor(RelevantNanos.LimboMastery,
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "Evades"));
-            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs,
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "CritBuff"));
+
+            RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, TeamCrit);
+
             RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs,
                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "TeamArmorBuffs"));
@@ -905,15 +906,34 @@ namespace CombatHandler.MartialArtist
 
         }
 
-        //private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IsSettingEnabled("CritBuff"))
-        //        return TeamBuff(spell, spell.Nanoline, ref actionTarget);
+        private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("CritBuff")) { return false; }
 
-        //    return false;
-        //}
+            if (!Team.IsInTeam)
+            {
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            }
 
-        
+            SimpleChar target = DynelManager.Players
+                    .Where(c => c.IsInLineOfSight
+                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && !(c.Profession == Profession.NanoTechnician || c.Profession == Profession.Trader)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
+                    .FirstOrDefault();
+
+            if (target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
+
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
+        }
 
         #endregion
 

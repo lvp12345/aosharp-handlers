@@ -910,17 +910,29 @@ namespace CombatHandler.MartialArtist
         {
             if (!IsSettingEnabled("CritBuff")) { return false; }
 
+            if (!Team.IsInTeam)
+            {
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            }
+
             SimpleChar target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && !(c.Profession == Profession.NanoTechnician || c.Profession != Profession.Trader)
+                        && !(c.Profession == Profession.NanoTechnician || c.Profession == Profession.Trader)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0)
+                        && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
-            if (spell.Nanoline == NanoLine.CriticalIncreaseBuff && target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
+            if (target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
 
-            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "CritBuff");
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
         }
 
         #endregion

@@ -200,124 +200,138 @@ namespace CombatHandler.Generic
 
         public GenericCombatHandler(string pluginDir)
         {
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\Generic\\{DynelManager.LocalPlayer.Name}\\Config.json");
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
+            try
+            {
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\Generic\\{DynelManager.LocalPlayer.Name}\\Config.json");
+                IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
-            PluginDir = pluginDir;
+                PluginDir = pluginDir;
 
-            _settings = new Settings("CombatHandler");
+                _settings = new Settings("CombatHandler");
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+                IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+                IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            RegisterPerkProcessors();
-            RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
-            RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
-            RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
-            RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
-            RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
-            RegisterPerkProcessor(PerkHash.Clipfever, ToggledDamagePerk);
-            RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+                RegisterPerkProcessors();
+                RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
+                RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
+                RegisterPerkProcessor(PerkHash.WitOfTheAtrox, WitOfTheAtrox, CombatActionPriority.High);
+                RegisterPerkProcessor(PerkHash.Limber, Limber, CombatActionPriority.High);
+                RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
+                RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
+                RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
+                RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
+                RegisterPerkProcessor(PerkHash.Clipfever, ToggledDamagePerk);
+                RegisterPerkProcessor(PerkHash.LegShot, LegShot);
 
-            RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
+                RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh }, FlowerOfLife);
-            RegisterItemProcessor(RelevantGenericItems.ReflectGraft, RelevantGenericItems.ReflectGraft, ReflectGraft);
-            RegisterItemProcessor(RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, Coffee);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh }, FlowerOfLife);
+                RegisterItemProcessor(RelevantGenericItems.ReflectGraft, RelevantGenericItems.ReflectGraft, ReflectGraft);
+                RegisterItemProcessor(RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, RelevantGenericItems.SteamingHotCupOfEnhancedCoffee, Coffee);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.FlurryOfBlowsHigh, RelevantGenericItems.FlurryOfBlowsLow }, DamageItem);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.FlurryOfBlowsHigh, RelevantGenericItems.FlurryOfBlowsLow }, DamageItem);
 
-            RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, EnforcerEnduranceBooster, CombatActionPriority.High);
-            RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, NanomageEnduranceBooster, CombatActionPriority.High);
+                RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, EnforcerEnduranceBooster, CombatActionPriority.High);
+                RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, NanomageEnduranceBooster, CombatActionPriority.High);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.BarrowStrength }, TotwDmgShoulder);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.BarrowStrength }, TotwDmgShoulder);
 
-            RegisterItemProcessor(RelevantGenericItems.GnuffsEternalRiftCrystal, RelevantGenericItems.GnuffsEternalRiftCrystal, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
+                RegisterItemProcessor(RelevantGenericItems.GnuffsEternalRiftCrystal, RelevantGenericItems.GnuffsEternalRiftCrystal, DamageItem);
+                RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
+                RegisterItemProcessor(RelevantGenericItems.WenWen, RelevantGenericItems.WenWen, DamageItem);
 
-            RegisterItemProcessor(RelevantGenericItems.RingofPurifyingFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.RingofBlightedFlesh, RelevantGenericItems.RingofBlightedFlesh, DamageItem);
+                RegisterItemProcessor(RelevantGenericItems.RingofPurifyingFlame, RelevantGenericItems.RingofPurifyingFlame, DamageItem);
+                RegisterItemProcessor(RelevantGenericItems.RingofBlightedFlesh, RelevantGenericItems.RingofBlightedFlesh, DamageItem);
 
-            RegisterItemProcessor(RelevantGenericItems.RingofEternalNight, RelevantGenericItems.RingofEternalNight, DamageItem);
+                RegisterItemProcessor(RelevantGenericItems.RingofEternalNight, RelevantGenericItems.RingofEternalNight, DamageItem);
 
-            RegisterItemProcessor(RelevantGenericItems.RingofTatteredFlame, RelevantGenericItems.RingofTatteredFlame, DamageItem);
-            RegisterItemProcessor(RelevantGenericItems.RingofWeepingFlesh, RelevantGenericItems.RingofWeepingFlesh, DamageItem);
+                RegisterItemProcessor(RelevantGenericItems.RingofTatteredFlame, RelevantGenericItems.RingofTatteredFlame, DamageItem);
+                RegisterItemProcessor(RelevantGenericItems.RingofWeepingFlesh, RelevantGenericItems.RingofWeepingFlesh, DamageItem);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
 
-            RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
+                RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-            RegisterItemProcessor(new int[] {RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.TearOfOedipus,
+                RegisterItemProcessor(new int[] {RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.TearOfOedipus,
                 RelevantGenericItems.LavaCapsule, RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.FallenStar}, SharpObjects);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
-            RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
-            RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
 
-            RegisterItemProcessor(RelevantGenericItems.RezCanIds, RezCan);
+                RegisterItemProcessor(RelevantGenericItems.RezCanIds, RezCan);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
-            RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
-            RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, RelevantGenericItems.HealthAndNanoStim400 }, HealthAndNanoStim, CombatActionPriority.High);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, RelevantGenericItems.HealthAndNanoStim400 }, HealthAndNanoStim, CombatActionPriority.High);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.PremSitKit, RelevantGenericItems.AreteSitKit, RelevantGenericItems.SitKit1,
+                RegisterItemProcessor(new int[] { RelevantGenericItems.PremSitKit, RelevantGenericItems.AreteSitKit, RelevantGenericItems.SitKit1,
                 RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.DaTaunterLow, RelevantGenericItems.DaTaunterHigh }, TargetedDamageItem);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.DaTaunterLow, RelevantGenericItems.DaTaunterHigh }, TargetedDamageItem);
 
-            RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
+                RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
                 RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
 
 
-            RegisterItemProcessor(RelevantGenericItems.AmmoBoxArrows, RelevantGenericItems.AmmoBoxArrows, AmmoBoxArrows);
-            RegisterItemProcessor(RelevantGenericItems.AmmoBoxBullets, RelevantGenericItems.AmmoBoxBullets, AmmoBoxBullets);
-            RegisterItemProcessor(RelevantGenericItems.AmmoBoxEnergy, RelevantGenericItems.AmmoBoxEnergy, AmmoBoxEnergy);
-            RegisterItemProcessor(RelevantGenericItems.AmmoBoxShotgun, RelevantGenericItems.AmmoBoxShotgun, AmmoBoxShotgun);
-            RegisterItemProcessor(RelevantGenericItems.AmmoBoxGrenade, RelevantGenericItems.AmmoBoxGrenade, AmmoBoxGrenade);
+                RegisterItemProcessor(RelevantGenericItems.AmmoBoxArrows, RelevantGenericItems.AmmoBoxArrows, AmmoBoxArrows);
+                RegisterItemProcessor(RelevantGenericItems.AmmoBoxBullets, RelevantGenericItems.AmmoBoxBullets, AmmoBoxBullets);
+                RegisterItemProcessor(RelevantGenericItems.AmmoBoxEnergy, RelevantGenericItems.AmmoBoxEnergy, AmmoBoxEnergy);
+                RegisterItemProcessor(RelevantGenericItems.AmmoBoxShotgun, RelevantGenericItems.AmmoBoxShotgun, AmmoBoxShotgun);
+                RegisterItemProcessor(RelevantGenericItems.AmmoBoxGrenade, RelevantGenericItems.AmmoBoxGrenade, AmmoBoxGrenade);
 
-            RegisterSpellProcessor(RelevantGenericNanos.CompositeNano, CompositeBuff);
-            RegisterSpellProcessor(RelevantGenericNanos.CompositeAttribute, CompositeBuff);
-            RegisterSpellProcessor(RelevantGenericNanos.CompositeUtility, CompositeBuff);
-            RegisterSpellProcessor(RelevantGenericNanos.CompositeMartialProwess, CompositeBuff);
+                RegisterSpellProcessor(RelevantGenericNanos.CompositeNano, CompositeBuff);
+                RegisterSpellProcessor(RelevantGenericNanos.CompositeAttribute, CompositeBuff);
+                RegisterSpellProcessor(RelevantGenericNanos.CompositeUtility, CompositeBuff);
+                RegisterSpellProcessor(RelevantGenericNanos.CompositeMartialProwess, CompositeBuff);
 
-            RegisterSpellProcessor(RelevantGenericNanos.InsightIntoSL,
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "SLMap"));
+                RegisterSpellProcessor(RelevantGenericNanos.InsightIntoSL,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "SLMap"));
 
-            if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
-            {
-                //We are melee
-                RegisterSpellProcessor(RelevantGenericNanos.CompositeMartial, CompositeBuff);
-                RegisterSpellProcessor(RelevantGenericNanos.CompositeMelee, CompositeBuff);
-                RegisterSpellProcessor(RelevantGenericNanos.CompositePhysicalSpecial, CompositeBuff);
+                if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
+                {
+                    //We are melee
+                    RegisterSpellProcessor(RelevantGenericNanos.CompositeMartial, CompositeBuff);
+                    RegisterSpellProcessor(RelevantGenericNanos.CompositeMelee, CompositeBuff);
+                    RegisterSpellProcessor(RelevantGenericNanos.CompositePhysicalSpecial, CompositeBuff);
+                }
+
+
+                if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged))
+                {
+                    //We are ranged
+                    RegisterSpellProcessor(RelevantGenericNanos.CompositeRanged, CompositeBuff);
+                    RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
+                }
+
+                Game.TeleportEnded += TeleportEnded;
+                Team.TeamRequest += Team_TeamRequest;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
+
+                Chat.RegisterCommand("reform", ReformCommand);
+                Chat.RegisterCommand("form", FormCommand);
+                Chat.RegisterCommand("convert", RaidCommand);
+                Chat.RegisterCommand("disband", DisbandCommand);
+                Chat.RegisterCommand("rebuff", Rebuff);
+                // This command will clear the character cache allowing you to form a team with a newly logged in toon on an account you previously had a toon logged in on and grouped
+                Chat.RegisterCommand("cleancache", (c, p, cw) =>
+                {
+                    SettingsController.RemainingNCU.Clear();
+                });
             }
-
-
-            if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged))
+            catch (Exception ex)
             {
-                //We are ranged
-                RegisterSpellProcessor(RelevantGenericNanos.CompositeRanged, CompositeBuff);
-                RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
-
-            Game.TeleportEnded += TeleportEnded;
-            Team.TeamRequest += Team_TeamRequest;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
-
-            Chat.RegisterCommand("reform", ReformCommand);
-            Chat.RegisterCommand("form", FormCommand);
-            Chat.RegisterCommand("convert", RaidCommand);
-            Chat.RegisterCommand("disband", DisbandCommand);
-            Chat.RegisterCommand("rebuff", Rebuff);
-            // This command will clear the character cache allowing you to form a team with a newly logged in toon on an account you previously had a toon logged in on and grouped
-            Chat.RegisterCommand("cleancache", (c, p, cw) =>
-            {
-                SettingsController.RemainingNCU.Clear();
-            });
         }
 
         public static Window[] _window => new Window[] { _perkWindow };
@@ -804,7 +818,7 @@ namespace CombatHandler.Generic
 
         protected bool NonComabtTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName = null)
         {
-            
+
             if (settingName != null && !_settings[settingName].AsBool())
             {
                 return false;

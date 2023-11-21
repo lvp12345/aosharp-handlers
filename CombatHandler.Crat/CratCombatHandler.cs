@@ -64,291 +64,304 @@ namespace CombatHandler.Bureaucrat
 
         public CratCombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
+            try
+            {
+                IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
-            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+                IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+                IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelayChangedEvent += CycleXpPerksDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelayChangedEvent += CycleXpPerksDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
 
-            _settings.AddVariable("Buffing", true);
-            _settings.AddVariable("Composites", true);
+                _settings.AddVariable("Buffing", true);
+                _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("GlobalBuffing", true);
-            _settings.AddVariable("GlobalComposites", true);
-            _settings.AddVariable("GlobalRez", true);
+                _settings.AddVariable("GlobalBuffing", true);
+                _settings.AddVariable("GlobalComposites", true);
+                _settings.AddVariable("GlobalRez", true);
 
-            _settings.AddVariable("SharpObjects", true);
-            _settings.AddVariable("Grenades", true);
+                _settings.AddVariable("SharpObjects", true);
+                _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("Exoneration", false);
+                _settings.AddVariable("Exoneration", false);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
+                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
-            _settings.AddVariable("Kits", true);
+                _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.AAOAAD);
-            _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
+                _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.AAOAAD);
+                _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
 
-            _settings.AddVariable("CalmingSelection", (int)CalmingSelection.SL);
-            _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
+                _settings.AddVariable("CalmingSelection", (int)CalmingSelection.SL);
+                _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
 
-            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FormsinTriplicate);
-            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.WrongWindow);
+                _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FormsinTriplicate);
+                _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.WrongWindow);
 
-            _settings.AddVariable("NanoDeltaTeam", false);
-            _settings.AddVariable("PistolTeam", false);
-            _settings.AddVariable("NeuronalStimulatorTeam", false);
-            _settings.AddVariable("CutRedTape", false);
-            _settings.AddVariable("SLMap", false);
+                _settings.AddVariable("NanoDeltaTeam", false);
+                _settings.AddVariable("PistolTeam", false);
+                _settings.AddVariable("NeuronalStimulatorTeam", false);
+                _settings.AddVariable("CutRedTape", false);
+                _settings.AddVariable("SLMap", false);
 
-            _settings.AddVariable("SyncPets", true);
-            _settings.AddVariable("SpawnPets", true);
-            _settings.AddVariable("BuffPets", true);
-            _settings.AddVariable("WarpPets", false);
+                _settings.AddVariable("SyncPets", true);
+                _settings.AddVariable("SpawnPets", true);
+                _settings.AddVariable("BuffPets", true);
+                _settings.AddVariable("WarpPets", false);
 
-            _settings.AddVariable("SupportPetProcSelection", (int)SupportPetProcSelection.MastersBidding);
-            _settings.AddVariable("AttackPetProcSelection", (int)AttackPetProcSelection.MastersBidding);
+                _settings.AddVariable("SupportPetProcSelection", (int)SupportPetProcSelection.MastersBidding);
+                _settings.AddVariable("AttackPetProcSelection", (int)AttackPetProcSelection.MastersBidding);
 
-            _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.Boss);
-            _settings.AddVariable("RedTapeSelection", (int)RedTapeSelection.Boss);
-            _settings.AddVariable("IntensifyStressSelection", (int)IntensifyStressSelection.Boss);
+                _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.Boss);
+                _settings.AddVariable("RedTapeSelection", (int)RedTapeSelection.Boss);
+                _settings.AddVariable("IntensifyStressSelection", (int)IntensifyStressSelection.Boss);
 
-            _settings.AddVariable("TauntTrimmer", false);
-            _settings.AddVariable("AggDefTrimmer", false);
-            _settings.AddVariable("DivertHpTrimmer", false);
-            _settings.AddVariable("DivertOffTrimmer", false);
+                _settings.AddVariable("TauntTrimmer", false);
+                _settings.AddVariable("AggDefTrimmer", false);
+                _settings.AddVariable("DivertHpTrimmer", false);
+                _settings.AddVariable("DivertOffTrimmer", false);
 
-            _settings.AddVariable("Nuking", true);
-            _settings.AddVariable("Root", true);
+                _settings.AddVariable("Nuking", true);
+                _settings.AddVariable("Root", true);
 
-            _settings.AddVariable("CycleXpPerks", false);
+                _settings.AddVariable("CycleXpPerks", false);
 
-            _settings.AddVariable("Calm12Man", false);
-            //_settings.AddVariable("CalmSector7", false);
+                _settings.AddVariable("Calm12Man", false);
+                //_settings.AddVariable("CalmSector7", false);
 
-            RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
+                RegisterSettingsWindow("Bureaucrat Handler", "BureaucratSettingsView.xml");
 
-            Game.TeleportEnded += OnZoned;
+                Game.TeleportEnded += OnZoned;
 
-            // Exonerationon/ AOE Root Reducer
-            RegisterSpellProcessor(RelevantNanos.CorporateLeadership, RootReducer);
+                // Exonerationon/ AOE Root Reducer
+                RegisterSpellProcessor(RelevantNanos.CorporateLeadership, RootReducer);
 
-            //Calms
-            RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, Calm, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.AOECalms, Calm, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.RkCalms, Calm, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
-            //RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
+                //Calms
+                RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, Calm, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.AOECalms, Calm, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.RkCalms, Calm, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
+                //RegisterSpellProcessor(RelevantNanos.RkCalms, CalmSector7, CombatActionPriority.High);
 
-            //Root/Snare
-            RegisterSpellProcessor(RelevantNanos.PuissantVoidInertia, Root, CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.ShacklesofObedience, Snare, CombatActionPriority.High);
+                //Root/Snare
+                RegisterSpellProcessor(RelevantNanos.PuissantVoidInertia, Root, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.ShacklesofObedience, Snare, CombatActionPriority.High);
 
-            //Debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(),
+                //Debuffs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder(),
+                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"), CombatActionPriority.Medium);
+
+                RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff,
                 (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"), CombatActionPriority.Medium);
+                => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
+                CombatActionPriority.Medium);
 
-            RegisterSpellProcessor(RelevantNanos.GeneralRadACDebuff,
-            (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-            => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
-            CombatActionPriority.Medium);
-
-            RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff,
-           (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-           => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
-           CombatActionPriority.Medium);
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(),
+                RegisterSpellProcessor(RelevantNanos.GeneralProjACDebuff,
                (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "RedTapeSelection"), CombatActionPriority.Medium);
+               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"),
+               CombatActionPriority.Medium);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(),
-               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "IntensifyStressSelection"), CombatActionPriority.Medium);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SkillLockModifierDebuff847).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "RedTapeSelection"), CombatActionPriority.Medium);
 
-            //Nukes
-            RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "IntensifyStressSelection"), CombatActionPriority.Medium);
 
-            //Buffs
-            RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
+                //Nukes
+                RegisterSpellProcessor(RelevantNanos.WorkplaceDepression, WorkplaceDepressionTargetDebuff, CombatActionPriority.Low);
+                RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
 
-            //Team Buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
-                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) 
-                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuffSelection"));
+                //Buffs
+                RegisterSpellProcessor(RelevantNanos.PistolBuffsSelf, PistolSelfOnly);
+
+                //Team Buffs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
+                    (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuffSelection"));
 
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
-            RegisterSpellProcessor(RelevantNanos.PistolBuffs, PistolTeam);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), PsyIntBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
+                RegisterSpellProcessor(RelevantNanos.PistolBuffs, PistolTeam);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(), PsyIntBuff);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(),
-            (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "CutRedTape"));
- 
-            //Buff Aura   AAOAAD, Crit, NanoResist
-            RegisterSpellProcessor(RelevantNanos.AadBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.AAOAAD));
-            RegisterSpellProcessor(RelevantNanos.CritBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-               GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.Crit));
-            RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-               GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.NanoResist));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(),
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "CutRedTape"));
 
-            //Debuff Aura  NanoResist, Crit, MaxNano
-            RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.NanoResist));
-            RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.Crit));
-            RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.MaxNano));
+                //Buff Aura   AAOAAD, Crit, NanoResist
+                RegisterSpellProcessor(RelevantNanos.AadBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.AAOAAD));
+                RegisterSpellProcessor(RelevantNanos.CritBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                   GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.Crit));
+                RegisterSpellProcessor(RelevantNanos.NanoResBuffAuras, (Spell aura, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                   GenericAuraBuff(aura, fightingTarget, ref actionTarget, BuffingAuraSelection.NanoResist));
 
-            //Perks
-            RegisterPerkProcessor(PerkHash.Leadership, Leadership);
-            RegisterPerkProcessor(PerkHash.Governance, Governance);
-            RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
-            RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
+                //Debuff Aura  NanoResist, Crit, MaxNano
+                RegisterSpellProcessor(RelevantNanos.NanoResDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.NanoResist));
+                RegisterSpellProcessor(RelevantNanos.CritDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.Crit));
+                RegisterSpellProcessor(RelevantNanos.NanoPointsDebuffAuras, (Spell debuffAuru, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    GenericDebuffingAura(debuffAuru, fightingTarget, ref actionTarget, DebuffingAuraSelection.MaxNano));
 
-            //Pet Spawners
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), CarloSpawner);
-            RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), RobotSpawner);
+                //Perks
+                RegisterPerkProcessor(PerkHash.Leadership, Leadership);
+                RegisterPerkProcessor(PerkHash.Governance, Governance);
+                RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
+                RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
-            //Pet Buffs
-            if (Spell.Find(RelevantNanos.CorporateStrategy, out Spell spell))
-            {
-                RegisterSpellProcessor(RelevantNanos.CorporateStrategy, CorporateStrategy);
+                //Pet Spawners
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), CarloSpawner);
+                RegisterSpellProcessor(PetsList.Pets.Where(x => x.Value.PetType == PetType.Attack).Select(x => x.Key).ToArray(), RobotSpawner);
+
+                //Pet Buffs
+                if (Spell.Find(RelevantNanos.CorporateStrategy, out Spell spell))
+                {
+                    RegisterSpellProcessor(RelevantNanos.CorporateStrategy, CorporateStrategy);
+                }
+                else
+                {
+                    RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetBuff);
+                }
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetBuff);
+                RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetBuff);
+                RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetSupportTargetBuff);
+                RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetSupportTargetBuff);
+
+                RegisterSpellProcessor(RelevantNanos.DroidDamageMatrix, DroidMatrixBuff);
+                //RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix, DroidMatrixBuff);
+
+                //Pet Procs
+                RegisterSpellProcessor(RelevantNanos.MastersBidding,
+                    (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => SupportPetProc(petProc, fightingTarget, ref actionTarget, SupportPetProcSelection.MastersBidding));
+
+
+                RegisterSpellProcessor(RelevantNanos.SedativeInjectors,
+                    (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => SupportPetProc(petProc, fightingTarget, ref actionTarget, SupportPetProcSelection.SedativeInjectors));
+
+                RegisterSpellProcessor(RelevantNanos.MastersBidding,
+                    (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => AttackPetProc(petProc, fightingTarget, ref actionTarget, AttackPetProcSelection.MastersBidding));
+
+                RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix,
+                    (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => AttackPetProc(petProc, fightingTarget, ref actionTarget, AttackPetProcSelection.DroidPressureMatrix));
+
+                RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
+
+                //Pet warp
+                RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+
+                //Pet Trimmers
+                RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness,
+                    (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
+                    PetTrimmer(item, target, ref action, "TauntTrimmer", CanTauntTrim, petType =>
+                    {
+                        petTrimmedAggressive[petType] = true;
+                    }, petType => _lastTrimTime = Time.NormalTime));
+
+                RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive,
+                    (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
+                    PetTrimmer(item, target, ref action, "AggDefTrimmer", CanAggDefTrim, petType =>
+                    {
+                        petTrimmedAggDef[petType] = true;
+                    }, petType => _lastTrimTime = Time.NormalTime));
+
+                RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpoints,
+                    (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
+                    PetTrimmer(item, target, ref action, "DivertHpTrimmer", CanDivertHpTrim, petType =>
+                    {
+                        petTrimmedHpDiv[petType] = true;
+                    }, petType => _lastPetTrimDivertHpTime[petType] = Time.NormalTime));
+
+                RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense,
+                    (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
+                    PetTrimmer(item, target, ref action, "DivertOffTrimmer", CanDivertOffTrim, petType =>
+                    {
+                        petTrimmedOffDiv[petType] = true;
+                    }, petType => _lastPetTrimDivertOffTime[petType] = Time.NormalTime));
+
+                ResetTrimmers();
+
+                //Pet Perks
+
+                //Le procs
+                //type 1
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratFormsInTriplicate, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratSocialServices, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratNextWindowOver, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratWaitInThatQueue, LEProc1, CombatActionPriority.Low);
+
+                //type2
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratMobilityEmbargo, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratWrongWindow, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratTaxAudit, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratLostPaperwork, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratDeflation, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, LEProc2, CombatActionPriority.Low);
+
+                PluginDirectory = pluginDir;
+
+                CycleXpPerksDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelay;
+                StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
+                StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
+                StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
+                KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+                KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+                CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
+                CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
+                SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
+                SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
+                TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
+                TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
+                BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
+                StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
             }
-            else
+            catch (Exception ex)
             {
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetShortTermDamageBuffs).OrderByStackingOrder(), PetBuff);
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
-
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), PetBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDefensiveNanos).OrderByStackingOrder(), PetBuff);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetTauntBuff).OrderByStackingOrder(), PetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetSupportTargetBuff);
-            RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetSupportTargetBuff);
-
-            RegisterSpellProcessor(RelevantNanos.DroidDamageMatrix, DroidMatrixBuff);
-            //RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix, DroidMatrixBuff);
-
-            //Pet Procs
-            RegisterSpellProcessor(RelevantNanos.MastersBidding,
-                (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => SupportPetProc(petProc, fightingTarget, ref actionTarget, SupportPetProcSelection.MastersBidding));
-
-
-            RegisterSpellProcessor(RelevantNanos.SedativeInjectors,
-                (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => SupportPetProc(petProc, fightingTarget, ref actionTarget, SupportPetProcSelection.SedativeInjectors));
-
-            RegisterSpellProcessor(RelevantNanos.MastersBidding,
-                (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => AttackPetProc(petProc, fightingTarget, ref actionTarget, AttackPetProcSelection.MastersBidding));
-
-            RegisterSpellProcessor(RelevantNanos.DroidPressureMatrix,
-                (Spell petProc, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => AttackPetProc(petProc, fightingTarget, ref actionTarget, AttackPetProcSelection.DroidPressureMatrix));
-
-            RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
-
-            //Pet warp
-            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
-
-            //Pet Trimmers
-            RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness,
-                (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "TauntTrimmer", CanTauntTrim, petType =>
-                {
-                    petTrimmedAggressive[petType] = true;
-                }, petType => _lastTrimTime = Time.NormalTime));
-
-            RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive,
-                (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "AggDefTrimmer", CanAggDefTrim, petType =>
-                {
-                    petTrimmedAggDef[petType] = true;
-                }, petType => _lastTrimTime = Time.NormalTime));
-
-            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToHitpoints,
-                (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "DivertHpTrimmer", CanDivertHpTrim, petType =>
-                {
-                    petTrimmedHpDiv[petType] = true;
-                }, petType => _lastPetTrimDivertHpTime[petType] = Time.NormalTime));
-
-            RegisterItemProcessor(RelevantTrimmers.DivertEnergyToOffense,
-                (Item item, SimpleChar target, ref (SimpleChar Target, bool ShouldSetTarget) action) =>
-                PetTrimmer(item, target, ref action, "DivertOffTrimmer", CanDivertOffTrim, petType =>
-                {
-                    petTrimmedOffDiv[petType] = true;
-                }, petType => _lastPetTrimDivertOffTime[petType] = Time.NormalTime));
-
-            ResetTrimmers();
-
-            //Pet Perks
-
-            //Le procs
-            //type 1
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratPleaseHold, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratFormsInTriplicate, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratSocialServices, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratNextWindowOver, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratWaitInThatQueue, LEProc1, CombatActionPriority.Low);
-
-            //type2
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratMobilityEmbargo, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratWrongWindow, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratTaxAudit, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratLostPaperwork, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratDeflation, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratInflationAdjustment, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcBureaucratPapercut, LEProc2, CombatActionPriority.Low);
-
-            PluginDirectory = pluginDir;
-
-            CycleXpPerksDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelay;
-            StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
-            StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
-            StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
-            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
-            CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
-            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
-            SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
-            SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
-            TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
-            TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
-            BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
-            StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
-
         }
 
         public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _petWindow, _petCommandWindow, _procWindow, _debuffWindow, _itemWindow, _perkWindow };

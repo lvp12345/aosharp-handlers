@@ -165,8 +165,6 @@ namespace CombatHandler.MartialArtist
                 RegisterSpellProcessor(RelevantNanos.DamageTypeEnergy, DamageTypeEnergy);
                 RegisterSpellProcessor(RelevantNanos.DamageTypeChemical, DamageTypeChemical);
 
-
-
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder >= 19).OrderByStackingOrder(), ControlledDestructionNoShutdown);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder < 19).OrderByStackingOrder(), ControlledDestructionWithShutdown);
                 RegisterSpellProcessor(RelevantNanos.FistsOfTheWinterFlame, FistsOfTheWinterFlameNano);
@@ -937,6 +935,7 @@ namespace CombatHandler.MartialArtist
 
         private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+
             if (!IsSettingEnabled("CritBuff")) { return false; }
 
             if (!Team.IsInTeam)
@@ -947,15 +946,15 @@ namespace CombatHandler.MartialArtist
             SimpleChar target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.Profession == Profession.NanoTechnician && c.Profession == Profession.Trader
+                        && !(c.Profession == Profession.NanoTechnician || c.Profession == Profession.Trader)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
-            if (target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
-
             if (target != null)
             {
+                if (target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
+
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = target;
                 return true;

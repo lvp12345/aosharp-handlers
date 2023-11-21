@@ -241,6 +241,7 @@ namespace CombatHandler.NanoTechnician
                 BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
             }
+
             catch (Exception ex)
             {
                 var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
@@ -1009,7 +1010,7 @@ namespace CombatHandler.NanoTechnician
             if (fightingTarget != null && fightingTarget.Buffs.Contains(NanoLine.HaloNanoDebuff)) { return false; }
 
             if (HaloSelection.Target == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return true; }
-      
+
             if (HaloSelection.Boss == (HaloSelection)_settings["HaloSelection"].AsInt32()
                 && fightingTarget?.MaxHealth > 1000000)
             {
@@ -1249,11 +1250,11 @@ namespace CombatHandler.NanoTechnician
             public const int IzgimmersUltimatum = 218168;
             public const int Garuk = 275692;
             public const int PierceReflect = 266287;
-            
+
             public const int DarkMovement = 28603;
             public const int BioCocoon = 209802;
 
-            public static readonly int[] RKAOENukes = { 28620, 28638, 28637, 28594, 45922, 45906, 45884, 28635, 28593, 45925, 45940, 
+            public static readonly int[] RKAOENukes = { 28620, 28638, 28637, 28594, 45922, 45906, 45884, 28635, 28593, 45925, 45940,
             45900, 28629, 45917, 45937, 28599, 45894, 45943, 28633, 28631};
             public static readonly int[] SLAOENukes = { 266293, 266294, 266295, 266296, 266297, 266298 };
             public const int VolcanicEruption = 28638;

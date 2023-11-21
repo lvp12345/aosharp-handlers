@@ -4,6 +4,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,144 +38,158 @@ namespace CombatHandler.Shade
 
         public ShadeCombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+            try
+            {
+                IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+                IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
-            _settings.AddVariable("Buffing", true);
-            _settings.AddVariable("Composites", true);
+                _settings.AddVariable("Buffing", true);
+                _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("GlobalBuffing", true);
-            _settings.AddVariable("GlobalComposites", true);
-            _settings.AddVariable("GlobalRez", true);
+                _settings.AddVariable("GlobalBuffing", true);
+                _settings.AddVariable("GlobalComposites", true);
+                _settings.AddVariable("GlobalRez", true);
 
-            _settings.AddVariable("SharpObjects", true);
-            _settings.AddVariable("Grenades", true);
+                _settings.AddVariable("SharpObjects", true);
+                _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
-            _settings.AddVariable("Kits", true);
+                _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.BlackenedLegacy);
-            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.Blackheart);
+                _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.BlackenedLegacy);
+                _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.Blackheart);
 
-            _settings.AddVariable("Runspeed", false);
-            _settings.AddVariable("RunspeedTeam", false);
-            _settings.AddVariable("SLMap", false);
+                _settings.AddVariable("Runspeed", false);
+                _settings.AddVariable("RunspeedTeam", false);
+                _settings.AddVariable("SLMap", false);
 
-            _settings.AddVariable("InitDebuffProc", false);
-            _settings.AddVariable("DamageProc", false);
-            _settings.AddVariable("DOTProc", false);
-            _settings.AddVariable("StunProc", false);
+                _settings.AddVariable("InitDebuffProc", false);
+                _settings.AddVariable("DamageProc", false);
+                _settings.AddVariable("DOTProc", false);
+                _settings.AddVariable("StunProc", false);
 
-            _settings.AddVariable("HealthDrain", false);
-            _settings.AddVariable("SpiritSiphon", false);
+                _settings.AddVariable("HealthDrain", false);
+                _settings.AddVariable("SpiritSiphon", false);
 
-            RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
+                RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
-            //Perks
-            RelevantPerks.SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
-            RelevantPerks.TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
-            RelevantPerks.PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
-            RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
+                //Perks
+                RelevantPerks.SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
+                RelevantPerks.TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
+                RelevantPerks.PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
+                RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
-            //Spells
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaress, CombatActionPriority.High);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealthDrain).OrderByStackingOrder(), HealthDrain);
-            RegisterSpellProcessor(RelevantNanos.SpiritDrain, SpiritSiphon);
+                //Spells
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NemesisNanoPrograms).OrderByStackingOrder(), ShadesCaress, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealthDrain).OrderByStackingOrder(), HealthDrain);
+                RegisterSpellProcessor(RelevantNanos.SpiritDrain, SpiritSiphon);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadePiercingBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SneakAttackBuffs).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
-            RegisterSpellProcessor(RelevantNanos.ShadeDmgProc,(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DamageProc"));
-            RegisterSpellProcessor(RelevantNanos.ShadeStunProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "StunProc"));
-            RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "InitDebuffProc"));
-            RegisterSpellProcessor(RelevantNanos.ShadeDOTProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DOTProc"));
+                RegisterSpellProcessor(RelevantNanos.ShadeDmgProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DamageProc"));
+                RegisterSpellProcessor(RelevantNanos.ShadeStunProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "StunProc"));
+                RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "InitDebuffProc"));
+                RegisterSpellProcessor(RelevantNanos.ShadeDOTProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DOTProc"));
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
 
-            //Items
-            RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
-            RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+                //Items
+                RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
+                RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
 
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcShadeBlackenedLegacy, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeSiphonBeing, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeShadowedGift, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeDrainEssence, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeElusiveSpirit, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeToxicConfusion, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeSapLife, LEProc1, CombatActionPriority.Low);
+                //LE Proc
+                RegisterPerkProcessor(PerkHash.LEProcShadeBlackenedLegacy, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeSiphonBeing, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeShadowedGift, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeDrainEssence, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeElusiveSpirit, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeToxicConfusion, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeSapLife, LEProc1, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcShadeBlackheart, LEProc2, CombatActionPriority.Low); ;
-            RegisterPerkProcessor(PerkHash.LEProcShadeTwistedCaress, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeConcealedSurprise, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeMisdirection, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcShadeDeviousSpirit, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeBlackheart, LEProc2, CombatActionPriority.Low); ;
+                RegisterPerkProcessor(PerkHash.LEProcShadeTwistedCaress, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeConcealedSurprise, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeMisdirection, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcShadeDeviousSpirit, LEProc2, CombatActionPriority.Low);
 
 
-            PluginDirectory = pluginDir;
+                PluginDirectory = pluginDir;
 
-            StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
-            StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
-            StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
-            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
-            CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
-            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
-            SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
-            SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
-            TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
-            TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
-            BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
-            StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+                StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
+                StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
+                StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
+                KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+                KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+                CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
+                CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
+                SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
+                SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
+                TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
+                TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
+                BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
+                StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
 
         public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };

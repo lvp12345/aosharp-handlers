@@ -44,220 +44,234 @@ namespace CombatHandler.Metaphysicist
 
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
-            IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+            try
+            {
+                IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetWait, OnPetWait);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetFollow, OnPetFollow);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
+                IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelayChangedEvent += CycleSpherePerkDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelayChangedEvent += CycleWitOfTheAtroxPerkDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentageChangedEvent += SelfHealPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
-            _settings.AddVariable("Buffing", true);
-            _settings.AddVariable("Composites", true);
+                _settings.AddVariable("Buffing", true);
+                _settings.AddVariable("Composites", true);
 
-            _settings.AddVariable("GlobalBuffing", true);
-            _settings.AddVariable("GlobalComposites", true);
-            _settings.AddVariable("GlobalRez", true);
+                _settings.AddVariable("GlobalBuffing", true);
+                _settings.AddVariable("GlobalComposites", true);
+                _settings.AddVariable("GlobalRez", true);
 
-            _settings.AddVariable("SharpObjects", true);
-            _settings.AddVariable("Grenades", true);
+                _settings.AddVariable("SharpObjects", true);
+                _settings.AddVariable("Grenades", true);
 
-            _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
-            _settings.AddVariable("Kits", true);
+                _settings.AddVariable("Kits", true);
 
-            _settings.AddVariable("SyncPets", true);
-            _settings.AddVariable("SpawnPets", true);
-            _settings.AddVariable("BuffPets", true);
-            _settings.AddVariable("CEPetBuff", false);
-            _settings.AddVariable("MezzPet", false);    
-            _settings.AddVariable("WarpPets", false);
+                _settings.AddVariable("SyncPets", true);
+                _settings.AddVariable("SpawnPets", true);
+                _settings.AddVariable("BuffPets", true);
+                _settings.AddVariable("CEPetBuff", false);
+                _settings.AddVariable("MezzPet", false);
+                _settings.AddVariable("WarpPets", false);
 
-            _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
+                _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
 
-            _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
-            _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
-            _settings.AddVariable("InterruptSelection", (int)InterruptSelection.None);
+                _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
+                _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
+                _settings.AddVariable("InterruptSelection", (int)InterruptSelection.None);
 
-            _settings.AddVariable("DamageDebuffSelection", (int)DamageDebuffSelection.None);
-            _settings.AddVariable("DamageDebuffASelection", (int)DamageDebuffASelection.None);
-            _settings.AddVariable("DamageDebuffBSelection", (int)DamageDebuffBSelection.None);
+                _settings.AddVariable("DamageDebuffSelection", (int)DamageDebuffSelection.None);
+                _settings.AddVariable("DamageDebuffASelection", (int)DamageDebuffASelection.None);
+                _settings.AddVariable("DamageDebuffBSelection", (int)DamageDebuffBSelection.None);
 
-            _settings.AddVariable("NanoResistanceDebuffSelection", (int)NanoResistanceDebuffSelection.None);
-            _settings.AddVariable("NanoShutdownDebuffSelection", (int)NanoShutdownDebuffSelection.None);
+                _settings.AddVariable("NanoResistanceDebuffSelection", (int)NanoResistanceDebuffSelection.None);
+                _settings.AddVariable("NanoShutdownDebuffSelection", (int)NanoShutdownDebuffSelection.None);
 
-            _settings.AddVariable("CompositesNanoSkills", false);
-            _settings.AddVariable("CompositesNanoSkillsTeam", false);
+                _settings.AddVariable("CompositesNanoSkills", false);
+                _settings.AddVariable("CompositesNanoSkillsTeam", false);
 
-            _settings.AddVariable("Cost", false);
-            _settings.AddVariable("Evades", false);
-            _settings.AddVariable("PistolTeam", false);
-            _settings.AddVariable("SLMap", false);
+                _settings.AddVariable("Cost", false);
+                _settings.AddVariable("Evades", false);
+                _settings.AddVariable("PistolTeam", false);
+                _settings.AddVariable("SLMap", false);
 
-            _settings.AddVariable("DamagePerk", false);
+                _settings.AddVariable("DamagePerk", false);
 
-            //LE Proc
-            _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AnticipatedEvasion);
-            _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DiffuseRage);
+                //LE Proc
+                _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AnticipatedEvasion);
+                _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DiffuseRage);
 
-            _settings.AddVariable("Replenish", false);
+                _settings.AddVariable("Replenish", false);
 
-            //_settings.AddVariable("MatterCrea", false);
-            //_settings.AddVariable("PyschoModi", false);
-            //_settings.AddVariable("TimeSpace", false);
-            //_settings.AddVariable("SenseImprov", false);
-            //_settings.AddVariable("BioMet", false);
-            //_settings.AddVariable("MattMet", false);
+                //_settings.AddVariable("MatterCrea", false);
+                //_settings.AddVariable("PyschoModi", false);
+                //_settings.AddVariable("TimeSpace", false);
+                //_settings.AddVariable("SenseImprov", false);
+                //_settings.AddVariable("BioMet", false);
+                //_settings.AddVariable("MattMet", false);
 
-            //settings.AddVariable("CostTeam", false);
+                //settings.AddVariable("CostTeam", false);
 
-            _settings.AddVariable("Nukes", false);
-            _settings.AddVariable("NormalNuke", false);
-            _settings.AddVariable("DebuffNuke", false);
+                _settings.AddVariable("Nukes", false);
+                _settings.AddVariable("NormalNuke", false);
+                _settings.AddVariable("DebuffNuke", false);
 
-            //settings.AddVariable("NanoBuffsSelection", (int)NanoBuffsSelection.SL);
-            //settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
+                //settings.AddVariable("NanoBuffsSelection", (int)NanoBuffsSelection.SL);
+                //settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
 
-            RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
+                RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
 
-            //Debuffs
-            //nukes
-            RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke,CombatActionPriority.High);
-            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
+                //Debuffs
+                //nukes
+                RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
 
-            //debuffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(),
-               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffSelection"), CombatActionPriority.High);
+                //debuffs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MetaPhysicistDamageDebuff).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffSelection"), CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(),
-               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffASelection"), CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineA).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffASelection"), CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(),
-               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffBSelection"), CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPDamageDebuffLineB).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "DamageDebuffBSelection"), CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(),
-               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoResistanceDebuffSelection"), CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoResistanceDebuffSelection"), CombatActionPriority.High);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(),
-               (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-               => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoShutdownDebuffSelection"), CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoShutdownDebuff).OrderByStackingOrder(),
+                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoShutdownDebuffSelection"), CombatActionPriority.High);
 
-            //Buffs
-            //self buffs
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvades);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                //Buffs
+                //self buffs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvades);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
-            //team buffs
-            RegisterSpellProcessor(RelevantNanos.MPCompositeNano,
-                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "CompositeNanoSkillsBuffSelection"));
+                //team buffs
+                RegisterSpellProcessor(RelevantNanos.MPCompositeNano,
+                    (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "CompositeNanoSkillsBuffSelection"));
 
-            RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
+                RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
-            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+                RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
 
-            RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
-            RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
-            RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PsyMod);
-            RegisterSpellProcessor(RelevantNanos.SenImpBuffs, SenImp);
-            RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MatCre);
-            RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MatLoc);
+                RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
+                RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
+                RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PsyMod);
+                RegisterSpellProcessor(RelevantNanos.SenImpBuffs, SenImp);
+                RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MatCre);
+                RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MatLoc);
 
-             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
-                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
+                    (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
 
-            RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
+                RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
-            //Pets
-            RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
-            RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
+                //Pets
+                RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
+                RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
 
-            //Pet Buffs
-            RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
-            RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
-            RegisterSpellProcessor(RelevantNanos.InducedApathy, InducedApathy);
+                //Pet Buffs
+                RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
+                RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
+                RegisterSpellProcessor(RelevantNanos.InducedApathy, InducedApathy);
 
-            RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, EvasionPet);
-            RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
-            RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
+                RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, EvasionPet);
+                RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
+                RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
 
-            RegisterSpellProcessor(RelevantNanos.MPCompositeNano, MezzPetMochies);
+                RegisterSpellProcessor(RelevantNanos.MPCompositeNano, MezzPetMochies);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetSeed);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealingConstructEmpowerment).OrderByStackingOrder(), HealPetSeed);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AggressiveConstructEmpowerment).OrderByStackingOrder(), AttackPetSeed);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPAttackPetDamageType).OrderByStackingOrder(), DamageTypePet);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetSeed);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealingConstructEmpowerment).OrderByStackingOrder(), HealPetSeed);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AggressiveConstructEmpowerment).OrderByStackingOrder(), AttackPetSeed);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPAttackPetDamageType).OrderByStackingOrder(), DamageTypePet);
 
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), NanoResistancePet);
-            RegisterSpellProcessor(RelevantNanos.PetDefensive, DefensivePet);
-            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealDelta843).OrderByStackingOrder(), HealDeltaPet);
-            RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
-            RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), NanoResistancePet);
+                RegisterSpellProcessor(RelevantNanos.PetDefensive, DefensivePet);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealDelta843).OrderByStackingOrder(), HealDeltaPet);
+                RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
+                RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
-            //Pet Perks
+                //Pet Perks
 
-            //LE Proc
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistNanobotContingentArrest, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistThoughtfulMeans, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistRegainFocus, LEProc1, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEconomicNanobotUse, LEProc1, CombatActionPriority.Low);
+                //LE Proc
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistNanobotContingentArrest, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistAnticipatedEvasion, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistThoughtfulMeans, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistRegainFocus, LEProc1, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEconomicNanobotUse, LEProc1, CombatActionPriority.Low);
 
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuperEgoStrike, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuppressFury, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEgoStrike, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistMindWail, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, LEProc2, CombatActionPriority.Low);
-            RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuperEgoStrike, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSuppressFury, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistEgoStrike, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistMindWail, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, LEProc2, CombatActionPriority.Low);
+                RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, LEProc2, CombatActionPriority.Low);
 
 
-            PluginDirectory = pluginDir;
+                PluginDirectory = pluginDir;
 
-            StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
-            StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
-            StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
-            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
-            CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
-            CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
-            SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
-            SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
-            TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
-            TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
-            BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
-            StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+                StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
+                StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
+                StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
+                KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+                KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+                CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
+                CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
+                SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
+                SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
+                TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
+                TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
+                BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
+                StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
 
         public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _debuffWindow, _itemWindow, _perkWindow, _nukesWindow };
@@ -613,7 +627,7 @@ namespace CombatHandler.Metaphysicist
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                
+
                 if (window.Views.Contains(_nukesView)) { return; }
 
                 _nukesView = View.CreateFromXml(PluginDirectory + "\\UI\\MPNukesView.xml");
@@ -944,7 +958,7 @@ namespace CombatHandler.Metaphysicist
         {
             if (!_settings["Nukes"].AsBool()) { return false; }
 
-            if(!_settings["NormalNuke"].AsBool()) { return false; }
+            if (!_settings["NormalNuke"].AsBool()) { return false; }
 
             if (fightingTarget == null || !CanCast(spell)) { return false; }
 
@@ -1442,7 +1456,7 @@ namespace CombatHandler.Metaphysicist
         {
             None, InducedApathy, MastersBidding
         }
-        
+
         public enum DamageDebuffSelection
         {
             None, Target, Area, Boss

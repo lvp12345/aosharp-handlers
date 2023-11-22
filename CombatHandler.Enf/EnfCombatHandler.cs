@@ -123,8 +123,7 @@ namespace CombatHandler.Enf
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TauntProc"));
 
-                //Taunt Tools
-                RegisterItemProcessor(RelevantGenericItems.TauntTools, TauntTool, CombatActionPriority.Medium);
+                
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),

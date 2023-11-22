@@ -123,9 +123,6 @@ namespace CombatHandler.Soldier
                 RegisterSpellProcessor(RelevantNanos.TimedTauntBuffs, TimedTargetTaunt, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.SingleTauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
 
-                //Taunt Tools
-                RegisterItemProcessor(RelevantGenericItems.TauntTools, TauntTool, CombatActionPriority.Medium);
-
                 //Spells
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => !c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);

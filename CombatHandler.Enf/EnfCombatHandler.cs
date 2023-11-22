@@ -82,7 +82,7 @@ namespace CombatHandler.Enf
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 
-                _settings.AddVariable("ScorpioTauntTool", false);
+                _settings.AddVariable("TauntTool", false);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
@@ -123,8 +123,7 @@ namespace CombatHandler.Enf
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TauntProc"));
 
-                //Taunt Tools
-                RegisterItemProcessor(244655, 244655, TauntTool);
+                
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),

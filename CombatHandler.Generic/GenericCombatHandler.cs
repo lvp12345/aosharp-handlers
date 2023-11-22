@@ -235,6 +235,9 @@ namespace CombatHandler.Generic
                 RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, EnforcerEnduranceBooster, CombatActionPriority.High);
                 RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, NanomageEnduranceBooster, CombatActionPriority.High);
 
+                //Taunt Tools
+                RegisterItemProcessor(RelevantGenericItems.TauntTools, TauntTool, CombatActionPriority.Medium);
+
                 RegisterItemProcessor(new int[] { RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.BarrowStrength }, TotwDmgShoulder);
 
                 RegisterItemProcessor(RelevantGenericItems.GnuffsEternalRiftCrystal, RelevantGenericItems.GnuffsEternalRiftCrystal, DamageItem);
@@ -1336,7 +1339,7 @@ namespace CombatHandler.Generic
 
         protected bool TauntTool(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !IsSettingEnabled("ScorpioTauntTool")
+            if (fightingTarget == null || !_settings["TauntTool"].AsBool()
                 || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Psychology)) { return false; }
 
             actionTarget.Target = fightingTarget;
@@ -2123,7 +2126,7 @@ namespace CombatHandler.Generic
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
 
-        private static class RelevantGenericItems
+        public static class RelevantGenericItems
         {
             public const int ReflectGraft = 95225; //Hacked Boosted-Graft: Lesser Deflection Shield (Extended) 
 
@@ -2218,6 +2221,19 @@ namespace CombatHandler.Generic
             public const int WenWen = 129656;
 
             public const int Drone = 303188;
+
+            public static readonly int[] TauntTools = new[]
+            {
+                83920,   // Aggression Enhancer
+                83919,   // Aggression Multiplier
+                151692,  // Modified Aggression Enhancer (Low)
+                151693,  // Modified Aggression Enhancer (High)
+                152029,  // Aggression Enhancer (Jealousy Augmented)
+                152028,  // Aggression Multiplier (Jealousy Augmented)
+                244655,  // Scorpio's Aim of Anger
+                253186,  // Codex of the Insulting Emerto (Low)
+                253187   // Codex of the Insulting Emerto (High)
+            };
         };
 
         public static class RelevantGenericNanos

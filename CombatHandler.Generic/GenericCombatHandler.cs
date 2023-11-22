@@ -235,6 +235,9 @@ namespace CombatHandler.Generic
                 RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, RelevantGenericItems.DreadlochEnduranceBoosterEnforcerSpecial, EnforcerEnduranceBooster, CombatActionPriority.High);
                 RegisterItemProcessor(RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, RelevantGenericItems.DreadlochEnduranceBoosterNanomageEdition, NanomageEnduranceBooster, CombatActionPriority.High);
 
+                //Taunt Tools
+                RegisterItemProcessor(RelevantGenericItems.TauntTools, TauntTool, CombatActionPriority.Medium);
+
                 RegisterItemProcessor(new int[] { RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.BarrowStrength }, TotwDmgShoulder);
 
                 RegisterItemProcessor(RelevantGenericItems.GnuffsEternalRiftCrystal, RelevantGenericItems.GnuffsEternalRiftCrystal, DamageItem);

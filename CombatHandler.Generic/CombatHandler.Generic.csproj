@@ -70,7 +70,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsController.cs" />
     <Compile Include="Utilz.cs" />
-    <Compile Include="TauntTools.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

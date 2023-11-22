@@ -70,7 +70,7 @@ namespace CombatHandler.Keeper
                 _settings.AddVariable("SharpObjects", false);
                 _settings.AddVariable("Grenades", false);
 
-                _settings.AddVariable("ScorpioTauntTool", false);
+                _settings.AddVariable("TauntTool", false);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
@@ -100,7 +100,7 @@ namespace CombatHandler.Keeper
                 //        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "RecastAntiFear"));
 
                 //Taunt Tools
-                RegisterItemProcessor(244655, 244655, TauntTool);
+                RegisterItemProcessor(RelevantGenericItems.TauntTools, TauntTool, CombatActionPriority.Medium);
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(),

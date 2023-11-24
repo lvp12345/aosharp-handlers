@@ -69,6 +69,9 @@ namespace CombatHandler.Fixer
 
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
+
+                _settings.AddVariable("TauntTool", false);
+
                 _settings.AddVariable("BulletsSelection", (int)BulletsSelection.None);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);

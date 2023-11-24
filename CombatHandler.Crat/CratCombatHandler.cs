@@ -107,6 +107,8 @@ namespace CombatHandler.Bureaucrat
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 
+                _settings.AddVariable("TauntTool", false);
+
                 _settings.AddVariable("Exoneration", false);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);

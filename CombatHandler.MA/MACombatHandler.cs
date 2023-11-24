@@ -69,6 +69,8 @@ namespace CombatHandler.MartialArtist
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 
+                _settings.AddVariable("TauntTool", false);
+
                 _settings.AddVariable("MASASelection", (int)MASASelection.StingoftheViper);
 
                 _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);

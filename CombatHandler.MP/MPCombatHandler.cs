@@ -83,6 +83,8 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 
+                _settings.AddVariable("TauntTool", false);
+
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
                 _settings.AddVariable("Kits", true);

@@ -77,6 +77,8 @@ namespace CombatHandler.Doctor
                 _settings.AddVariable("SharpObjects", false);
                 _settings.AddVariable("Grenades", false);
 
+                _settings.AddVariable("TauntTool", false);
+
                 _settings.AddVariable("TOTWBooks", true);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);

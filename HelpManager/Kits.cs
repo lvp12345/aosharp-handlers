@@ -22,7 +22,7 @@ namespace HelpManager
             // Check if we should sit and use the kit..
             if ((localPlayer.NanoPercent <= GenericCombatHandler.KitHealthPercentage || localPlayer.HealthPercent <= GenericCombatHandler.KitNanoPercentage) 
                 && !InCombat() && Spell.List.Any(spell => spell.IsReady) && !Spell.HasPendingCast
-                && !localPlayer.Cooldowns.ContainsKey(Stat.Treatment) && CanUseSitKit() && !localPlayer.IsFalling)
+                && !localPlayer.Cooldowns.ContainsKey(Stat.Treatment) && CanUseSitKit() && !localPlayer.IsFalling && !DynelManager.LocalPlayer.IsMoving)
             {
                 // Sit if not already sitting.
                 if (localPlayer.MovementState != MovementState.Sit)
@@ -88,17 +88,16 @@ namespace HelpManager
 
             if (Team.IsInTeam)
             {
-                return DynelManager.Characters
-                    .Any(c => c.FightingTarget != null
-                        && Team.Members.Select(m => m.Name).Contains(c.FightingTarget.Name));
+                return Team.Members.Any(m => m.Character != null && m.Character.IsAttacking) ||
+                       DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
+                                                    Team.Members.Select(m => m.Identity).Contains(npc.FightingTarget.Identity));
             }
 
-            return DynelManager.Characters
-                    .Any(c => c.FightingTarget != null
-                        && c.FightingTarget.Name == localPlayer.Name)
-                    || localPlayer.GetStat(Stat.NumFightingOpponents) > 0
-                    || Team.IsInCombat()
-                    || localPlayer.FightingTarget != null;
+            return localPlayer.IsAttacking ||
+                   (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && pet.Character.IsAttacking)) ||
+                   DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
+                                                (npc.FightingTarget.Identity == localPlayer.Identity ||
+                                                 (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && npc.FightingTarget.Identity == pet.Character.Identity))));
         }
 
         public static bool Casting()

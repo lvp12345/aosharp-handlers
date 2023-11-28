@@ -36,6 +36,9 @@ namespace HelpManager
         private static double _bellyPathingTimer;
         private static double _zixMorphTimer;
 
+        public static int KitHealthPercentage = 0;
+        public static int KitNanoPercentage = 0;
+
         private static double _uiDelay;
 
         public static bool Sitting = false;
@@ -97,6 +100,7 @@ namespace HelpManager
         {
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
             PluginDir = pluginDir;
@@ -108,8 +112,8 @@ namespace HelpManager
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
 
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
-            GenericCombatHandler.Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += GenericCombatHandler.KitHealthPercentage_Changed;
-            GenericCombatHandler.Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += GenericCombatHandler.KitNanoPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
 
             RegisterSettingsWindow("Help Manager", "HelpManagerSettingWindow.xml");
 
@@ -130,8 +134,8 @@ namespace HelpManager
 
             PluginDirectory = pluginDir;
 
-            GenericCombatHandler.KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
-            GenericCombatHandler.KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
         }
 
         public override void Teardown()
@@ -468,26 +472,6 @@ namespace HelpManager
             return localPlayer.GetStat(Stat.FirstAid) >= skillReq || localPlayer.GetStat(Stat.Treatment) >= skillReq;
         }
 
-        public static bool InCombat()
-        {
-            var localPlayer = DynelManager.LocalPlayer;
-
-            if (Team.IsInTeam)
-            {
-                return DynelManager.Characters
-                    .Any(c => c.FightingTarget != null
-                        && Team.Members.Select(m => m.Name).Contains(c.FightingTarget.Name));
-            }
-
-            return DynelManager.Characters
-                    .Any(c => c.FightingTarget != null
-                        && c.FightingTarget.Name == localPlayer.Name)
-                    || localPlayer.GetStat(Stat.NumFightingOpponents) > 0
-                    || Team.IsInCombat()
-                    || localPlayer.FightingTarget != null;
-        }
-
-
         public static void CancelBuffs(int[] buffsToCancel)
         {
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
@@ -521,6 +505,19 @@ namespace HelpManager
                 return 414;
 
             return 0;
+        }
+
+        public static void KitHealthPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = e;
+            KitHealthPercentage = e;
+            Config.Save();
+        }
+        public static void KitNanoPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = e;
+            KitNanoPercentage = e;
+            Config.Save();
         }
 
         private static class RelevantNanos

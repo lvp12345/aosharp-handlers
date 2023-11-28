@@ -194,13 +194,13 @@ namespace SyncManager
         private void Start()
         {
             Enable = true;
-
+            Chat.WriteLine("Sync enabled");
         }
 
         private void Stop()
         {
             Enable = false;
-
+            Chat.WriteLine("Sync disabled");
         }
 
         private void OnZoned(object s, EventArgs e)

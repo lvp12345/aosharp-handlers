@@ -16,8 +16,10 @@ namespace HelpManager
         [JsonIgnore]
         public int IPCChannel => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].IPCChannel : 2;
         [JsonIgnore]
-        public int SitPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SitPercentage : 65;
-
+        public int KitHealthPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage : 66;
+        [JsonIgnore]
+        public int KitNanoPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage : 66;
+ 
         public static Config Load(string path)
         {
             Config config;
@@ -51,17 +53,10 @@ namespace HelpManager
 
         public void Save()
         {
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager");
-
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}"))
+            {
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}");
+            }
 
             File.WriteAllText(_path, JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
         }
@@ -70,9 +65,9 @@ namespace HelpManager
     public class CharacterSettings
     {
         public event EventHandler<int> IPCChannelChangedEvent;
+
         private int _ipcChannel = 2;
 
-        //Breaking out auto-property
         public int IPCChannel
         {
             get
@@ -89,20 +84,41 @@ namespace HelpManager
             }
         }
 
-        public event EventHandler<int> SitPercentageChangedEvent;
-        private int _sitPercentage = 65;
-        public int SitPercentage
+        public event EventHandler<int> KitHealthPercentageChangedEvent;
+
+        private int _kitHealthPercentage = 66;
+
+        public int KitHealthPercentage
         {
             get
             {
-                return _sitPercentage;
+                return _kitHealthPercentage;
             }
             set
             {
-                if (_sitPercentage != value)
+                if (_kitHealthPercentage != value)
                 {
-                    _sitPercentage = value;
-                    SitPercentageChangedEvent?.Invoke(this, value);
+                    _kitHealthPercentage = value;
+                    KitHealthPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> KitNanoPercentageChangedEvent;
+
+        private int _kitNanoPercentage = 66;
+
+        public int KitNanoPercentage
+        {
+            get
+            {
+                return _kitNanoPercentage;
+            }
+            set
+            {
+                if (_kitNanoPercentage != value)
+                {
+                    _kitNanoPercentage = value;
+                    KitNanoPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

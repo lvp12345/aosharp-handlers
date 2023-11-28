@@ -20,7 +20,7 @@ namespace HelpManager
             var localPlayer = DynelManager.LocalPlayer;
 
             // Check if we should sit and use the kit..
-            if ((localPlayer.NanoPercent <= GenericCombatHandler.KitHealthPercentage || localPlayer.HealthPercent <= GenericCombatHandler.KitNanoPercentage) 
+            if ((localPlayer.NanoPercent <= HelpManager.KitHealthPercentage || localPlayer.HealthPercent <= HelpManager.KitNanoPercentage) 
                 && !InCombat() && Spell.List.Any(spell => spell.IsReady) && !Spell.HasPendingCast
                 && !localPlayer.Cooldowns.ContainsKey(Stat.Treatment) && CanUseSitKit() && !localPlayer.IsFalling && !DynelManager.LocalPlayer.IsMoving)
             {
@@ -36,7 +36,7 @@ namespace HelpManager
                 }
             }
             // Check if we should stand.
-            if ((localPlayer.NanoPercent >= 90 && localPlayer.HealthPercent >= 90) || InCombat() || localPlayer.Cooldowns.ContainsKey(Stat.Treatment)
+            if ((localPlayer.NanoPercent >= HelpManager.KitHealthPercentage && localPlayer.HealthPercent >= HelpManager.KitNanoPercentage) || InCombat() || localPlayer.Cooldowns.ContainsKey(Stat.Treatment)
                || !Spell.List.Any(spell => spell.IsReady) || Spell.HasPendingCast)
             {
                 // Stand up if sitting.

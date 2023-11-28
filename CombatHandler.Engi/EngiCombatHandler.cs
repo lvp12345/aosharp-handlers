@@ -59,8 +59,6 @@ namespace CombatHandler.Engineer
 
         private static double _ncuUpdateTime;
 
-        
-
         public EngiCombatHandler(string pluginDir) : base(pluginDir)
         {
             try
@@ -1073,12 +1071,16 @@ namespace CombatHandler.Engineer
 
         private bool PetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!CanCast(spell)) { return false; }
+
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         private bool SettingPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
         {
+            if (!CanCast(spell)) { return false; }
+
             if (!_settings[settingName].AsBool()) { return false; }
 
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)

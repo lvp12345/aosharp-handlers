@@ -54,7 +54,9 @@ namespace HelpManager
         public void Save()
         {
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}"))
+            {
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}");
+            }
 
             File.WriteAllText(_path, JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
         }
@@ -63,6 +65,7 @@ namespace HelpManager
     public class CharacterSettings
     {
         public event EventHandler<int> IPCChannelChangedEvent;
+
         private int _ipcChannel = 2;
 
         public int IPCChannel
@@ -82,7 +85,9 @@ namespace HelpManager
         }
 
         public event EventHandler<int> KitHealthPercentageChangedEvent;
+
         private int _kitHealthPercentage = 66;
+
         public int KitHealthPercentage
         {
             get
@@ -99,7 +104,9 @@ namespace HelpManager
             }
         }
         public event EventHandler<int> KitNanoPercentageChangedEvent;
+
         private int _kitNanoPercentage = 66;
+
         public int KitNanoPercentage
         {
             get

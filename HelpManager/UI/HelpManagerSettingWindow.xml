@@ -27,7 +27,7 @@
 			</View>
 			<View v_alignment="top" h_alignment="left" view_layout="horizontal" layout_borders="Rect(2,2,90,2)" max_size="Point(16000,-1)">
 				<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-				<OptionCheckBox label="Auto sit (AFK)" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__AutoSit" layout_borders="Rect(10,1,5,1)"/>
+				<OptionCheckBox label="Auto sit Kit" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__AutoSit" layout_borders="Rect(10,1,5,1)"/>
 				<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 			</View>
 		</BorderView>

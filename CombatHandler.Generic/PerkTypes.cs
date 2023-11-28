@@ -99,7 +99,7 @@ namespace CombatHandler.Generic
             {PerkHash.Derivate , PerkType.TargetDamage},
             {PerkHash.DetonateStoneworks , PerkType.TargetDamage},
             {PerkHash.DevastatingBlow , PerkType.TargetDamage},
-            {PerkHash.DevotionalArmor , PerkType.SelfBuff},
+            {PerkHash.DevotionalArmor , PerkType.DamageBuff},
             {PerkHash.Devour , PerkType.TargetDamage},
             {PerkHash.DevourEssence , PerkType.Disabled},
             {PerkHash.DevourVigor , PerkType.Disabled},

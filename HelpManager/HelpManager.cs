@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using CombatHandler.Generic;
 
 namespace HelpManager
 {
@@ -102,6 +101,8 @@ namespace HelpManager
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
             
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
+            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
 
             PluginDir = pluginDir;
 
@@ -133,9 +134,6 @@ namespace HelpManager
             Chat.WriteLine("/helpmanager for settings.");
 
             PluginDirectory = pluginDir;
-
-            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
         }
 
         public override void Teardown()
@@ -148,6 +146,19 @@ namespace HelpManager
         public static void IPCChannel_Changed(object s, int e)
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
+            Config.Save();
+        }
+
+        public static void KitHealthPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = e;
+            KitHealthPercentage = e;
+            Config.Save();
+        }
+        public static void KitNanoPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = e;
+            KitNanoPercentage = e;
             Config.Save();
         }
 
@@ -188,8 +199,9 @@ namespace HelpManager
             if (Time.NormalTime > _sitPetUpdateTimer + 2)
             {
                 if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
+                {
                     ListenerPetSit();
-
+                }
                 _sitPetUpdateTimer = Time.NormalTime;
             }
 
@@ -200,11 +212,8 @@ namespace HelpManager
                         && x.Name == "Glowing Pustule")
                     .FirstOrDefault();
 
-                if (Pustule != null)
-                {
-                    Pustule.Use();
-                }
-
+                    Pustule?.Use();
+                
                 if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(132.0f, 90.0f, 117.0f)) < 2f
                     && !MovementController.Instance.IsNavigating)
                 {
@@ -249,11 +258,8 @@ namespace HelpManager
                     || x.Name == "Torus of Aim" || x.Name == "Square of Attack Power"))
                     .FirstOrDefault();
 
-                if (shape != null)
-                {
-                    shape.Use();
-                }
-
+                    shape?.Use();
+                
                 _shapeUsedTimer = Time.NormalTime;
             }
 
@@ -277,14 +283,26 @@ namespace HelpManager
                     }
 
                     if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                    {
                         if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+                            } 
+                        }  
+                    }
 
                     if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                    {
                         if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+                            }   
+                        }  
+                    } 
 
                     if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
                     {
@@ -317,8 +335,7 @@ namespace HelpManager
             {
                 Item yalm3 = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
 
-                if (yalm3 != null)
-                    yalm3.Equip(EquipSlot.Weap_Hud1);
+                    yalm3?.Equip(EquipSlot.Weap_Hud1);
             }
         }
 
@@ -342,8 +359,7 @@ namespace HelpManager
             {
                 Spell yalm3 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
 
-                if (yalm3 != null)
-                    yalm3.Cast(false);
+                    yalm3?.Cast(false);
             }
         }
 
@@ -353,8 +369,7 @@ namespace HelpManager
             {
                 Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
 
-                if (yalm != null)
-                    yalm.MoveToInventory();
+                    yalm?.MoveToInventory();
             }
             else
                 CancelBuffs(RelevantNanos.Yalms);
@@ -456,6 +471,7 @@ namespace HelpManager
             }
 
             List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.Id != 297274).ToList();
+
             if (sitKits.Any())
             {
                 return sitKits.OrderBy(x => x.QualityLevel).Any(sitKit => MeetsSkillRequirement(sitKit));
@@ -477,7 +493,9 @@ namespace HelpManager
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {
                 if (buffsToCancel.Contains(buff.Id))
+                {
                     buff.Remove();
+                } 
             }
         }
 
@@ -506,20 +524,6 @@ namespace HelpManager
 
             return 0;
         }
-
-        public static void KitHealthPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = e;
-            KitHealthPercentage = e;
-            Config.Save();
-        }
-        public static void KitNanoPercentage_Changed(object s, int e)
-        {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = e;
-            KitNanoPercentage = e;
-            Config.Save();
-        }
-
         private static class RelevantNanos
         {
             public static readonly int[] ZixMorph = { 288532, 302212 };

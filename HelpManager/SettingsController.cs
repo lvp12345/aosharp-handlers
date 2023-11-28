@@ -74,14 +74,19 @@ namespace HelpManager
                             settingsWindow.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
 
                             if (channelInput != null)
+                            {
                                 channelInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel}";
-
+                            }
+                                
                             if (kitHealthInput != null)
+                            {
                                 kitHealthInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage}";
-
+                            }
+                                
                             if (kitNanoInput != null)
+                            {
                                 kitNanoInput.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage}";
-
+                            }
                         }
                     }
                     catch (Exception e)
@@ -98,7 +103,9 @@ namespace HelpManager
             foreach (var window in allWindows)
             {
                 if (window?.IsValid == true)
+                {
                     return window;
+                } 
             }
 
             return null;

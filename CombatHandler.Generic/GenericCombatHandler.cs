@@ -4,19 +4,13 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic.IPCMessages;
-using SmokeLounge.AOtomation.Messaging.GameData;
-using SmokeLounge.AOtomation.Messaging.Messages;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using static CombatHandler.Generic.PerkCondtionProcessors;
-using System.IO;
 using System.Text.RegularExpressions;
 
 namespace CombatHandler.Generic
@@ -351,47 +345,10 @@ namespace CombatHandler.Generic
             CancelAllBuffs();
         }
 
-
-        //public void SaveSpellToFileIfNotExists()
-        //{
-        //    string directoryPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\Generic\\{DynelManager.LocalPlayer.Name}";
-        //    string filePath = Path.Combine(directoryPath, "SpellList.txt");
-
-        //    if (!File.Exists(filePath))
-        //    {
-        //        File.Create(filePath).Dispose();
-        //    }
-
-        //    foreach (Spell spell in Spell.List)
-        //    {
-        //        List<SpellData> spellDataList = spell.UseModifiers; // Get the SpellData list for the spell
-
-        //        foreach (SpellData spellData in spellDataList)
-        //        {
-        //            string spellInfo = $"Spell Name: {spell.Name}, Function: {spellData.Function}";
-
-        //            // Append SpellData properties to the spellInfo
-        //            foreach (var prop in spellData.Properties)
-        //            {
-        //                spellInfo += $", {prop.Key}: {prop.Value}";
-        //            }
-
-        //            string fileContent = File.ReadAllText(filePath);
-
-        //            if (!fileContent.Contains(spellInfo))
-        //            {
-        //                File.AppendAllText(filePath, spellInfo + Environment.NewLine);
-        //            }
-        //        }
-        //    }
-        //}
-
         protected override void OnUpdate(float deltaTime)
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
                 return;
-
-            //SaveSpellToFileIfNotExists();
 
             base.OnUpdate(deltaTime);
 
@@ -2030,8 +1987,6 @@ namespace CombatHandler.Generic
             HeavyWeapons = 0x40000,   // 0x01000000000000000000b
         }
 
-        // This will eventually be done dynamically but for now I will implement
-        // it statically so we can have it functional
         private Stat GetSkillLockStat(Item item)
         {
             switch (item.HighId)
@@ -2099,23 +2054,6 @@ namespace CombatHandler.Generic
             if (SettingsController.IsCharacterRegistered(e.Requester))
             {
                 e.Accept();
-            }
-        }
-
-        private static void OnN3MessageSent(object sender, N3Message n3Msg)
-        {
-            if (n3Msg is CharacterActionMessage characterActionMessage)
-            {
-                if (characterActionMessage.Action == CharacterActionType.InfoRequest)
-                {
-                    Chat.WriteLine($"Sent CharacterActionMessage with the following details:");
-                    Chat.WriteLine($"- Action: {characterActionMessage.Action}");
-                    Chat.WriteLine($"- Unknown1: {characterActionMessage.Unknown1}");
-                    Chat.WriteLine($"- Target Identity: {characterActionMessage.Target}");
-                    Chat.WriteLine($"- Parameter1: {characterActionMessage.Parameter1}");
-                    Chat.WriteLine($"- Parameter2: {characterActionMessage.Parameter2}");
-                    Chat.WriteLine($"- Unknown2: {characterActionMessage.Unknown2}");
-                }
             }
         }
 
@@ -2222,15 +2160,15 @@ namespace CombatHandler.Generic
 
             public static readonly int[] TauntTools = new[]
             {
-                83920,   // Aggression Enhancer
-                83919,   // Aggression Multiplier
-                151692,  // Modified Aggression Enhancer (Low)
-                151693,  // Modified Aggression Enhancer (High)
-                152029,  // Aggression Enhancer (Jealousy Augmented)
-                152028,  // Aggression Multiplier (Jealousy Augmented)
                 244655,  // Scorpio's Aim of Anger
+                152028,  // Aggression Multiplier (Jealousy Augmented)
+                253187,   // Codex of the Insulting Emerto (High)
+                151693,  // Modified Aggression Enhancer (High)
+                83919,   // Aggression Multiplier
+                152029,  // Aggression Enhancer (Jealousy Augmented)
+                151692,  // Modified Aggression Enhancer (Low)
                 253186,  // Codex of the Insulting Emerto (Low)
-                253187   // Codex of the Insulting Emerto (High)
+                83920,   // Aggression Enhancer 
             };
         };
 

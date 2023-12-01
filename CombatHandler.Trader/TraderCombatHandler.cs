@@ -927,6 +927,8 @@ namespace CombatHandler.Trader
         {
             SLNanoDrainSelection selection = (SLNanoDrainSelection)_settings["SLNanoDrainSelection"].AsInt32();
 
+            if (NeedsReload()) { return false; }
+
             switch (selection)
             {
                 case SLNanoDrainSelection.Target:
@@ -945,6 +947,8 @@ namespace CombatHandler.Trader
         {
             RKNanoDrainSelection selection = (RKNanoDrainSelection)_settings["RKNanoDrainSelection"].AsInt32();
 
+            if (NeedsReload()) { return false; }
+
             switch (selection)
             {
                 case RKNanoDrainSelection.Target:
@@ -961,6 +965,8 @@ namespace CombatHandler.Trader
 
         private bool MyEnemy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (MyEnemySelection.Target == (MyEnemySelection)_settings["MyEnemySelection"].AsInt32())
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
@@ -979,9 +985,10 @@ namespace CombatHandler.Trader
         {
             string[] namesToCheck = new string[] { "Vergil Aeneid", "Abmouth Supremus", "Aztur the Immortal" };
 
+            if (NeedsReload()) { return false; }
+
             if (namesToCheck.Any(name => fightingTarget?.Name.Contains(name) ?? false))
             {
-
                 return false;
             }
 
@@ -1001,6 +1008,8 @@ namespace CombatHandler.Trader
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             RansackSelection ransackSelection = (RansackSelection)_settings["RansackSelection"].AsInt32();
+
+            if (NeedsReload()) { return false; }
 
             switch (ransackSelection)
             {
@@ -1071,6 +1080,8 @@ namespace CombatHandler.Trader
         {
             DepriveSelection depriveSelection = (DepriveSelection)_settings["DepriveSelection"].AsInt32();
 
+            if (NeedsReload()) { return false; }
+
             switch (depriveSelection)
             {
                 case DepriveSelection.Target:
@@ -1140,6 +1151,8 @@ namespace CombatHandler.Trader
         {
             MPDamageDebuffLineASelection selection = (MPDamageDebuffLineASelection)_settings["MPDamageDebuffLineASelection"].AsInt32();
 
+            if (NeedsReload()) { return false; }
+
             switch (selection)
             {
                 case MPDamageDebuffLineASelection.Target:
@@ -1201,6 +1214,8 @@ namespace CombatHandler.Trader
         {
             TraderShutdownSkillDebuffSelection selection = (TraderShutdownSkillDebuffSelection)_settings["TraderShutdownSkillDebuffSelection"].AsInt32();
 
+            if (NeedsReload()) { return false; }
+
             switch (selection)
             {
                 case TraderShutdownSkillDebuffSelection.Target:
@@ -1243,6 +1258,8 @@ namespace CombatHandler.Trader
 
         private bool AAODrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (AAODrainSelection.Target == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32())
                 return TargetDebuff(spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
 
@@ -1285,6 +1302,8 @@ namespace CombatHandler.Trader
 
         private bool AADDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (AADDrainSelection.Target == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
                 return TargetDebuff(spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
 
@@ -1326,6 +1345,8 @@ namespace CombatHandler.Trader
         }
         private bool NanoResistA(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
@@ -1340,6 +1361,8 @@ namespace CombatHandler.Trader
         }
         private bool NanoResistB(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
                 if (fightingTarget?.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA) == true)
                     return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
@@ -1356,6 +1379,8 @@ namespace CombatHandler.Trader
         }
         private bool ACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (ACDrainSelection.Target == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 

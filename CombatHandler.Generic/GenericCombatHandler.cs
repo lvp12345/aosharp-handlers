@@ -2033,8 +2033,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        
-
         [Flags]
         public enum CharacterWieldedWeapon
         {

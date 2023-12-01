@@ -628,7 +628,6 @@ namespace CombatHandler.Fixer
         {
             return Buff(spell, NanoLine.FixerNCUBuff, ref actionTarget);
         }
-
         protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }

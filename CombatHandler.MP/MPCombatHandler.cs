@@ -180,9 +180,7 @@ namespace CombatHandler.Metaphysicist
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
                 //team buffs
-                RegisterSpellProcessor(RelevantNanos.MPCompositeNano,
-                    (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "CompositeNanoSkillsBuffSelection"));
+                RegisterSpellProcessor(RelevantNanos.MPCompositeNano, NanoCompBuff);
 
                 RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
@@ -1273,6 +1271,36 @@ namespace CombatHandler.Metaphysicist
         #endregion
 
         #region Team Buffs
+
+        protected bool NanoCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.FightingTarget != null) { return false; }
+
+            if (!Team.IsInTeam)
+            {
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            }
+
+            SimpleChar target = DynelManager.Players
+                   .Where(c => c.IsInLineOfSight
+                       && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                       && c.Profession != Profession.NanoTechnician
+                       && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                       && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
+                   .FirstOrDefault();
+
+            if (target != null)
+            {
+                if (target.Buffs.Any(c => RelevantNanos.MPCompositeNano.Contains(c.Id))) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
+        }
+
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }

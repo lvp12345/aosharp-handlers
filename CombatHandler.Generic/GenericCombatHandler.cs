@@ -892,7 +892,10 @@ namespace CombatHandler.Generic
         {
             int settingValue = _settings[selectionSetting].AsInt32();
 
-            if (settingValue == 0) return false;
+            if (settingValue == 0)
+            {
+                return false;
+            }
 
             if (settingValue == 2) return NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget);
 
@@ -994,17 +997,17 @@ namespace CombatHandler.Generic
 
         protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32()))
-                return false;
+            var localPlayer = DynelManager.LocalPlayer;
 
-            if (!perk.IsAvailable)
-                return false;
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32())){return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any())
-                return false;
+            if (!perk.IsAvailable) {return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name))
-                return false;
+            if (IsPlayerFlyingOrFalling()) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false;}
+
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) {return false; }
 
             //actionTarget = (DynelManager.LocalPlayer, false);
             return true;
@@ -1012,17 +1015,15 @@ namespace CombatHandler.Generic
 
         protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))
-                return false;
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))  { return false;}
 
-            if (!perk.IsAvailable)
-                return false;
+            if (!perk.IsAvailable) { return false;}
 
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any())
-                return false;
+            if (IsPlayerFlyingOrFalling()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name))
-                return false;
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) {return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) {return false;}
 
             // actionTarget = (DynelManager.LocalPlayer, false);
             return true;
@@ -1036,11 +1037,17 @@ namespace CombatHandler.Generic
         {
             int settingValue = _settings[debuffType].AsInt32();
 
-            if (settingValue == 0) return false;//none
+            if (settingValue == 0)
+            {
+                return false;
+            }//none
 
             if (settingValue == 1 && fightingTarget != null)//target
             {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                {
+                    return false;
+                }
                 return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
             }
 
@@ -1048,8 +1055,14 @@ namespace CombatHandler.Generic
 
             if (settingValue == 3 && fightingTarget != null)//boss
             {
-                if (fightingTarget.MaxHealth < 1000000) return false;
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) return false;
+                if (fightingTarget.MaxHealth < 1000000)
+                {
+                    return false;
+                }
+                if (debuffTargetsToIgnore.Contains(fightingTarget.Name))
+                {
+                    return false;
+                }
                 return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
             }
 
@@ -1572,7 +1585,10 @@ namespace CombatHandler.Generic
         {
             if (Game.IsZoning) { return false; }
 
-            if (DynelManager.LocalPlayer.Pets.Where(c => c.Type == petData[spell.Id].PetType || c.Type == PetType.Unknown).Count() >= 1) return false;
+            if (DynelManager.LocalPlayer.Pets.Where(c => c.Type == petData[spell.Id].PetType || c.Type == PetType.Unknown).Count() >= 1)
+            {
+                return false;
+            }
 
             if (!petData.ContainsKey(spell.Id)) { return false; }
 
@@ -1701,7 +1717,6 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("Buffing")
                 || !CanCast(spell)
-                || Playfield.ModelIdentity.Instance == 152
                 || !fightingTarget.IsInLineOfSight
                 || (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity))) { return false; }
 
@@ -1743,12 +1758,27 @@ namespace CombatHandler.Generic
 
         protected bool CanCast(Spell spell)
         {
+            if (Playfield.ModelIdentity.Instance == 152) { return false; }
+
+            if (IsPlayerFlyingOrFalling()) { return false; }
+
             if (IsSettingEnabled("GlobalRez"))
             {
-                if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 1) return false;
+                if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 1)
+                {
+                    return false;
+                }
             }
 
             return spell.Cost < DynelManager.LocalPlayer.Nano;
+        }
+
+
+        public static bool IsPlayerFlyingOrFalling()
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            return localPlayer.MovementState == MovementState.Fly || localPlayer.IsFalling;
         }
 
         public static void CancelAllBuffs()
@@ -1961,6 +1991,8 @@ namespace CombatHandler.Generic
             CancelAllBuffs();
             IPCChannel.Broadcast(new ClearBuffsMessage());
         }
+
+
 
         [Flags]
         public enum CharacterWieldedWeapon

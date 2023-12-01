@@ -12,6 +12,8 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static CombatHandler.Generic.PerkCondtionProcessors;
 using System.Text.RegularExpressions;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.Messages;
 
 namespace CombatHandler.Generic
 {
@@ -73,6 +75,8 @@ namespace CombatHandler.Generic
 
         private static double _updateTick;
         double _delay;
+
+        private AttackInfoMessage lastAttackInfoMessage;
 
         private static Window _perkWindow;
 
@@ -306,6 +310,8 @@ namespace CombatHandler.Generic
                 Game.TeleportEnded += TeleportEnded;
                 Team.TeamRequest += Team_TeamRequest;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
+
+                Network.N3MessageReceived += Network_N3MessageReceived;
 
                 Chat.RegisterCommand("reform", ReformCommand);
                 Chat.RegisterCommand("form", FormCommand);
@@ -1037,6 +1043,8 @@ namespace CombatHandler.Generic
         {
             int settingValue = _settings[debuffType].AsInt32();
 
+            if (NeedsReload()) {  return false; }
+
             if (settingValue == 0)
             {
                 return false;
@@ -1071,6 +1079,8 @@ namespace CombatHandler.Generic
 
         protected bool TargetDebuff(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (fightingTarget == null) { return false; }
 
             if (SpellChecksOther(spell, nanoline, fightingTarget))
@@ -1084,6 +1094,8 @@ namespace CombatHandler.Generic
         }
         protected bool ToggledTargetDebuff(string settingName, Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (fightingTarget == null || !IsSettingEnabled(settingName)) { return false; }
 
             if (SpellChecksOther(spell, nanoline, fightingTarget))
@@ -1098,6 +1110,8 @@ namespace CombatHandler.Generic
 
         protected bool AreaDebuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (!CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             SimpleChar target = DynelManager.NPCs
@@ -1124,6 +1138,8 @@ namespace CombatHandler.Generic
 
         protected bool ToggledOSDebuff(string toggleName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (!IsSettingEnabled(toggleName) || !CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             SimpleChar target = DynelManager.NPCs
@@ -1865,14 +1881,20 @@ namespace CombatHandler.Generic
 
         public static bool InCombat()
         {
+            var localPlayer = DynelManager.LocalPlayer;
+
             if (Team.IsInTeam)
             {
-                return DynelManager.Characters
-                    .Any(c => Team.Members.Select(m => m.Name).Contains(c.FightingTarget?.Name));
+                return Team.Members.Any(m => m.Character != null && m.Character.IsAttacking) ||
+                       DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
+                                                    Team.Members.Select(m => m.Identity).Contains(npc.FightingTarget.Identity));
             }
 
-            return DynelManager.Characters
-                    .Any(c => c.FightingTarget?.Name == DynelManager.LocalPlayer.Name);
+            return localPlayer.IsAttacking ||
+                   (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && pet.Character.IsAttacking)) ||
+                   DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
+                                                (npc.FightingTarget.Identity == localPlayer.Identity ||
+                                                 (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && npc.FightingTarget.Identity == pet.Character.Identity))));
         }
 
         public static CharacterWieldedWeapon GetWieldedWeapons(SimpleChar local) => (CharacterWieldedWeapon)local.GetStat(Stat.EquippedWeapons);
@@ -1992,7 +2014,26 @@ namespace CombatHandler.Generic
             IPCChannel.Broadcast(new ClearBuffsMessage());
         }
 
+        private void Network_N3MessageReceived(object sender, N3Message e)
+        {
+            if (e is AttackInfoMessage attackInfoMessage)
+            {
+                lastAttackInfoMessage = attackInfoMessage; 
+            }
+        }
 
+        public bool NeedsReload()
+        {
+            if (lastAttackInfoMessage != null)
+            {
+                return DynelManager.LocalPlayer.Weapons.Any(w =>
+                    w.Value.GetStat(Stat.RangedInit) > 0 && lastAttackInfoMessage.AmmoCount <= 0);
+            }
+
+            return false;
+        }
+
+        
 
         [Flags]
         public enum CharacterWieldedWeapon

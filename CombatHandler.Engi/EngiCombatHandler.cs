@@ -1071,16 +1071,12 @@ namespace CombatHandler.Engineer
 
         private bool PetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell)) { return false; }
-
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         private bool SettingPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
         {
-            if (!CanCast(spell)) { return false; }
-
             if (!_settings[settingName].AsBool()) { return false; }
 
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
@@ -1126,6 +1122,8 @@ namespace CombatHandler.Engineer
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone()) { return false; }
+
+            if (!CanCast(spell)) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
@@ -1221,6 +1219,8 @@ namespace CombatHandler.Engineer
 
         private bool GenericPetProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, PetProcSelection petProcSelection)
         {
+            if (!CanCast(spell)) { return false; }
+
             PetProcSelection currentSetting = (PetProcSelection)_settings["PetProcSelection"].AsInt32();
 
             if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))

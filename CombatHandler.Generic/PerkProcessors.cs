@@ -171,6 +171,8 @@ namespace CombatHandler.Generic
 
         public static bool BuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsPlayerFlyingOrFalling()) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perkAction.Name))
             {
                 return false;
@@ -182,23 +184,27 @@ namespace CombatHandler.Generic
 
         public static bool SelfHealPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            
+
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
+            {
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+            }
 
             return false;
         }
 
         public static bool SelfNanoPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            
+            if (IsPlayerFlyingOrFalling()) { return false; }
+
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent <= SelfNanoPerkPercentage)
+            {
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-
+            }
             return false;
         }
 
@@ -221,14 +227,17 @@ namespace CombatHandler.Generic
             }
 
             if (DynelManager.LocalPlayer.HealthPercent <= TeamHealPerkPercentage)
+            {
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+            }
 
             return false;
         }
 
         public static bool TeamNanoPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            
+            if (IsPlayerFlyingOrFalling()) { return false; }
+
             if (Team.IsInTeam)
             {
                 SimpleChar _person = DynelManager.Players
@@ -246,7 +255,9 @@ namespace CombatHandler.Generic
             }
 
             if (DynelManager.LocalPlayer.NanoPercent <= TeamNanoPerkPercentage)
+            {
                 return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+            }
 
             return false;
         }
@@ -267,6 +278,7 @@ namespace CombatHandler.Generic
 
         public static bool PetBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsPlayerFlyingOrFalling()) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {

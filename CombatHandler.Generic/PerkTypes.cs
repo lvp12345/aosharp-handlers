@@ -121,7 +121,7 @@ namespace CombatHandler.Generic
             {PerkHash.ECM2 , PerkType.NanoShutdown_TraderDebuff_Cleanse}, //Nano shutdown, trader debuffs
             {PerkHash.ElementaryTeleportation , PerkType.Disabled},
             {PerkHash.EncaseInStone , PerkType.Disabled},
-            {PerkHash.Energize , PerkType.CombatBuff},
+            {PerkHash.Energize , PerkType.TargetDamage},
             {PerkHash.EnhancedHeal , PerkType.SelfHeal},
             {PerkHash.Escape , PerkType.Disabled},
             {PerkHash.EtherealTouch , PerkType.TargetDamage},

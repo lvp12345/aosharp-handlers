@@ -254,8 +254,8 @@ namespace CombatHandler.Generic
                 RelevantGenericItems.LavaCapsule, RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.FallenStar}, SharpObjects);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
-                RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, TargetedDamageItem);
-                RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, TargetedDamageItem);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, DamageItem);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, DamageItem);
 
                 RegisterItemProcessor(RelevantGenericItems.RezCanIds, RezCan);
 
@@ -266,7 +266,7 @@ namespace CombatHandler.Generic
                 RegisterItemProcessor(new int[] { RelevantGenericItems.PremSitKit, RelevantGenericItems.AreteSitKit, RelevantGenericItems.SitKit1,
                 RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
 
-                RegisterItemProcessor(new int[] { RelevantGenericItems.DaTaunterLow, RelevantGenericItems.DaTaunterHigh }, TargetedDamageItem);
+                RegisterItemProcessor(new int[] { RelevantGenericItems.DaTaunterLow, RelevantGenericItems.DaTaunterHigh }, DamageItem);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
                 RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
@@ -1240,19 +1240,21 @@ namespace CombatHandler.Generic
         {
             if (!IsSettingEnabled("SharpObjects") || fightingTarget == null) { return false; }
 
-            return TargetedDamageItem(item, fightingTarget, ref actionTarget);
+            return DamageItem(item, fightingTarget, ref actionTarget);
         }
         protected virtual bool Grenades(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!IsSettingEnabled("Grenades") || fightingTarget == null) { return false; }
 
-            return TargetedDamageItem(item, fightingTarget, ref actionTarget);
+            return DamageItem(item, fightingTarget, ref actionTarget);
         }
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             
-            if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null && fightingTarget.IsInAttackRange())
+            if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null
+                && fightingTarget.IsInAttackRange() && !Item.HasPendingUse)
+
             {
                 actionTarget = (fightingTarget, true);
                 return true;
@@ -1279,12 +1281,6 @@ namespace CombatHandler.Generic
             if (!Team.IsInTeam) { return false; }
 
             return !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength) && fightingTarget != null && fightingTarget.IsInAttackRange();
-        }
-
-        protected virtual bool TargetedDamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            actionTarget.ShouldSetTarget = true;
-            return DamageItem(item, fightingTarget, ref actionTarget);
         }
 
         protected virtual bool ReflectGraft(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1317,7 +1313,7 @@ namespace CombatHandler.Generic
         protected bool TauntTool(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null || !_settings["TauntTool"].AsBool()
-                || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Psychology)) { return false; }
+                || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Psychology) || Item.HasPendingUse) { return false; }
 
             actionTarget.Target = fightingTarget;
             actionTarget.ShouldSetTarget = true;
@@ -1360,7 +1356,7 @@ namespace CombatHandler.Generic
             if (IsSettingEnabled("Kits"))
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
-                    || (DynelManager.LocalPlayer.HealthPercent >= KitHealthPercentage && DynelManager.LocalPlayer.NanoPercent >= KitNanoPercentage)) { return false; }
+                    || Item.HasPendingUse ||(DynelManager.LocalPlayer.HealthPercent >= KitHealthPercentage && DynelManager.LocalPlayer.NanoPercent >= KitNanoPercentage)) { return false; }
 
                 actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;
@@ -1498,7 +1494,7 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
-                //|| Item.HasPendingUse
+                || Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > StrengthAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
@@ -1511,7 +1507,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
                 || Team.IsInTeam
-                //|| Item.HasPendingUse
+                || Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > StrengthAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
@@ -1522,7 +1518,7 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.DuckExp)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
-                //|| Item.HasPendingUse
+                || Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > DuckAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
@@ -1533,7 +1529,7 @@ namespace CombatHandler.Generic
         {
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BodyDevelopment)
                 || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)
-                //|| Item.HasPendingUse
+                || Item.HasPendingUse
                 || DynelManager.LocalPlayer.HealthPercent > BodyDevAbsorbsItemPercentage
                 || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 

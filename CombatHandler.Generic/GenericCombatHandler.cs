@@ -1251,10 +1251,9 @@ namespace CombatHandler.Generic
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (item == null || Item.HasPendingUse) { return false; }
             
-            if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null
-                && fightingTarget.IsInAttackRange() && !Item.HasPendingUse)
-
+            if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item)) && fightingTarget != null)
             {
                 actionTarget = (fightingTarget, true);
                 return true;

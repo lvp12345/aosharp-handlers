@@ -2,6 +2,8 @@
 using AOSharp.Common.Unmanaged.Interfaces;
 using AOSharp.Core;
 using AOSharp.Core.UI;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,26 +13,20 @@ namespace ResearchManager
     public class ResearchManager : AOPluginEntry
     {
         protected Settings _settings;
-
-        public static bool _asyncToggle = false;
-
-        private static double _tick;
-
         public static string PluginDir;
 
-        private bool enabled => _settings["Toggle"].AsBool();
-        private bool includeApotheosis => _settings["IncludeApotheosis"].AsBool();
-        private ModeSelection mode => (ModeSelection)_settings["ModeSelection"].AsInt32();
-        private float updateInterval = 10;
+        double lastUpdateTime;
+        bool enabled => _settings["Toggle"].AsBool();
+        bool includeApotheosis => _settings["IncludeApotheosis"].AsBool();
+        ModeSelection mode => (ModeSelection)_settings["ModeSelection"].AsInt32();
+        float updateInterval = 0;
 
-        public static List<int> apotheosis = Enumerable.Range(10002, 10).ToList();
+        static List<int> apotheosis = Enumerable.Range(10002, 10).ToList();
 
         public override void Run(string pluginDir)
         {
             _settings = new Settings("Research");
             PluginDir = pluginDir;
-
-            Game.OnUpdate += OnUpdate;
 
             _settings.AddVariable("Toggle", false);
             _settings.AddVariable("IncludeApotheosis", false);
@@ -41,6 +37,7 @@ namespace ResearchManager
 
             Chat.WriteLine("Research Manager Loaded!");
             Chat.WriteLine("/researchmanager for settings.");
+            Game.OnUpdate += OnUpdate;
         }
 
         public override void Teardown()
@@ -55,22 +52,21 @@ namespace ResearchManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            if (!enabled || Game.IsZoning || Time.NormalTime < _tick + updateInterval)
+            if (!enabled || Game.IsZoning || Time.NormalTime < lastUpdateTime + updateInterval)
                 return;
 
-            _tick = Time.NormalTime;
+            lastUpdateTime = Time.NormalTime;
 
             var availableGoals = Research.Goals.Where(goal => goal.Available && (includeApotheosis || !apotheosis.Contains(goal.ResearchId)));
-            var researchPerks = Perk.GetByInstance(availableGoals.Select(goal => goal.ResearchId)).ToDictionary(perk => perk.Instance, perk => perk);
 
             if (mode == ModeSelection.LowestFirst)
             {
-                availableGoals = availableGoals.OrderBy(goal => researchPerks[goal.ResearchId].Level).ThenByDescending(goal => N3EngineClientAnarchy.GetPerkProgress((uint)goal.ResearchId));
+                availableGoals = availableGoals.OrderBy(goal => GetPerkLevel(goal.ResearchId)).ThenByDescending(goal => N3EngineClientAnarchy.GetPerkProgress((uint)goal.ResearchId));
             }
 
             if (mode == ModeSelection.HighestFirst)
             {
-                availableGoals = availableGoals.OrderByDescending(goal => researchPerks[goal.ResearchId].Level).ThenByDescending(goal => N3EngineClientAnarchy.GetPerkProgress((uint)goal.ResearchId));
+                availableGoals = availableGoals.OrderByDescending(goal => GetPerkLevel(goal.ResearchId)).ThenByDescending(goal => N3EngineClientAnarchy.GetPerkProgress((uint)goal.ResearchId));
             }
 
             if (availableGoals.Count() > 0)
@@ -84,6 +80,14 @@ namespace ResearchManager
             }
 
             return;
+        }
+
+        private int GetPerkLevel(int perkId)
+        {
+            if (apotheosis.Contains(perkId))
+                return ((perkId - 2) % 10) + 1;
+            else
+                return (perkId % 10) + 1;
         }
 
         enum ModeSelection

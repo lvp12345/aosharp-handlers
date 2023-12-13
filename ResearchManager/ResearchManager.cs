@@ -78,8 +78,6 @@ namespace ResearchManager
                     Research.Train(goal.ResearchId);
                 }
             }
-
-            return;
         }
 
         private int GetPerkLevel(int perkId)

@@ -19,7 +19,7 @@ namespace ResearchManager
         bool enabled => _settings["Toggle"].AsBool();
         bool includeApotheosis => _settings["IncludeApotheosis"].AsBool();
         ModeSelection mode => (ModeSelection)_settings["ModeSelection"].AsInt32();
-        float updateInterval = 0;
+        float updateInterval => _settings["UpdateInterval"].AsFloat();
 
         static List<int> apotheosis = Enumerable.Range(10002, 10).ToList();
 

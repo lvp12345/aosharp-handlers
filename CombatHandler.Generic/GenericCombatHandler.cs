@@ -14,6 +14,7 @@ using static CombatHandler.Generic.PerkCondtionProcessors;
 using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.Messages;
+using SmokeLounge.AOtomation.Messaging.GameData;
 
 namespace CombatHandler.Generic
 {
@@ -309,9 +310,11 @@ namespace CombatHandler.Generic
 
                 Game.TeleportEnded += TeleportEnded;
                 Team.TeamRequest += Team_TeamRequest;
+                Network.N3MessageReceived += Network_N3MessageReceived;
+
                 Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
 
-                Network.N3MessageReceived += Network_N3MessageReceived;
+                
 
                 Chat.RegisterCommand("reform", ReformCommand);
                 Chat.RegisterCommand("form", FormCommand);
@@ -1696,6 +1699,37 @@ namespace CombatHandler.Generic
 
         #endregion
 
+        #region Special attacks
+
+        protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
+        {
+            //if (specialAttack == SpecialAttack.Burst || specialAttack == SpecialAttack.FullAuto)
+            //{
+            //    if (specialAttack.IsAvailable())
+            //    {
+            //        Network.Send(new CharacterActionMessage()
+            //        {
+            //            N3MessageType = N3MessageType.Reload,
+            //        });
+            //    }
+            //}
+
+            return specialAttack != SpecialAttack.Dimach;
+        }
+
+        public bool NeedsReload()
+        {
+            if (lastAttackInfoMessage != null)
+            {
+                return DynelManager.LocalPlayer.Weapons.Any(w =>
+                    w.Value.GetStat(Stat.RangedInit) > 0 && lastAttackInfoMessage.AmmoCount <= 0);
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Checks
 
         protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
@@ -2020,17 +2054,6 @@ namespace CombatHandler.Generic
             {
                 lastAttackInfoMessage = attackInfoMessage; 
             }
-        }
-
-        public bool NeedsReload()
-        {
-            if (lastAttackInfoMessage != null)
-            {
-                return DynelManager.LocalPlayer.Weapons.Any(w =>
-                    w.Value.GetStat(Stat.RangedInit) > 0 && lastAttackInfoMessage.AmmoCount <= 0);
-            }
-
-            return false;
         }
 
         [Flags]

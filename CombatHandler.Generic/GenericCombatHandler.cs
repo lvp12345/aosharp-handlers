@@ -1714,7 +1714,9 @@ namespace CombatHandler.Generic
             //    }
             //}
 
-            return specialAttack != SpecialAttack.Dimach;
+            return specialAttack != SpecialAttack.Dimach 
+                || specialAttack != SpecialAttack.AimedShot 
+                || specialAttack != SpecialAttack.SneakAttack || specialAttack != SpecialAttack.Backstab;
         }
 
         public bool NeedsReload()

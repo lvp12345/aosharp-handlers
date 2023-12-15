@@ -375,6 +375,14 @@ namespace CombatHandler.Generic
                         Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
             }
 
+            if (DynelManager.LocalPlayer.IsAttacking)
+            {
+                if (DynelManager.LocalPlayer.FightingTarget == DynelManager.Players)
+                {
+                    DynelManager.LocalPlayer.StopAttack();
+                }
+            }
+
             if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
             {
                 _lastCombatTime = Time.NormalTime;
@@ -1703,20 +1711,25 @@ namespace CombatHandler.Generic
 
         protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
         {
-            //if (specialAttack == SpecialAttack.Burst || specialAttack == SpecialAttack.FullAuto)
-            //{
-            //    if (specialAttack.IsAvailable())
-            //    {
-            //        Network.Send(new CharacterActionMessage()
-            //        {
-            //            N3MessageType = N3MessageType.Reload,
-            //        });
-            //    }
-            //}
+            if (specialAttack == SpecialAttack.Burst || specialAttack == SpecialAttack.FullAuto)
+            {
+                if (specialAttack.IsAvailable())
+                {
+                    Network.Send(new CharacterActionMessage()
+                    {
+                        N3MessageType = N3MessageType.Reload,
 
-            return specialAttack != SpecialAttack.Dimach 
-                || specialAttack != SpecialAttack.AimedShot 
-                || specialAttack != SpecialAttack.SneakAttack || specialAttack != SpecialAttack.Backstab;
+                    });
+
+                    return true;
+                }
+            }
+
+
+
+            return specialAttack != SpecialAttack.Dimach || specialAttack != SpecialAttack.FullAuto
+                || specialAttack != SpecialAttack.AimedShot || specialAttack != SpecialAttack.Burst
+                || specialAttack != SpecialAttack.SneakAttack;
         }
 
         public bool NeedsReload()

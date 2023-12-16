@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
+using AOSharp.Core.Movement;
 
 namespace CombatHandler.Generic
 {
@@ -1757,10 +1758,21 @@ namespace CombatHandler.Generic
                     }
                 }
             }
+           
+            if (specialAttack == SpecialAttack.Backstab)
+            {
+                if (specialAttack.IsAvailable())
+                {
+                    if (!DynelManager.LocalPlayer.FightingTarget.IsFacing(DynelManager.LocalPlayer))
+                    {
+                        return true;
+                    }
+                }
+            }
 
             return specialAttack != SpecialAttack.Dimach || specialAttack != SpecialAttack.FullAuto
                 || specialAttack != SpecialAttack.AimedShot || specialAttack != SpecialAttack.Burst
-                || specialAttack != SpecialAttack.SneakAttack;
+                || specialAttack != SpecialAttack.SneakAttack || specialAttack != SpecialAttack.Backstab;
         }
 
         public bool NeedsReload()

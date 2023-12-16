@@ -1711,13 +1711,13 @@ namespace CombatHandler.Generic
 
         protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
         {
-            if (specialAttack == SpecialAttack.Burst || specialAttack == SpecialAttack.FullAuto)
+            if (specialAttack == SpecialAttack.FullAuto)
             {
                 if (specialAttack.IsAvailable())
                 {
                     Network.Send(new CharacterActionMessage()
                     {
-                        N3MessageType = N3MessageType.Reload,
+                        Action = (CharacterActionType)210
 
                     });
 
@@ -1725,7 +1725,24 @@ namespace CombatHandler.Generic
                 }
             }
 
+            if (specialAttack == SpecialAttack.Burst)
+            {
+               if (lastAttackInfoMessage.AmmoCount <= 3)
+                {
+                    Network.Send(new CharacterActionMessage()
+                    {
+                        Action = (CharacterActionType)210
 
+                    });
+                }
+               else
+                {
+                    if (specialAttack.IsAvailable())
+                    {
+                        return true;
+                    }  
+                }
+            }
 
             return specialAttack != SpecialAttack.Dimach || specialAttack != SpecialAttack.FullAuto
                 || specialAttack != SpecialAttack.AimedShot || specialAttack != SpecialAttack.Burst

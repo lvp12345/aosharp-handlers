@@ -77,7 +77,7 @@ namespace CombatHandler.Generic
         private static double _updateTick;
         double _delay;
 
-        private AttackInfoMessage lastAttackInfoMessage;
+        public AttackInfoMessage lastAttackInfoMessage;
 
         private static Window _perkWindow;
 
@@ -1727,19 +1727,22 @@ namespace CombatHandler.Generic
 
             if (specialAttack == SpecialAttack.Burst)
             {
-                if (lastAttackInfoMessage.AmmoCount <= 3)
+                if (lastAttackInfoMessage.AmmoCount > 0)
                 {
-                    Network.Send(new CharacterActionMessage()
+                    if (lastAttackInfoMessage.AmmoCount <= 3)
                     {
-                        Action = (CharacterActionType)210
+                        Network.Send(new CharacterActionMessage()
+                        {
+                            Action = (CharacterActionType)210
 
-                    });
-                }
-                else
-                {
-                    if (specialAttack.IsAvailable())
+                        });
+                    }
+                    else
                     {
-                        return true;
+                        if (specialAttack.IsAvailable())
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -1765,7 +1768,7 @@ namespace CombatHandler.Generic
             if (lastAttackInfoMessage != null)
             {
                 return DynelManager.LocalPlayer.Weapons.Any(w =>
-                    w.Value.GetStat(Stat.RangedInit) > 0 && lastAttackInfoMessage.AmmoCount <= 0);
+                    w.Value.GetStat(Stat.RangedInit) > 0 && lastAttackInfoMessage.AmmoCount == 0);
             }
 
             return false;

@@ -314,7 +314,7 @@ namespace CombatHandler.Generic
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
 
-                
+
 
                 Chat.RegisterCommand("reform", ReformCommand);
                 Chat.RegisterCommand("form", FormCommand);
@@ -1016,15 +1016,15 @@ namespace CombatHandler.Generic
         {
             var localPlayer = DynelManager.LocalPlayer;
 
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32())){return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32())) { return false; }
 
-            if (!perk.IsAvailable) {return false; }
+            if (!perk.IsAvailable) { return false; }
 
             if (IsPlayerFlyingOrFalling()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false;}
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) {return false; }
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) { return false; }
 
             //actionTarget = (DynelManager.LocalPlayer, false);
             return true;
@@ -1032,15 +1032,15 @@ namespace CombatHandler.Generic
 
         protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))  { return false;}
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32())) { return false; }
 
-            if (!perk.IsAvailable) { return false;}
+            if (!perk.IsAvailable) { return false; }
 
             if (IsPlayerFlyingOrFalling()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) {return false; }
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) {return false;}
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) { return false; }
 
             // actionTarget = (DynelManager.LocalPlayer, false);
             return true;
@@ -1054,7 +1054,7 @@ namespace CombatHandler.Generic
         {
             int settingValue = _settings[debuffType].AsInt32();
 
-            if (NeedsReload()) {  return false; }
+            if (NeedsReload()) { return false; }
 
             if (settingValue == 0)
             {
@@ -1727,7 +1727,7 @@ namespace CombatHandler.Generic
 
             if (specialAttack == SpecialAttack.Burst)
             {
-               if (lastAttackInfoMessage.AmmoCount <= 3)
+                if (lastAttackInfoMessage.AmmoCount <= 3)
                 {
                     Network.Send(new CharacterActionMessage()
                     {
@@ -1735,12 +1735,23 @@ namespace CombatHandler.Generic
 
                     });
                 }
-               else
+                else
                 {
                     if (specialAttack.IsAvailable())
                     {
                         return true;
-                    }  
+                    }
+                }
+            }
+
+            if (specialAttack == SpecialAttack.SneakAttack || specialAttack == SpecialAttack.AimedShot)
+            {
+                if (DynelManager.LocalPlayer.MovementState == MovementState.Sneak)
+                {
+                    if (specialAttack.IsAvailable())
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -2084,7 +2095,7 @@ namespace CombatHandler.Generic
         {
             if (e is AttackInfoMessage attackInfoMessage)
             {
-                lastAttackInfoMessage = attackInfoMessage; 
+                lastAttackInfoMessage = attackInfoMessage;
             }
         }
 

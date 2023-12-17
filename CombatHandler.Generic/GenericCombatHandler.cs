@@ -12,6 +12,10 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static CombatHandler.Generic.PerkCondtionProcessors;
 using System.Text.RegularExpressions;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using SmokeLounge.AOtomation.Messaging.GameData;
+using AOSharp.Core.Movement;
 
 namespace CombatHandler.Generic
 {
@@ -73,6 +77,8 @@ namespace CombatHandler.Generic
 
         private static double _updateTick;
         double _delay;
+
+        public AttackInfoMessage lastAttackInfoMessage;
 
         private static Window _perkWindow;
 
@@ -305,7 +311,11 @@ namespace CombatHandler.Generic
 
                 Game.TeleportEnded += TeleportEnded;
                 Team.TeamRequest += Team_TeamRequest;
+                Network.N3MessageReceived += Network_N3MessageReceived;
+
                 Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
+
+
 
                 Chat.RegisterCommand("reform", ReformCommand);
                 Chat.RegisterCommand("form", FormCommand);
@@ -364,6 +374,14 @@ namespace CombatHandler.Generic
                     if (int.TryParse(channelInput.Text, out int channelValue)
                         && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
                         Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+            }
+
+            if (DynelManager.LocalPlayer.IsAttacking)
+            {
+                if (DynelManager.LocalPlayer.FightingTarget == DynelManager.Players)
+                {
+                    DynelManager.LocalPlayer.StopAttack();
+                }
             }
 
             if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
@@ -999,15 +1017,15 @@ namespace CombatHandler.Generic
         {
             var localPlayer = DynelManager.LocalPlayer;
 
-            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32())){return false; }
+            if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32())) { return false; }
 
-            if (!perk.IsAvailable) {return false; }
+            if (!perk.IsAvailable) { return false; }
 
             if (IsPlayerFlyingOrFalling()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false;}
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) {return false; }
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) { return false; }
 
             //actionTarget = (DynelManager.LocalPlayer, false);
             return true;
@@ -1015,15 +1033,15 @@ namespace CombatHandler.Generic
 
         protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32()))  { return false;}
+            if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32())) { return false; }
 
-            if (!perk.IsAvailable) { return false;}
+            if (!perk.IsAvailable) { return false; }
 
             if (IsPlayerFlyingOrFalling()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) {return false; }
+            if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()) { return false; }
 
-            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) {return false;}
+            if (DynelManager.LocalPlayer.Buffs.Any(buff => buff.Name == perk.Name)) { return false; }
 
             // actionTarget = (DynelManager.LocalPlayer, false);
             return true;
@@ -1036,6 +1054,8 @@ namespace CombatHandler.Generic
         public bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
         {
             int settingValue = _settings[debuffType].AsInt32();
+
+            if (NeedsReload()) { return false; }
 
             if (settingValue == 0)
             {
@@ -1071,6 +1091,8 @@ namespace CombatHandler.Generic
 
         protected bool TargetDebuff(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (fightingTarget == null) { return false; }
 
             if (SpellChecksOther(spell, nanoline, fightingTarget))
@@ -1084,6 +1106,8 @@ namespace CombatHandler.Generic
         }
         protected bool ToggledTargetDebuff(string settingName, Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (fightingTarget == null || !IsSettingEnabled(settingName)) { return false; }
 
             if (SpellChecksOther(spell, nanoline, fightingTarget))
@@ -1098,6 +1122,8 @@ namespace CombatHandler.Generic
 
         protected bool AreaDebuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (!CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             SimpleChar target = DynelManager.NPCs
@@ -1124,6 +1150,8 @@ namespace CombatHandler.Generic
 
         protected bool ToggledOSDebuff(string toggleName, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (NeedsReload()) { return false; }
+
             if (!IsSettingEnabled(toggleName) || !CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
             SimpleChar target = DynelManager.NPCs
@@ -1682,6 +1710,86 @@ namespace CombatHandler.Generic
 
         #endregion
 
+        #region Special attacks
+
+        protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
+        {
+            if (specialAttack == SpecialAttack.FullAuto)
+            {
+                if (specialAttack.IsAvailable())
+                {
+                    Network.Send(new CharacterActionMessage()
+                    {
+                        Action = (CharacterActionType)210
+
+                    });
+
+                    return true;
+                }
+            }
+
+            if (specialAttack == SpecialAttack.Burst)
+            {
+                if (lastAttackInfoMessage.AmmoCount > 0)
+                {
+                    if (lastAttackInfoMessage.AmmoCount <= 3)
+                    {
+                        Network.Send(new CharacterActionMessage()
+                        {
+                            Action = (CharacterActionType)210
+
+                        });
+                    }
+                    else
+                    {
+                        if (specialAttack.IsAvailable())
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if (specialAttack == SpecialAttack.SneakAttack || specialAttack == SpecialAttack.AimedShot)
+            {
+                if (DynelManager.LocalPlayer.MovementState == MovementState.Sneak)
+                {
+                    if (specialAttack.IsAvailable())
+                    {
+                        return true;
+                    }
+                }
+            }
+           
+            if (specialAttack == SpecialAttack.Backstab)
+            {
+                if (specialAttack.IsAvailable())
+                {
+                    if (!DynelManager.LocalPlayer.FightingTarget.IsFacing(DynelManager.LocalPlayer))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return specialAttack != SpecialAttack.Dimach || specialAttack != SpecialAttack.FullAuto
+                || specialAttack != SpecialAttack.AimedShot || specialAttack != SpecialAttack.Burst
+                || specialAttack != SpecialAttack.SneakAttack || specialAttack != SpecialAttack.Backstab;
+        }
+
+        public bool NeedsReload()
+        {
+            if (lastAttackInfoMessage != null)
+            {
+                return DynelManager.LocalPlayer.Weapons.Any(w =>
+                    w.Value.GetStat(Stat.RangedInit) > 0 && lastAttackInfoMessage.AmmoCount == 0);
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Checks
 
         protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
@@ -1867,14 +1975,20 @@ namespace CombatHandler.Generic
 
         public static bool InCombat()
         {
+            var localPlayer = DynelManager.LocalPlayer;
+
             if (Team.IsInTeam)
             {
-                return DynelManager.Characters
-                    .Any(c => Team.Members.Select(m => m.Name).Contains(c.FightingTarget?.Name));
+                return Team.Members.Any(m => m.Character != null && m.Character.IsAttacking) ||
+                       DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
+                                                    Team.Members.Select(m => m.Identity).Contains(npc.FightingTarget.Identity));
             }
 
-            return DynelManager.Characters
-                    .Any(c => c.FightingTarget?.Name == DynelManager.LocalPlayer.Name);
+            return localPlayer.IsAttacking ||
+                   (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && pet.Character.IsAttacking)) ||
+                   DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
+                                                (npc.FightingTarget.Identity == localPlayer.Identity ||
+                                                 (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && npc.FightingTarget.Identity == pet.Character.Identity))));
         }
 
         public static CharacterWieldedWeapon GetWieldedWeapons(SimpleChar local) => (CharacterWieldedWeapon)local.GetStat(Stat.EquippedWeapons);
@@ -1994,7 +2108,13 @@ namespace CombatHandler.Generic
             IPCChannel.Broadcast(new ClearBuffsMessage());
         }
 
-
+        private void Network_N3MessageReceived(object sender, N3Message e)
+        {
+            if (e is AttackInfoMessage attackInfoMessage)
+            {
+                lastAttackInfoMessage = attackInfoMessage;
+            }
+        }
 
         [Flags]
         public enum CharacterWieldedWeapon

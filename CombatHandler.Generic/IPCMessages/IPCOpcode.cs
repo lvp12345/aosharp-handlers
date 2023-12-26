@@ -2,7 +2,8 @@
 {
     public enum IPCOpcode
     {
+        //Kitting = 1003,
         Disband = 2100,
-        ClearBuffs = 2101
+        ClearBuffs = 2101,
     }
 }

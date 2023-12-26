@@ -131,6 +131,7 @@ namespace CombatHandler.Engineer
                 _settings.AddVariable("DamageShields", false);
                 _settings.AddVariable("SLMap", false);
                 _settings.AddVariable("MEBuff", false);
+                _settings.AddVariable("TeamBlockers", false);
 
                 _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.None);
                 _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
@@ -202,7 +203,7 @@ namespace CombatHandler.Engineer
                     => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TeamBlockers"));
                 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
@@ -1538,7 +1539,7 @@ namespace CombatHandler.Engineer
         {
             None, Self, Team
         }
-
+       
         public enum ProcType1Selection
         {
             ReactiveArmor = 1146377031,

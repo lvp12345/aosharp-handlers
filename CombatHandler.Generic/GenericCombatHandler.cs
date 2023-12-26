@@ -15,7 +15,6 @@ using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
-using AOSharp.Core.Movement;
 
 namespace CombatHandler.Generic
 {
@@ -211,6 +210,7 @@ namespace CombatHandler.Generic
 
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+                
 
                 RegisterPerkProcessors();
                 RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
@@ -357,10 +357,19 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0)
-                return;
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0) { return; }
 
             base.OnUpdate(deltaTime);
+
+            //if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)&& !Item.HasPendingUse
+            //       && (DynelManager.LocalPlayer.HealthPercent <= KitHealthPercentage
+            //       || DynelManager.LocalPlayer.NanoPercent <= KitNanoPercentage)) 
+            //{
+            //    IPCChannel.Broadcast(new KittingMessage()
+            //    {
+            //        IsReady = false,
+            //    });
+            //}
 
             UseItems();
 
@@ -1383,7 +1392,9 @@ namespace CombatHandler.Generic
             if (IsSettingEnabled("Kits"))
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
-                    || Item.HasPendingUse ||(DynelManager.LocalPlayer.HealthPercent >= KitHealthPercentage && DynelManager.LocalPlayer.NanoPercent >= KitNanoPercentage)) { return false; }
+                    || Item.HasPendingUse 
+                    ||(DynelManager.LocalPlayer.HealthPercent >= KitHealthPercentage 
+                    && DynelManager.LocalPlayer.NanoPercent >= KitNanoPercentage)) { return false; }
 
                 actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;

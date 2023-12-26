@@ -2,38 +2,59 @@
 <root>
 	<BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="(Local) Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Buffing" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="(Local) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
-		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionCheckBox label="(Local) Buffing" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Buffing" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Local) Composites" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Composites" layout_borders="Rect(10,1,5,1)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionCheckBox label="(Team) Armor Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamArmorBuff" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Pistol" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PistolTeam" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Grenade" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GrenadeTeam" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Shadowland Reflect" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShadowlandReflectBase" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Damage Shields" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageShields" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Special attack blockers" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamBlockers" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Team) Insight into the Shadowlands" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLMap" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="Mechanical Engineering Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MEBuff" layout_borders="Rect(10,1,5,1)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitBuffSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Self" value="1"/>
+				<RadioButton label="Team" value="2"/>
+			</OptionRadioButtonGroup>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Buffing Auras" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__BuffingAuraSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Armor" value="1"/>
+				<RadioButton label="Reflect" value="2"/>
+				<RadioButton label="Damage" value="3"/>
+				<RadioButton label="Shield" value="4"/>
+			</OptionRadioButtonGroup>
+			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+			<OptionRadioButtonGroup label="Debuffing Auras" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DebuffingAuraSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Blind" value="1"/>
+				<RadioButton label="Pet Snare" value="2"/>
+				<RadioButton label="Shield Ripper" value="3"/>
+			</OptionRadioButtonGroup>
+			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		</View>
 		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
-		<OptionCheckBox label="(Team) Armor Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamArmorBuff" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="(Team) Pistol" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PistolTeam" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="(Team) Grenade" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__GrenadeTeam" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="(Team) Shadowland Reflect" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShadowlandReflectBase" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="(Team) DamageShields" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageShields" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="(Team) Insight into the Shadowlands" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLMap" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Mechanical Engineering Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MEBuff" layout_borders="Rect(10,1,5,1)"/>
-		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<OptionRadioButtonGroup label="Inits" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__InitBuffSelection">
-			<RadioButton label="None" value="0"/>
-			<RadioButton label="Self" value="1"/>
-			<RadioButton label="Team" value="2"/>
-		</OptionRadioButtonGroup>
-		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<OptionRadioButtonGroup label="Buffing Auras" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__BuffingAuraSelection">
-			<RadioButton label="None" value="0"/>
-			<RadioButton label="Armor" value="1"/>
-			<RadioButton label="Reflect" value="2"/>
-			<RadioButton label="Damage" value="3"/>
-			<RadioButton label="Shield" value="4"/>
-		</OptionRadioButtonGroup>
-		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		<OptionRadioButtonGroup label="Debuffing Auras" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DebuffingAuraSelection">
-			<RadioButton label="None" value="0"/>
-			<RadioButton label="Blind" value="1"/>
-			<RadioButton label="Pet Snare" value="2"/>
-			<RadioButton label="Shield Ripper" value="3"/>
-		</OptionRadioButtonGroup>
-		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>
 </root>

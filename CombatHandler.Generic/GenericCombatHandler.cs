@@ -357,45 +357,56 @@ namespace CombatHandler.Generic
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0) { return; }
-
-            base.OnUpdate(deltaTime);
-
-            //if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)&& !Item.HasPendingUse
-            //       && (DynelManager.LocalPlayer.HealthPercent <= KitHealthPercentage
-            //       || DynelManager.LocalPlayer.NanoPercent <= KitNanoPercentage)) 
-            //{
-            //    IPCChannel.Broadcast(new KittingMessage()
-            //    {
-            //        IsReady = false,
-            //    });
-            //}
-
-            UseItems();
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            try
             {
-                SettingsController.CleanUp();
+                base.OnUpdate(deltaTime);
 
-                SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0) { return; }
 
-                if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
-                    if (int.TryParse(channelInput.Text, out int channelValue)
-                        && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
-            }
+                SimpleChar fightingTarget = DynelManager.LocalPlayer.FightingTarget;
 
-            if (DynelManager.LocalPlayer.IsAttacking)
-            {
-                if (DynelManager.LocalPlayer.FightingTarget == DynelManager.Players)
+                if (fightingTarget != null)
                 {
-                    DynelManager.LocalPlayer.StopAttack();
+                    SpecialAttacks(fightingTarget);
+                }
+
+                UseItems();
+
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                {
+                    SettingsController.CleanUp();
+
+                    SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+
+                    if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                        if (int.TryParse(channelInput.Text, out int channelValue)
+                            && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+                }
+
+                if (DynelManager.LocalPlayer.IsAttacking)
+                {
+                    if (DynelManager.LocalPlayer.FightingTarget == DynelManager.Players)
+                    {
+                        DynelManager.LocalPlayer.StopAttack();
+                    }
+                }
+
+                if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
+                {
+                    _lastCombatTime = Time.NormalTime;
                 }
             }
-
-            if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
+            catch (Exception ex)
             {
-                _lastCombatTime = Time.NormalTime;
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
         }
 
@@ -1723,69 +1734,79 @@ namespace CombatHandler.Generic
 
         #region Special attacks
 
-        protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
+        private void SpecialAttacks(SimpleChar target)
         {
-            if (specialAttack == SpecialAttack.FullAuto)
+            foreach (SpecialAttack special in DynelManager.LocalPlayer.SpecialAttacks)
             {
-                if (specialAttack.IsAvailable())
+                if (!ShouldUseSpecialAttack(special))
                 {
-                    Network.Send(new CharacterActionMessage()
-                    {
-                        Action = (CharacterActionType)210
-
-                    });
-
-                    return true;
+                    continue;
                 }
-            }
 
-            if (specialAttack == SpecialAttack.Burst)
-            {
-                if (lastAttackInfoMessage.AmmoCount > 0)
+                if (!special.IsAvailable())
                 {
-                    if (lastAttackInfoMessage.AmmoCount <= 3)
+                    continue;
+                }
+
+                if (!special.IsInRange(target))
+                {
+                    continue;
+                }
+
+                if (special == SpecialAttack.FullAuto)
+                {
+                    if (special.IsAvailable())
                     {
                         Network.Send(new CharacterActionMessage()
                         {
                             Action = (CharacterActionType)210
-
                         });
+                        continue;
                     }
-                    else
+                }
+
+                if (special == SpecialAttack.Burst)
+                {
+                    if (lastAttackInfoMessage.AmmoCount > 0)
                     {
-                        if (specialAttack.IsAvailable())
+                        if (lastAttackInfoMessage.AmmoCount <= 3)
                         {
-                            return true;
+                            Network.Send(new CharacterActionMessage()
+                            {
+                                Action = (CharacterActionType)210
+                            });
+                        }
+                        else if (special.IsAvailable())
+                        {
+                            continue;
                         }
                     }
+                    continue;
                 }
-            }
 
-            if (specialAttack == SpecialAttack.SneakAttack || specialAttack == SpecialAttack.AimedShot)
-            {
-                if (DynelManager.LocalPlayer.MovementState == MovementState.Sneak)
+                if (special == SpecialAttack.SneakAttack || special == SpecialAttack.AimedShot)
                 {
-                    if (specialAttack.IsAvailable())
+                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sneak &&
+                        special.IsAvailable())
                     {
-                        return true;
+                        continue;
                     }
+                    continue;
                 }
-            }
-           
-            if (specialAttack == SpecialAttack.Backstab)
-            {
-                if (specialAttack.IsAvailable())
-                {
-                    if (!DynelManager.LocalPlayer.FightingTarget.IsFacing(DynelManager.LocalPlayer))
-                    {
-                        return true;
-                    }
-                }
-            }
 
-            return specialAttack != SpecialAttack.Dimach || specialAttack != SpecialAttack.FullAuto
-                || specialAttack != SpecialAttack.AimedShot || specialAttack != SpecialAttack.Burst
-                || specialAttack != SpecialAttack.SneakAttack || specialAttack != SpecialAttack.Backstab;
+                if (special == SpecialAttack.Backstab)
+                {
+                    if (special.IsAvailable() &&
+                        !DynelManager.LocalPlayer.FightingTarget.IsFacing(DynelManager.LocalPlayer))
+                    {
+                        // use the attack
+                        continue;
+                    }
+                    continue;
+                }
+
+                special.UseOn(target);
+            }
         }
 
         public bool NeedsReload()

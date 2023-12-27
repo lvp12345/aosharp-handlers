@@ -19,7 +19,9 @@
 			<OptionCheckBox label="(Team) Damage Shields" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageShields" layout_borders="Rect(10,1,5,1)"/>
 			<OptionCheckBox label="(Team) Special attack blockers" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TeamBlockers" layout_borders="Rect(10,1,5,1)"/>
 			<OptionCheckBox label="(Team) Insight into the Shadowlands" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLMap" layout_borders="Rect(10,1,5,1)"/>
-			<OptionCheckBox label="Mechanical Engineering Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MEBuff" layout_borders="Rect(10,1,5,1)"/>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+			<OptionCheckBox label="(Self) Special attack blockers" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SelfBlockers" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="(Self) Mechanical Engineering Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MEBuff" layout_borders="Rect(10,1,5,1)"/>
 		</View>
 		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
 			<TextView value="" layout_borders="Rect(0,0,0,2)"/>

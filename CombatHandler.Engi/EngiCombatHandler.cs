@@ -131,6 +131,7 @@ namespace CombatHandler.Engineer
                 _settings.AddVariable("DamageShields", false);
                 _settings.AddVariable("SLMap", false);
                 _settings.AddVariable("MEBuff", false);
+                _settings.AddVariable("SelfBlockers", false);
                 _settings.AddVariable("TeamBlockers", false);
 
                 _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.None);
@@ -200,10 +201,10 @@ namespace CombatHandler.Engineer
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SpecialAttackAbsorberBase).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TeamBlockers"));
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerSpecialAttackAbsorber).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TeamBlockers"));
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "SelfBlockers"));
                 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitBuff);
 
@@ -1174,7 +1175,7 @@ namespace CombatHandler.Engineer
                     return CheckDebuffCondition();
 
                 case DebuffingAuraSelection.PetSnare:
-                    return SnareMobExists() ? spell.IsReady : SpamSnare(spell.Nanoline, spell, fightingTarget, ref actionTarget);
+                    return SpamSnare(spell.Nanoline, spell, fightingTarget, ref actionTarget);
 
                 default:
                     return false;
@@ -1187,7 +1188,7 @@ namespace CombatHandler.Engineer
             
             if (!CanCast(spell)) { return false; }
 
-            //if (!spell.IsReady) { return false; }
+            if (!spell.IsReady) { return false; }
 
             Pet target = DynelManager.LocalPlayer.Pets
                     .Where(c => c.Type == PetType.Attack)
@@ -1390,7 +1391,7 @@ namespace CombatHandler.Engineer
         {
             return DynelManager.NPCs
                 .Where(c => c.Name == "Flaming Vengeance" ||
-                    c.Name == "Hand of the Colonel")
+                    c.Name == "Hand of the Colonel" || c.Name == "Punching Bag")
                 .Any();
         }
 

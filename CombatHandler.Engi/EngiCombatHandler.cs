@@ -1174,11 +1174,33 @@ namespace CombatHandler.Engineer
                     return CheckDebuffCondition();
 
                 case DebuffingAuraSelection.PetSnare:
-                    return SnareMobExists() ? spell.IsReady : PetBuff(spell, fightingTarget, ref actionTarget);
+                    return SnareMobExists() ? spell.IsReady : SpamSnare(spell.Nanoline, spell, fightingTarget, ref actionTarget);
 
                 default:
                     return false;
             }
+        }
+
+        private bool SpamSnare(NanoLine buffNanoLine, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if ( fightingTarget == null) { return false; }
+            
+            if (!CanCast(spell)) { return false; }
+
+            //if (!spell.IsReady) { return false; }
+
+            Pet target = DynelManager.LocalPlayer.Pets
+                    .Where(c => c.Type == PetType.Attack)
+                    .FirstOrDefault();
+
+            if (target != null && target.Character != null)
+            {
+                actionTarget.Target = target.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
         }
 
         private bool CheckDebuffCondition()

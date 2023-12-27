@@ -904,13 +904,14 @@ namespace CombatHandler.Shade
         }
         private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["HealthDrain"].AsBool()) { return false; }
+
             if (fightingTarget == null) { return false; }
 
             if (fightingTarget.Buffs.Contains(273390)) { return false; }
 
             if (DynelManager.LocalPlayer.NanoPercent > 80) { return true; }
 
-            // Otherwise save it for if our health starts to drop
             if (DynelManager.LocalPlayer.HealthPercent >= 85) { return false; }
 
             return ToggledTargetDebuff("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);

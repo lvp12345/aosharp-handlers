@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
@@ -27,6 +28,7 @@ namespace CombatHandler.Metaphysicist
         private static Window _itemWindow;
         private static Window _perkWindow;
         private static Window _nukesWindow;
+        private static Window _weaponWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -36,11 +38,37 @@ namespace CombatHandler.Metaphysicist
         private static View _itemView;
         private static View _perkView;
         private static View _nukesView;
+        private static View _weaponView;
 
         private double _lastSwitchedHealTime = 0;
         private double _lastSwitchedMezzTime = 0;
 
         private static double _ncuUpdateTime;
+        public static double weaponDelay;
+
+        public static List<string> allWeaponNames = new List<string>
+            {
+                "Azure Cobra of Orma",
+                "Wixel's Notum Python",
+                "Asp of Semol",
+                "Viper Staff",
+                "Asp of Titaniush",
+                "Gold Acantophis",
+                "Bitis Striker",
+                "Coplan's Hand Taipan",
+                "The Crotalus",
+                "Shield of Zset",
+                "Shield of Esa",
+                "Shield of Asmodian",
+                "Mocham's Guard",
+                "Death Ward",
+                "Belthior's Flame Ward",
+                "Wave Breaker",
+                "Solar Guard",
+                "Notum Defender",
+                "Vital Buckler",
+                "Living Shield of Evernan"
+            };
 
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -109,6 +137,8 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("NanoResistanceDebuffSelection", (int)NanoResistanceDebuffSelection.None);
                 _settings.AddVariable("NanoShutdownDebuffSelection", (int)NanoShutdownDebuffSelection.None);
 
+                _settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.None);
+
                 _settings.AddVariable("CompositesNanoSkills", false);
                 _settings.AddVariable("CompositesNanoSkillsTeam", false);
 
@@ -122,6 +152,7 @@ namespace CombatHandler.Metaphysicist
                 //LE Proc
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AnticipatedEvasion);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DiffuseRage);
+
 
                 _settings.AddVariable("Replenish", false);
 
@@ -139,7 +170,6 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("DebuffNuke", false);
 
                 //settings.AddVariable("NanoBuffsSelection", (int)NanoBuffsSelection.SL);
-                //settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.DISABLED);
 
                 RegisterSettingsWindow("MP Handler", "MPSettingsView.xml");
 
@@ -172,12 +202,19 @@ namespace CombatHandler.Metaphysicist
                 //Buffs
                 //self buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvades);
+
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+                //weapons
+                RegisterSpellProcessor(RelevantNanos.TwoHanded, TwoHandedWeapon);
+                RegisterSpellProcessor(RelevantNanos.OneHanded, OneHandedWeapon);
+                RegisterSpellProcessor(RelevantNanos.Shield, ShieldWeapon);
 
                 //team buffs
                 RegisterSpellProcessor(RelevantNanos.MPCompositeNano, NanoCompBuff);
@@ -274,7 +311,7 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _debuffWindow, _itemWindow, _perkWindow, _nukesWindow };
+        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _debuffWindow, _itemWindow, _perkWindow, _nukesWindow, _weaponWindow };
 
         #region Callbacks
 
@@ -522,13 +559,28 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
+        private void HandleWeaponViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_weaponView)) { return; }
+
+                _weaponView = View.CreateFromXml(PluginDirectory + "\\UI\\MPWeaponView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Weapon", XmlViewName = "MPWeaponView"  }, _weaponView);
+                }
+            else if (_weaponView == null || (_weaponView != null && !_weaponWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_weaponWindow, PluginDir, new WindowOptions() { Name = "Weapon", XmlViewName = "MPWeaponView " }, _weaponView, out var container);
+                _weaponWindow = container;
+            }
+        }
+
         private void HandleDebuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_debuffView)) { return; }
 
                 _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\MPDebuffsView.xml");
@@ -644,8 +696,7 @@ namespace CombatHandler.Metaphysicist
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.8)
-                return;
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.8) { return; }
 
             base.OnUpdate(deltaTime);
 
@@ -658,6 +709,32 @@ namespace CombatHandler.Metaphysicist
                 OnRemainingNCUMessage(0, ncuMessage);
 
                 _ncuUpdateTime = Time.NormalTime;
+            }
+
+            if (HasWeapon())
+            {
+                foreach (Item weapon in Inventory.Items)
+                {
+                    if (allWeaponNames.Contains(weapon.Name))
+                    {
+                        List<EquipSlot> slot = weapon.EquipSlots;
+
+                        if (weapon.Slot.Type != IdentityType.WeaponPage)
+                        {
+                            if (Time.AONormalTime > weaponDelay + 10)
+                            {
+                                foreach (EquipSlot equipSlot in weapon.EquipSlots)
+                                {
+                                    //Chat.WriteLine($"Weapon: {weapon.Name}, Slot: {equipSlot}");
+                                    weapon.Equip(equipSlot);
+                                    break;  
+                                }
+
+                                weaponDelay = Time.AONormalTime;
+                            }
+                        }
+                    }
+                }
             }
 
             #region UI
@@ -783,8 +860,9 @@ namespace CombatHandler.Metaphysicist
             }
 
             if (IsSettingEnabled("SyncPets"))
+            {
                 SynchronizePetCombatStateWithOwner();
-
+            }
             if (CanLookupPetsAfterZone())
             {
                 AssignTargetToHealPet();
@@ -839,6 +917,12 @@ namespace CombatHandler.Metaphysicist
                 {
                     nukesView.Tag = SettingsController.settingsWindow;
                     nukesView.Clicked = HandleNukesViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("WeaponView", out Button weaponView))
+                {
+                    weaponView.Tag = SettingsController.settingsWindow;
+                    weaponView.Clicked = HandleWeaponViewClick;
                 }
 
                 if (!_settings["SyncPets"].AsBool() && _syncPets)
@@ -1159,7 +1243,6 @@ namespace CombatHandler.Metaphysicist
         private bool SelfEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
-
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
@@ -1263,6 +1346,44 @@ namespace CombatHandler.Metaphysicist
                     actionTarget.Target = target;
                     return true;
                 }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Weapons
+
+        protected bool TwoHandedWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HasWeapon()) { return false; }
+
+            if (SummonedWeaponSelection.TwoHand == (SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32())
+            {
+                return true;
+            }
+
+            return false;
+        }
+        protected bool OneHandedWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HasWeapon()) { return false; }
+            
+            if (SummonedWeaponSelection.OnHand == (SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32())
+            {
+                return true;
+            }
+
+            return false;
+        }
+        protected bool ShieldWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (HasWeapon()) { return false; }
+
+            if (SummonedWeaponSelection.Shield == (SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32())
+            {
+                return true;
             }
 
             return false;
@@ -1477,9 +1598,47 @@ namespace CombatHandler.Metaphysicist
             public static readonly int[] MatCreBuffs = Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder().Select(spell => spell.Id).ToArray();
             public static readonly int[] MatLocBuffs = Spell.GetSpellsForNanoline(NanoLine.MatLocBuff).OrderByStackingOrder().Select(spell => spell.Id).ToArray();
 
-            //public static readonly string[] TwoHandedNames = { "Azure Cobra of Orma", "Wixel's Notum Python", "Asp of Semol", "Viper Staff" };
-            //public static readonly string[] OneHandedNames = { "Asp of Titaniush", "Gold Acantophis", "Bitis Striker", "Coplan's Hand Taipan", "The Crotalus" };
-            //public static readonly string[] ShieldNames = { "Shield of Zset", "Shield of Esa", "Shield of Asmodian", "Mocham's Guard", "Death Ward", "Belthior's Flame Ward", "Wave Breaker", "Living Shield of Evernan", "Solar Guard", "Notum Defender", "Vital Buckler" };
+            public static readonly int[] TwoHanded =
+            {
+                154981, //Azure Cobra of Orma
+                154982, //Wixel's Notum Python
+                154983, //Asp of Semol
+                154984, //Viper Staff
+            };
+            public static readonly int[] OneHanded =
+            {
+                 //Asp of Titaniush //couldn’t find the nano ID
+                154977, //Gold Acantophis
+                154978, //Bitis Striker
+                154979, //Coplan's Hand Taipan
+                154980, //The Crotalus
+            };
+            public static readonly int[] Shield =
+            {
+                273376, //Shield of Zset
+                275851, //Shield of Esa
+                154971, //Shield of Asmodian
+                154974, //Mocham's Guard"
+                154972, //Death Ward
+                154968, //Belthior's Flame Ward
+                154975, //Wave Breaker
+                154973, //Solar Guard"
+                154976, //Notum Defender
+                154970, //Vital Buckler
+                154969, //Living Shield of Evernan
+            };
+        }
+
+        public static bool HasWeapon()
+        {
+            foreach (Item weapon in Inventory.Items)
+            {
+                if (allWeaponNames.Contains(weapon.Name))
+                {
+                    return true;
+                }
+            }
+            return false; 
         }
 
         public enum PetProcSelection
@@ -1520,6 +1679,11 @@ namespace CombatHandler.Metaphysicist
             None, Self, Team
         }
 
+        private enum SummonedWeaponSelection
+        {
+            None, TwoHand, OnHand, Shield
+        }
+
         public enum ProcType1Selection
         {
             NanobotContingentArrest = 1178949448,
@@ -1539,21 +1703,6 @@ namespace CombatHandler.Metaphysicist
             SowDespair = 1347310663,
             DiffuseRage = 1296385093
         }
-
-        //private enum SummonedWeaponSelection
-        //{
-        //    DISABLED = 0,
-        //    TWO_HANDED = 1,
-        //    ONE_HANDED_PLUS_SHIELD = 2,
-        //    ONE_HANDED_PLUS_ONE_HANDED = 3,
-        //    ONE_HANDED = 4,
-        //    SHIELD = 5
-        //}
-
-        //private SummonedWeaponSelection GetSummonedWeaponSelection()
-        //{
-        //    return (SummonedWeaponSelection)settings["SummonedWeaponSelection"].AsInt32();
-        //}
 
         #endregion
     }

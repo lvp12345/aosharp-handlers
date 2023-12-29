@@ -1523,10 +1523,11 @@ namespace CombatHandler.Engineer
 
             public static readonly int[] ShieldRippers = { 154725, 154726, 154727, 154728 };
             public static readonly int[] Blinds = { 154715, 154716, 154717, 154718, 154719 };
-            public static readonly int[] ShieldAura = { 154550, 154551, 154552, 154553 };
+
+            public static readonly int[] ReflectAura = { 154550, 154551, 154552, 154553 };
             public static readonly int[] DamageAura = { 154560, 154561 };
             public static readonly int[] ArmorAura = { 154562, 154563, 154564, 154565, 154566, 154567 };
-            public static readonly int[] ReflectAura = { 154557, 154558, 154559 };
+            public static readonly int[] ShieldAura = { 154557, 154558, 154559 };
             //public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
             public static readonly int[] EngineeringBuff = { 273346, 227667, 227657 };

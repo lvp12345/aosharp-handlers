@@ -3,11 +3,10 @@
     public enum IPCOpcode
     {
         Move = 200,
-        Target = 202,
-        Attack = 203,
-        Use = 205,
-        NpcChat = 206,
-        Trade = 210,
-        StartStop = 211
+        Target = 201,
+        Attack = 202,
+        Use = 203,
+        NpcChat = 204,
+        StartStop = 205,
     }
 }

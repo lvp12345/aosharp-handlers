@@ -10,14 +10,10 @@ using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SyncManager.IPCMessages;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Messaging;
-using System.Windows.Interop;
 
 namespace SyncManager
 {
@@ -64,7 +60,7 @@ namespace SyncManager
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
-            Network.N3MessageReceived += Network_N3MessageReceived;
+            Network.N3MessageReceived += SyncTrade;
 
             Game.TeleportEnded += OnZoned;
 
@@ -84,7 +80,6 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, Lookat);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Trade, OnTradeMessage);
 
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
@@ -178,13 +173,11 @@ namespace SyncManager
             {
                 if (startStopMessage.IsStarting)
                 {
-                    
                     _settings["Enable"] = true;
                     Start();
                 }
                 else
                 {
-                    
                     _settings["Enable"] = false;
                     Stop();
                 }
@@ -205,13 +198,9 @@ namespace SyncManager
 
         private void OnZoned(object s, EventArgs e)
         {
-            if (!_settings["Enable"].AsBool())
-                return;
+            if (!_settings["Enable"].AsBool()) { return; }
 
-            if (_settings["SyncBags"].AsBool())
-            {
-                _openBags = false;
-            }
+            if (_settings["SyncBags"].AsBool()) { _openBags = false; }
         }
 
         #region OutgoingCommunication
@@ -261,8 +250,8 @@ namespace SyncManager
                     {
                         Target = lookAtMsg.Target
 
-                        
-                    }) ;
+
+                    });
                 }
 
                 //sync attack
@@ -328,7 +317,6 @@ namespace SyncManager
                     }
                 }
 
-
                 if (_settings["SyncChat"].AsBool())
                 {
                     if (n3Msg.N3MessageType == N3MessageType.KnubotOpenChatWindow)
@@ -390,7 +378,6 @@ namespace SyncManager
                         });
                     }
 
-
                     if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
                     {
                         KnuBotFinishTradeMessage finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
@@ -404,7 +391,6 @@ namespace SyncManager
                             Amount = finishTradeMsg.Amount
                         });
                     }
-
                 }
             }
         }
@@ -421,7 +407,7 @@ namespace SyncManager
 
         private void BroadcastUsableMessage(Item item, Identity target)
         {
-            if (item == null) return;
+            if (item == null) { return; }
 
             if (!IsOther(item))
             {
@@ -433,33 +419,36 @@ namespace SyncManager
                 };
                 IPCChannel.Broadcast(usableMsg);
             }
-            
         }
 
-        //sync trade
-        private void Network_N3MessageReceived(object s, N3Message n3Msg)
+        private void SyncTrade(object s, N3Message n3Msg)
         {
-            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) return;
+            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) { return; }
 
             if (n3Msg.N3MessageType == N3MessageType.Trade)
             {
                 TradeMessage tradeMsg = (TradeMessage)n3Msg;
 
-                if (tradeMsg.Action == TradeAction.Accept)
+                if (DynelManager.LocalPlayer.Identity == tradeMsg.Identity)
                 {
-                    Network.Send(new TradeMessage()
+                    if (tradeMsg.Action == TradeAction.Accept)
                     {
-                        Unknown1 = 2,
-                        Action = (TradeAction)3,
-                    });
+                        if (Inventory.NumFreeSlots >= 1)
+                        {
+                            Trade.Accept(tradeMsg.Identity);
+                        }
+                        else
+                        {
+                            Trade.Decline();
+                        }
+                    }
                 }
-                if (tradeMsg.Action == TradeAction.Confirm)
+                else
                 {
-                    Network.Send(new TradeMessage()
+                    if (tradeMsg.Action == TradeAction.Confirm)
                     {
-                        Unknown1 = 2,
-                        Action = (TradeAction)1,
-                    });
+                        Trade.Confirm(tradeMsg.Identity);
+                    }
                 }
             }
         }
@@ -468,16 +457,13 @@ namespace SyncManager
 
         private void OnMoveMessage(int sender, IPCMessage msg)
         {
-            if (IsActiveWindow)
-                return;
+            if (IsActiveWindow) {  return; }
 
-            if (Game.IsZoning)
-                return;
+            if (Game.IsZoning) { return; }
 
             MoveMessage moveMsg = (MoveMessage)msg;
 
-            if (Playfield.Identity.Instance != moveMsg.PlayfieldId)
-                return;
+            if (Playfield.Identity.Instance != moveMsg.PlayfieldId) { return; }
 
             DynelManager.LocalPlayer.Position = moveMsg.Position;
             DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
@@ -500,46 +486,17 @@ namespace SyncManager
 
         private void OnAttackMessage(int sender, IPCMessage msg)
         {
-            if (IsActiveWindow || Game.IsZoning) return;
+            if (IsActiveWindow || Game.IsZoning) { return; }
 
             var attackMsg = (AttackIPCMessage)msg;
+
             if (attackMsg.Start)
             {
                 Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
                 DynelManager.LocalPlayer.Attack(targetDynel, true);
             }
             else
-            {
-                DynelManager.LocalPlayer.StopAttack();
-            }
-        }
-
-        //sync trade
-        private void OnTradeMessage(int sender, IPCMessage msg)
-        {
-            if (Game.IsZoning)
-                return;
-
-            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) return;
-
-            TradeHandleMessage charTradeIpcMsg = (TradeHandleMessage)msg;
-
-            if (charTradeIpcMsg.Action == TradeAction.Confirm)
-            {
-                Network.Send(new TradeMessage()
-                {
-                    Unknown1 = 2,
-                    Action = (TradeAction)3,
-                });
-            }
-            else if (charTradeIpcMsg.Action == TradeAction.Accept)
-            {
-                Network.Send(new TradeMessage()
-                {
-                    Unknown1 = 2,
-                    Action = (TradeAction)1,
-                });
-            }
+            {  DynelManager.LocalPlayer.StopAttack(); }
         }
 
         private void OnUseMessage(int sender, IPCMessage msg)
@@ -636,7 +593,7 @@ namespace SyncManager
 
             if (chatMsg.IsTrade)
             {
-                
+
             }
 
             if (chatMsg.IsFinishTrade)

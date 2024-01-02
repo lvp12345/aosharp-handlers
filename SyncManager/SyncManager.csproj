@@ -63,7 +63,6 @@
     <Compile Include="IPCMessages\NpcChatMessage.cs" />
     <Compile Include="IPCMessages\StartStopIPCMessage.cs" />
     <Compile Include="IPCMessages\TargetMessage.cs" />
-    <Compile Include="IPCMessages\TradeHandleMessage.cs" />
     <Compile Include="IPCMessages\UseMessage.cs" />
     <Compile Include="IPCMessages\MoveMessage.cs" />
     <Compile Include="SyncManager.cs" />

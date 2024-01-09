@@ -91,6 +91,8 @@ namespace CombatHandler.Soldier
 
                 _settings.AddVariable("LEHealthDrain", false);
 
+                _settings.AddVariable("AOEPerks", false);
+
                 _settings.AddVariable("AAO", false);
                 _settings.AddVariable("PistolTeam", false);
                 _settings.AddVariable("CompHeavyArt", false);
@@ -106,7 +108,6 @@ namespace CombatHandler.Soldier
                 _settings.AddVariable("MajorEvasionBuffs", false);
 
                 _settings.AddVariable("LegShot", false);
-                _settings.AddVariable("DamagePerk", false);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.FuriousAmmunition);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.GrazeJugularVein);

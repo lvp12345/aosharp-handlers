@@ -108,6 +108,8 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("GlobalComposites", true);
                 _settings.AddVariable("GlobalRez", true);
 
+                _settings.AddVariable("AOEPerks", false);
+
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 
@@ -116,6 +118,8 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
                 _settings.AddVariable("Kits", true);
+
+                _settings.AddVariable("Sacrificial", false);
 
                 _settings.AddVariable("SyncPets", true);
                 _settings.AddVariable("SpawnPets", true);
@@ -202,7 +206,7 @@ namespace CombatHandler.Metaphysicist
                 //Buffs
                 //self buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvades);
-
+                RegisterSpellProcessor(RelevantNanos.Sacrificial, Sacrificial);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1240,6 +1244,15 @@ namespace CombatHandler.Metaphysicist
 
         #region Buffs
 
+
+        private bool Sacrificial(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Sacrificial"].AsBool()) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SacrificialBond)) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
         private bool SelfEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
@@ -1597,6 +1610,8 @@ namespace CombatHandler.Metaphysicist
             public static readonly int[] SenImpBuffs = { 29304, 151757, 29315, 151764 }; //Composites count as SenseImp buffs. Have to be excluded
             public static readonly int[] MatCreBuffs = Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder().Select(spell => spell.Id).ToArray();
             public static readonly int[] MatLocBuffs = Spell.GetSpellsForNanoline(NanoLine.MatLocBuff).OrderByStackingOrder().Select(spell => spell.Id).ToArray();
+            public static readonly int[] Sacrificial = new[] { 267281, 300506 };
+            public static int SacrificialBond = 300505;
 
             public static readonly int[] TwoHanded =
             {

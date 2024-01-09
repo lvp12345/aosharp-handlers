@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
@@ -91,11 +92,9 @@ namespace CombatHandler.Enf
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RagingBlow);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.ViolationBuffer);
 
-                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
+                _settings.AddVariable("MongoSelection", (int)MongoSelection.Spam);
+                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.Adds);
 
-                _settings.AddVariable("Mongo", true);
-                _settings.AddVariable("CycleAbsorbs", false);
-                _settings.AddVariable("SelfAbsorb", false);
                 _settings.AddVariable("CycleChallenger", false);
                 _settings.AddVariable("CycleRage", false);
                 _settings.AddVariable("TauntProc", true);
@@ -103,9 +102,13 @@ namespace CombatHandler.Enf
                 _settings.AddVariable("TargetedHpBuff", true);
                 _settings.AddVariable("InitiativeBuffs", true);
                 _settings.AddVariable("DamageShields", false);
+                _settings.AddVariable("AOEPerks", false);
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.None);
+                _settings.AddVariable("AbsorbSelection", (int)AbsorbSelection.Normal);
+
+                _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.Self);
+                _settings.AddVariable("DamageChangeBuffSelection", (int)DamageChangeBuffSelection.None);
 
                 _settings.AddVariable("TrollForm", false);
                 _settings.AddVariable("EncaseInStone", false);
@@ -123,13 +126,14 @@ namespace CombatHandler.Enf
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TauntProc"));
 
-                
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
                 RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
@@ -140,13 +144,16 @@ namespace CombatHandler.Enf
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.FastAttackBuffs).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-                RegisterSpellProcessor(RelevantNanos.Melee1HB, Melee1HBBuffWeapon);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MeleeWeaponBuffLine), Melee1HBBuffWeapon);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._1HBluntBuff), Melee1HBBuffWeapon);
                 RegisterSpellProcessor(RelevantNanos.Melee1HE, Melee1HEBuffWeapon);
                 RegisterSpellProcessor(RelevantNanos.Melee2HE, Melee2HEBuffWeapon);
                 RegisterSpellProcessor(RelevantNanos.Melee2HB, Melee2HBBuffWeapon);
                 RegisterSpellProcessor(RelevantNanos.MeleePierce, MeleePierceBuffWeapon);
                 RegisterSpellProcessor(RelevantNanos.MeleeEnergy, MeleeEnergyBuffWeapon);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageChangeBuffs).OrderByStackingOrder(), DamageChange);
+
+                int damageChangeBUff = _settings["DamageChangeBuffSelection"].AsInt32();
+                RegisterSpellProcessor(damageChangeBUff, DamageChange);
 
                 //Team buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(), InitiativeBuffs);
@@ -156,9 +163,7 @@ namespace CombatHandler.Enf
                 RegisterSpellProcessor(RelevantNanos.TargetedHpBuff,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "TargetedHpBuff"));
-                RegisterSpellProcessor(RelevantNanos.AbsorbACBuff,
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "AbsorbACBuff"));
+                RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, TeamAbsorbs);
                 RegisterSpellProcessor(RelevantNanos.ProdigiousStrength,
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
@@ -767,36 +772,29 @@ namespace CombatHandler.Enf
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
                 SimpleChar mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget != null
-                        && c.FightingTarget?.Profession != Profession.Enforcer
+                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.Name != "Alien Heavy Patroller"
+                        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < 30f
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
 
-                if (mob != null && DynelManager.LocalPlayer.HealthPercent >= 30)
+                if (DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = mob;
-                    return true;
-                }
-                else if (fightingTarget != null && DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
+                    if (mob != null)
+                    {
+                        _singleTaunt = Time.NormalTime;
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = mob;
+                        return true;
+                    }
                 }
             }
 
@@ -818,18 +816,39 @@ namespace CombatHandler.Enf
 
         private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Mongo") || !CanCast(spell)) { return false; }
+            if (_settings["MongoSelection"].AsInt32() == 0 || !CanCast(spell)) { return false; }
 
-            if (DynelManager.NPCs.Any(c => c.Health > 0
-                && c.Name == "Alien Heavy Patroller"
-                && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f)) { return false; }
+            SimpleChar mob = DynelManager.NPCs
+                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity 
+                   && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f
+                       && AttackingTeam(c))
+                   .FirstOrDefault();
 
-            if (Time.NormalTime > _mongo + MongoDelay
-            && fightingTarget != null && DynelManager.LocalPlayer.HealthPercent >= 30)
+            if (DynelManager.NPCs.Any(c => c.Health > 0 && c.Name == "Alien Heavy Patroller")) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent >= 30)
             {
-                _mongo = Time.NormalTime;
-                return true;
+                if (Time.NormalTime > _mongo + MongoDelay)
+                {
+                    if (_settings["MongoSelection"].AsInt32() == 1)
+                    {
+                        if (mob != null)
+                        {
+                            _mongo = Time.NormalTime;
+                            return true;
+                        }
+                    }
+                    if (_settings["MongoSelection"].AsInt32() == 2)
+                    {
+                        if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f)
+                        {
+                            _mongo = Time.NormalTime;
+                            return true;
+                        }
+                    }
+                }
             }
+
             return false;
         }
 
@@ -850,20 +869,26 @@ namespace CombatHandler.Enf
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("SelfAbsorb"))
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+            if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.None) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
+
+            if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.Normal)
             {
-                if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            }
 
-                if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + CycleAbsorbsDelay
-                    && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
+            if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.Cycle)
+            {
+                if (fightingTarget == null) { return false; }
+
+                if (Time.NormalTime > _absorbs + CycleAbsorbsDelay)
                 {
-                    if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
-
                     _absorbs = Time.NormalTime;
                     return true;
                 }
-
-                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
             }
 
             return false;
@@ -933,30 +958,16 @@ namespace CombatHandler.Enf
 
         private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            // Check if there is a fighting target or if the spell ID should be ignored
-            if (DynelManager.LocalPlayer.FightingTarget != null)
-            {
-                return false;
-            }
+            spell.Id = _settings["DamageChangeBuffSelection"].AsInt32();
 
-            // Check if the "Buffing" setting is enabled and if the spell can be cast, and if the ModelIdentity.Instance is not 152
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152)
-            {
-                return false;
-            }
+            if (spell.Id == 0) { return false; }
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget != null) { return false; }
 
-            // Check if NanoLine.DamageChangeBuffs is in the player's buffs
-            bool hasDamageChangeBuffs = DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DamageChangeBuffs);
-
-            // Check if there is enough remaining NCU to cast the spell
             if (DynelManager.LocalPlayer.RemainingNCU >= Math.Abs(spell.NCU))
             {
-                // If NanoLine.DamageChangeBuffs is NOT in the player's buffs, cast the spell
-                if (!hasDamageChangeBuffs)
+                if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DamageChangeBuffs))
                 {
-                    // Set the actionTarget to the local player and mark ShouldSetTarget as true
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
                     return true;
                 }
             }
@@ -967,9 +978,9 @@ namespace CombatHandler.Enf
 
         #endregion
 
-        #endregion
+            #endregion
 
-        #region Team Buffs
+            #region Team Buffs
 
         private bool InitiativeBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -979,6 +990,33 @@ namespace CombatHandler.Enf
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
+        private bool TeamAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["AbsorbACBuff"].AsBool()) { return false; }
+
+            if (Team.IsInTeam)
+            {
+                SimpleChar target = DynelManager.Players
+                               .Where(c => c.IsInLineOfSight
+                               && c.Identity != DynelManager.LocalPlayer.Identity
+                                   && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                   && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                                   && c.Health > 0
+                                   && SpellChecksOther(spell, spell.Nanoline, c))
+                               .FirstOrDefault();
+
+                if (target != null)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+            }
+
+            return false;
+
+        }
+
         #endregion
 
         #region Misc
@@ -986,6 +1024,7 @@ namespace CombatHandler.Enf
         private static class RelevantNanos
         {
             public static readonly int[] SingleTargetTaunt = { 275014, 223123, 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
+            public const int ThugsDelight = 43371;
             public static readonly int[] Melee1HB = { 202846, 202844, 202842, 29630, 202840, 29644 };
             public static readonly int[] Melee2HB = { 202856, 202854, 202852, 29630, 202850, 29644, 202848 };
             public static readonly int[] Melee1HE = { 202818, 202816, 202793, 202791, 202774, 202739, 202776 };
@@ -1028,13 +1067,29 @@ namespace CombatHandler.Enf
 
         public enum SingleTauntsSelection
         {
-            None, Target, Area
+            None, Target, Adds
+        }
+
+        public enum AbsorbSelection
+        {
+            None, Normal, Cycle
         }
 
         public enum StrengthBuffSelection
         {
             None, Self, Team
         }
+
+        public enum MongoSelection
+        {
+            None, Adds, Spam
+        }
+
+        public enum DamageChangeBuffSelection
+        {
+            None = 0, Melee = 301853, Radiation = 222919, Poison = 222917, Chemical = 222915, Cold = 222706, Fire = 222693
+        }
+
         #endregion
     }
 }

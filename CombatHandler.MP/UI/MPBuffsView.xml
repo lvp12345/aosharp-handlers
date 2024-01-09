@@ -9,6 +9,7 @@
 		<OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Evades" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="(Team) Insight into the Shadowlands" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLMap" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Replenish Nano Skills" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Replenish" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Sacrificial Bond/Shielding" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Sacrificial" layout_borders="Rect(10,1,5,1)"/>
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<OptionRadioButtonGroup label="Cost" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__CostBuffSelection">
 			<RadioButton label="Self" value="1"/>

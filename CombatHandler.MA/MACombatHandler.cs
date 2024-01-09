@@ -5,7 +5,9 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using static CombatHandler.MartialArtist.MACombatHandler;
 
 namespace CombatHandler.MartialArtist
 {
@@ -18,6 +20,7 @@ namespace CombatHandler.MartialArtist
         private static bool ToggleRez = false;
 
         private static Window _buffWindow;
+        private static Window _specialAttacksWindow;
         private static Window _tauntWindow;
         private static Window _healingWindow;
         private static Window _procWindow;
@@ -25,6 +28,7 @@ namespace CombatHandler.MartialArtist
         private static Window _perkWindow;
 
         private static View _buffView;
+        private static View _specialAttacksView;
         private static View _tauntView;
         private static View _healingView;
         private static View _procView;
@@ -68,12 +72,14 @@ namespace CombatHandler.MartialArtist
 
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
-
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("MASASelection", (int)MASASelection.StingoftheViper);
-
+                _settings.AddVariable("MASelection", (int)MASelection.StingoftheViper);
                 _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);
+                _settings.AddVariable("RiposteSelection", (int)RiposteSelection.None);
+                _settings.AddVariable("StrengthSelection", (int)StrengthSelection.None);
+                _settings.AddVariable("IntelligenceSelection", (int)IntelligenceSelection.None);
+                _settings.AddVariable("StaminaSelection", (int)StaminaSelection.None);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
 
@@ -185,10 +191,19 @@ namespace CombatHandler.MartialArtist
                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "TeamArmorBuffs"));
 
                 //Items
-                RegisterItemProcessor(RelevantItems.TheWizdomOfHuzzum, RelevantItems.TheWizdomOfHuzzum, TheWizdomofHuzzum);
-                RegisterItemProcessor(RelevantItems.TouchOfSaiFung, RelevantItems.TouchOfSaiFung, TouchOfSaiFung);
-                RegisterItemProcessor(RelevantItems.StingoftheViper, RelevantItems.StingoftheViper, StingoftheViper);
-                RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+                int maItem = _settings["MASelection"].AsInt32();
+                int dimachItem = _settings["DimachSelection"].AsInt32();
+                int riposteItem = _settings["RiposteSelection"].AsInt32();
+                int strengthItem = _settings["StrengthSelection"].AsInt32();
+                int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
+                int staminaItem = _settings["StaminaSelection"].AsInt32();
+                RegisterItemProcessor(maItem, maItem, MAItem);
+                RegisterItemProcessor(dimachItem, dimachItem, DimachItem);
+                RegisterItemProcessor(riposteItem, riposteItem, RiposteItem);
+                RegisterItemProcessor(strengthItem, strengthItem, StrengthItem);
+                RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
+                RegisterItemProcessor(staminaItem, staminaItem, StaminaItem);
+
 
                 //LE Procs
                 RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, LEProc1, CombatActionPriority.Low);
@@ -234,7 +249,7 @@ namespace CombatHandler.MartialArtist
             }
         }
 
-        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _healingWindow, _buffWindow, _specialAttacksWindow, _tauntWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -431,6 +446,23 @@ namespace CombatHandler.MartialArtist
             }
         }
 
+        private void HandleSpecialAttacksViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_specialAttacksView)) { return; }
+
+                _specialAttacksView = View.CreateFromXml(PluginDirectory + "\\UI\\MASpecialAttacksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "MASpecialAttacksView" }, _specialAttacksView);
+            }
+            else if (_specialAttacksWindow == null || (_specialAttacksWindow != null && !_specialAttacksWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_specialAttacksWindow, PluginDir, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "MASpecialAttacksView" }, _specialAttacksView, out var container);
+                _specialAttacksWindow = container;
+            }
+        }
+
         private void HandleHealingViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -521,73 +553,129 @@ namespace CombatHandler.MartialArtist
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                     if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
+                    {
                         if (int.TryParse(healInput.Text, out int healValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage != healValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = healValue;
+                        }
+                    }
 
                     if (stimTargetInput != null)
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
+                        }
+                    }
 
                     if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
+                    {
                         if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
+                        }
+                    }
 
                     if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
+                    {
                         if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
+                        }
+                    }
 
                     if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                    {
                         if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+                        }
+                    }
 
                     if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                    {
                         if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+                        }
+                    }
 
                     if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
+                    {
                         if (int.TryParse(sphereInput.Text, out int sphereValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
+                        }
+                    }
 
                     if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
+                    {
                         if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+                        }
+                    }
 
                     if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
+                    {
                         if (int.TryParse(selfHealInput.Text, out int selfHealValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
+                        }
+                    }
 
                     if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
+                    {
                         if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
+                        }
+                    }
 
                     if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
+                    {
                         if (int.TryParse(teamHealInput.Text, out int teamHealValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
+                        }
+                    }
 
                     if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
+                    {
                         if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
+                        }
+                    }
 
                     if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
+                    {
                         if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
+                        }
+                    }
 
                     if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
+                    {
                         if (int.TryParse(strengthInput.Text, out int strengthValue))
+                        {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                        }
+                    }
                 }
 
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -614,6 +702,12 @@ namespace CombatHandler.MartialArtist
                     {
                         buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = HandleBuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("SpecialAttacksView", out Button specialAttacksView))
+                    {
+                        specialAttacksView.Tag = SettingsController.settingsWindow;
+                        specialAttacksView.Clicked = HandleSpecialAttacksViewClick;
                     }
 
                     if (SettingsController.settingsWindow.FindView("TauntsView", out Button tauntView))
@@ -771,46 +865,69 @@ namespace CombatHandler.MartialArtist
 
         #region Items
 
-        private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (MASASelection.Sappo != (MASASelection)_settings["MASASelection"].AsInt32()) { return false; }
+            item.Id = _settings["MASelection"].AsInt32();
 
-            if (fightingtarget == null) { return false; }
+            if (item.Id == 0) { return false;  }
+            if (fightingtarget == null) { return false;  }
             if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
             return true;
         }
-
-        private bool StingoftheViper(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool DimachItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (MASASelection.StingoftheViper != (MASASelection)_settings["MASASelection"].AsInt32()) { return false; }
+            item.Id = _settings["DimachSelection"].AsInt32();
 
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
-
-            return true;
-        }
-
-        private bool TouchOfSaiFung(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DimachSelection.TouchOfSaiFung != (DimachSelection)_settings["DimachSelection"].AsInt32()) { return false; }
-
+            if (item.Id == 0) { return false; }
             if (fightingtarget == null) { return false; }
             if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
 
             return true;
         }
-
-        private bool TheWizdomofHuzzum(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool RiposteItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DimachSelection.TheWizdomofHuzzum != (DimachSelection)_settings["DimachSelection"].AsInt32()) { return false; }
+            item.Id = _settings["RiposteSelection"].AsInt32();
 
+            if (item.Id == 0) { return false; }
             if (fightingtarget == null) { return false; }
             if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Riposte)) { return false; }
+
+            return true;
+        }
+        private bool StrengthItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["StrengthSelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
+
+            return true;
+        }
+        private bool IntelligenceItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["IntelligenceSelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Intelligence)) { return false; }
+
+            return true;
+        }
+        private bool StaminaItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["StaminaSelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Stamina)) { return false; }
 
             return true;
         }
@@ -969,6 +1086,13 @@ namespace CombatHandler.MartialArtist
 
         #region Misc
 
+        protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
+        {
+            if (specialAttack == SpecialAttack.Dimach && _settings["DimachSelection"].AsInt32() != 0) { return false; }
+
+            return true;
+        }
+
         private static class RelevantNanos
         {
             public const int FistsOfTheWinterFlame = 269470;
@@ -984,15 +1108,6 @@ namespace CombatHandler.MartialArtist
             public static int[] DamageTypeChemical = { 81822, 81830 };
         }
 
-        private static class RelevantItems
-        {
-            public const int TheWizdomOfHuzzum = 303056;
-            public const int TouchOfSaiFung = 275018;
-            public const int StingoftheViper = 305542;
-            public const int Sappo = 267525;
-            public const int TreeOfEnlightenment = 204607;
-        }
-
         public enum HealSelection
         {
             None, SingleTeam, SingleArea, Team
@@ -1002,14 +1117,31 @@ namespace CombatHandler.MartialArtist
             None, Target, Area
         }
 
-        public enum MASASelection
+        public enum MASelection
         {
-            Sappo, StingoftheViper
+            None, Sappo = 267525, StingoftheViper = 305542, ApeFistofKhalum = 204605, KarmicFist = 206191, Shen = 201281,
+            FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
+            AttackoftheSnake = 204330, AngelofNight = 204331
         }
-
         public enum DimachSelection
         {
-            TouchOfSaiFung, TheWizdomofHuzzum
+            None, TouchOfSaiFung = 275018, TheWizdomofHuzzum = 303056, TreeofEnlightenment = 204607
+        }
+        public enum RiposteSelection
+        {
+            None, UponAWaveOfSummer = 205406, StampedeOfTheBoar = 305554
+        }
+        public enum StrengthSelection
+        {
+            None, Delirium = 267922
+        }
+        public enum IntelligenceSelection
+        {
+            None, Enigma = 267522
+        }
+        public enum StaminaSelection
+        {
+            None, InnerBalance = 267523
         }
         public enum ProcType1Selection
         {

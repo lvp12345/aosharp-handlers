@@ -848,7 +848,7 @@ namespace CombatHandler.NanoTechnician
             if (DOTADebuffTargetSelection.Target == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
                 && fightingTarget != null)
             {
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+                if (debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
@@ -858,7 +858,7 @@ namespace CombatHandler.NanoTechnician
             {
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-                if (debuffTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+                if (debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
 
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }

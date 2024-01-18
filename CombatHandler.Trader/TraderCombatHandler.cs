@@ -82,6 +82,7 @@ namespace CombatHandler.Trader
 
                 _settings.AddVariable("Kits", true);
 
+                _settings.AddVariable("SpawnPets", true);
 
                 _settings.AddVariable("HealthDrain", false);
                 _settings.AddVariable("LEDrainHeal", false);
@@ -133,13 +134,12 @@ namespace CombatHandler.Trader
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz).OrderByStackingOrder(), Mezz, CombatActionPriority.High);
 
                 //Heals
-                RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain);
+                RegisterSpellProcessor(RelevantNanos.HealthDrain, HealthDrain, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal, CombatActionPriority.High);
-
                 RegisterSpellProcessor(RelevantNanos.Heals,
                            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
                            GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
-                           CombatActionPriority.High);
+                           CombatActionPriority.Medium);
 
                 RegisterSpellProcessor(RelevantNanos.TeamHeals,
                             (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
@@ -154,7 +154,7 @@ namespace CombatHandler.Trader
 
                 //Debuffs
                 RegisterSpellProcessor(RelevantNanos.GrandThefts, GrandTheftHumidity, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.MyEnemiesEnemyIsMyFriend, MyEnemy);
+                RegisterSpellProcessor(RelevantNanos.EnemiesEnemy, MyEnemy);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAADDrain).OrderByStackingOrder(), AADDrain, CombatActionPriority.Medium);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderAAODrain).OrderByStackingOrder(), AAODrain, CombatActionPriority.Medium);
@@ -497,7 +497,9 @@ namespace CombatHandler.Trader
         protected override void OnUpdate(float deltaTime)
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.1)
+            {
                 return;
+            }
 
             base.OnUpdate(deltaTime);
 
@@ -1513,35 +1515,40 @@ namespace CombatHandler.Trader
 
         private bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+            if (!CanCast(spell)) { return false; }
             if (fightingTarget == null) { return false; }
             if (fightingTarget.MaxHealth < 1000000) { return false; }
-            if (!spell.IsReady) { return false; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
         }
 
         protected void SyncPetCombat()
         {
-
-            foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
+            foreach (Pet _pet in DynelManager.LocalPlayer.Pets)
+            {
                 SyncPetCombat(_pet);
-
+            }  
         }
 
         private void SyncPetCombat(Pet pet)
         {
             if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
+            {
                 pet?.Follow();
+            }
 
             if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
             {
                 if (pet?.Character.IsAttacking == false)
+                {
                     pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                }
 
                 if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
                     && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
+                {
                     pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                }  
             }
         }
 
@@ -1564,7 +1571,7 @@ namespace CombatHandler.Trader
             public const int ImprovedQuantumUncertanity = 270808;
             public const int UnstoppableKiller = 275846;
             public const int DivestDamage = 273407;
-            public const int MyEnemiesEnemyIsMyFriend = 270714;
+            public static int[] EnemiesEnemy = { 270714, 263293 };
             public const int FlowofTime = 30719;
             public const int DecisionbyCommittee = 258659;
             public const int DivestDamageTransfer = 273408;

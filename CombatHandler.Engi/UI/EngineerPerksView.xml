@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+  <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="Perks" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
     <OptionCheckBox label="Leg Shot" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__LegShot" layout_borders="Rect(10,1,5,1)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>

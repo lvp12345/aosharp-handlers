@@ -868,7 +868,7 @@ namespace CombatHandler.Bureaucrat
             }
 
             if (IsSettingEnabled("SyncPets"))
-                SynchronizePetCombatStateWithOwner();
+                SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {

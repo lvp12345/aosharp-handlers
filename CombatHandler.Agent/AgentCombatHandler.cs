@@ -781,7 +781,7 @@ namespace CombatHandler.Agent
 
             if (CanLookupPetsAfterZone() && DynelManager.LocalPlayer.Pets.Count() >= 1)
             {
-                SynchronizePetCombatStateWithOwner();
+                SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Attack);
                 AssignTargetToHealPet();
             }
 

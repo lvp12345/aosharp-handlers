@@ -40,8 +40,8 @@ namespace CombatHandler.Metaphysicist
         private static View _nukesView;
         private static View _weaponView;
 
-        private double _lastSwitchedHealTime = 0;
-        private double _lastSwitchedMezzTime = 0;
+        private double _lastHealPetHealTime = 0.0;
+        private double _lastMezzPetMezzTime = 0.0;
 
         private static double _ncuUpdateTime;
         public static double weaponDelay;
@@ -146,7 +146,6 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("CompositesNanoSkills", false);
                 _settings.AddVariable("CompositesNanoSkillsTeam", false);
 
-                _settings.AddVariable("Cost", false);
                 _settings.AddVariable("Evades", false);
                 _settings.AddVariable("PistolTeam", false);
                 _settings.AddVariable("SLMap", false);
@@ -166,8 +165,6 @@ namespace CombatHandler.Metaphysicist
                 //_settings.AddVariable("SenseImprov", false);
                 //_settings.AddVariable("BioMet", false);
                 //_settings.AddVariable("MattMet", false);
-
-                //settings.AddVariable("CostTeam", false);
 
                 _settings.AddVariable("Nukes", false);
                 _settings.AddVariable("NormalNuke", false);
@@ -238,7 +235,8 @@ namespace CombatHandler.Metaphysicist
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
 
-                RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
+                //RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
                 //Pets
@@ -266,7 +264,7 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(RelevantNanos.PetDefensive, DefensivePet);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealDelta843).OrderByStackingOrder(), HealDeltaPet);
                 RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
-                RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), CostPet);
 
                 //Pet Perks
 
@@ -284,7 +282,6 @@ namespace CombatHandler.Metaphysicist
                 RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, LEProc2, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, LEProc2, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, LEProc2, CombatActionPriority.Low);
-
 
                 PluginDirectory = pluginDir;
 
@@ -396,10 +393,7 @@ namespace CombatHandler.Metaphysicist
             if (DynelManager.LocalPlayer.Pets.Length > 0)
             {
                 Spell warp = Spell.List.FirstOrDefault(x => RelevantNanos.Warps.Contains(x.Id));
-                if (warp != null)
-                {
-                    warp.Cast(DynelManager.LocalPlayer, false);
-                }
+                warp?.Cast(DynelManager.LocalPlayer, false);
             }
         }
 
@@ -417,11 +411,6 @@ namespace CombatHandler.Metaphysicist
         #endregion
 
         #region Handles
-
-        private void SyncPetsChecked(object s, Checkbox checkbox)
-        {
-
-        }
 
         private void PetAttackClicked(object s, ButtonBase button)
         {
@@ -506,17 +495,31 @@ namespace CombatHandler.Metaphysicist
                 window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
+
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
+
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -531,17 +534,29 @@ namespace CombatHandler.Metaphysicist
                 container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
         }
         private void HandleBuffViewClick(object s, ButtonBase button)
@@ -571,8 +586,8 @@ namespace CombatHandler.Metaphysicist
                 if (window.Views.Contains(_weaponView)) { return; }
 
                 _weaponView = View.CreateFromXml(PluginDirectory + "\\UI\\MPWeaponView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Weapon", XmlViewName = "MPWeaponView"  }, _weaponView);
-                }
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Weapon", XmlViewName = "MPWeaponView" }, _weaponView);
+            }
             else if (_weaponView == null || (_weaponView != null && !_weaponWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_weaponWindow, PluginDir, new WindowOptions() { Name = "Weapon", XmlViewName = "MPWeaponView " }, _weaponView, out var container);
@@ -616,19 +631,33 @@ namespace CombatHandler.Metaphysicist
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
@@ -644,19 +673,33 @@ namespace CombatHandler.Metaphysicist
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -700,331 +743,425 @@ namespace CombatHandler.Metaphysicist
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.8) { return; }
-
-            base.OnUpdate(deltaTime);
-
-            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+            try
             {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.8) { return; }
 
-                IPCChannel.Broadcast(ncuMessage);
+                base.OnUpdate(deltaTime);
 
-                OnRemainingNCUMessage(0, ncuMessage);
-
-                _ncuUpdateTime = Time.NormalTime;
-            }
-
-            if (HasWeapon())
-            {
-                foreach (Item weapon in Inventory.Items)
+                if (Time.NormalTime > _ncuUpdateTime + 2.0f)
                 {
-                    if (allWeaponNames.Contains(weapon.Name))
+                    RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+                    IPCChannel.Broadcast(ncuMessage);
+
+                    OnRemainingNCUMessage(0, ncuMessage);
+
+                    _ncuUpdateTime = Time.NormalTime;
+                }
+
+                if (IsSettingEnabled("SyncPets"))
+                {
+                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Attack);
+                }
+
+                if (CanLookupPetsAfterZone())
+                {
+                    AssignTargetToHealPet();
+                    AssignTargetToMezzPet();
+                }
+
+                if ((SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32() != SummonedWeaponSelection.None)
+                {
+                    if (HasWeapon())
                     {
-                        List<EquipSlot> slot = weapon.EquipSlots;
-
-                        if (weapon.Slot.Type != IdentityType.WeaponPage)
+                        foreach (Item weapon in Inventory.Items)
                         {
-                            if (Time.AONormalTime > weaponDelay + 10)
+                            if (allWeaponNames.Contains(weapon.Name))
                             {
-                                foreach (EquipSlot equipSlot in weapon.EquipSlots)
-                                {
-                                    //Chat.WriteLine($"Weapon: {weapon.Name}, Slot: {equipSlot}");
-                                    weapon.Equip(equipSlot);
-                                    break;  
-                                }
+                                List<EquipSlot> slot = weapon.EquipSlots;
 
-                                weaponDelay = Time.AONormalTime;
+                                if (weapon.Slot.Type != IdentityType.WeaponPage)
+                                {
+                                    if (Time.AONormalTime > weaponDelay + 10)
+                                    {
+                                        foreach (EquipSlot equipSlot in weapon.EquipSlots)
+                                        {
+                                            //Chat.WriteLine($"Weapon: {weapon.Name}, Slot: {equipSlot}");
+                                            weapon.Equip(equipSlot);
+                                            break;
+                                        }
+
+                                        weaponDelay = Time.AONormalTime;
+                                    }
+                                }
                             }
                         }
                     }
                 }
+
+                #region UI
+
+                var window = SettingsController.FindValidWindow(_windows);
+
+                if (window != null && window.IsValid)
+                {
+                    window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                    window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                    window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                    window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                    window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+                    window.FindView("SphereDelayBox", out TextInputView sphereInput);
+                    window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+                    window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+                    window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
+                    window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+                    if (stimTargetInput != null)
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
+                        }     
+                    } 
+
+                    if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
+                    {
+                        if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
+                            } 
+                        }   
+                    }
+
+                    if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
+                    {
+                        if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
+                            }   
+                        }   
+                    } 
+
+                    if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                    {
+                        if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+                            } 
+                        }  
+                    }
+
+                    if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                    {
+                        if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+                            } 
+                        }  
+                    }
+                        
+                    if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
+                    {
+                        if (int.TryParse(sphereInput.Text, out int sphereValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
+                            } 
+                        } 
+                    }
+                        
+                    if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
+                    {
+                        if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+                            } 
+                        }  
+                    }
+                      
+                    if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
+                    {
+                        if (int.TryParse(selfHealInput.Text, out int selfHealValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
+                            }  
+                        }  
+                    }
+                       
+                    if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
+                    {
+                        if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
+                            } 
+                        } 
+                    }
+                        
+                    if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
+                    {
+                        if (int.TryParse(teamHealInput.Text, out int teamHealValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
+                            } 
+                        }
+                    }
+                       
+                    if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
+                    {
+                        if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
+                            }  
+                        }  
+                    }
+                        
+                    if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
+                    {
+                        if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
+                            }  
+                        }   
+                    }
+                       
+                    if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
+                    {
+                        if (int.TryParse(strengthInput.Text, out int strengthValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                            }  
+                        } 
+                    }
+
+                    //attack
+                    if (window.FindView("CombatHandlerPetAttack", out Button PetAttack))
+                    {
+                        PetAttack.Tag = window;
+                        PetAttack.Clicked = PetAttackClicked;
+                    }
+
+                    //wait
+                    if (window.FindView("CombatHandlerPetWait", out Button PetWait))
+                    {
+                        PetWait.Tag = window;
+                        PetWait.Clicked = PetWaitClicked;
+                    }
+
+                    //warp
+                    if (window.FindView("CombatHandlerPetWarp", out Button PetWarp))
+                    {
+                        PetWarp.Tag = window;
+                        PetWarp.Clicked = PetWarpClicked;
+                    }
+
+                    //follow
+                    if (window.FindView("CombatHandlertPetFollow", out Button PetFollow))
+                    {
+                        PetFollow.Tag = window;
+                        PetFollow.Clicked = PetFollowClicked;
+                    }
+                }
+
+                if (_settings["Replenish"].AsBool() && (_settings["CompositesNanoSkills"].AsBool() || _settings["CompositesNanoSkillsTeam"].AsBool()))
+                {
+                    _settings["CompositesNanoSkills"] = false;
+                    _settings["CompositesNanoSkillsTeam"] = false;
+                    _settings["Replenish"] = false;
+
+                    Chat.WriteLine("Only activate one option.");
+                }
+
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                {
+                    if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
+                    {
+                        petView.Tag = SettingsController.settingsWindow;
+                        petView.Clicked = HandlePetViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("PetCommandView", out Button petCommandView))
+                    {
+                        petCommandView.Tag = SettingsController.settingsWindow;
+                        petCommandView.Clicked = HandlePetCommandViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsWindow;
+                        buffView.Clicked = HandleBuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsWindow;
+                        debuffView.Clicked = HandleDebuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                    {
+                        procView.Tag = SettingsController.settingsWindow;
+                        procView.Clicked = HandleProcViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                    {
+                        itemView.Tag = SettingsController.settingsWindow;
+                        itemView.Clicked = HandleItemViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                    {
+                        perkView.Tag = SettingsController.settingsWindow;
+                        perkView.Clicked = HandlePerkViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("NukesView", out Button nukesView))
+                    {
+                        nukesView.Tag = SettingsController.settingsWindow;
+                        nukesView.Clicked = HandleNukesViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("WeaponView", out Button weaponView))
+                    {
+                        weaponView.Tag = SettingsController.settingsWindow;
+                        weaponView.Clicked = HandleWeaponViewClick;
+                    }
+
+                    if (!_settings["SyncPets"].AsBool() && _syncPets)
+                    {
+                        IPCChannel.Broadcast(new PetSyncOffMessage());
+                        Chat.WriteLine("SyncPets disabled");
+                        syncPetsOffDisabled();
+                    }
+
+                    if (_settings["SyncPets"].AsBool() && !_syncPets)
+                    {
+                        IPCChannel.Broadcast(new PetSyncOnMessag());
+                        Chat.WriteLine("SyncPets enabled.");
+                        syncPetsOnEnabled();
+                    }
+
+                    #endregion
+
+                    #region GlobalBuffing
+
+                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                    {
+                        IPCChannel.Broadcast(new GlobalBuffingMessage()
+                        {
+                            Switch = false
+                        });
+
+                        ToggleBuffing = false;
+                        _settings["Buffing"] = false;
+                        _settings["GlobalBuffing"] = false;
+                    }
+
+                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                    {
+                        IPCChannel.Broadcast(new GlobalBuffingMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleBuffing = true;
+                        _settings["Buffing"] = true;
+                        _settings["GlobalBuffing"] = true;
+                    }
+
+                    #endregion
+
+                    #region Global Composites
+
+                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                    {
+                        IPCChannel.Broadcast(new GlobalCompositesMessage()
+                        {
+                            Switch = false
+                        });
+
+                        ToggleComposites = false;
+                        _settings["Composites"] = false;
+                        _settings["GlobalComposites"] = false;
+                    }
+                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                    {
+                        IPCChannel.Broadcast(new GlobalCompositesMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleComposites = true;
+                        _settings["Composites"] = true;
+                        _settings["GlobalComposites"] = true;
+                    }
+
+                    #endregion
+
+                    #region Global Resurrection
+
+                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                    {
+                        IPCChannel.Broadcast(new GlobalRezMessage()
+                        {
+
+                            Switch = false
+                        });
+
+                        ToggleRez = false;
+                        _settings["GlobalRez"] = false;
+                    }
+                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                    {
+                        IPCChannel.Broadcast(new GlobalRezMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleRez = true;
+                        _settings["GlobalRez"] = true;
+                    }
+
+                    #endregion
+                }
             }
-
-            #region UI
-
-            var window = SettingsController.FindValidWindow(_windows);
-
-            if (window != null && window.IsValid)
+            catch (Exception ex)
             {
-                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
-                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
-                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
-                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
-                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
-                window.FindView("SphereDelayBox", out TextInputView sphereInput);
-                window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
-                window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
-                window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
 
-                if (stimTargetInput != null)
-                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
-
-                if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
-                    if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
-
-                if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
-                    if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
-
-                if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
-                    if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
-
-                if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
-                    if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
-
-                if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
-                    if (int.TryParse(sphereInput.Text, out int sphereValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
-
-                if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
-                    if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
-
-                if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
-                    if (int.TryParse(selfHealInput.Text, out int selfHealValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
-
-                if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
-                    if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
-
-                if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
-                    if (int.TryParse(teamHealInput.Text, out int teamHealValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
-
-                if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
-                    if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
-
-                if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
-                    if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
-
-                if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
-                    if (int.TryParse(strengthInput.Text, out int strengthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
-
-                //attack
-                if (window.FindView("CombatHandlerPetAttack", out Button PetAttack))
+                if (errorMessage != previousErrorMessage)
                 {
-                    PetAttack.Tag = window;
-                    PetAttack.Clicked = PetAttackClicked;
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
                 }
-
-                //wait
-                if (window.FindView("CombatHandlerPetWait", out Button PetWait))
-                {
-                    PetWait.Tag = window;
-                    PetWait.Clicked = PetWaitClicked;
-                }
-
-                //warp
-                if (window.FindView("CombatHandlerPetWarp", out Button PetWarp))
-                {
-                    PetWarp.Tag = window;
-                    PetWarp.Clicked = PetWarpClicked;
-                }
-
-                //follow
-                if (window.FindView("CombatHandlertPetFollow", out Button PetFollow))
-                {
-                    PetFollow.Tag = window;
-                    PetFollow.Clicked = PetFollowClicked;
-                }
-            }
-
-            if (_settings["Replenish"].AsBool() && (_settings["CompositesNanoSkills"].AsBool() || _settings["CompositesNanoSkillsTeam"].AsBool()))
-            {
-                _settings["CompositesNanoSkills"] = false;
-                _settings["CompositesNanoSkillsTeam"] = false;
-                _settings["Replenish"] = false;
-
-                Chat.WriteLine("Only activate one option.");
-            }
-
-            if (IsSettingEnabled("SyncPets"))
-            {
-                SynchronizePetCombatStateWithOwner();
-            }
-            if (CanLookupPetsAfterZone())
-            {
-                AssignTargetToHealPet();
-                AssignTargetToMezzPet();
-            }
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
-            {
-                if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
-                {
-                    petView.Tag = SettingsController.settingsWindow;
-                    petView.Clicked = HandlePetViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("PetCommandView", out Button petCommandView))
-                {
-                    petCommandView.Tag = SettingsController.settingsWindow;
-                    petCommandView.Clicked = HandlePetCommandViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HandleBuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
-                {
-                    debuffView.Tag = SettingsController.settingsWindow;
-                    debuffView.Clicked = HandleDebuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
-                {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
-                {
-                    perkView.Tag = SettingsController.settingsWindow;
-                    perkView.Clicked = HandlePerkViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("NukesView", out Button nukesView))
-                {
-                    nukesView.Tag = SettingsController.settingsWindow;
-                    nukesView.Clicked = HandleNukesViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("WeaponView", out Button weaponView))
-                {
-                    weaponView.Tag = SettingsController.settingsWindow;
-                    weaponView.Clicked = HandleWeaponViewClick;
-                }
-
-                if (!_settings["SyncPets"].AsBool() && _syncPets)
-                {
-                    IPCChannel.Broadcast(new PetSyncOffMessage());
-                    Chat.WriteLine("SyncPets disabled");
-                    syncPetsOffDisabled();
-                }
-
-                if (_settings["SyncPets"].AsBool() && !_syncPets)
-                {
-                    IPCChannel.Broadcast(new PetSyncOnMessag());
-                    Chat.WriteLine("SyncPets enabled.");
-                    syncPetsOnEnabled();
-                }
-
-                #endregion
-
-                #region GlobalBuffing
-
-                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleBuffing = false;
-                    _settings["Buffing"] = false;
-                    _settings["GlobalBuffing"] = false;
-                }
-
-                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleBuffing = true;
-                    _settings["Buffing"] = true;
-                    _settings["GlobalBuffing"] = true;
-                }
-
-                #endregion
-
-                #region Global Composites
-
-                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleComposites = false;
-                    _settings["Composites"] = false;
-                    _settings["GlobalComposites"] = false;
-                }
-                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleComposites = true;
-                    _settings["Composites"] = true;
-                    _settings["GlobalComposites"] = true;
-                }
-
-                #endregion
-
-                #region Global Resurrection
-
-                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-
-                        Switch = false
-                    });
-
-                    ToggleRez = false;
-                    _settings["GlobalRez"] = false;
-                }
-                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleRez = true;
-                    _settings["GlobalRez"] = true;
-                }
-
-                #endregion
             }
         }
 
@@ -1101,12 +1238,14 @@ namespace CombatHandler.Metaphysicist
         private bool HealPetSeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["CEPetBuff"].AsBool()) { return false; }
+
             return PetTargetBuff(NanoLine.HealingConstructEmpowerment, PetType.Heal, spell, fightingTarget, ref actionTarget);
         }
 
         private bool AttackPetSeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["CEPetBuff"].AsBool()) { return false; }
+
             return PetTargetBuff(NanoLine.AggressiveConstructEmpowerment, PetType.Attack, spell, fightingTarget, ref actionTarget);
         }
 
@@ -1172,20 +1311,14 @@ namespace CombatHandler.Metaphysicist
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null
-                    || pet.Type != PetType.Attack) continue;
+                if (pet.Character == null || pet.Type != PetType.Attack) continue;
 
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683))
                 {
                     if (spell.IsReady)
+                    {
                         spell.Cast(pet.Character, true);
-
-                    //Not working for some reason
-
-                    //actionTarget.Target = pet.Character;
-                    //actionTarget.ShouldSetTarget = true;
-
-                    //return true;
+                    }
                 }
             }
 
@@ -1202,20 +1335,14 @@ namespace CombatHandler.Metaphysicist
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null
-                    || pet.Type != PetType.Attack) continue;
+                if (pet.Character == null || pet.Type != PetType.Attack) continue;
 
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683))
                 {
                     if (spell.IsReady)
+                    {
                         spell.Cast(pet.Character, true);
-
-                    //Not working for some reason
-
-                    //actionTarget.Target = pet.Character;
-                    //actionTarget.ShouldSetTarget = true;
-
-                    //return true;
+                    }
                 }
             }
 
@@ -1244,7 +1371,6 @@ namespace CombatHandler.Metaphysicist
 
         #region Buffs
 
-
         private bool Sacrificial(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["Sacrificial"].AsBool()) { return false; }
@@ -1256,29 +1382,50 @@ namespace CombatHandler.Metaphysicist
         private bool SelfEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
+
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (CostBuffSelection.Team == (CostBuffSelection)_settings["CostBuffSelection"].AsInt32())
-                return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+            {
+                if (Team.IsInTeam)
+                {
+                    SimpleChar target = DynelManager.Players
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
 
+                    if (target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
+                        return true;
+                    }
+                }
+            }
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool MatCre(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
-
+            }
+                
             return false;
         }
 
         private bool PsyMod(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+            }
 
             return false;
         }
@@ -1286,7 +1433,9 @@ namespace CombatHandler.Metaphysicist
         private bool MatLoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+            }
 
             return false;
         }
@@ -1294,7 +1443,9 @@ namespace CombatHandler.Metaphysicist
         private bool SenImp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+            }
 
             return false;
         }
@@ -1302,7 +1453,9 @@ namespace CombatHandler.Metaphysicist
         private bool BioMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+            }
 
             return false;
         }
@@ -1310,7 +1463,9 @@ namespace CombatHandler.Metaphysicist
         private bool MattMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+                {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+            }
 
             return false;
         }
@@ -1320,7 +1475,9 @@ namespace CombatHandler.Metaphysicist
             if (fightingTarget != null) { return false; }
 
             if (Team.IsInTeam)
+                {
                 return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
+            }
 
             return NanoSkillsBuff(spell, fightingTarget, ref actionTarget);
         }
@@ -1382,7 +1539,7 @@ namespace CombatHandler.Metaphysicist
         protected bool OneHandedWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (HasWeapon()) { return false; }
-            
+
             if (SummonedWeaponSelection.OnHand == (SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32())
             {
                 return true;
@@ -1440,8 +1597,10 @@ namespace CombatHandler.Metaphysicist
             if (IsInsideInnerSanctum()) { return false; }
 
             if (IsSettingEnabled("Evades"))
+            {
                 return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
-
+            }
+                
             return false;
         }
 
@@ -1507,20 +1666,20 @@ namespace CombatHandler.Metaphysicist
 
         private void AssignTargetToHealPet()
         {
-            if (Time.NormalTime - _lastSwitchedHealTime > 5)
-            {
-                SimpleChar dyingTarget = GetTargetToHeal();
+            SimpleChar dyingTarget = GetTargetToHeal();
 
+            Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
+            && pet.Character.Nano >= 1).FirstOrDefault();
+
+            if (healPet != null)
+            {
                 if (dyingTarget != null)
                 {
-                    Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal).FirstOrDefault();
-
-                    if (healPet != null)
+                    if (Time.AONormalTime > _lastHealPetHealTime)
                     {
-                        if (healPet.Character.Nano <= 1) { return; }
-
+                        //Chat.WriteLine($"{healPet.Character.Name} healing {dyingTarget.Name}", ChatColor.Green);
                         healPet.Heal(dyingTarget.Identity);
-                        _lastSwitchedHealTime = Time.NormalTime;
+                        _lastHealPetHealTime = Time.AONormalTime + 3;
                     }
                 }
             }
@@ -1528,20 +1687,37 @@ namespace CombatHandler.Metaphysicist
 
         private void AssignTargetToMezzPet()
         {
-            //Should be attacking anyone in our team not just if we are attacking
-            if (DynelManager.LocalPlayer.IsAttacking && Time.NormalTime - _lastSwitchedMezzTime > 9)
+            SimpleChar targetToMezz = GetTargetToMezz();
+
+            Pet mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support
+            && pet.Character.Nano >= 1).FirstOrDefault();
+
+            if (mezzPet != null)
             {
-                SimpleChar targetToMezz = GetTargetToMezz();
                 if (targetToMezz != null)
                 {
-                    Pet mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support).FirstOrDefault();
-
-                    if (mezzPet != null)
+                    if (Time.AONormalTime > _lastMezzPetMezzTime)
                     {
-                        if (mezzPet.Character.Nano <= 1) { return; }
-
-                        mezzPet.Attack(targetToMezz.Identity);
-                        _lastSwitchedMezzTime = Time.NormalTime;
+                        if (mezzPet?.Character.IsAttacking == true)
+                        {
+                            if (mezzPet?.Character.FightingTarget != targetToMezz)
+                            {
+                                mezzPet?.Attack(targetToMezz.Identity);
+                                _lastMezzPetMezzTime = Time.AONormalTime + 2;
+                            }
+                        }
+                        else
+                        {
+                            mezzPet?.Attack(targetToMezz.Identity);
+                            _lastMezzPetMezzTime = Time.AONormalTime + 2;
+                        }
+                    }
+                }
+                else
+                {
+                    if (mezzPet?.Character.IsAttacking == true)
+                    {
+                        mezzPet.Follow();
                     }
                 }
             }
@@ -1549,18 +1725,39 @@ namespace CombatHandler.Metaphysicist
 
         private SimpleChar GetTargetToMezz()
         {
-
-            return DynelManager.Characters
-                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)) //Is not a quest target etc
-                .Where(c => !c.Buffs.Contains(NanoLine.Mezz))
-                .Where(c => DynelManager.LocalPlayer.FightingTarget.Identity != c.Identity)
+            var targets = DynelManager.NPCs
+                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name))
+                .Where(c => !(c.Buffs.Contains(NanoLine.Mezz) || c.Buffs.Contains(NanoLine.AOEMezz) || c.Buffs.Contains(NanoLine.Charm_Short)
+                || c.Buffs.Contains(NanoLine.CharmOther)))
                 .Where(c => !c.IsPlayer)
-                .Where(c => !c.IsPet) //Is not player of a pet
-                .Where(c => c.IsAttacking) //Is in combat
+                .Where(c => !c.IsPet)
+                .Where(c =>
+                {
+                    if (DynelManager.LocalPlayer.IsAttacking)
+                    {
+                        return c.Identity != DynelManager.LocalPlayer.FightingTarget.Identity;
+                    }
+                    else
+                    {
+                        return c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity;
+                    }
+                });
+
+
+            if (Team.IsInTeam)
+            {
+                targets = targets.Where(c =>
+                   Team.Members.Any(teammate =>
+                      c.FightingTarget?.Identity == teammate?.Character.Identity));
+            }
+
+            return targets
                 .Where(c => c.IsValid)
                 .Where(c => c.IsInLineOfSight)
-                .Where(c => c.DistanceFrom(DynelManager.LocalPlayer) <= 15f) //Is in range for debuff
+                .OrderBy(c => c.Position.DistanceFrom(DynelManager.LocalPlayer.Position))
+                .ThenBy(c => c.HealthPercent)
                 .FirstOrDefault();
+
         }
 
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
@@ -1588,9 +1785,7 @@ namespace CombatHandler.Metaphysicist
             public const int AnticipationofRetaliation = 29272;
             public const int ImprovedAnticipationofRetaliation = 302188;
             public const int PetWarp = 209488;
-            public static readonly int[] Warps = {
-                209488
-            };
+            public static readonly int[] Warps = { 209488 };
 
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
@@ -1653,7 +1848,7 @@ namespace CombatHandler.Metaphysicist
                     return true;
                 }
             }
-            return false; 
+            return false;
         }
 
         public enum PetProcSelection

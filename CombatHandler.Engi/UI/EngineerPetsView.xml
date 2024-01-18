@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-	<BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+	<BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Pets" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<OptionCheckBox label="Spawn pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Buff pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
@@ -10,6 +10,7 @@
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<OptionCheckBox label="Pet Defensive Nanos" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PetDefensiveNanos" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Armor Buff" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PetArmorBuff" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Damage Buff Line A" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PetDamageBuffBuff" layout_borders="Rect(10,1,5,1)"/>
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<OptionRadioButtonGroup label="Procs" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__PetProcSelection">
 			<RadioButton label="None" value="0"/>
@@ -23,11 +24,14 @@
 			<RadioButton label="Chaotic Box" value="2"/>
 			<RadioButton label="Siphon Box" value="3"/>
 		</OptionRadioButtonGroup>
-		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Taunt Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__TauntTrimmer" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Aggressive-Defensive Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AggDefTrimmer" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Divert Energy to Hitpoints" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertHpTrimmer" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Divert to Offense Trimmer" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DivertOffTrimmer" layout_borders="Rect(10,1,5,1)"/>
-		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+			<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+			<Button name="TrimmersView" label="Trimmers" layout_borders="Rect(5,5,3,5)"/>
+			<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		</View>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>
 </root>

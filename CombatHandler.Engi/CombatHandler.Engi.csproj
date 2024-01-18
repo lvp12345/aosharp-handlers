@@ -73,6 +73,7 @@
     <Compile Include="Main.cs" />
     <Compile Include="PetsList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Trimmers.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CombatHandler.Generic\CombatHandler.Generic.csproj">
@@ -88,6 +89,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\EngineerItemsView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="UI\EngineerTrimmersView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\EngineerProcsView.xml">

@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+	<BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Trimmers" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<TextView value="Attack" layout_borders="Rect(0,0,0,2)"/>
+			<TextView value="Support" layout_borders="Rect(0,0,0,2)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		</View>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<OptionCheckBox label="Increase Aggressiveness" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__IncreaseAggressivenessTrimmer" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="Increase Aggressiveness" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SupportIncreaseAggressivenessTrimmer" layout_borders="Rect(10,1,5,1)"/>
+		</View>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Mech. Engi lock trimmers" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__MechEngiSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Divert Energy To Defense" value="1"/>
+				<RadioButton label="Divert Energy To Offense" value="2"/>
+				<RadioButton label="Cold Damage Modifier" value="3"/>
+				<RadioButton label="Fire Damage Modifier" value="4"/>
+				<RadioButton label="Energy Damage Modifier" value="5"/>
+				<RadioButton label="Improve Actuators*" value="6"/>
+			</OptionRadioButtonGroup>
+			<OptionRadioButtonGroup label="Mech. Engi lock trimmers" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SupportMechEngiSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Divert Energy To Defense" value="1"/>
+				<RadioButton label="Divert Energy To Offense" value="2"/>
+				<RadioButton label="Cold Damage Modifier" value="3"/>
+				<RadioButton label="Fire Damage Modifier" value="4"/>
+				<RadioButton label="Energy Damage Modifier" value="5"/>
+				<RadioButton label="Improve Actuators*" value="6"/>
+			</OptionRadioButtonGroup>
+		</View>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Elec. Engi lock trimmers" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ElecEngiSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Divert Energy To Avoidance" value="1"/>
+				<RadioButton label="Divert Energy to Hitpoints" value="2"/>
+			</OptionRadioButtonGroup>
+			<OptionRadioButtonGroup label="Elec. Engi lock trimmers" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SupportElecEngiSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Divert Energy To Avoidance" value="1"/>
+				<RadioButton label="Divert Energy to Hitpoints" value="2"/>
+			</OptionRadioButtonGroup>
+		</View>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Aggressive-Defensive" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AggressiveDefensiveSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Negative Aggressive-Defensive" value="1"/>
+				<RadioButton label="Positive Aggressive-Defensive**" value="2"/>
+			</OptionRadioButtonGroup>
+			<OptionRadioButtonGroup label="Aggressive-Defensive" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SupportAggressiveDefensiveSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Negative Aggressive-Defensive" value="1"/>
+				<RadioButton label="Positive Aggressive-Defensive**" value="2"/>
+			</OptionRadioButtonGroup>
+		</View>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<TextView value="*1 hour lock" layout_borders="Rect(0,0,0,2)"/>
+			<TextView value="**Robots are default AggDef: 100 (Max)." layout_borders="Rect(0,0,0,2)"/>
+		</View>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+	</BorderView>
+</root>

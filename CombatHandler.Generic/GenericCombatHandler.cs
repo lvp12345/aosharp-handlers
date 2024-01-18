@@ -15,7 +15,6 @@ using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Generic
 {
@@ -23,7 +22,6 @@ namespace CombatHandler.Generic
     {
         public static string previousErrorMessage = string.Empty;
 
-        private const float PostZonePetCheckBuffer = 5;
         public int EvadeCycleTimeoutSeconds = 180;
 
         protected double _lastPetSyncTime = Time.NormalTime;
@@ -190,7 +188,6 @@ namespace CombatHandler.Generic
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-
                 RegisterPerkProcessors();
                 RegisterPerkProcessor(PerkHash.BioCocoon, BioCocoon);
                 RegisterPerkProcessor(PerkHash.Sphere, Sphere, CombatActionPriority.High);
@@ -297,7 +294,6 @@ namespace CombatHandler.Generic
                     RegisterSpellProcessor(RelevantGenericNanos.CompositePhysicalSpecial, CompositeBuff);
                 }
 
-
                 if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged))
                 {
                     //We are ranged
@@ -310,8 +306,6 @@ namespace CombatHandler.Generic
                 Network.N3MessageReceived += Network_N3MessageReceived;
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
-
-
 
                 Chat.RegisterCommand("reform", ReformCommand);
                 Chat.RegisterCommand("form", FormCommand);
@@ -375,9 +369,13 @@ namespace CombatHandler.Generic
                     SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
 
                     if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                    {
                         if (int.TryParse(channelInput.Text, out int channelValue)
                             && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+                        }  
+                    } 
                 }
 
                 if (DynelManager.LocalPlayer.IsAttacking)
@@ -455,7 +453,6 @@ namespace CombatHandler.Generic
 
             return false;
         }
-
 
         protected bool BioCocoon(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -586,6 +583,7 @@ namespace CombatHandler.Generic
                     int count = DynelManager.Characters.Count(c =>
                         Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent <= 90 && c.HealthPercent >= 30);
+
                     if (count >= 2)
                     {
                         return false;
@@ -750,7 +748,9 @@ namespace CombatHandler.Generic
         protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+            {
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+            }
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
@@ -843,7 +843,6 @@ namespace CombatHandler.Generic
 
         protected bool NonComabtTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName = null)
         {
-
             if (settingName != null && !_settings[settingName].AsBool())
             {
                 return false;
@@ -962,7 +961,10 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (settingValue == 2) return NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget);
+            if (settingValue == 2) 
+            { 
+                return NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget);
+            }
 
             return NonCombatBuff(buffSpell, ref actionTarget, fightingTarget);
         }
@@ -991,7 +993,6 @@ namespace CombatHandler.Generic
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
-
 
         protected bool FindMemberWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1104,10 +1105,10 @@ namespace CombatHandler.Generic
 
             if (NeedsReload()) { return false; }
 
-            if (settingValue == 0)
+            if (settingValue == 0) //none
             {
                 return false;
-            }//none
+            }
 
             if (settingValue == 1 && fightingTarget != null)//target
             {
@@ -1115,10 +1116,14 @@ namespace CombatHandler.Generic
                 {
                     return false;
                 }
+
                 return TargetDebuff(debuffSpell, debuffSpell.Nanoline, fightingTarget, ref actionTarget);
             }
 
-            if (settingValue == 2) return AreaDebuff(debuffSpell, ref actionTarget);//area
+            if (settingValue == 2)//area
+            {
+                return AreaDebuff(debuffSpell, ref actionTarget);
+            }
 
             if (settingValue == 3 && fightingTarget != null)//boss
             {
@@ -1337,19 +1342,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-
-        bool BlightedFlesh(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))
-                && fightingTarget == null
-                && (fightingTarget.Buffs.Contains(RelevantGenericNanos.BlightedFlesh) || fightingTarget.Buffs.Contains(RelevantGenericNanos.WeepingFlesh))
-                && !fightingTarget.IsInAttackRange()) { return false; }
-
-            actionTarget.Target = fightingTarget;
-            actionTarget.ShouldSetTarget = true;
-            return true;
-        }
-
         protected bool TotwDmgShoulder(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!Team.IsInTeam) { return false; }
@@ -1515,7 +1507,9 @@ namespace CombatHandler.Generic
             foreach (Item item in Inventory.Items.Where(item => item.Slot.Type == IdentityType.Inventory))
             {
                 if (freeStimIds.Contains(item.Id))
+                {
                     return true;
+                } 
             }
 
             return false;
@@ -1622,6 +1616,7 @@ namespace CombatHandler.Generic
         private void UseItems()
         {
             if (!Item.HasPendingUse)
+            {
                 foreach (Item item in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory
                 || c.UniqueIdentity.Type == IdentityType.Container))
                 {
@@ -1646,6 +1641,7 @@ namespace CombatHandler.Generic
                         }
                     }
                 }
+            }
         }
 
         #endregion
@@ -1697,7 +1693,7 @@ namespace CombatHandler.Generic
 
         protected bool CanLookupPetsAfterZone()
         {
-            return Time.NormalTime > _lastZonedTime + PostZonePetCheckBuffer;
+            return Time.NormalTime > _lastZonedTime + 5.0;
         }
 
         public bool PetCleanse(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1732,30 +1728,38 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected void SynchronizePetCombatStateWithOwner()
+        protected void SynchronizePetCombatStateWithOwner(PetType attack, PetType support)
         {
-            if (CanLookupPetsAfterZone() && Time.NormalTime - _lastPetSyncTime > 1)
+            if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastPetSyncTime > 1)
             {
-                foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack || c.Type == PetType.Support))
+                foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == attack || c.Type == support))
+                {
                     SynchronizePetCombatState(_pet);
+                }
 
-                _lastPetSyncTime = Time.NormalTime;
+                _lastPetSyncTime = Time.AONormalTime;
             }
         }
 
         private void SynchronizePetCombatState(Pet pet)
         {
             if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
+            {
                 pet?.Follow();
+            }
 
             if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
             {
                 if (pet?.Character.IsAttacking == false)
+                {
                     pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
-
+                }
+                    
                 if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
                     && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
+                {
                     pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                }  
             }
         }
 
@@ -1933,7 +1937,7 @@ namespace CombatHandler.Generic
 
             if (IsPlayerFlyingOrFalling()) { return false; }
 
-            if (!Spell.List.Any(cast => cast.IsReady)) { return false; }
+            if (!Spell.List.Any(cast => cast.IsReady) || Spell.HasPendingCast) { return false; }
 
             if (IsSettingEnabled("GlobalRez"))
             {
@@ -1972,7 +1976,9 @@ namespace CombatHandler.Generic
             foreach (Buff buff in DynelManager.LocalPlayer.Buffs)
             {
                 if (buffsToCancel.Contains(buff.Id))
+                {
                     buff.Remove();
+                } 
             }
         }
 
@@ -2086,6 +2092,7 @@ namespace CombatHandler.Generic
             Identity[] registeredCharacters = SettingsController.GetRegisteredCharacters();
             int characterCount = registeredCharacters.Length - 6;
             Identity[] remainingCharacters = new Identity[characterCount];
+
             if (characterCount > 0)
             {
                 Array.Copy(registeredCharacters, 6, remainingCharacters, 0, characterCount);
@@ -2098,7 +2105,9 @@ namespace CombatHandler.Generic
             foreach (Identity target in targets)
             {
                 if (target != DynelManager.LocalPlayer.Identity)
+                {
                     Team.Invite(target);
+                }  
             }
         }
 
@@ -2111,15 +2120,20 @@ namespace CombatHandler.Generic
         public static void RaidCommand(string command, string[] param, ChatWindow chatWindow)
         {
             if (Team.IsLeader)
+            {
                 Team.ConvertToRaid();
+            }
             else
+            {
                 Chat.WriteLine("Needs to be used from leader.");
+            }  
         }
 
         public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
         {
             Team.Disband();
             IPCChannel.Broadcast(new DisbandMessage());
+
             Task.Factory.StartNew(
                 async () =>
                 {
@@ -2242,6 +2256,7 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.HSRLow:
                 case RelevantGenericItems.HSRHigh:
                     return Stat.Grenade;
+
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
@@ -2650,7 +2665,9 @@ namespace CombatHandler.Generic
             var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
 
             if (lineMatch.Success)
+            {
                 lineNumber = int.Parse(lineMatch.Groups[1].Value);
+            }
 
             return lineNumber;
         }

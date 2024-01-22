@@ -90,8 +90,15 @@ namespace SyncManager
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
 
-            Chat.WriteLine("SyncManager Loaded!");
-            Chat.WriteLine("/syncmanager for settings.");
+            if (Game.IsNewEngine)
+            {
+                Chat.WriteLine("Does not work on this engine!");
+            }
+            else
+            {
+                Chat.WriteLine("SyncManager Loaded!");
+                Chat.WriteLine("/syncmanager for settings.");
+            }
         }
 
         private void OnUpdate(object s, float deltaTime)

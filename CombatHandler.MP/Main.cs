@@ -10,9 +10,16 @@ namespace CombatHandler.Metaphysicist
         {
             try
             {
-                Chat.WriteLine("MP Combat Handler Loaded!");
-                Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new MPCombatHandler(pluginDir));
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("MP Combat Handler Loaded!");
+                    Chat.WriteLine("/handler for settings.");
+                    AOSharp.Core.Combat.CombatHandler.Set(new MPCombatHandler(pluginDir));
+                }
             }
             catch (Exception e)
             {

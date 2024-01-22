@@ -71,8 +71,15 @@ namespace FollowManager
 
                 _settings.AddVariable("FollowSelection", (int)FollowSelection.None);
 
-                Chat.WriteLine("FollowManager Loaded!");
-                Chat.WriteLine("/followmanager for settings.");
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("FollowManager Loaded!");
+                    Chat.WriteLine("/followmanager for settings.");
+                }
 
 
                 FollowPlayer = Config.CharSettings[Game.ClientInst].FollowPlayer;

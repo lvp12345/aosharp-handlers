@@ -10,9 +10,16 @@ namespace CombatHandler.MartialArtist
         {
             try
             {
-                Chat.WriteLine("MA Combat Handler Loaded!");
-                Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new MACombatHandler(pluginDir));
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("MA Combat Handler Loaded!");
+                    Chat.WriteLine("/handler for settings.");
+                    AOSharp.Core.Combat.CombatHandler.Set(new MACombatHandler(pluginDir));
+                }
             }
             catch (Exception e)
             {

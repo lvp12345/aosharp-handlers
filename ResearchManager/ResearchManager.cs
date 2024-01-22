@@ -35,8 +35,15 @@ namespace ResearchManager
 
             RegisterSettingsWindow("Research Manager", $"ResearchManagerSettingWindow.xml");
 
-            Chat.WriteLine("Research Manager Loaded!");
-            Chat.WriteLine("/researchmanager for settings.");
+            if (Game.IsNewEngine)
+            {
+                Chat.WriteLine("Does not work on this engine!");
+            }
+            else
+            {
+                Chat.WriteLine("Research Manager Loaded!");
+                Chat.WriteLine("/researchmanager for settings.");
+            }
             Game.OnUpdate += OnUpdate;
         }
 

@@ -10,9 +10,16 @@ namespace CombatHandler.Shade
         {
             try
             {
-                Chat.WriteLine("Shade Combat Handler Loaded!");
-                Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new ShadeCombatHandler(pluginDir));
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("Shade Combat Handler Loaded!");
+                    Chat.WriteLine("/handler for settings.");
+                    AOSharp.Core.Combat.CombatHandler.Set(new ShadeCombatHandler(pluginDir));
+                }
             }
             catch (Exception e)
             {

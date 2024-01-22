@@ -61,8 +61,16 @@ namespace PetManager
             Chat.RegisterCommand("petwarp", PetWarpCommand);
             Chat.RegisterCommand("petfollow", PetFollowCommand);
 
-            Chat.WriteLine("PetManager Loaded!");
-            Chat.WriteLine("/PetManager for settings.");
+
+            if (Game.IsNewEngine)
+            {
+                Chat.WriteLine("Does not work on this engine!");
+            }
+            else
+            {
+                Chat.WriteLine("PetManager Loaded!");
+                Chat.WriteLine("/PetManager for settings.");
+            }
 
             PluginDirectory = pluginDir;
 

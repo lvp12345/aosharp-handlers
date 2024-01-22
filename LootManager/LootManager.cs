@@ -75,8 +75,16 @@ namespace LootManager
                     _settings["Enabled"] = !_settings["Enabled"].AsBool();
                 });
 
-                Chat.WriteLine("Loot Manager loaded!");
-                Chat.WriteLine("/lootmanager for settings. /lm to enable/disable");
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("Loot Manager loaded!");
+                    Chat.WriteLine("/lootmanager for settings. /lm to enable/disable");
+                }
+
                 string _lootManagerEnabled = _settings["Enabled"].AsBool() ? "Enabled" : "Disabled";
                 Chat.WriteLine($"Loot Manager is currently {_lootManagerEnabled}");
 
@@ -236,8 +244,8 @@ namespace LootManager
 
                     // Opening the corpse
                     if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
-                        //&& !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
-                        //&& !DynelManager.LocalPlayer.IsAttackPending)
+                    //&& !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
+                    //&& !DynelManager.LocalPlayer.IsAttackPending)
                     {
                         if (openCorpseInterval.Elapsed)
                         {
@@ -255,7 +263,7 @@ namespace LootManager
                 }
             }
         }
-             
+
         private void OnUpdate(object sender, float deltaTime)
         {
             try
@@ -281,7 +289,7 @@ namespace LootManager
                             }
                         }
                     }
-                    
+
                     if (!_settings["Delete"].AsBool())
                     {
                         ProcessCorpses();
@@ -293,7 +301,7 @@ namespace LootManager
 
                         if (corpse != null)
                         {
-                            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast 
+                            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast
                                 && Time.NormalTime > _lootingTimer + 1)
                             {
                                 corpse.Open();
@@ -422,7 +430,7 @@ namespace LootManager
             //_multiListView.DeleteAllChildren();
 
             Rules.Add(new Rule(_itemName.Text.Trim(), _itemMinQL.Text, _itemMaxQL.Text, GlobalScope, _itemQuantity.Text, "loot"));
-            
+
             _itemName.Text = "";
             _itemMinQL.Text = "1";
             _itemMaxQL.Text = "500";
@@ -435,9 +443,9 @@ namespace LootManager
         private static void RefreshList()
         {
             SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
-            
+
             _multiListView.DeleteAllChildren();
-            
+
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
 
             int iEntry = 0;
@@ -446,7 +454,7 @@ namespace LootManager
                 View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
                 entry.FindChild("ItemName", out TextView _textView);
                 string globalscope = r.Global ? "G" : "L";
- 
+
                 _textView.Text = $"{(iEntry + 1).ToString()} - {globalscope} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
 
                 _multiListView.AddChild(entry, false);
@@ -508,7 +516,7 @@ namespace LootManager
                 }
             }
         }
- 
+
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
@@ -567,7 +575,7 @@ namespace LootManager
                         rule.BagName = "loot";
                     rule.Global = true;
                 }
-                    
+
             }
 
             filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
@@ -588,7 +596,7 @@ namespace LootManager
                 Chat.WriteLine($"Loaded {scopedRules.Count.ToString()}");
             }
             Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
-            
+
         }
 
         private void SaveRules()

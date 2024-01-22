@@ -10,9 +10,16 @@ namespace CombatHandler.Keeper
         {
             try
             {
-                Chat.WriteLine("Keeper Combat Handler Loaded!");
-                Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new KeeperCombatHandler(pluginDir));
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("Keeper Combat Handler Loaded!");
+                    Chat.WriteLine("/handler for settings.");
+                    AOSharp.Core.Combat.CombatHandler.Set(new KeeperCombatHandler(pluginDir));
+                }
             }
             catch (Exception e)
             {

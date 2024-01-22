@@ -10,9 +10,16 @@ namespace CombatHandler.NanoTechnician
         {
             try
             {
-                Chat.WriteLine("NT Combat Handler Loaded!");
-                Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new NTCombatHandler(pluginDir));
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("NT Combat Handler Loaded!");
+                    Chat.WriteLine("/handler for settings.");
+                    AOSharp.Core.Combat.CombatHandler.Set(new NTCombatHandler(pluginDir));
+                }
             }
             catch (Exception e)
             {

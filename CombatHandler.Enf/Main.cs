@@ -10,9 +10,16 @@ namespace CombatHandler.Enf
         {
             try
             {
-                Chat.WriteLine("Enforcer Combat Handler Loaded!");
-                Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new EnfCombatHandler(pluginDir));
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("Enforcer Combat Handler Loaded!");
+                    Chat.WriteLine("/handler for settings.");
+                    AOSharp.Core.Combat.CombatHandler.Set(new EnfCombatHandler(pluginDir));
+                }
             }
             catch (Exception e)
             {

@@ -64,8 +64,15 @@ namespace BagManager
 
             RegisterSettingsWindow("Bag Manager", "BagManagerSettingsView.xml");
 
-            Chat.WriteLine("BagManager Loaded!");
-            Chat.WriteLine("/bagmanager for settings.");
+            if (Game.IsNewEngine)
+            {
+                Chat.WriteLine("Does not work on this engine!");
+            }
+            else
+            {
+                Chat.WriteLine("BagManager Loaded!");
+                Chat.WriteLine("/bagmanager for settings.");
+            }
         }
 
         public override void Teardown()

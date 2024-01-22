@@ -10,9 +10,16 @@ namespace CombatHandler.Bureaucrat
         {
             try
             {
-                Chat.WriteLine("Crat Combat Handler Loaded!");
-                Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new CratCombatHandler(pluginDir));
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("Crat Combat Handler Loaded!");
+                    Chat.WriteLine("/handler for settings.");
+                    AOSharp.Core.Combat.CombatHandler.Set(new CratCombatHandler(pluginDir));
+                }
             }
             catch (Exception e)
             {

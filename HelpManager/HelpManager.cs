@@ -99,7 +99,7 @@ namespace HelpManager
         {
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
-            
+
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
             KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
             KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
@@ -130,8 +130,15 @@ namespace HelpManager
 
             Chat.RegisterCommand("yalm", YalmCommand);
 
-            Chat.WriteLine("HelpManager Loaded!");
-            Chat.WriteLine("/helpmanager for settings.");
+            if (Game.IsNewEngine)
+            {
+                Chat.WriteLine("Does not work on this engine!");
+            }
+            else
+            {
+                Chat.WriteLine("HelpManager Loaded!");
+                Chat.WriteLine("/helpmanager for settings.");
+            }
 
             PluginDirectory = pluginDir;
         }
@@ -212,8 +219,8 @@ namespace HelpManager
                         && x.Name == "Glowing Pustule")
                     .FirstOrDefault();
 
-                    Pustule?.Use();
-                
+                Pustule?.Use();
+
                 if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(132.0f, 90.0f, 117.0f)) < 2f
                     && !MovementController.Instance.IsNavigating)
                 {
@@ -258,8 +265,8 @@ namespace HelpManager
                     || x.Name == "Torus of Aim" || x.Name == "Square of Attack Power"))
                     .FirstOrDefault();
 
-                    shape?.Use();
-                
+                shape?.Use();
+
                 _shapeUsedTimer = Time.NormalTime;
             }
 
@@ -289,8 +296,8 @@ namespace HelpManager
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
-                            } 
-                        }  
+                            }
+                        }
                     }
 
                     if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
@@ -300,9 +307,9 @@ namespace HelpManager
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
-                            }   
-                        }  
-                    } 
+                            }
+                        }
+                    }
 
                     if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
                     {
@@ -335,7 +342,7 @@ namespace HelpManager
             {
                 Item yalm3 = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
 
-                    yalm3?.Equip(EquipSlot.Weap_Hud1);
+                yalm3?.Equip(EquipSlot.Weap_Hud1);
             }
         }
 
@@ -359,7 +366,7 @@ namespace HelpManager
             {
                 Spell yalm3 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
 
-                    yalm3?.Cast(false);
+                yalm3?.Cast(false);
             }
         }
 
@@ -369,7 +376,7 @@ namespace HelpManager
             {
                 Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
 
-                    yalm?.MoveToInventory();
+                yalm?.MoveToInventory();
             }
             else
                 CancelBuffs(RelevantNanos.Yalms);
@@ -495,7 +502,7 @@ namespace HelpManager
                 if (buffsToCancel.Contains(buff.Id))
                 {
                     buff.Remove();
-                } 
+                }
             }
         }
 

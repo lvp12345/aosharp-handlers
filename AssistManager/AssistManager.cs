@@ -45,8 +45,15 @@ namespace AssistManager
 
             RegisterSettingsWindow("Assist Manager", "AssistManagerSettingWindow.xml");
 
-            Chat.WriteLine("AssistManager Loaded!");
-            Chat.WriteLine("/assistmanager for settings.");
+            if (Game.IsNewEngine)
+            {
+                Chat.WriteLine("Does not work on this engine!");
+            }
+            else
+            {
+                Chat.WriteLine("AssistManager Loaded!");
+                Chat.WriteLine("/assistmanager for settings.");
+            }
 
             AssistPlayer = Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayer;
         }

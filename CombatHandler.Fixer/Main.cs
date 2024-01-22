@@ -10,9 +10,16 @@ namespace CombatHandler.Fixer
         {
             try
             {
-                Chat.WriteLine("Fixer Combat Handler Loaded!");
-                Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new FixerCombatHandler(pluginDir));
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
+                }
+                else
+                {
+                    Chat.WriteLine("Fixer Combat Handler Loaded!");
+                    Chat.WriteLine("/handler for settings.");
+                    AOSharp.Core.Combat.CombatHandler.Set(new FixerCombatHandler(pluginDir));
+                }
             }
             catch (Exception e)
             {

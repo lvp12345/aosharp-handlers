@@ -61,8 +61,15 @@ namespace MailManager
 
             RegisterSettingsWindow("Mail Manager", $"MailManagerSettingWindow.xml");
 
-            Chat.WriteLine("Mail Manager Loaded!");
-            Chat.WriteLine("/mailmanager for settings.");
+            if (Game.IsNewEngine)
+            {
+                Chat.WriteLine("Does not work on this engine!");
+            }
+            else
+            {
+                Chat.WriteLine("Mail Manager Loaded!");
+                Chat.WriteLine("/mailmanager for settings.");
+            }
 
             _settings["Toggle"] = false;
 

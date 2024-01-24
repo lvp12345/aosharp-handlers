@@ -92,7 +92,9 @@ namespace GMIManager
                     if (param.Length == 2)
                     {
                         if (param[0] == "deposit")
+                        {
                             GMI.Deposit(Convert.ToInt32(param[1]));
+                        }
                     }
                     else if (param.Length == 0)
                     {
@@ -261,7 +263,9 @@ namespace GMIManager
                     byte mailInstance = reader.ReadByte();
 
                     if (mailInstance == 0)
+                    {
                         PopMail(reader);
+                    }
                 }
             }
         }
@@ -289,7 +293,9 @@ namespace GMIManager
             // Chat.WriteLine($"Mail populated.");
 
             if (_mailId == 0)
+            {
                 _mailId = messageId;
+            }
         }
 
         public enum ModeSelection
@@ -317,7 +323,9 @@ namespace GMIManager
             GMI.GetMarketOrders().ContinueWith(marketOrders =>
             {
                 if (!marketOrders.IsFaulted && marketOrders.Result != null)
+                {
                     OnMarketOrdersLoaded(marketInventory, marketOrders.Result);
+                }
             });
         }
 
@@ -408,7 +416,9 @@ namespace GMIManager
                 ourOrder.ModifyPrice(ourOrder.Price + desiredIncrease).ContinueWith(modifyOrder =>
                 {
                     if (!_initMarketCredits)
+                    {
                         _initMarketCredits = true;
+                    }
 
                     if (modifyOrder.Result.Succeeded)
                     {
@@ -433,7 +443,9 @@ namespace GMIManager
                 if (Game.IsZoning) { return; }
 
                 if (!_settings["Toggle"].AsBool())
+                {
                     _init = false;
+                }
 
                 if (_settings["Toggle"].AsBool())
                 {
@@ -602,7 +614,9 @@ namespace GMIManager
                             if (Bag != null)
                                 foreach (Item MoveItem in Bag.Items.Take(Inventory.NumFreeSlots - 1))
                                     if (MoveItem.Name.Contains(GMIItemName))
+                                    {
                                         MoveItem.MoveToInventory();
+                                    }
                         }
 
                         _mailOpenTimer = Time.NormalTime;
@@ -678,7 +692,9 @@ namespace GMIManager
             var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
 
             if (lineMatch.Success)
+            {
                 lineNumber = int.Parse(lineMatch.Groups[1].Value);
+            }
 
             return lineNumber;
         }

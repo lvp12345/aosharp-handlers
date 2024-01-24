@@ -234,9 +234,8 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
-
-                //RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
+                
+                RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
                 //Pets

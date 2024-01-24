@@ -68,7 +68,6 @@ namespace SyncManager
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("Enable", true);
-           // _settings.AddVariable("UISettings", true);
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
@@ -127,8 +126,6 @@ namespace SyncManager
                 {
                     if (!invSlots.ContainsKey(item.Slot.Instance))
                     {
-                        //Chat.WriteLine($"Adding item {item.Name}, Identity: {item.Id} to dictionary at slot {item.Slot.Instance}");
-
                         invSlots.Add(item.Slot.Instance, item.Id);
                     }
                 }
@@ -195,31 +192,6 @@ namespace SyncManager
                 IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = true });
                 Start();
             }
-
-            //if (!_settings["UISettings"].AsBool())
-            //{
-            //    if (UISettings)
-            //    {
-            //        IPCChannel.Broadcast(new UISettings() { BroadcastSettings = false });
-            //        UISettings = false;
-            //    }
-            //}
-            //else
-            //{
-            //    if (!UISettings)
-            //    {
-            //        IPCChannel.Broadcast(new UISettings()
-            //        {
-            //            BroadcastSettings = true,
-            //            Bags = _settings["SyncBags"].AsBool(),
-            //            Use = _settings["SyncUse"].AsBool(),
-            //            Chat = _settings["SyncChat"].AsBool(),
-            //            Trade = _settings["SyncTrade"].AsBool(),
-            //            NpcTrade = _settings["NPCTrade"].AsBool(),
-            //        });
-            //        UISettings = true;
-            //    }
-            //}
 
             _ringNameToItemNameMap = new Dictionary<RingName, string>
         {
@@ -426,18 +398,14 @@ namespace SyncManager
                     {
                         KnuBotStartTradeMessage startTradeMsg = (KnuBotStartTradeMessage)n3Msg;
 
-                        //Chat.WriteLine($"Message: {startTradeMsg.Message}, Unknown: {startTradeMsg.Unknown}, " +
-                        //    $"Unknown1: {startTradeMsg.Unknown1}, NumberOfItemSlotsInTradeWindow: {startTradeMsg.NumberOfItemSlotsInTradeWindow}");
-
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = startTradeMsg.Target,
                             OpenClose = true,
                             IsStartTrade = true,
                             Answer = -1,
-                            //NumberOfItemSlotsInTradeWindow = startTradeMsg.NumberOfItemSlotsInTradeWindow,
-                    });
-                        
+                        });
+
                     }
 
                     if (n3Msg.N3MessageType == N3MessageType.KnubotTrade)
@@ -446,7 +414,7 @@ namespace SyncManager
                         Dynel msgIdentityName = DynelManager.AllDynels.Where(x => x.Identity == tradeMsg.Identity).FirstOrDefault();
                         Dynel msgTargetName = DynelManager.AllDynels.Where(x => x.Identity == tradeMsg.Target).FirstOrDefault();
 
-                        
+
                         int slotInstance = tradeMsg.Container.Instance;
                         int itemId;
 
@@ -647,7 +615,6 @@ namespace SyncManager
                 }
             }
         }
-
         private void OnNpcChatMessage(int sender, IPCMessage msg)
         {
             NpcChatIPCMessage chatMsg = (NpcChatIPCMessage)msg;
@@ -667,8 +634,6 @@ namespace SyncManager
                 Network.Send(new KnuBotCloseChatWindowMessage
                 {
                     Unknown1 = 2,
-                    //Unknown2 = 0,
-                    //Unknown3 = 0,
                     Target = chatMsg.Target
                 });
             }
@@ -678,43 +643,33 @@ namespace SyncManager
                 NpcDialog.OpenTrade(chatMsg.Target);
             }
 
-            //if (chatMsg.IsTrade == true)
-            //{
-                if (chatMsg.Id != 0)
+            if (chatMsg.Id != 0)
+            {
+                foreach (Item item in Inventory.Items)
                 {
-                    foreach (Item item in Inventory.Items)
+                    if (item.Id == chatMsg.Id)
                     {
-                        if (item.Id == chatMsg.Id)
+                        Item itemToTrade = Inventory.Items.Where(i => i.Id == chatMsg.Id).FirstOrDefault();
+
+                        if (itemToTrade != null)
                         {
-                            Item itemToTrade = Inventory.Items.Where(i => i.Id == chatMsg.Id).FirstOrDefault();
-
-                            if (itemToTrade != null)
+                            if (itemToTrade.Slot.Type != IdentityType.KnuBotTradeWindow
+                                && itemToTrade.Slot.Type == IdentityType.Inventory)
                             {
-                                if (itemToTrade.Slot.Type != IdentityType.KnuBotTradeWindow
-                                    && itemToTrade.Slot.Type == IdentityType.Inventory)
+                                var container = new Identity(IdentityType.KnuBotTradeWindow, 0);
+
+                                Chat.WriteLine($"{itemToTrade.Slot}");
+
+                                Network.Send(new KnuBotTradeMessage
                                 {
-                                    var container = new Identity(IdentityType.KnuBotTradeWindow, 0);
-
-                                    Chat.WriteLine($"{itemToTrade.Slot}");
-
-                                    Network.Send(new KnuBotTradeMessage
-                                    {
-                                        //Identity = DynelManager.LocalPlayer.Identity,
-                                        //Unknown = 0,
-                                        Unknown1 = 2,
-                                        Target = chatMsg.Target,
-                                        //Unknown2 = 0,
-                                        //Unknown3 = 0,
-                                        //Unknown4 = 0,
-                                        Container = itemToTrade.Slot,
-                                    });
-
-                                    //Chat.WriteLine($"Moving item: {itemToTrade.Name} to KnuBotTradeWindow");
-                                }
+                                    Unknown1 = 2,
+                                    Target = chatMsg.Target,
+                                    Container = itemToTrade.Slot,
+                                });
                             }
                         }
                     }
-               // }
+                }
             }
 
             if (chatMsg.IsFinishTrade == true)
@@ -898,19 +853,19 @@ namespace SyncManager
         {
             Vector3 playerPos = DynelManager.LocalPlayer.Position;
 
-            // delayed dynel use
+
             if (useDynel != Identity.None)
             {
                 Dynel usedynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useDynel);
 
                 if (usedynel != null && Vector3.Distance(playerPos, usedynel.Position) < 8 &&
-                    usedynel.Name != "Rubi-Ka Banking Service Terminal" && usedynel.Name != "Mail Terminal") //Add more
+                    usedynel.Name != "Rubi-Ka Banking Service Terminal" && usedynel.Name != "Mail Terminal")
                 {
                     DynelManager.GetDynel<SimpleItem>(useDynel)?.Use();
                     useDynel = Identity.None;
                 }
             }
-            // delayed itemonitem dynel use
+
             if (useOnDynel != Identity.None)
             {
                 Dynel _useOnDynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useOnDynel);

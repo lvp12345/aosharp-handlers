@@ -1000,10 +1000,12 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
+                var nanoRange = DynelManager.LocalPlayer.GetStat(Stat.NanoRange);
+
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.DistanceFrom(DynelManager.LocalPlayer) <= nanoRange
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
                     .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)

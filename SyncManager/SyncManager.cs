@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Interop;
 
 namespace SyncManager
 {
@@ -34,6 +35,7 @@ namespace SyncManager
         public static bool _openBags = false;
         private static bool _init = false;
         public static bool Enable = false;
+        public static bool UISettings = false;
 
         private static double _useTimer;
 
@@ -43,6 +45,7 @@ namespace SyncManager
 
         private Dictionary<RingName, string> _ringNameToItemNameMap;
         private Dictionary<string, RingName> _itemNameToRingNameMap;
+        private Dictionary<int, int> invSlots = new Dictionary<int, int>();
 
 
         [DllImport("user32.dll")]
@@ -65,6 +68,7 @@ namespace SyncManager
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("Enable", true);
+           // _settings.AddVariable("UISettings", true);
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
@@ -75,11 +79,12 @@ namespace SyncManager
             _settings["Enable"] = true;
 
             IPCChannel.RegisterCallback((int)IPCOpcode.StartStop, OnStartStopMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Target, Lookat);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Target, Lookat);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
 
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
@@ -87,8 +92,9 @@ namespace SyncManager
             Chat.RegisterCommand("syncmove", SyncSwitch);
             Chat.RegisterCommand("syncbags", SyncBagsSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
-            Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
+            Chat.RegisterCommand("syncchat", SyncChatSwitch);
+            Chat.RegisterCommand("syncnpctrade", SyncNpcTradeSwitch);
 
             if (Game.IsNewEngine)
             {
@@ -101,8 +107,33 @@ namespace SyncManager
             }
         }
 
+        private void BroadcastSettingsReceived(int arg1, IPCMessage message)
+        {
+            if (message is UISettings uISettings)
+            {
+                _settings["SyncBags"] = uISettings.Bags;
+                _settings["SyncUse"] = uISettings.Use;
+                _settings["SyncChat"] = uISettings.Chat;
+                _settings["SyncTrade"] = uISettings.Trade;
+                _settings["NPCTrade"] = uISettings.NpcTrade;
+            }
+        }
+
         private void OnUpdate(object s, float deltaTime)
         {
+            foreach (Item item in Inventory.Items)
+            {
+                if (item.Slot.Type == IdentityType.Inventory)
+                {
+                    if (!invSlots.ContainsKey(item.Slot.Instance))
+                    {
+                        //Chat.WriteLine($"Adding item {item.Name}, Identity: {item.Id} to dictionary at slot {item.Slot.Instance}");
+
+                        invSlots.Add(item.Slot.Instance, item.Id);
+                    }
+                }
+            }
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
@@ -120,6 +151,12 @@ namespace SyncManager
                 {
                     infoView.Tag = SettingsController.settingsWindow;
                     infoView.Clicked = HandleInfoViewClick;
+                }
+
+                if (SettingsController.settingsWindow.FindView("BroadcastSettingsView", out Button settingsButton))
+                {
+                    settingsButton.Tag = SettingsController.settingsWindow;
+                    settingsButton.Clicked = UISettingsButtonClicked;
                 }
             }
 
@@ -158,6 +195,31 @@ namespace SyncManager
                 IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = true });
                 Start();
             }
+
+            //if (!_settings["UISettings"].AsBool())
+            //{
+            //    if (UISettings)
+            //    {
+            //        IPCChannel.Broadcast(new UISettings() { BroadcastSettings = false });
+            //        UISettings = false;
+            //    }
+            //}
+            //else
+            //{
+            //    if (!UISettings)
+            //    {
+            //        IPCChannel.Broadcast(new UISettings()
+            //        {
+            //            BroadcastSettings = true,
+            //            Bags = _settings["SyncBags"].AsBool(),
+            //            Use = _settings["SyncUse"].AsBool(),
+            //            Chat = _settings["SyncChat"].AsBool(),
+            //            Trade = _settings["SyncTrade"].AsBool(),
+            //            NpcTrade = _settings["NPCTrade"].AsBool(),
+            //        });
+            //        UISettings = true;
+            //    }
+            //}
 
             _ringNameToItemNameMap = new Dictionary<RingName, string>
         {
@@ -364,25 +426,41 @@ namespace SyncManager
                     {
                         KnuBotStartTradeMessage startTradeMsg = (KnuBotStartTradeMessage)n3Msg;
 
+                        //Chat.WriteLine($"Message: {startTradeMsg.Message}, Unknown: {startTradeMsg.Unknown}, " +
+                        //    $"Unknown1: {startTradeMsg.Unknown1}, NumberOfItemSlotsInTradeWindow: {startTradeMsg.NumberOfItemSlotsInTradeWindow}");
+
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
                             Target = startTradeMsg.Target,
                             OpenClose = true,
                             IsStartTrade = true,
-                            NumberOfItemSlotsInTradeWindow = startTradeMsg.NumberOfItemSlotsInTradeWindow
-                        });
+                            Answer = -1,
+                            //NumberOfItemSlotsInTradeWindow = startTradeMsg.NumberOfItemSlotsInTradeWindow,
+                    });
+                        
                     }
 
                     if (n3Msg.N3MessageType == N3MessageType.KnubotTrade)
                     {
                         KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
+                        Dynel msgIdentityName = DynelManager.AllDynels.Where(x => x.Identity == tradeMsg.Identity).FirstOrDefault();
+                        Dynel msgTargetName = DynelManager.AllDynels.Where(x => x.Identity == tradeMsg.Target).FirstOrDefault();
 
-                        IPCChannel.Broadcast(new NpcChatIPCMessage
+                        
+                        int slotInstance = tradeMsg.Container.Instance;
+                        int itemId;
+
+                        if (invSlots.TryGetValue(slotInstance, out itemId))
                         {
-                            Target = tradeMsg.Target,
-                            OpenClose = true,
-                            IsTrade = true,
-                        });
+                            IPCChannel.Broadcast(new NpcChatIPCMessage
+                            {
+                                Id = itemId,
+                                Target = tradeMsg.Target,
+                                OpenClose = true,
+                                IsTrade = true,
+                                Answer = -1,
+                            });
+                        };
                     }
 
                     if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
@@ -391,11 +469,13 @@ namespace SyncManager
 
                         IPCChannel.Broadcast(new NpcChatIPCMessage
                         {
+                            Id = 0,
                             Target = finishTradeMsg.Target,
                             OpenClose = true,
                             IsFinishTrade = true,
                             Decline = finishTradeMsg.Decline,
-                            Amount = finishTradeMsg.Amount
+                            Amount = finishTradeMsg.Amount,
+                            Answer = -1,
                         });
                     }
                 }
@@ -464,7 +544,7 @@ namespace SyncManager
 
         private void OnMoveMessage(int sender, IPCMessage msg)
         {
-            if (IsActiveWindow) {  return; }
+            if (IsActiveWindow) { return; }
 
             if (Game.IsZoning) { return; }
 
@@ -503,7 +583,7 @@ namespace SyncManager
                 DynelManager.LocalPlayer.Attack(targetDynel, true);
             }
             else
-            {  DynelManager.LocalPlayer.StopAttack(); }
+            { DynelManager.LocalPlayer.StopAttack(); }
         }
 
         private void OnUseMessage(int sender, IPCMessage msg)
@@ -587,23 +667,57 @@ namespace SyncManager
                 Network.Send(new KnuBotCloseChatWindowMessage
                 {
                     Unknown1 = 2,
-                    Unknown2 = 0,
-                    Unknown3 = 0,
+                    //Unknown2 = 0,
+                    //Unknown3 = 0,
                     Target = chatMsg.Target
                 });
             }
 
-            if (chatMsg.IsStartTrade)
+            if (chatMsg.IsStartTrade == true)
             {
-                NpcDialog.OpenTrade(chatMsg.Target, chatMsg.NumberOfItemSlotsInTradeWindow);
+                NpcDialog.OpenTrade(chatMsg.Target);
             }
 
-            if (chatMsg.IsTrade)
-            {
+            //if (chatMsg.IsTrade == true)
+            //{
+                if (chatMsg.Id != 0)
+                {
+                    foreach (Item item in Inventory.Items)
+                    {
+                        if (item.Id == chatMsg.Id)
+                        {
+                            Item itemToTrade = Inventory.Items.Where(i => i.Id == chatMsg.Id).FirstOrDefault();
 
+                            if (itemToTrade != null)
+                            {
+                                if (itemToTrade.Slot.Type != IdentityType.KnuBotTradeWindow
+                                    && itemToTrade.Slot.Type == IdentityType.Inventory)
+                                {
+                                    var container = new Identity(IdentityType.KnuBotTradeWindow, 0);
+
+                                    Chat.WriteLine($"{itemToTrade.Slot}");
+
+                                    Network.Send(new KnuBotTradeMessage
+                                    {
+                                        //Identity = DynelManager.LocalPlayer.Identity,
+                                        //Unknown = 0,
+                                        Unknown1 = 2,
+                                        Target = chatMsg.Target,
+                                        //Unknown2 = 0,
+                                        //Unknown3 = 0,
+                                        //Unknown4 = 0,
+                                        Container = itemToTrade.Slot,
+                                    });
+
+                                    //Chat.WriteLine($"Moving item: {itemToTrade.Name} to KnuBotTradeWindow");
+                                }
+                            }
+                        }
+                    }
+               // }
             }
 
-            if (chatMsg.IsFinishTrade)
+            if (chatMsg.IsFinishTrade == true)
             {
                 NpcDialog.FinishTrade(chatMsg.Target, chatMsg.Amount);
             }
@@ -635,9 +749,30 @@ namespace SyncManager
             _infoWindow.Show(true);
         }
 
+        private void UISettingsButtonClicked(object s, ButtonBase button)
+        {
+            IPCChannel.Broadcast(new UISettings()
+            {
+                Bags = _settings["SyncBags"].AsBool(),
+                Use = _settings["SyncUse"].AsBool(),
+                Chat = _settings["SyncChat"].AsBool(),
+                Trade = _settings["SyncTrade"].AsBool(),
+                NpcTrade = _settings["NPCTrade"].AsBool(),
+            });
+        }
+
         #endregion
 
         #region Misc
+
+        public static void MoveItemToKnuBotTradeWindow(Identity source, int slot = 108)
+        {
+            Network.Send(new ClientMoveItemToInventory
+            {
+                SourceContainer = source,
+                Slot = slot
+            });
+        }
 
         public override void Teardown()
         {
@@ -721,6 +856,15 @@ namespace SyncManager
             {
                 _settings["SyncChat"] = !_settings["SyncChat"].AsBool();
                 Chat.WriteLine($"Sync chat : {_settings["SyncChat"].AsBool()}");
+            }
+        }
+
+        private void SyncNpcTradeSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["NPCTrade"] = !_settings["NPCTrade"].AsBool();
+                Chat.WriteLine($"Npc trade : {_settings["NPCTrade"].AsBool()}");
             }
         }
 

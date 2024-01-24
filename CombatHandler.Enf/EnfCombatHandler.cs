@@ -777,11 +777,15 @@ namespace CombatHandler.Enf
             if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
+                var nanoRange = DynelManager.LocalPlayer.GetStat(Stat.NanoRange);
+
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) < 30f
+                        && c.DistanceFrom(DynelManager.LocalPlayer) <= nanoRange
+                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                        && c.Name != "Alien Heavy Patroller"
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();

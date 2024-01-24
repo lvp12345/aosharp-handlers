@@ -36,5 +36,8 @@ namespace SyncManager.IPCMessages
         [AoMember(9)]
         public int Amount { get; set; }
 
+        [AoMember(10)]
+        public int Id { get; set; }
+
     }
 }

@@ -10,18 +10,25 @@
 		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
-		<OptionCheckBox label="Enable" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__Enable" layout_borders="Rect(10,1,5,1)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<OptionCheckBox label="Enable" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__Enable" layout_borders="Rect(10,1,5,1)"/>
+		</View>
 		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
-		<OptionCheckBox label="Sync movement" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncMove" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Sync use" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncUse" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Sync bags" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncBags" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Sync chat" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncChat" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Sync Npc Trade" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__NPCTrade" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Sync trade" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncTrade" layout_borders="Rect(10,1,5,1)"/>
-		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<Button name="BroadcastSettingsView" label="Broadcast Settings" layout_borders="Rect(5,5,3,5)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+			<OptionCheckBox label="Movement" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncMove" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="Use" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncUse" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="Bags" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncBags" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="Trade" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncTrade" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="NPC chat" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__SyncChat" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="NPC trade" opt_category="AOSharp" opt_type="variant" opt_variable="SyncManager__NPCTrade" layout_borders="Rect(10,1,5,1)"/>
+			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+			<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		</View>
 	</BorderView>
 </root>

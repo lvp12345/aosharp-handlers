@@ -8,5 +8,6 @@
         Use = 203,
         NpcChat = 204,
         StartStop = 205,
+        UISettings = 206,
     }
 }

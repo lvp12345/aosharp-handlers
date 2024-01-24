@@ -58,11 +58,13 @@
       <Link>CommonParameters.cs</Link>
     </Compile>
     <Compile Include="Config.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="IPCMessages\AttackIPCMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\NpcChatMessage.cs" />
     <Compile Include="IPCMessages\StartStopIPCMessage.cs" />
     <Compile Include="IPCMessages\TargetMessage.cs" />
+    <Compile Include="IPCMessages\UISettings.cs" />
     <Compile Include="IPCMessages\UseMessage.cs" />
     <Compile Include="IPCMessages\MoveMessage.cs" />
     <Compile Include="SyncManager.cs" />

@@ -388,6 +388,8 @@ namespace CombatHandler.Generic
                         }
                     }
                 }
+
+                #endregion
             }
             catch (Exception ex)
             {

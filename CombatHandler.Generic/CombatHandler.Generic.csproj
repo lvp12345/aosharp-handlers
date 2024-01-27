@@ -60,6 +60,7 @@
     <Compile Include="..\CommonParameters.cs">
       <Link>CommonParameters.cs</Link>
     </Compile>
+    <Compile Include="Ammo.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="GenericCombatHandler.cs" />
     <Compile Include="IPCMessages\ClearBuffsMessage.cs" />

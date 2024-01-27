@@ -1397,7 +1397,7 @@ namespace CombatHandler.Metaphysicist
                 {
                     SimpleChar target = DynelManager.Players
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && InNanoRange(c)
                             && c.Health > 0
                             && SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
@@ -1518,7 +1518,7 @@ namespace CombatHandler.Metaphysicist
                 SimpleChar target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && c.Health > 0
                         && SpellChecksNanoSkillsOther(spell, c))
                     .FirstOrDefault();
@@ -1593,7 +1593,7 @@ namespace CombatHandler.Metaphysicist
                    .Where(c => c.IsInLineOfSight
                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                        && c.Profession != Profession.NanoTechnician
-                       && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                       && InNanoRange(c)
                        && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
                    .FirstOrDefault();
 

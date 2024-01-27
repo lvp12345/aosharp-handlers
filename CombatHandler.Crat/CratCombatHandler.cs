@@ -570,19 +570,33 @@ namespace CombatHandler.Bureaucrat
                 window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (xpPerksInput != null)
+                {
                     xpPerksInput.Text = $"{CycleXpPerksDelay}";
+                }
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -598,19 +612,33 @@ namespace CombatHandler.Bureaucrat
                 container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (xpPerksInput != null)
+                {
                     xpPerksInput.Text = $"{CycleXpPerksDelay}";
+                }
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -633,19 +661,33 @@ namespace CombatHandler.Bureaucrat
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
@@ -661,19 +703,33 @@ namespace CombatHandler.Bureaucrat
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -1079,7 +1135,9 @@ namespace CombatHandler.Bureaucrat
                 if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
                 if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+                {
                     return PerkCondtionProcessors.LeadershipPerk(perk);
+                }
             }
 
             return false;
@@ -1092,7 +1150,9 @@ namespace CombatHandler.Bureaucrat
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
             if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+            {
                 return PerkCondtionProcessors.GovernancePerk(perk);
+            }
 
             return false;
         }
@@ -1103,7 +1163,9 @@ namespace CombatHandler.Bureaucrat
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
             if (DynelManager.NPCs.Any(c => c.FightingTarget != null && AttackingTeam(c)))
+            {
                 return PerkCondtionProcessors.TheDirectorPerk(perk);
+            }
 
             return false;
         }
@@ -1120,7 +1182,9 @@ namespace CombatHandler.Bureaucrat
         private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("NanoDeltaTeam"))
+            {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+            }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
@@ -1128,7 +1192,9 @@ namespace CombatHandler.Bureaucrat
         private bool PsyIntBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("NeuronalStimulatorTeam"))
+            {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
+            }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
@@ -1162,51 +1228,6 @@ namespace CombatHandler.Bureaucrat
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
-
-        //private bool BuffAAOAADAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (BuffingAuraSelection.AAOAAD != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
-
-        //    return Buff(spell, spell.Nanoline, ref actionTarget);
-        //}
-
-        //private bool BuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (BuffingAuraSelection.Crit != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
-
-        //    return Buff(spell, spell.Nanoline, ref actionTarget);
-        //}
-
-        //private bool BuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (BuffingAuraSelection.NanoResist != (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32()) { return false; }
-
-        //    return Buff(spell, spell.Nanoline, ref actionTarget);
-        //}
-
-        //private bool DebuffNanoDrainAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (DebuffingAuraSelection.MaxNano != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-        //        || fightingTarget == null) { return false; }
-
-        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool DebuffNanoResistAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (DebuffingAuraSelection.NanoResist != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-        //        || fightingTarget == null) { return false; }
-
-        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //}
-
-        //private bool DebuffCritAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (DebuffingAuraSelection.Crit != (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32()
-        //        || fightingTarget == null) { return false; }
-
-        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        //}
 
         #endregion
 
@@ -1259,7 +1280,7 @@ namespace CombatHandler.Bureaucrat
                     && c.Health > 0
                     && c.IsInLineOfSight
                     && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                    && InNanoRange(c)
                     && c.MaxHealth < 1000000);
 
             if (modeSelection == ModeSelection.Adds)
@@ -1291,7 +1312,7 @@ namespace CombatHandler.Bureaucrat
 
             List<SimpleChar> targets = DynelManager.NPCs
                 .Where(c => c.IsAlive
-                    && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+                    && InNanoRange(c)
                     && (c.Name == "Right Hand of Madness" || c.Name == "Deranged Xan")
                     && (!c.Buffs.Contains(267535) || !c.Buffs.Contains(267536)))
                 .ToList();
@@ -1432,7 +1453,10 @@ namespace CombatHandler.Bureaucrat
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null) continue;
+                if (pet.Character == null)
+                {
+                    continue;
+                }
 
                 if (RobotNeedsBuff(spell, pet))
                 {
@@ -1461,7 +1485,10 @@ namespace CombatHandler.Bureaucrat
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null) continue;
+                if (pet.Character == null)
+                {
+                    continue;
+                }
 
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
                     && (pet.Type == PetType.Support))
@@ -1490,7 +1517,10 @@ namespace CombatHandler.Bureaucrat
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
-                if (pet.Character == null) continue;
+                if (pet.Character == null)
+                {
+                    continue;
+                }
 
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
                     && (pet.Type == PetType.Attack))

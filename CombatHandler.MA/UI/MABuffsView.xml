@@ -9,8 +9,11 @@
 		</View>
 		<View v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 			<OptionCheckBox label="Zazen Stance" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Zazen" layout_borders="Rect(10,1,5,1)"/>
-			<OptionCheckBox label="Short Damage" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ShortDamage" layout_borders="Rect(10,1,5,1)"/>
 			<OptionCheckBox label="RunSpeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RunSpeed" layout_borders="Rect(10,1,5,1)"/>
+			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+			<OptionCheckBox label="Fists of the Winter Flame" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__FistsoftheWinterFlame" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="Controlled Destruction No Shutdown" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ControlledDestructionNoShutdown" layout_borders="Rect(10,1,5,1)"/>
+			<OptionCheckBox label="Controlled Destruction With Shutdown" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__ControlledDestructionWithShutdown" layout_borders="Rect(10,1,5,1)"/>
 			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 			<OptionCheckBox label="(Team) Evades" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Evades" layout_borders="Rect(10,1,5,1)"/>
 			<OptionCheckBox label="(Team) Crit" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CritBuff" layout_borders="Rect(10,1,5,1)"/>

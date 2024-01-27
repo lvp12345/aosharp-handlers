@@ -1,6 +1,5 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
-using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
@@ -115,7 +114,6 @@ namespace CombatHandler.Enf
                 _settings.AddVariable("DamagePerk", false);
                 RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
-
                 //Troll Form
                 RegisterPerkProcessor(PerkHash.TrollForm, TrollForm);
 
@@ -125,7 +123,6 @@ namespace CombatHandler.Enf
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EnforcerTauntProcs).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonCombatBuff(spell, ref actionTarget, fightingTarget, "TauntProc"));
-
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),
@@ -276,11 +273,17 @@ namespace CombatHandler.Enf
                 window.FindView("RageDelayBox", out TextInputView rageInput);
 
                 if (absorbsInput != null)
+                {
                     absorbsInput.Text = $"{CycleAbsorbsDelay}";
+                }
                 if (challengerInput != null)
+                {
                     challengerInput.Text = $"{CycleChallengerDelay}";
+                }
                 if (rageInput != null)
+                {
                     rageInput.Text = $"{CycleRageDelay}";
+                }
             }
             else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
@@ -292,11 +295,17 @@ namespace CombatHandler.Enf
                 container.FindView("RageDelayBox", out TextInputView rageInput);
 
                 if (absorbsInput != null)
+                {
                     absorbsInput.Text = $"{CycleAbsorbsDelay}";
+                }
                 if (challengerInput != null)
+                {
                     challengerInput.Text = $"{CycleChallengerDelay}";
+                }
                 if (rageInput != null)
+                {
                     rageInput.Text = $"{CycleRageDelay}";
+                }
             }
         }
 
@@ -312,9 +321,13 @@ namespace CombatHandler.Enf
                 window.FindView("MongoDelayBox", out TextInputView mongoInput);
 
                 if (singleInput != null)
+                {
                     singleInput.Text = $"{SingleTauntDelay}";
+                }
                 if (mongoInput != null)
+                {
                     mongoInput.Text = $"{MongoDelay}";
+                }
             }
             else if (_tauntWindow == null || (_tauntWindow != null && !_tauntWindow.IsValid))
             {
@@ -325,9 +338,13 @@ namespace CombatHandler.Enf
                 container.FindView("MongoDelayBox", out TextInputView mongoInput);
 
                 if (singleInput != null)
+                {
                     singleInput.Text = $"{SingleTauntDelay}";
+                }
                 if (mongoInput != null)
+                {
                     mongoInput.Text = $"{MongoDelay}";
+                }
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -351,21 +368,37 @@ namespace CombatHandler.Enf
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (duckInput != null)
+                {
                     duckInput.Text = $"{DuckAbsorbsItemPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
@@ -382,21 +415,37 @@ namespace CombatHandler.Enf
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (duckInput != null)
+                {
                     duckInput.Text = $"{DuckAbsorbsItemPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
         }
 
@@ -438,23 +487,41 @@ namespace CombatHandler.Enf
                 window.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
 
                 if (bioCocoonInput != null)
+                {
                     bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
                 if (bioRegrowthPercentageInput != null)
+                {
                     bioRegrowthPercentageInput.Text = $"{BioRegrowthPercentage}";
+                }
                 if (bioRegrowthDelayInput != null)
+                {
                     bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -472,23 +539,41 @@ namespace CombatHandler.Enf
                 container.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
 
                 if (bioCocoonInput != null)
+                {
                     bioCocoonInput.Text = $"{BioCocoonPercentage}";
+                }
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
                 if (bioRegrowthPercentageInput != null)
+                {
                     bioRegrowthPercentageInput.Text = $"{BioRegrowthPercentage}";
+                }
                 if (bioRegrowthDelayInput != null)
+                {
                     bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
+                }
             }
         }
 
@@ -791,13 +876,11 @@ namespace CombatHandler.Enf
             if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
-                var nanoRange = DynelManager.LocalPlayer.GetStat(Stat.NanoRange);
-
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) <= nanoRange
+                        && InNanoRange(c)
                         && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.Name != "Alien Heavy Patroller"
                         && AttackingTeam(c))
@@ -1003,7 +1086,9 @@ namespace CombatHandler.Enf
         private bool InitiativeBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("InitiativeBuffs"))
+            {
                 return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
+            }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
@@ -1018,7 +1103,7 @@ namespace CombatHandler.Enf
                                .Where(c => c.IsInLineOfSight
                                && c.Identity != DynelManager.LocalPlayer.Identity
                                    && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                   && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                                   && InNanoRange(c)
                                    && c.Health > 0
                                    && SpellChecksOther(spell, spell.Nanoline, c))
                                .FirstOrDefault();

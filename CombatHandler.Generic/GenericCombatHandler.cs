@@ -273,13 +273,6 @@ namespace CombatHandler.Generic
                 RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
                 RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
 
-
-                RegisterItemProcessor(RelevantGenericItems.AmmoBoxArrows, RelevantGenericItems.AmmoBoxArrows, AmmoBoxArrows);
-                RegisterItemProcessor(RelevantGenericItems.AmmoBoxBullets, RelevantGenericItems.AmmoBoxBullets, AmmoBoxBullets);
-                RegisterItemProcessor(RelevantGenericItems.AmmoBoxEnergy, RelevantGenericItems.AmmoBoxEnergy, AmmoBoxEnergy);
-                RegisterItemProcessor(RelevantGenericItems.AmmoBoxShotgun, RelevantGenericItems.AmmoBoxShotgun, AmmoBoxShotgun);
-                RegisterItemProcessor(RelevantGenericItems.AmmoBoxGrenade, RelevantGenericItems.AmmoBoxGrenade, AmmoBoxGrenade);
-
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeNano, CompositeBuff);
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeAttribute, CompositeBuff);
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeUtility, CompositeBuff);
@@ -315,7 +308,6 @@ namespace CombatHandler.Generic
                 Chat.RegisterCommand("convert", RaidCommand);
                 Chat.RegisterCommand("disband", DisbandCommand);
                 Chat.RegisterCommand("rebuff", Rebuff);
-                // This command will clear the character cache allowing you to form a team with a newly logged in toon on an account you previously had a toon logged in on and grouped
                 Chat.RegisterCommand("cleancache", (c, p, cw) =>
                 {
                     SettingsController.RemainingNCU.Clear();
@@ -364,6 +356,9 @@ namespace CombatHandler.Generic
                 }
 
                 UseItems();
+                Ammo.CrateOfAmmo();
+
+                #region UI
 
                 if (DynelManager.LocalPlayer.IsAttacking)
                 {
@@ -650,7 +645,7 @@ namespace CombatHandler.Generic
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= 30 && c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
                     .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
@@ -730,7 +725,7 @@ namespace CombatHandler.Generic
             SimpleChar target = DynelManager.Players
                 .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c))
                 .FirstOrDefault();
@@ -774,28 +769,23 @@ namespace CombatHandler.Generic
         protected bool NonCombatBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, SimpleChar fightingTarget = null,
         string settingName = null)
         {
-            // Check if a setting name is provided and if it's disabled
             if (settingName != null && !_settings[settingName].AsBool())
             {
                 return false;
             }
 
-            // Check if fightingTarget is null or the local player has a fighting target
             if (fightingTarget != null && DynelManager.LocalPlayer.FightingTarget != null)
             {
                 return false;
             }
 
-            // Nanoline is either provided in the spell or is a special case
             NanoLine nanoline = spell.Nanoline;
 
-            // Check for special cases like ShrinkingGrowingflesh
             if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id))
             {
                 return false;
             }
 
-            // Main spell check logic
             if (SpellChecksPlayer(spell, nanoline))
             {
                 actionTarget.ShouldSetTarget = true;
@@ -805,44 +795,6 @@ namespace CombatHandler.Generic
 
             return false;
         }
-
-
-        //protected bool GlobalGenericBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    return GenericBuff(spell, ref actionTarget);
-        //}
-
-        //public bool SelfBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
-        //{
-        //    if (!_settings[settingName].AsBool()) { return false; }
-
-        //    return GenericBuff(spell, ref actionTarget);// spell.Nanoline,
-        //}
-
-        //protected bool GenericBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    return Buff(spell, spell.Nanoline, ref actionTarget);
-        //}
-
-        //protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
-
-        //    if (SpellChecksPlayer(spell, nanoline))
-        //    {
-        //        actionTarget.ShouldSetTarget = true;
-        //        actionTarget.Target = DynelManager.LocalPlayer;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-
-        //RegisterSpellProcessor(YourSpellList,
-        //    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "YourSettingName"));
-
 
         protected bool NonComabtTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName = null)
         {
@@ -864,7 +816,7 @@ namespace CombatHandler.Generic
             SimpleChar target = DynelManager.Players
                 .Where(c => c.IsInLineOfSight
                     && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                    && InNanoRange(c)
                     && c.Health > 0
                     && SpellChecksOther(spell, spell.Nanoline, c))
                 .FirstOrDefault();
@@ -878,82 +830,6 @@ namespace CombatHandler.Generic
 
             return false;
         }
-
-
-        //protected bool GlobalGenericTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    return GenericTeamBuff(spell, ref actionTarget);
-        //}
-
-        //public bool TeamBuffBasedOnSetting(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
-        //{
-        //    if (_settings[settingName].AsBool() && Team.IsInTeam)
-        //        return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-        //    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        //}
-
-        //protected bool GenericTeamBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
-
-        //    if (Team.IsInTeam)
-        //        return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-        //    return NonCombatBuff(spell, ref actionTarget);
-        //}
-
-        //protected bool TeamBuff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
-
-        //    SimpleChar target = DynelManager.Players
-        //            .Where(c => c.IsInLineOfSight
-        //                && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-        //                && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-        //                && c.Health > 0
-        //                && SpellChecksOther(spell, spell.Nanoline, c))
-        //            .FirstOrDefault();
-
-        //    if (target != null)
-        //    {
-        //        if (spell.Nanoline == NanoLine.CriticalIncreaseBuff && target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
-
-        //        if (spell.Nanoline == NanoLine.RunspeedBuffs && target.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
-
-        //        actionTarget.ShouldSetTarget = true;
-        //        actionTarget.Target = target;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-        //protected bool GenericTeamBuffExclusion(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
-
-        //    if (Team.IsInTeam)
-        //        return TeamBuff(spell, spell.Nanoline, ref actionTarget);
-
-        //    return Buff(spell, spell.Nanoline, ref actionTarget);
-        //}
-
-        //protected bool BuffExclusion(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IsInsideInnerSanctum() || DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
-
-        //    if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
-
-        //    if (SpellChecksPlayer(spell, nanoline))
-        //    {
-        //        actionTarget.ShouldSetTarget = true;
-        //        actionTarget.Target = DynelManager.LocalPlayer;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
 
         public bool GenericSelectionBuff(Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
@@ -981,7 +857,7 @@ namespace CombatHandler.Generic
                 SimpleChar target = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
@@ -1003,12 +879,10 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                var nanoRange = DynelManager.LocalPlayer.GetStat(Stat.NanoRange);
-
                 SimpleChar teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) <= nanoRange
+                        && InNanoRange(c)
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
                     .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
@@ -1044,7 +918,7 @@ namespace CombatHandler.Generic
             SimpleChar player = DynelManager.Players
                 .Where(c => c.HealthPercent <= healthPercentThreshold
                     && c.IsInLineOfSight
-                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                    && InNanoRange(c)
                     && c.Health > 0)
                 .OrderBy(c => c.HealthPercent)
                     .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
@@ -1200,7 +1074,7 @@ namespace CombatHandler.Generic
                         && !c.Buffs.Contains(301844)
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && SpellChecksOther(spell, spell.Nanoline, c))
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
@@ -1228,7 +1102,7 @@ namespace CombatHandler.Generic
                         && !c.Buffs.Contains(301844)
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && SpellChecksOther(spell, spell.Nanoline, c))
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
@@ -1268,7 +1142,7 @@ namespace CombatHandler.Generic
                 SimpleChar target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c)
                         && GetWieldedWeapons(c).HasFlag(supportedWeaponType))
@@ -1301,7 +1175,7 @@ namespace CombatHandler.Generic
                 SimpleChar target = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.Profession != Profession.NanoTechnician
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c)
                         && GetWieldedWeapons(c).HasFlag(supportedWeaponType))
@@ -1530,49 +1404,49 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
+        //private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        //{
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            return !Inventory.Items
-                .Where(c => c.Name == "Ammo: Box of Bullets")
-                .Any();
-        }
+        //    return !Inventory.Items
+        //        .Where(c => c.Name == "Ammo: Box of Bullets")
+        //        .Any();
+        //}
 
-        private bool AmmoBoxEnergy(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
+        //private bool AmmoBoxEnergy(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        //{
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            return !Inventory.Items
-                .Where(c => c.Name == "Ammo: Box of Energy Weapon Ammo")
-                .Any();
-        }
+        //    return !Inventory.Items
+        //        .Where(c => c.Name == "Ammo: Box of Energy Weapon Ammo")
+        //        .Any();
+        //}
 
-        private bool AmmoBoxShotgun(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
+        //private bool AmmoBoxShotgun(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        //{
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            return !Inventory.Items
-                .Where(c => c.Name == "Ammo: Box of Shotgun Shells")
-                .Any();
-        }
-        private bool AmmoBoxGrenade(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
+        //    return !Inventory.Items
+        //        .Where(c => c.Name == "Ammo: Box of Shotgun Shells")
+        //        .Any();
+        //}
+        //private bool AmmoBoxGrenade(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        //{
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            return !Inventory.Items
-                .Where(c => c.Name == "Ammo: Box of Launcher Grenades")
-                .Any();
-        }
+        //    return !Inventory.Items
+        //        .Where(c => c.Name == "Ammo: Box of Launcher Grenades")
+        //        .Any();
+        //}
 
-        private bool AmmoBoxArrows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        {
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
+        //private bool AmmoBoxArrows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
+        //{
+        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
 
-            return !Inventory.Items
-                .Where(c => c.Name == "Ammo: Box of Arrows")
-                .Any();
-        }
+        //    return !Inventory.Items
+        //        .Where(c => c.Name == "Ammo: Box of Arrows")
+        //        .Any();
+        //}
 
         private bool EnforcerEnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
@@ -1872,6 +1746,15 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Checks
+
+        protected bool InNanoRange(SimpleChar target)
+        {
+            var nanoRange = DynelManager.LocalPlayer.GetStat(Stat.NanoRange);
+
+            var distanceToTarget = target.Position.DistanceFrom(DynelManager.LocalPlayer.Position);
+
+            return distanceToTarget <= nanoRange;
+        }
 
         protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
         {
@@ -2307,8 +2190,8 @@ namespace CombatHandler.Generic
             public const int FlurryOfBlowsLow = 85907;
             public const int FlurryOfBlowsHigh = 85908;
 
-            public const int DreadlochEnduranceBoosterEnforcerSpecial = 267168; //Dreadloch Endurance Booster - Enforcer Special
-            public const int DreadlochEnduranceBoosterNanomageEdition = 267167; //Dreadloch Endurance Booster - Nanomage Edition
+            public const int DreadlochEnduranceBoosterEnforcerSpecial = 267168;
+            public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
 
             public const int StrengthOfTheImmortal = 305478;
             public const int MightOfTheRevenant = 206013;
@@ -2385,12 +2268,6 @@ namespace CombatHandler.Generic
             public const int HealthAndNanoStim200 = 291044;
             public const int HealthAndNanoStim400 = 291045;
             public const int DeathsDoor = 303071;
-
-            public const int AmmoBoxEnergy = 303138;
-            public const int AmmoBoxShotgun = 303141;
-            public const int AmmoBoxBullets = 303137;
-            public const int AmmoBoxGrenade = 303140;
-            public const int AmmoBoxArrows = 303136;
 
             public const int WenWen = 129656;
 

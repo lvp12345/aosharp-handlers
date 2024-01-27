@@ -242,7 +242,6 @@ namespace CombatHandler.Engineer
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => GenericPetProc(spell, fightingTarget, ref actionTarget, PetProcSelection.MastersBidding));
 
-
                 RegisterSpellProcessor(RelevantNanos.SedativeInjectors,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => GenericPetProc(spell, fightingTarget, ref actionTarget, PetProcSelection.SedativeInjectors));

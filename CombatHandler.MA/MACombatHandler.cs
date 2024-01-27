@@ -5,9 +5,7 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using static CombatHandler.MartialArtist.MACombatHandler;
 
 namespace CombatHandler.MartialArtist
 {
@@ -102,9 +100,11 @@ namespace CombatHandler.MartialArtist
                 _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("Zazen", false);
-
-                _settings.AddVariable("ShortDamage", false);
                 _settings.AddVariable("RunSpeed", false);
+
+                _settings.AddVariable("FistsoftheWinterFlame", false);
+                _settings.AddVariable("ControlledDestructionNoShutdown", false);
+                _settings.AddVariable("ControlledDestructionWithShutdown", false);
 
                 RegisterSettingsWindow("Martial-Artist Handler", "MASettingsView.xml");
 
@@ -175,6 +175,8 @@ namespace CombatHandler.MartialArtist
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder >= 19).OrderByStackingOrder(), ControlledDestructionNoShutdown);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder < 19).OrderByStackingOrder(), ControlledDestructionWithShutdown);
+
+
                 RegisterSpellProcessor(RelevantNanos.FistsOfTheWinterFlame, FistsOfTheWinterFlameNano);
 
                 //Team Buffs
@@ -311,19 +313,33 @@ namespace CombatHandler.MartialArtist
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
@@ -339,19 +355,33 @@ namespace CombatHandler.MartialArtist
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
         }
         private void HandlePerkViewClick(object s, ButtonBase button)
@@ -372,17 +402,29 @@ namespace CombatHandler.MartialArtist
                 window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -397,17 +439,29 @@ namespace CombatHandler.MartialArtist
                 container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -477,7 +531,9 @@ namespace CombatHandler.MartialArtist
                 window.FindView("HealPercentageBox", out TextInputView healInput);
 
                 if (healInput != null)
+                {
                     healInput.Text = $"{HealPercentage}";
+                }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
             {
@@ -487,7 +543,9 @@ namespace CombatHandler.MartialArtist
                 container.FindView("HealPercentageBox", out TextInputView healInput);
 
                 if (healInput != null)
+                {
                     healInput.Text = $"{HealPercentage}";
+                }
             }
         }
 
@@ -515,8 +573,7 @@ namespace CombatHandler.MartialArtist
         {
             try
             {
-                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 0.7)
-                    return;
+                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 0.7) { return; }
 
                 base.OnUpdate(deltaTime);
 
@@ -557,7 +614,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(healInput.Text, out int healValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage != healValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = healValue;
+                            }
                         }
                     }
 
@@ -574,7 +633,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
+                            }
                         }
                     }
 
@@ -583,7 +644,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
+                            }
                         }
                     }
 
@@ -592,7 +655,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+                            }
                         }
                     }
 
@@ -601,7 +666,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+                            }
                         }
                     }
 
@@ -610,7 +677,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(sphereInput.Text, out int sphereValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
+                            }
                         }
                     }
 
@@ -619,7 +688,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+                            }
                         }
                     }
 
@@ -628,7 +699,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(selfHealInput.Text, out int selfHealValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
+                            }
                         }
                     }
 
@@ -637,7 +710,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
+                            }
                         }
                     }
 
@@ -646,7 +721,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(teamHealInput.Text, out int teamHealValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
+                            }
                         }
                     }
 
@@ -655,7 +732,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
+                            }
                         }
                     }
 
@@ -664,7 +743,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
+                            }
                         }
                     }
 
@@ -673,7 +754,9 @@ namespace CombatHandler.MartialArtist
                         if (int.TryParse(strengthInput.Text, out int strengthValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                            {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                            }
                         }
                     }
                 }
@@ -869,8 +952,8 @@ namespace CombatHandler.MartialArtist
         {
             item.Id = _settings["MASelection"].AsInt32();
 
-            if (item.Id == 0) { return false;  }
-            if (fightingtarget == null) { return false;  }
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
             if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
@@ -1004,6 +1087,7 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("ControlledDestructionNoShutdown")) { return false; }
             if (fightingTarget == null) { return false; }
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
@@ -1011,7 +1095,7 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !IsSettingEnabled("ShortDamage")
+            if (fightingTarget == null || !IsSettingEnabled("ControlledDestructionWithShutdown")
                 || DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
@@ -1019,6 +1103,8 @@ namespace CombatHandler.MartialArtist
 
         private bool FistsOfTheWinterFlameNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!IsSettingEnabled("FistsoftheWinterFlame")) { return false; }
+
             if (fightingTarget == null || fightingTarget?.HealthPercent <= 50) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);

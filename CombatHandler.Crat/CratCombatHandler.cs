@@ -731,295 +731,309 @@ namespace CombatHandler.Bureaucrat
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 1.2)
-                return;
-
-            base.OnUpdate(deltaTime);
-
-            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+            try
             {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 1.2)
+                    return;
 
-                IPCChannel.Broadcast(ncuMessage);
+                base.OnUpdate(deltaTime);
 
-                OnRemainingNCUMessage(0, ncuMessage);
+                if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+                {
+                    RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
-                _ncuUpdateTime = Time.NormalTime;
+                    IPCChannel.Broadcast(ncuMessage);
+
+                    OnRemainingNCUMessage(0, ncuMessage);
+
+                    _ncuUpdateTime = Time.NormalTime;
+                }
+
+                #region UI
+
+                var window = SettingsController.FindValidWindow(_windows);
+
+                if (window != null && window.IsValid)
+                {
+                    window.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
+                    window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                    window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                    window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                    window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                    window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+                    window.FindView("SphereDelayBox", out TextInputView sphereInput);
+                    window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+                    window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+                    window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
+                    window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+                    if (xpPerksInput != null && !string.IsNullOrEmpty(xpPerksInput.Text))
+                        if (int.TryParse(xpPerksInput.Text, out int xpPerksValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelay != xpPerksValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelay = xpPerksValue;
+
+                    if (stimTargetInput != null)
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
+
+                    if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
+                        if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
+
+                    if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
+                        if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
+
+                    if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                        if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+
+                    if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                        if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+
+                    if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
+                        if (int.TryParse(sphereInput.Text, out int sphereValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
+
+                    if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
+                        if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+
+                    if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
+                        if (int.TryParse(selfHealInput.Text, out int selfHealValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
+
+                    if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
+                        if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
+
+                    if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
+                        if (int.TryParse(teamHealInput.Text, out int teamHealValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
+
+                    if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
+                        if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
+
+                    if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
+                        if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
+
+                    if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
+                        if (int.TryParse(strengthInput.Text, out int strengthValue))
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+
+                    //attack
+                    if (window.FindView("CombatHandlerPetAttack", out Button PetAttack))//
+                    {
+                        PetAttack.Tag = window;
+                        PetAttack.Clicked = PetAttackClicked;
+                    }
+
+                    //wait
+                    if (window.FindView("CombatHandlerPetWait", out Button PetWait))
+                    {
+                        PetWait.Tag = window;
+                        PetWait.Clicked = PetWaitClicked;
+                    }
+
+                    //warp
+                    if (window.FindView("CombatHandlerPetWarp", out Button PetWarp))
+                    {
+                        PetWarp.Tag = window;
+                        PetWarp.Clicked = PetWarpClicked;
+                    }
+
+                    //follow
+                    if (window.FindView("CombatHandlertPetFollow", out Button PetFollow))
+                    {
+                        PetFollow.Tag = window;
+                        PetFollow.Clicked = PetFollowClicked;
+                    }
+
+                }
+
+                if (IsSettingEnabled("SyncPets"))
+                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
+
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                {
+
+                    if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                    {
+                        itemView.Tag = SettingsController.settingsWindow;
+                        itemView.Clicked = HandleItemViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                    {
+                        perkView.Tag = SettingsController.settingsWindow;
+                        perkView.Clicked = HandlePerkViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
+                    {
+                        petView.Tag = SettingsController.settingsWindow;
+                        petView.Clicked = HandlePetViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("PetCommandView", out Button petCommandView))
+                    {
+                        petCommandView.Tag = SettingsController.settingsWindow;
+                        petCommandView.Clicked = HandlePetCommandViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsWindow;
+                        buffView.Clicked = HanndleBuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsWindow;
+                        debuffView.Clicked = HandleDebuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
+                    {
+                        calmView.Tag = SettingsController.settingsWindow;
+                        calmView.Clicked = HandleCalmingViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
+                    {
+                        procView.Tag = SettingsController.settingsWindow;
+                        procView.Clicked = HandleProcViewClick;
+                    }
+
+                    if (!_settings["SyncPets"].AsBool() && _syncPets)
+                    {
+                        IPCChannel.Broadcast(new PetSyncOffMessage());
+                        syncPetsOffDisabled();
+                    }
+
+                    if (_settings["SyncPets"].AsBool() && !_syncPets)
+                    {
+                        IPCChannel.Broadcast(new PetSyncOnMessag());
+                        syncPetsOnEnabled();
+                    }
+
+                    #endregion
+
+
+                    #region GlobalBuffing
+
+                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                    {
+                        IPCChannel.Broadcast(new GlobalBuffingMessage()
+                        {
+                            Switch = false
+                        });
+
+                        ToggleBuffing = false;
+                        _settings["Buffing"] = false;
+                        _settings["GlobalBuffing"] = false;
+                    }
+
+                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                    {
+                        IPCChannel.Broadcast(new GlobalBuffingMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleBuffing = true;
+                        _settings["Buffing"] = true;
+                        _settings["GlobalBuffing"] = true;
+                    }
+
+                    #endregion
+
+                    #region Global Composites
+
+                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                    {
+                        IPCChannel.Broadcast(new GlobalCompositesMessage()
+                        {
+                            Switch = false
+                        });
+
+                        ToggleComposites = false;
+                        _settings["Composites"] = false;
+                        _settings["GlobalComposites"] = false;
+                    }
+                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                    {
+                        IPCChannel.Broadcast(new GlobalCompositesMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleComposites = true;
+                        _settings["Composites"] = true;
+                        _settings["GlobalComposites"] = true;
+                    }
+
+                    #endregion
+
+                    #region Global Resurrection
+
+                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                    {
+                        IPCChannel.Broadcast(new GlobalRezMessage()
+                        {
+
+                            Switch = false
+                        });
+
+                        ToggleRez = false;
+                        _settings["GlobalRez"] = false;
+                    }
+                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                    {
+                        IPCChannel.Broadcast(new GlobalRezMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleRez = true;
+                        _settings["GlobalRez"] = true;
+                    }
+
+                    #endregion
+                }
+
+                HandleCancelDebuffAuras();
+                HandleCancelBuffAuras();
             }
-
-            #region UI
-
-            var window = SettingsController.FindValidWindow(_windows);
-
-            if (window != null && window.IsValid)
+            catch (Exception ex)
             {
-                window.FindView("XpPerksDelayBox", out TextInputView xpPerksInput);
-                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
-                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
-                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
-                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
-                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
-                window.FindView("SphereDelayBox", out TextInputView sphereInput);
-                window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
-                window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
-                window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
 
-                if (xpPerksInput != null && !string.IsNullOrEmpty(xpPerksInput.Text))
-                    if (int.TryParse(xpPerksInput.Text, out int xpPerksValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelay != xpPerksValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleXpPerksDelay = xpPerksValue;
-
-                if (stimTargetInput != null)
-                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
-
-                if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
-                    if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
-
-                if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
-                    if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
-
-                if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
-                    if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
-
-                if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
-                    if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
-
-                if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
-                    if (int.TryParse(sphereInput.Text, out int sphereValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
-
-                if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
-                    if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
-
-                if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
-                    if (int.TryParse(selfHealInput.Text, out int selfHealValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
-
-                if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
-                    if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
-
-                if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
-                    if (int.TryParse(teamHealInput.Text, out int teamHealValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
-
-                if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
-                    if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
-
-                if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
-                    if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
-
-                if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
-                    if (int.TryParse(strengthInput.Text, out int strengthValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
-
-                //attack
-                if (window.FindView("CombatHandlerPetAttack", out Button PetAttack))//
+                if (errorMessage != previousErrorMessage)
                 {
-                    PetAttack.Tag = window;
-                    PetAttack.Clicked = PetAttackClicked;
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
                 }
-
-                //wait
-                if (window.FindView("CombatHandlerPetWait", out Button PetWait))
-                {
-                    PetWait.Tag = window;
-                    PetWait.Clicked = PetWaitClicked;
-                }
-
-                //warp
-                if (window.FindView("CombatHandlerPetWarp", out Button PetWarp))
-                {
-                    PetWarp.Tag = window;
-                    PetWarp.Clicked = PetWarpClicked;
-                }
-
-                //follow
-                if (window.FindView("CombatHandlertPetFollow", out Button PetFollow))
-                {
-                    PetFollow.Tag = window;
-                    PetFollow.Clicked = PetFollowClicked;
-                }
-
             }
-
-            if (IsSettingEnabled("SyncPets"))
-                SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
-
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
-            {
-
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
-                {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
-                {
-                    perkView.Tag = SettingsController.settingsWindow;
-                    perkView.Clicked = HandlePerkViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
-                {
-                    petView.Tag = SettingsController.settingsWindow;
-                    petView.Clicked = HandlePetViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("PetCommandView", out Button petCommandView))
-                {
-                    petCommandView.Tag = SettingsController.settingsWindow;
-                    petCommandView.Clicked = HandlePetCommandViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HanndleBuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
-                {
-                    debuffView.Tag = SettingsController.settingsWindow;
-                    debuffView.Clicked = HandleDebuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("CalmingView", out Button calmView))
-                {
-                    calmView.Tag = SettingsController.settingsWindow;
-                    calmView.Clicked = HandleCalmingViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
-                }
-
-                if (!_settings["SyncPets"].AsBool() && _syncPets)
-                {
-                    IPCChannel.Broadcast(new PetSyncOffMessage());
-                    syncPetsOffDisabled();
-                }
-
-                if (_settings["SyncPets"].AsBool() && !_syncPets)
-                {
-                    IPCChannel.Broadcast(new PetSyncOnMessag());
-                    syncPetsOnEnabled();
-                }
-
-                #endregion
-
-
-                #region GlobalBuffing
-
-                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleBuffing = false;
-                    _settings["Buffing"] = false;
-                    _settings["GlobalBuffing"] = false;
-                }
-
-                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleBuffing = true;
-                    _settings["Buffing"] = true;
-                    _settings["GlobalBuffing"] = true;
-                }
-
-                #endregion
-
-                #region Global Composites
-
-                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleComposites = false;
-                    _settings["Composites"] = false;
-                    _settings["GlobalComposites"] = false;
-                }
-                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleComposites = true;
-                    _settings["Composites"] = true;
-                    _settings["GlobalComposites"] = true;
-                }
-
-                #endregion
-
-                #region Global Resurrection
-
-                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-
-                        Switch = false
-                    });
-
-                    ToggleRez = false;
-                    _settings["GlobalRez"] = false;
-                }
-                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleRez = true;
-                    _settings["GlobalRez"] = true;
-                }
-
-                #endregion
-            }
-
-            HandleCancelDebuffAuras();
-            HandleCancelBuffAuras();
         }
 
         #region Exoneration

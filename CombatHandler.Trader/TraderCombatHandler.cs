@@ -337,10 +337,14 @@ namespace CombatHandler.Trader
                 window.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
 
                 if (healInput != null)
+                {
                     healInput.Text = $"{HealPercentage}";
+                }
 
                 if (healthDrainInput != null)
+                {
                     healthDrainInput.Text = $"{HealthDrainPercentage}";
+                }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
             {
@@ -351,10 +355,14 @@ namespace CombatHandler.Trader
                 container.FindView("HealthDrainPercentageBox", out TextInputView healthDrainInput);
 
                 if (healInput != null)
+                {
                     healInput.Text = $"{HealPercentage}";
+                }
 
                 if (healthDrainInput != null)
+                {
                     healthDrainInput.Text = $"{HealthDrainPercentage}";
+                }
             }
         }
         private void HandlePerkViewClick(object s, ButtonBase button)
@@ -375,17 +383,29 @@ namespace CombatHandler.Trader
                 window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -400,17 +420,29 @@ namespace CombatHandler.Trader
                 container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
         }
         private void HandleItemViewClick(object s, ButtonBase button)
@@ -432,19 +464,33 @@ namespace CombatHandler.Trader
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
@@ -460,19 +506,33 @@ namespace CombatHandler.Trader
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -819,65 +879,6 @@ namespace CombatHandler.Trader
             return false;
         }
 
-        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (HealPercentage == 0) { return false; }
-
-        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-        //    {
-        //        if (Team.IsInTeam)
-        //        {
-        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
-        //                .Where(c => Team.Members
-        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-        //                     && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-        //                .ToList();
-
-        //            if (dyingTeamMember.Count >= 4) { return false; }
-        //        }
-
-        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        //    }
-
-        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-        //    {
-        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-        //    }
-
-        //    return false;
-        //}
-
-        //private bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (HealPercentage == 0) { return false; }
-
-        //    if (HealSelection.Team == (HealSelection)_settings["HealSelection"].AsInt32())
-        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-        //    {
-        //        if (Spell.List.Any(c => c.Id == 275011)) { return false; }
-
-        //        if (Team.IsInTeam)
-        //        {
-        //            List<SimpleChar> dyingTeamMember = DynelManager.Characters
-        //                .Where(c => Team.Members
-        //                    .Where(m => m.TeamIndex == Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex)
-        //                        .Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-        //                        && c.HealthPercent <= 90 && c.HealthPercent >= 30)
-        //                .ToList();
-
-        //            if (dyingTeamMember.Count >= 1)
-        //            {
-        //                return CanCast(spell);
-        //            }
-        //        }
-        //    }
-
-        //    return false;
-        //}
-
         private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null || HealthDrainPercentage == 0 || !IsSettingEnabled("HealthDrain")) { return false; }
@@ -913,8 +914,13 @@ namespace CombatHandler.Trader
         private bool NanoHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (NanoHealSelection.Combat == (NanoHealSelection)_settings["NanoHealSelection"].AsInt32())
+            {
                 if (InCombat())
+                {
                     return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                }
+            }
+
             return false;
         }
 
@@ -923,17 +929,11 @@ namespace CombatHandler.Trader
             if (IsInsideInnerSanctum()) { return false; }
 
             if (Team.IsInTeam && IsSettingEnabled("Evades"))
-                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget)
-
-                    ; return false;
+            {
+                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+            }
+            return false;
         }
-
-        //private bool UmbralWrangler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("UmbralWrangler")) { return false; }
-
-        //    return GenericBuff(spell, ref actionTarget);
-        //}
 
         #endregion
 
@@ -950,7 +950,10 @@ namespace CombatHandler.Trader
                 case SLNanoDrainSelection.Target:
                 case SLNanoDrainSelection.Boss:
                     if (selection == SLNanoDrainSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                    {
+
                         return false;
+                    }
 
                     return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
@@ -970,7 +973,9 @@ namespace CombatHandler.Trader
                 case RKNanoDrainSelection.Target:
                 case RKNanoDrainSelection.Boss:
                     if (selection == RKNanoDrainSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                    {
                         return false;
+                    }
 
                     return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
@@ -984,7 +989,9 @@ namespace CombatHandler.Trader
             if (NeedsReload()) { return false; }
 
             if (MyEnemySelection.Target == (MyEnemySelection)_settings["MyEnemySelection"].AsInt32())
+            {
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
 
             if (MyEnemySelection.Boss == (MyEnemySelection)_settings["MyEnemySelection"].AsInt32())
             {
@@ -1009,7 +1016,9 @@ namespace CombatHandler.Trader
             }
 
             if (GrandTheftHumiditySelection.Target == (GrandTheftHumiditySelection)_settings["GrandTheftHumiditySelection"].AsInt32())
+            {
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
 
             if (GrandTheftHumiditySelection.Boss == (GrandTheftHumiditySelection)_settings["GrandTheftHumiditySelection"].AsInt32())
             {
@@ -1090,7 +1099,6 @@ namespace CombatHandler.Trader
                     return false;
             }
         }
-
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1197,14 +1205,18 @@ namespace CombatHandler.Trader
 
                 case MPDamageDebuffLineASelection.Area:
                     if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    {
                         return false;
+                    }
 
                     if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
                     {
                         if (spell.StackingOrder <= buff.StackingOrder)
                         {
                             if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU) || buff.RemainingTime > 15)
+                            {
                                 return false;
+                            }
 
                             actionTarget.ShouldSetTarget = true;
                             actionTarget.Target = _drainTarget;
@@ -1215,7 +1227,9 @@ namespace CombatHandler.Trader
                     }
 
                     if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    {
                         return false;
+                    }
 
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = _drainTarget;
@@ -1237,20 +1251,26 @@ namespace CombatHandler.Trader
                 case TraderShutdownSkillDebuffSelection.Target:
                 case TraderShutdownSkillDebuffSelection.Boss:
                     if (selection == TraderShutdownSkillDebuffSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                    {
                         return false;
+                    }
 
                     return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
                 case TraderShutdownSkillDebuffSelection.Area:
                     if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    {
                         return false;
+                    }
 
                     if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
                     {
                         if (spell.StackingOrder <= buff.StackingOrder)
                         {
                             if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU) || buff.RemainingTime > 15)
+                            {
                                 return false;
+                            }
 
                             actionTarget.ShouldSetTarget = true;
                             actionTarget.Target = _drainTarget;
@@ -1261,7 +1281,9 @@ namespace CombatHandler.Trader
                     }
 
                     if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    {
                         return false;
+                    }
 
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = _drainTarget;
@@ -1277,7 +1299,9 @@ namespace CombatHandler.Trader
             if (NeedsReload()) { return false; }
 
             if (AAODrainSelection.Target == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32())
+            {
                 return TargetDebuff(spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
+            }
 
             if (AAODrainSelection.Boss == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32())
             {
@@ -1321,7 +1345,9 @@ namespace CombatHandler.Trader
             if (NeedsReload()) { return false; }
 
             if (AADDrainSelection.Target == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
+            {
                 return TargetDebuff(spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
+            }
 
             if (AADDrainSelection.Boss == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
             {
@@ -1383,15 +1409,21 @@ namespace CombatHandler.Trader
             if (NeedsReload()) { return false; }
 
             if (NanoResistSelection.Target == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
+            {
                 if (fightingTarget?.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA) == true)
+                {
                     return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                }
+            }
 
             if (NanoResistSelection.Boss == (NanoResistSelection)_settings["NanoResistSelection"].AsInt32())
             {
                 if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
                 if (fightingTarget?.Buffs.Contains(NanoLine.NanoResistanceDebuff_LineA) == true)
+                {
                     return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                }
             }
 
             return false;
@@ -1401,7 +1433,9 @@ namespace CombatHandler.Trader
             if (NeedsReload()) { return false; }
 
             if (ACDrainSelection.Target == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
+            {
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
 
             if (ACDrainSelection.Boss == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
             {
@@ -1457,7 +1491,7 @@ namespace CombatHandler.Trader
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && c.MaxHealth < 1000000)
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .ThenBy(c => c.Health)
@@ -1478,7 +1512,7 @@ namespace CombatHandler.Trader
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && InNanoRange(c)
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && !AttackingMob(c)
@@ -1503,8 +1537,7 @@ namespace CombatHandler.Trader
         #region Roots
         private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")
-                || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
+            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
 
             SimpleChar target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
@@ -1544,7 +1577,7 @@ namespace CombatHandler.Trader
             foreach (Pet _pet in DynelManager.LocalPlayer.Pets)
             {
                 SyncPetCombat(_pet);
-            }  
+            }
         }
 
         private void SyncPetCombat(Pet pet)

@@ -143,8 +143,8 @@ namespace CombatHandler.Metaphysicist
 
                 _settings.AddVariable("SummonedWeaponSelection", (int)SummonedWeaponSelection.None);
 
-                _settings.AddVariable("CompositesNanoSkills", false);
-                _settings.AddVariable("CompositesNanoSkillsTeam", false);
+                //_settings.AddVariable("CompositesNanoSkills", false);
+                //_settings.AddVariable("CompositesNanoSkillsTeam", false);
 
                 _settings.AddVariable("Evades", false);
                 _settings.AddVariable("PistolTeam", false);
@@ -223,6 +223,10 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, Evades);
 
                 RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+
+                //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
+                //    (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                //    => Replenish(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
 
                 RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
                 RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
@@ -824,8 +828,8 @@ namespace CombatHandler.Metaphysicist
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
                         {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
-                        }     
-                    } 
+                        }
+                    }
 
                     if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
                     {
@@ -834,8 +838,8 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
-                            } 
-                        }   
+                            }
+                        }
                     }
 
                     if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
@@ -845,9 +849,9 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
-                            }   
-                        }   
-                    } 
+                            }
+                        }
+                    }
 
                     if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
                     {
@@ -856,8 +860,8 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
-                            } 
-                        }  
+                            }
+                        }
                     }
 
                     if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
@@ -867,10 +871,10 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
-                            } 
-                        }  
+                            }
+                        }
                     }
-                        
+
                     if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
                     {
                         if (int.TryParse(sphereInput.Text, out int sphereValue))
@@ -878,10 +882,10 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
-                            } 
-                        } 
+                            }
+                        }
                     }
-                        
+
                     if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
                     {
                         if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
@@ -889,10 +893,10 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
-                            } 
-                        }  
+                            }
+                        }
                     }
-                      
+
                     if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
                     {
                         if (int.TryParse(selfHealInput.Text, out int selfHealValue))
@@ -900,10 +904,10 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
-                            }  
-                        }  
+                            }
+                        }
                     }
-                       
+
                     if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
                     {
                         if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
@@ -911,10 +915,10 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
-                            } 
-                        } 
+                            }
+                        }
                     }
-                        
+
                     if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
                     {
                         if (int.TryParse(teamHealInput.Text, out int teamHealValue))
@@ -922,10 +926,10 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
-                            } 
+                            }
                         }
                     }
-                       
+
                     if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
                     {
                         if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
@@ -933,10 +937,10 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
-                            }  
-                        }  
+                            }
+                        }
                     }
-                        
+
                     if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
                     {
                         if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
@@ -944,10 +948,10 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
-                            }  
-                        }   
+                            }
+                        }
                     }
-                       
+
                     if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
                     {
                         if (int.TryParse(strengthInput.Text, out int strengthValue))
@@ -955,8 +959,8 @@ namespace CombatHandler.Metaphysicist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
-                            }  
-                        } 
+                            }
+                        }
                     }
 
                     //attack
@@ -988,14 +992,14 @@ namespace CombatHandler.Metaphysicist
                     }
                 }
 
-                if (_settings["Replenish"].AsBool() && (_settings["CompositesNanoSkills"].AsBool() || _settings["CompositesNanoSkillsTeam"].AsBool()))
-                {
-                    _settings["CompositesNanoSkills"] = false;
-                    _settings["CompositesNanoSkillsTeam"] = false;
-                    _settings["Replenish"] = false;
+                //if (_settings["Replenish"].AsBool() && (_settings["CompositesNanoSkills"].AsBool() || _settings["CompositesNanoSkillsTeam"].AsBool()))
+                //{
+                //    _settings["CompositesNanoSkills"] = false;
+                //    _settings["CompositesNanoSkillsTeam"] = false;
+                //    _settings["Replenish"] = false;
 
-                    Chat.WriteLine("Only activate one option.");
-                }
+                //    Chat.WriteLine("Only activate one option.");
+                //}
 
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
@@ -1408,6 +1412,16 @@ namespace CombatHandler.Metaphysicist
             }
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
+        private bool Replenish(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName = null)
+        {
+            if (settingName != null && !_settings[settingName].AsBool()){ return false;}
+
+            if (!_settings["Replenish"].AsBool()) { return false; }
+
+            return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
+
+        }
+
 
         private bool MatCre(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1415,7 +1429,7 @@ namespace CombatHandler.Metaphysicist
             {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
-                
+
             return false;
         }
 
@@ -1432,7 +1446,7 @@ namespace CombatHandler.Metaphysicist
         private bool MatLoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                {
+            {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -1442,7 +1456,7 @@ namespace CombatHandler.Metaphysicist
         private bool SenImp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                {
+            {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -1452,7 +1466,7 @@ namespace CombatHandler.Metaphysicist
         private bool BioMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                {
+            {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -1462,7 +1476,7 @@ namespace CombatHandler.Metaphysicist
         private bool MattMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
-                {
+            {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -1474,7 +1488,7 @@ namespace CombatHandler.Metaphysicist
             if (fightingTarget != null) { return false; }
 
             if (Team.IsInTeam)
-                {
+            {
                 return NanoSkillsTeamBuff(spell, fightingTarget, ref actionTarget);
             }
 
@@ -1566,12 +1580,16 @@ namespace CombatHandler.Metaphysicist
         {
             if (DynelManager.LocalPlayer.FightingTarget != null) { return false; }
 
-            if (!Team.IsInTeam)
+            if (CompositeNanoSkillsBuffSelection.Self == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
             {
                 return NonCombatBuff(spell, ref actionTarget, fightingTarget);
             }
 
-            SimpleChar target = DynelManager.Players
+            if (CompositeNanoSkillsBuffSelection.Team == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            {
+                if (Team.IsInTeam)
+                {
+                    SimpleChar target = DynelManager.Players
                    .Where(c => c.IsInLineOfSight
                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                        && c.Profession != Profession.NanoTechnician
@@ -1579,13 +1597,15 @@ namespace CombatHandler.Metaphysicist
                        && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
                    .FirstOrDefault();
 
-            if (target != null)
-            {
-                if (target.Buffs.Any(c => RelevantNanos.MPCompositeNano.Contains(c.Id))) { return false; }
+                    if (target != null)
+                    {
+                        if (target.Buffs.Any(c => RelevantNanos.MPCompositeNano.Contains(c.Id))) { return false; }
 
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = target;
-                return true;
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
+                        return true;
+                    }
+                }
             }
 
             return false;
@@ -1599,7 +1619,7 @@ namespace CombatHandler.Metaphysicist
             {
                 return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
             }
-                
+
             return false;
         }
 

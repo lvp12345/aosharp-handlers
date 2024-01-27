@@ -93,6 +93,7 @@ namespace CombatHandler.Generic
 
         protected static HashSet<string> debuffAreaTargetsToIgnore = new HashSet<string>
         {
+                    "Technological Officer Darwelsi",
                     "Immortal Guardian",
                     "Mature Abyss Orchid",
                     "Abyss Orchid Sprout",
@@ -204,17 +205,17 @@ namespace CombatHandler.Generic
                 RegisterPerkProcessor(PerkHash.PowerCombo, PowerUp);
 
                 RegisterPerkProcessor(PerkHash.Avalanche,
-               (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => ToggledNonTargetedCombatPerk(perkAction, ref actionTarget, fightingTarget, "AOEPerks"));
                 RegisterPerkProcessor(PerkHash.BringThePain,
-               (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => ToggledNonTargetedCombatPerk(perkAction, ref actionTarget, fightingTarget, "AOEPerks"));
                 RegisterPerkProcessor(PerkHash.SeismicSmash,
-              (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                   => ToggledNonTargetedCombatPerk(perkAction, ref actionTarget, fightingTarget, "AOEPerks"));
 
                 RegisterPerkProcessor(PerkHash.Clipfever,
-             (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                  => ToggledNonTargetedCombatPerk(perkAction, ref actionTarget, fightingTarget, "AOEPerks"));
 
                 RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
@@ -266,6 +267,8 @@ namespace CombatHandler.Generic
                 RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.DaTaunterLow, RelevantGenericItems.DaTaunterHigh }, DamageItem);
+                
+                RegisterItemProcessor(RelevantGenericItems.BracerofBrotherMalevolence, RelevantGenericItems.BracerofBrotherMalevolence, DamageItem);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
                 RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
@@ -362,6 +365,19 @@ namespace CombatHandler.Generic
 
                 UseItems();
 
+                if (DynelManager.LocalPlayer.IsAttacking)
+                {
+                    if (DynelManager.LocalPlayer.FightingTarget == DynelManager.Players)
+                    {
+                        DynelManager.LocalPlayer.StopAttack();
+                    }
+                }
+
+                if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
+                {
+                    _lastCombatTime = Time.NormalTime;
+                }
+
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
                     SettingsController.CleanUp();
@@ -374,21 +390,8 @@ namespace CombatHandler.Generic
                             && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
                         {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
-                        }  
-                    } 
-                }
-
-                if (DynelManager.LocalPlayer.IsAttacking)
-                {
-                    if (DynelManager.LocalPlayer.FightingTarget == DynelManager.Players)
-                    {
-                        DynelManager.LocalPlayer.StopAttack();
+                        }
                     }
-                }
-
-                if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
-                {
-                    _lastCombatTime = Time.NormalTime;
                 }
             }
             catch (Exception ex)
@@ -961,8 +964,8 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            if (settingValue == 2) 
-            { 
+            if (settingValue == 2)
+            {
                 return NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget);
             }
 
@@ -1149,6 +1152,11 @@ namespace CombatHandler.Generic
 
             if (fightingTarget == null) { return false; }
 
+            if (debuffAreaTargetsToIgnore.Contains(fightingTarget.Name))
+            {
+                return false;
+            }
+
             if (SpellChecksOther(spell, nanoline, fightingTarget))
             {
                 actionTarget.ShouldSetTarget = true;
@@ -1163,6 +1171,11 @@ namespace CombatHandler.Generic
             if (NeedsReload()) { return false; }
 
             if (fightingTarget == null || !IsSettingEnabled(settingName)) { return false; }
+
+            if (debuffAreaTargetsToIgnore.Contains(fightingTarget.Name))
+            {
+                return false;
+            }
 
             if (SpellChecksOther(spell, nanoline, fightingTarget))
             {
@@ -1511,7 +1524,7 @@ namespace CombatHandler.Generic
                 if (freeStimIds.Contains(item.Id))
                 {
                     return true;
-                } 
+                }
             }
 
             return false;
@@ -1756,12 +1769,12 @@ namespace CombatHandler.Generic
                 {
                     pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
                 }
-                    
+
                 if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
                     && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
                 {
                     pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
-                }  
+                }
             }
         }
 
@@ -1834,9 +1847,10 @@ namespace CombatHandler.Generic
                     if (special.IsAvailable() &&
                         !DynelManager.LocalPlayer.FightingTarget.IsFacing(DynelManager.LocalPlayer))
                     {
-                        // use the attack
+                        
                         continue;
                     }
+
                     continue;
                 }
 
@@ -1980,7 +1994,7 @@ namespace CombatHandler.Generic
                 if (buffsToCancel.Contains(buff.Id))
                 {
                     buff.Remove();
-                } 
+                }
             }
         }
 
@@ -1999,7 +2013,7 @@ namespace CombatHandler.Generic
             if (Time.NormalTime - _lastCombatTime > 5)
             {
                 CancelBuffs(auras);
-            } 
+            }
         }
 
         protected bool IsInsideInnerSanctum()
@@ -2026,7 +2040,7 @@ namespace CombatHandler.Generic
                 return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget?.Name)
                       || (bool)mob.FightingTarget?.IsPet;
             }
- 
+
             return mob.FightingTarget?.Name == DynelManager.LocalPlayer.Name
                 || (bool)mob.FightingTarget?.IsPet;
         }
@@ -2109,7 +2123,7 @@ namespace CombatHandler.Generic
                 if (target != DynelManager.LocalPlayer.Identity)
                 {
                     Team.Invite(target);
-                }  
+                }
             }
         }
 
@@ -2128,7 +2142,7 @@ namespace CombatHandler.Generic
             else
             {
                 Chat.WriteLine("Needs to be used from leader.");
-            }  
+            }
         }
 
         public static void ReformCommand(string command, string[] param, ChatWindow chatWindow)
@@ -2259,6 +2273,9 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.HSRHigh:
                     return Stat.Grenade;
 
+                case RelevantGenericItems.BracerofBrotherMalevolence:
+                    return Stat.Psychic;
+
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
@@ -2286,7 +2303,7 @@ namespace CombatHandler.Generic
         public static class RelevantGenericItems
         {
             public const int ReflectGraft = 95225; //Hacked Boosted-Graft: Lesser Deflection Shield (Extended) 
-
+            public const int BracerofBrotherMalevolence = 301679;
             public const int FlurryOfBlowsLow = 85907;
             public const int FlurryOfBlowsHigh = 85908;
 

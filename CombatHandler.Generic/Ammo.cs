@@ -111,7 +111,7 @@ namespace CombatHandler.Generic
                 {
                     if (!WeaponAmmo.ContainsKey(slot))
                     {
-                        WeaponAmmo[slot] = new Tuple<string, int>("Ammo: Box of Flamethrower Ammo", 303139);
+                        WeaponAmmo[slot] = new Tuple<string, int>("Ammo: Box of Flamethrower Ammunition", 303139);
                     }
                 }
                 else if (ammoInt == 4)

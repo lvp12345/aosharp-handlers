@@ -267,7 +267,7 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(RelevantNanos.PetDefensive, DefensivePet);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealDelta843).OrderByStackingOrder(), HealDeltaPet);
                 RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), CostPet);
+                RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
                 //Pet Perks
 

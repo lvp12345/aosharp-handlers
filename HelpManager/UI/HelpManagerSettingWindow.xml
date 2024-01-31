@@ -37,6 +37,7 @@
 		<BorderView v_alignment="center" h_alignment="center"  name="Settings" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
 			<View v_alignment="top" h_alignment="left" view_layout="vertical" layout_borders="Rect(2,2,90,2)" max_size="Point(16000,-1)">
 				<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+				<OptionCheckBox label="Show trasp and mines" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__Traps" layout_borders="Rect(10,1,5,1)"/>
 				<OptionCheckBox label="(12man) Morph Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__MorphPathing" layout_borders="Rect(10,1,5,1)"/>
 				<OptionCheckBox label="(DB3) Shapes" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__Db3Shapes" layout_borders="Rect(10,1,5,1)"/>
 				<OptionCheckBox label="(Sub) Belly Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__BellyPathing" layout_borders="Rect(10,1,5,1)"/>

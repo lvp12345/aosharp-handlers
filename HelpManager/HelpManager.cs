@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Debug = AOSharp.Core.Debug;
 
 
 namespace HelpManager
@@ -121,7 +122,7 @@ namespace HelpManager
             Game.OnUpdate += OnUpdate;
 
             _settings.AddVariable("AutoSit", false);
-
+            _settings.AddVariable("Traps", false);
             _settings.AddVariable("MorphPathing", false);
             _settings.AddVariable("BellyPathing", false);
             _settings.AddVariable("Eumenides", false);
@@ -228,6 +229,17 @@ namespace HelpManager
                 Kits kitsInstance = new Kits();
 
                 kitsInstance.SitAndUseKit();
+            }
+
+            if (_settings["Traps"].AsBool())
+            {
+                foreach (Dynel dynel in DynelManager.AllDynels.Where(d => DynelManager.LocalPlayer.Position.DistanceFrom(d.Position) < 60))
+                {
+                    if (dynel.Name.Contains("Mine") || dynel.Name.Contains("Trap") || dynel.Name.Contains("Collision Spawn"))
+                    {
+                        Debug.DrawSphere(dynel.Position, 1.0f, DebuggingColor.Red);
+                    }
+                }
             }
 
             if (Playfield.ModelIdentity.Instance == 9070)

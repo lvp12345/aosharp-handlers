@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows.Input;
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
 namespace CombatHandler.Doctor
@@ -96,6 +97,8 @@ namespace CombatHandler.Doctor
 
                 _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
 
+                _settings.AddVariable("EpsilonPurge", false);
+
                 _settings.AddVariable("NukingSelection", (int)NukingSelection.Boss);
 
                 _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.Boss);
@@ -135,6 +138,9 @@ namespace CombatHandler.Doctor
                             GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
                             CombatActionPriority.High);
 
+                //Epsilon Purge
+                RegisterSpellProcessor(RelevantNanos.EpsilonPurge, EpsilonPurge);
+
                 //Perks
                 RegisterPerkProcessor(PerkHash.BattlegroupHeal1,
                     (PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -158,6 +164,8 @@ namespace CombatHandler.Doctor
 
                 RegisterPerkProcessor(PerkHash.NanoTransmission, NanoTransmission);
                 RegisterPerkProcessor(PerkHash.CloseCall, CloseCall);
+                RegisterPerkProcessor(PerkHash.HaleAndHearty, HaleandHearty);
+                RegisterPerkProcessor(PerkHash.TeamHaleAndHearty, TeamHaleandHearty);
 
                 //Hots
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
@@ -1058,6 +1066,36 @@ namespace CombatHandler.Doctor
 
         #endregion
 
+        #region Epsilon Purge
+
+        private bool EpsilonPurge(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("EpsilonPurge")) { return false; }
+
+            SimpleChar target = DynelManager.Players
+            .Where(c => c.IsInLineOfSight
+            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+            && InNanoRange(c)
+            && c.Buffs.Contains(NanoLine.DOT_LineA)
+            || c.Buffs.Contains(NanoLine.DOT_LineB)
+            || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
+            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
+            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
+            || c.Buffs.Contains(NanoLine.DOTStrainC))
+            .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Buffs
 
         public bool TeamImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1111,6 +1149,60 @@ namespace CombatHandler.Doctor
         #endregion
 
         #region Perks
+
+        public static bool HaleandHearty(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            SimpleChar target = DynelManager.Players
+           .Where(c => HaleandHeartyDebuffs(c))
+           .FirstOrDefault();
+
+            if (HaleandHeartyDebuffs(target))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool TeamHaleandHearty(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (PerkAction.Find("Hale and Hearty", out PerkAction _HaleandHearty))
+            {
+                if (_HaleandHearty.IsAvailable)
+                {
+                    return false;
+                }
+            }
+
+            SimpleChar target = DynelManager.Players
+            .Where(c => HaleandHeartyDebuffs(c))
+            .FirstOrDefault();
+
+            if (target != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        static bool HaleandHeartyDebuffs(SimpleChar c)
+        {
+            if (c != null)
+            {
+                return c.Buffs.Contains(NanoLine.AAODebuffs) || c.Buffs.Contains(NanoLine.TraderAAODrain)
+                       || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive) || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack)
+                       || c.Buffs.Contains(NanoLine.DOT_LineA) || c.Buffs.Contains(NanoLine.DOT_LineB)
+                       || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA) || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
+                       || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB) || c.Buffs.Contains(NanoLine.DOTStrainC)
+                       || c.Buffs.Contains(NanoLine.PainLanceDoT) || c.Buffs.Contains(NanoLine.MINIDoT)
+                       || c.Buffs.Contains(NanoLine.InitiativeDebuffs);
+            }
+
+            return false;
+        }
 
         private bool NanoTransmission(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1343,6 +1435,8 @@ namespace CombatHandler.Doctor
         {
 
             public const int ImprovedLC = 275011;
+
+            public const int EpsilonPurge = 28659;
 
             public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
                 .Where(spell => spell.Id != ImprovedLC).ToArray();

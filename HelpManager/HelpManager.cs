@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
+
 namespace HelpManager
 {
     public class HelpManager : AOPluginEntry
@@ -24,10 +25,6 @@ namespace HelpManager
 
         public static string PluginDirectory;
 
-        private static bool _init = false;
-
-        private static double _updateTick;
-        private static double _sitUpdateTimer;
         private static double _sitPetUpdateTimer;
         private static double _sitPetUsedTimer;
         private static double _shapeUsedTimer;
@@ -46,15 +43,17 @@ namespace HelpManager
         public static Window _followWindow;
         public static Window _assistWindow;
         public static Window _infoWindow;
+        public static Window _eumenidesWindow;
 
         public static View _followView;
         public static View _assistView;
         public static View _infoView;
+        public static View _eumenidesView;
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
-        protected Settings _settings;
+        public static Settings _settings;
 
         public static string PluginDir;
 
@@ -111,6 +110,7 @@ namespace HelpManager
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmCast);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
+            IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
 
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
             Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
@@ -124,7 +124,10 @@ namespace HelpManager
 
             _settings.AddVariable("MorphPathing", false);
             _settings.AddVariable("BellyPathing", false);
+            _settings.AddVariable("Eumenides", false);
             _settings.AddVariable("Db3Shapes", false);
+
+            _settings.AddVariable("Positions", (int)Positions.Center);
 
             Chat.RegisterCommand("autosit", AutoSitSwitch);
 
@@ -148,7 +151,7 @@ namespace HelpManager
             SettingsController.CleanUp();
         }
 
-        public Window[] _windows => new Window[] { _assistWindow, _followWindow };
+        public Window[] _windows => new Window[] { _assistWindow, _followWindow, _eumenidesWindow };
 
         public static void IPCChannel_Changed(object s, int e)
         {
@@ -179,9 +182,43 @@ namespace HelpManager
             _infoWindow.Show(true);
         }
 
+        private void UISettingsButtonClicked(object s, ButtonBase button)
+        {
+            IPCChannel.Broadcast(new UISettings()
+            {
+                AutoSit = _settings["AutoSit"].AsBool(),
+                MorphPathing = _settings["MorphPathing"].AsBool(),
+                BellyPathing = _settings["BellyPathing"].AsBool(),
+                Eumenides = _settings["Eumenides"].AsBool(),
+                Db3Shapes = _settings["Db3Shapes"].AsBool(),
+            });
+        }
+
+        private void EumenidesView(object s, ButtonBase button)
+        {
+            _eumenidesWindow = Window.CreateFromXml("Eumenides", PluginDirectory + "\\UI\\HelpManagerEumenidesView.xml",
+                windowSize: new Rect(0, 0, 440, 510),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            _eumenidesWindow.Show(true);
+        }
+
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+        }
+
+        private void BroadcastSettingsReceived(int arg1, IPCMessage message)
+        {
+            if (message is UISettings uISettings)
+            {
+                _settings["AutoSit"] = uISettings.AutoSit;
+                _settings["MorphPathing"] = uISettings.MorphPathing;
+                _settings["BellyPathing"] = uISettings.BellyPathing;
+                _settings["Eumenides"] = uISettings.Eumenides;
+                _settings["Db3Shapes"] = uISettings.Db3Shapes;
+            }
         }
 
         private void OnUpdate(object s, float deltaTime)
@@ -193,86 +230,108 @@ namespace HelpManager
                 kitsInstance.SitAndUseKit();
             }
 
-            if (Time.NormalTime > _zixMorphTimer + 3)
+            if (Playfield.ModelIdentity.Instance == 9070)
+            {
+                if (_settings["Eumenides"].AsBool())
+                {
+                    SimpleChar _eumenides = DynelManager.NPCs.Where(c => c.Name == "Eumenides").FirstOrDefault();
+
+                    if (DynelManager.LocalPlayer.Room.Name == "Shopping Dead-end")
+                    {
+                        if (_eumenides != null)
+                        {
+                            Eumenides.HandleEumenides();
+                        }
+                    }
+                }
+
+                if (_settings["BellyPathing"].AsBool() && Time.AONormalTime > _bellyPathingTimer)
+                {
+                    Dynel Pustule = DynelManager.AllDynels
+                        .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 5f
+                            && x.Name == "Glowing Pustule")
+                        .FirstOrDefault();
+
+                    Pustule?.Use();
+
+                    if (!MovementController.Instance.IsNavigating)
+                    {
+                        if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(132.0f, 90.0f, 117.0f)) < 2f)
+                        {
+                            MovementController.Instance.SetPath(BellyPath);
+                        }
+
+                        if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(217.0f, 94.0f, 148.0f)) < 2f)
+                        {
+                            MovementController.Instance.SetPath(OutBellyPath);
+                        }
+                    }
+
+                    _bellyPathingTimer = Time.AONormalTime + 1;
+                }
+            }
+
+            if (Playfield.ModelIdentity.Instance == 4021)
+            {
+                if (_settings["Db3Shapes"].AsBool() && Time.AONormalTime > _shapeUsedTimer + 0.5)
+                {
+                    Dynel shape = DynelManager.AllDynels
+                        .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 5f
+                            && (x.Name == "Triangle of Nano Power" || x.Name == "Cylinder of Speed"
+                        || x.Name == "Torus of Aim" || x.Name == "Square of Attack Power"))
+                        .FirstOrDefault();
+
+                    shape?.Use();
+
+                    _shapeUsedTimer = Time.AONormalTime;
+                }
+            }
+
+            if (_settings["MorphPathing"].AsBool() && Time.AONormalTime > _morphPathingTimer + 2)
+            {
+                if (!MovementController.Instance.IsNavigating)
+                {
+                    if (DynelManager.LocalPlayer.Buffs.Contains(281109))
+                    {
+                        Vector3 curr = DynelManager.LocalPlayer.Position;
+
+                        MovementController.Instance.SetPath(MorphBird);
+                        MovementController.Instance.AppendDestination(curr);
+                    }
+
+                    if (DynelManager.LocalPlayer.Buffs.Contains(281108))
+                    {
+                        Vector3 curr = DynelManager.LocalPlayer.Position;
+
+                        MovementController.Instance.SetPath(MorphHorse);
+                        MovementController.Instance.AppendDestination(curr);
+                    }
+                }
+                _morphPathingTimer = Time.AONormalTime;
+            }
+
+            if (Time.AONormalTime > _zixMorphTimer + 3)
             {
                 if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
                 {
                     CancelBuffs(RelevantNanos.ZixMorph);
                 }
 
-                _zixMorphTimer = Time.NormalTime;
+                _zixMorphTimer = Time.AONormalTime;
             }
 
-            if (Time.NormalTime > _sitPetUpdateTimer + 2)
+            if (Time.AONormalTime > _sitPetUpdateTimer + 2)
             {
                 if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
                 {
                     ListenerPetSit();
                 }
-                _sitPetUpdateTimer = Time.NormalTime;
-            }
-
-            if (_settings["BellyPathing"].AsBool() && Time.NormalTime > _bellyPathingTimer + 1)
-            {
-                Dynel Pustule = DynelManager.AllDynels
-                    .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 7f
-                        && x.Name == "Glowing Pustule")
-                    .FirstOrDefault();
-
-                Pustule?.Use();
-
-                if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(132.0f, 90.0f, 117.0f)) < 2f
-                    && !MovementController.Instance.IsNavigating)
-                {
-                    MovementController.Instance.SetPath(BellyPath);
-                }
-
-                if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(217.0f, 94.0f, 148.0f)) < 2f
-                    && !MovementController.Instance.IsNavigating)
-                {
-                    MovementController.Instance.SetPath(OutBellyPath);
-                }
-
-                _bellyPathingTimer = Time.NormalTime;
-            }
-
-            if (_settings["MorphPathing"].AsBool() && Time.NormalTime > _morphPathingTimer + 2)
-            {
-                if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281109))
-                {
-                    Vector3 curr = DynelManager.LocalPlayer.Position;
-
-                    MovementController.Instance.SetPath(MorphBird);
-                    MovementController.Instance.AppendDestination(curr);
-                }
-
-                if (!MovementController.Instance.IsNavigating && DynelManager.LocalPlayer.Buffs.Contains(281108))
-                {
-                    Vector3 curr = DynelManager.LocalPlayer.Position;
-
-                    MovementController.Instance.SetPath(MorphHorse);
-                    MovementController.Instance.AppendDestination(curr);
-                }
-
-                _morphPathingTimer = Time.NormalTime;
-            }
-
-            if (_settings["Db3Shapes"].AsBool() && Time.NormalTime > _shapeUsedTimer + 0.5)
-            {
-                Dynel shape = DynelManager.AllDynels
-                    .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 5f
-                        && (x.Name == "Triangle of Nano Power" || x.Name == "Cylinder of Speed"
-                    || x.Name == "Torus of Aim" || x.Name == "Square of Attack Power"))
-                    .FirstOrDefault();
-
-                shape?.Use();
-
-                _shapeUsedTimer = Time.NormalTime;
+                _sitPetUpdateTimer = Time.AONormalTime;
             }
 
             #region UI
 
-            if (Time.NormalTime > _uiDelay + 1.0)
+            if (Time.AONormalTime > _uiDelay + 1.0)
             {
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
@@ -316,8 +375,18 @@ namespace HelpManager
                         infoView.Tag = SettingsController.settingsWindow;
                         infoView.Clicked = InfoView;
                     }
+                    if (SettingsController.settingsWindow.FindView("BroadcastSettingsView", out Button settingsButton))
+                    {
+                        settingsButton.Tag = SettingsController.settingsWindow;
+                        settingsButton.Clicked = UISettingsButtonClicked;
+                    }
+                    if (SettingsController.settingsWindow.FindView("EumenidesPositionsView", out Button eumenidesView))
+                    {
+                        eumenidesView.Tag = SettingsController.settingsWindow;
+                        eumenidesView.Clicked = EumenidesView;
+                    }
                 }
-                _uiDelay = Time.NormalTime;
+                _uiDelay = Time.AONormalTime;
             }
             #endregion
         }
@@ -441,6 +510,7 @@ namespace HelpManager
 
         private void ListenerPetSit()
         {
+            Kits kits = new Kits();
             healpet = DynelManager.LocalPlayer.Pets.Where(x => x.Type == PetType.Heal).FirstOrDefault();
 
             Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.Id)).FirstOrDefault();
@@ -449,7 +519,7 @@ namespace HelpManager
 
             if (_settings["AutoSit"].AsBool())
             {
-                if (CanUseSitKit() && Time.NormalTime > _sitPetUsedTimer + 16
+                if (kits.CanUseSitKit() && Time.AONormalTime > _sitPetUsedTimer + 16
                     && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f && healpet.Character.IsInLineOfSight)
                 {
                     if (healpet.Character.Nano == 10) { return; }
@@ -464,35 +534,10 @@ namespace HelpManager
 
                         MovementController.Instance.SetMovement(MovementAction.LeaveSit);
 
-                        _sitPetUsedTimer = Time.NormalTime;
+                        _sitPetUsedTimer = Time.AONormalTime;
                     }
                 }
             }
-        }
-
-        private bool CanUseSitKit()
-        {
-            if (!DynelManager.LocalPlayer.IsAlive || DynelManager.LocalPlayer.IsMoving || Game.IsZoning)
-            {
-                return false;
-            }
-
-            List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.Id != 297274).ToList();
-
-            if (sitKits.Any())
-            {
-                return sitKits.OrderBy(x => x.QualityLevel).Any(sitKit => MeetsSkillRequirement(sitKit));
-            }
-
-            return Inventory.Find(297274, out Item premSitKit);
-        }
-
-        private bool MeetsSkillRequirement(Item sitKit)
-        {
-            var localPlayer = DynelManager.LocalPlayer;
-            int skillReq = sitKit.QualityLevel > 200 ? (sitKit.QualityLevel % 200 * 3) + 1501 : (int)(sitKit.QualityLevel * 7.5f);
-
-            return localPlayer.GetStat(Stat.FirstAid) >= skillReq || localPlayer.GetStat(Stat.Treatment) >= skillReq;
         }
 
         public static void CancelBuffs(int[] buffsToCancel)
@@ -534,6 +579,7 @@ namespace HelpManager
         private static class RelevantNanos
         {
             public static readonly int[] ZixMorph = { 288532, 302212 };
+
             public static readonly int[] Yalms = {
                 290473, 281569, 301672, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982,
                 296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
@@ -542,11 +588,15 @@ namespace HelpManager
             };
         }
 
-        private static class RelevantItems
+        public enum Positions
         {
-            public static readonly int[] Kits = {
-                297274, 293296, 291084, 291083, 291082
-            };
+            Center,
+            BackWall,
+            BackLeft,
+            BackRight,
+            FrontLeft,
+            FrontRight,
+            Door,
         }
     }
 }

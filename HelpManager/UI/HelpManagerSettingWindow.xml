@@ -13,11 +13,9 @@
 				<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 			</View>
 		</BorderView>
-
 		<BorderView v_alignment="center" h_alignment="center"  name="Settings" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
 			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 			<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(2,2,90,2)" max_size="Point(16000,-1)">
-				
 				<TextView value="Health %" layout_borders="Rect(0,0,0,2)"/>
 				<TextView value="Nano %" layout_borders="Rect(0,0,0,2)"/>
 			</View>
@@ -31,15 +29,23 @@
 				<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 			</View>
 		</BorderView>
-
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<Button name="BroadcastSettingsView" label="Broadcast Settings" layout_borders="Rect(5,5,3,5)"/>
+		</View>
 		<BorderView v_alignment="center" h_alignment="center"  name="Settings" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
 			<View v_alignment="top" h_alignment="left" view_layout="vertical" layout_borders="Rect(2,2,90,2)" max_size="Point(16000,-1)">
 				<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 				<OptionCheckBox label="(12man) Morph Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__MorphPathing" layout_borders="Rect(10,1,5,1)"/>
 				<OptionCheckBox label="(DB3) Shapes" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__Db3Shapes" layout_borders="Rect(10,1,5,1)"/>
 				<OptionCheckBox label="(Sub) Belly Pathing" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__BellyPathing" layout_borders="Rect(10,1,5,1)"/>
-				<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+				<OptionCheckBox label="(Sub) Eumenides" opt_category="AOSharp" opt_type="variant" opt_variable="HelpManager__Eumenides" layout_borders="Rect(10,1,5,1)"/>
 			</View>
+			<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+				<Button name="EumenidesPositionsView" label="Eumenides Positions" layout_borders="Rect(5,5,3,5)"/>
+			</View>
+			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		</BorderView>
 	</View>
 </root>

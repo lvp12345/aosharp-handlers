@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="EumenidesView" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<OptionRadioButtonGroup label="Position" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="HelpManager__Positions">
+			<RadioButton label="Center" value="0"/>
+			<RadioButton label="Back wall" value="1"/>
+			<RadioButton label="Back left" value="2"/>
+			<RadioButton label="Back right" value="3"/>
+			<RadioButton label="Front left" value="4"/>
+			<RadioButton label="Front right" value="5"/>
+			<RadioButton label="Door" value="6"/>
+		</OptionRadioButtonGroup>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+	</BorderView>
+</root>

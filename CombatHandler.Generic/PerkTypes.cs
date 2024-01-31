@@ -152,7 +152,7 @@ namespace CombatHandler.Generic
             {PerkHash.Guardian , PerkType.CombatBuff},
             {PerkHash.Guesstimate , PerkType.TargetDamage},
             {PerkHash.GuttingBlow , PerkType.TargetDamage},
-            {PerkHash.HaleAndHearty , PerkType.AOO_Trader_DOts_Init_Cleanse}, //AAO debuffs, Tradeder debuffs, Dots, Init debuffs
+            {PerkHash.HaleAndHearty , PerkType.Disabled}, //PerkType.AOO_Trader_DOts_Init_Cleanse
             {PerkHash.HammerAndAnvil , PerkType.DamageBuff},
             {PerkHash.HarmonizeBodyAndMind , PerkType.SelfHeal},
             {PerkHash.Hatred , PerkType.TargetDamage},
@@ -465,7 +465,7 @@ namespace CombatHandler.Generic
             {PerkHash.TapVitae , PerkType.TargetDamage},
             {PerkHash.Taunt , PerkType.TargetDamage},
             {PerkHash.TauntBox , PerkType.Disabled},
-            {PerkHash.TeamHaleAndHearty , PerkType.AOO_Trader_DOts_Init_Cleanse}, //AAO debuffs, Tradeder debuffs, Dots, Init debuffs
+            {PerkHash.TeamHaleAndHearty , PerkType.Disabled}, //PerkType.AOO_Trader_DOts_Init_Cleanse
             {PerkHash.TeamHeal , PerkType.SelfHeal},
             {PerkHash.TheDirector , PerkType.Disabled},
             {PerkHash.ThermalDetonation , PerkType.TargetDamage},

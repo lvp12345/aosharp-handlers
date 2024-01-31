@@ -109,5 +109,4 @@ namespace HelpManager
     {
         public static readonly int[] Kits = { 297274, 293296, 291084, 291083, 291082 };
     }
-
 }

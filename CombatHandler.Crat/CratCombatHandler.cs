@@ -1099,9 +1099,8 @@ namespace CombatHandler.Bureaucrat
             if (!IsSettingEnabled("Exoneration")) { return false; }
 
             SimpleChar target = DynelManager.Players
-            .Where(c => c.IsInLineOfSight
-            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-            && c.DistanceFrom(DynelManager.LocalPlayer) < 10f
+            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+            && c.DistanceFrom(DynelManager.LocalPlayer) < 40f
             && c.Buffs.Contains(NanoLine.Root)
             || c.Buffs.Contains(NanoLine.Snare)
             || c.Buffs.Contains(305244) //Pause for Reflection
@@ -1112,7 +1111,7 @@ namespace CombatHandler.Bureaucrat
 
             if (target != null)
             {
-                actionTarget.ShouldSetTarget = true;
+                actionTarget.ShouldSetTarget = false;
                 actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }

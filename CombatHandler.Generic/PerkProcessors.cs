@@ -461,6 +461,35 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        public static bool SelfAOO_Trader_DOts_Init_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+
+            SimpleChar target = DynelManager.Players
+            .Where(c => c.Buffs.Contains(NanoLine.AAODebuffs)
+            || c.Buffs.Contains(NanoLine.TraderAAODrain)
+            || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive)
+            || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack)
+            || c.Buffs.Contains(NanoLine.DOT_LineA)
+            || c.Buffs.Contains(NanoLine.DOT_LineB)
+            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
+            || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
+            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
+            || c.Buffs.Contains(NanoLine.DOTStrainC)
+            || c.Buffs.Contains(NanoLine.PainLanceDoT)
+            || c.Buffs.Contains(NanoLine.MINIDoT)
+            || c.Buffs.Contains(NanoLine.InitiativeDebuffs))
+            .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = false;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
+
         public static bool Snare_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 

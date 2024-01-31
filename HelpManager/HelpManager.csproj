@@ -61,6 +61,8 @@
       <Link>CommonParameters.cs</Link>
     </Compile>
     <Compile Include="Config.cs" />
+    <Compile Include="Eumenides.cs" />
+    <Compile Include="IPCMessages\UISettings.cs" />
     <Compile Include="IPCMessages\YalmUseMessage.cs" />
     <Compile Include="IPCMessages\YalmOnMessage.cs" />
     <Compile Include="IPCMessages\YalmOffMessage.cs" />
@@ -71,6 +73,9 @@
     <Compile Include="SettingsController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\HelpManagerEumenidesView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\HelpManagerInfoView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -560,8 +560,6 @@ namespace SyncManager
 
             UseMessage useMsg = (UseMessage)msg;
 
-            int[] ignoredItemIds = { 291043, 204103, 204104, 204105, 204106, 204107, 303138, 303141, 303137, 204698, 204653, 206013, 267168, 267167, 305476, 305478, 303179 };
-
             if (useMsg.RingName != RingName.Unknown)
             {
                 string ringName = GetItemNameFromRingName(useMsg.RingName);
@@ -598,9 +596,15 @@ namespace SyncManager
 
         private void ProcessIDItem(UseMessage usableMsg)
         {
+            int[] ignoredItemIds = { 244655, 152028, 253187, 151693, 83919, 152029, 151692,253186, 83920, 291043, 204103, 204104, 204105, 204106, 204107,
+                303138, 303141, 303137, 204698, 204653, 206013, 267168, 267167, 305476, 305478, 303179 };
+
+
             Item itemID = Inventory.Items.FirstOrDefault(i => i.Id == usableMsg.ItemId || i.HighId == usableMsg.ItemHighId) ??
                              Inventory.Backpacks.SelectMany(b => b.Items)
                                                 .FirstOrDefault(i => i.Id == usableMsg.ItemId || i.HighId == usableMsg.ItemHighId);
+
+            if (itemID != null && ignoredItemIds.Contains(itemID.Id)) { return; }
 
             if (itemID != null)
             {

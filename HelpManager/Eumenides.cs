@@ -26,7 +26,10 @@ namespace HelpManager
             }
             if (morphs.Contains(305862))
             {
-
+                if (DynelManager.LocalPlayer.IsAttacking)
+                {
+                    DynelManager.LocalPlayer.StopAttack();
+                }
             }
             if (morphs.Contains(305863))
             {

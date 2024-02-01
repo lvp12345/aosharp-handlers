@@ -478,9 +478,6 @@ namespace CombatHandler.Generic
                     .Where(c => c.Health > 70 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
                     .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (DynelManager.LocalPlayer.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower())).Any()
@@ -572,18 +569,19 @@ namespace CombatHandler.Generic
 
             int healSelection = _settings[selectionSetting].AsInt32();
 
-            if (healSelection == 0) //None
+            if (healSelection == 0)
             {
                 return false;
             }
-            if (healSelection == 1) //SingleTeam
+            if (healSelection == 1) 
             {
                 if (Team.IsInTeam)
                 {
                     int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+
                     int count = DynelManager.Characters.Count(c =>
                         Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                        && c.HealthPercent <= 90 && c.HealthPercent >= 30);
+                        && c.HealthPercent <= HealPercentage && c.Health > 0);
 
                     if (count >= 2)
                     {
@@ -593,7 +591,7 @@ namespace CombatHandler.Generic
                 return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
 
-            if (healSelection == 2) //SingleArea
+            if (healSelection == 2)
             {
                 return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
             }
@@ -610,28 +608,24 @@ namespace CombatHandler.Generic
 
             int healSelection = _settings[selectionSetting].AsInt32();
 
-            if (healSelection == 0) // None
+            if (healSelection == 0)
             {
                 return false;
             }
 
-            // Default to false for the team heal trigger
             bool shouldTeamHeal = false;
 
             if (Team.IsInTeam)
             {
                 int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
 
-                // Count the number of team members who need healing
                 int count = DynelManager.Characters.Count(c =>
                     Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                    && c.HealthPercent <= 90 && c.HealthPercent >= 30);
+                    && c.HealthPercent <= HealPercentage && c.Health > 0);
 
-                // Check if the count criteria or healSelection criteria are met
                 shouldTeamHeal = (count > 2) || (healSelection == 3);
             }
 
-            // If either the count is more than 2 or healSelection is 3, proceed with team heal
             if (shouldTeamHeal)
             {
                 return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
@@ -639,7 +633,6 @@ namespace CombatHandler.Generic
 
             return false;
         }
-
 
         private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -651,9 +644,6 @@ namespace CombatHandler.Generic
                         && InNanoRange(c)
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -888,9 +878,6 @@ namespace CombatHandler.Generic
                         && InNanoRange(c)
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
                 if (teamMember != null)
@@ -924,9 +911,6 @@ namespace CombatHandler.Generic
                     && InNanoRange(c)
                     && c.Health > 0)
                 .OrderBy(c => c.HealthPercent)
-                    .ThenBy(c => c.Profession == Profession.Doctor ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Enforcer ? 0 : 1)
-                    .ThenBy(c => c.Profession == Profession.Soldier ? 0 : 1)
                     .FirstOrDefault();
 
             if (player != null)

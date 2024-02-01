@@ -5,6 +5,7 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -129,6 +130,7 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("WarpPets", false);
 
                 _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
+                _settings.AddVariable("PetMezzingSelection", (int)PetMezzingSelection.Adds);
 
                 _settings.AddVariable("CompositeNanoSkillsBuffSelection", (int)CompositeNanoSkillsBuffSelection.None);
                 _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
@@ -155,7 +157,6 @@ namespace CombatHandler.Metaphysicist
                 //LE Proc
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AnticipatedEvasion);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DiffuseRage);
-
 
                 _settings.AddVariable("Replenish", false);
 
@@ -1706,38 +1707,67 @@ namespace CombatHandler.Metaphysicist
 
         private void AssignTargetToMezzPet()
         {
-            SimpleChar targetToMezz = GetTargetToMezz();
-
             Pet mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support
             && pet.Character.Nano >= 1).FirstOrDefault();
 
             if (mezzPet != null)
             {
-                if (targetToMezz != null)
+                if ((PetMezzingSelection)_settings["PetMezzingSelection"].AsInt32() == PetMezzingSelection.Target)
                 {
-                    if (Time.AONormalTime > _lastMezzPetMezzTime)
-                    {
-                        if (mezzPet?.Character.IsAttacking == true)
+                        if (CanLookupPetsAfterZone() && Time.AONormalTime > _lastMezzPetMezzTime)
                         {
-                            if (mezzPet?.Character.FightingTarget != targetToMezz)
-                            {
-                                mezzPet?.Attack(targetToMezz.Identity);
-                                _lastMezzPetMezzTime = Time.AONormalTime + 2;
-                            }
+                            SynchronizePetCombatState(mezzPet);
+
+                            _lastMezzPetMezzTime = Time.AONormalTime + 1;
                         }
-                        else
+                    }
+                else
+                {
+                    SimpleChar targetToMezz = GetTargetToMezz();
+
+                    if (targetToMezz != null)
+                    {
+                        PetMezzing(mezzPet, targetToMezz);
+                    }
+                    else
+                    {
+                        if (CanLookupPetsAfterZone() && Time.AONormalTime > _lastMezzPetMezzTime)
+                        {
+                            SynchronizePetCombatState(mezzPet);
+
+                            _lastMezzPetMezzTime = Time.AONormalTime + 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void PetMezzing(Pet mezzPet, SimpleChar targetToMezz)
+        {
+            if (targetToMezz != null)
+            {
+                if (Time.AONormalTime > _lastMezzPetMezzTime)
+                {
+                    if (mezzPet?.Character.IsAttacking == true)
+                    {
+                        if (mezzPet?.Character.FightingTarget != targetToMezz)
                         {
                             mezzPet?.Attack(targetToMezz.Identity);
                             _lastMezzPetMezzTime = Time.AONormalTime + 2;
                         }
                     }
-                }
-                else
-                {
-                    if (mezzPet?.Character.IsAttacking == true)
+                    else
                     {
-                        mezzPet.Follow();
+                        mezzPet?.Attack(targetToMezz.Identity);
+                        _lastMezzPetMezzTime = Time.AONormalTime + 2;
                     }
+                }
+            }
+            else
+            {
+                if (mezzPet?.Character.IsAttacking == true)
+                {
+                    mezzPet.Follow();
                 }
             }
         }
@@ -1873,6 +1903,10 @@ namespace CombatHandler.Metaphysicist
         public enum PetProcSelection
         {
             None, InducedApathy, MastersBidding
+        }
+        public enum PetMezzingSelection
+        {
+            Target, Adds
         }
 
         public enum DamageDebuffSelection

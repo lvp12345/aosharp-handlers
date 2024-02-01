@@ -24,7 +24,7 @@ namespace CombatHandler.Generic
 
         public int EvadeCycleTimeoutSeconds = 180;
 
-        protected double _lastPetSyncTime = Time.NormalTime;
+        protected double _lastPetSyncTime = Time.AONormalTime;
         protected double _lastZonedTime = Time.NormalTime;
         protected double _lastCombatTime = double.MinValue;
 
@@ -1633,7 +1633,7 @@ namespace CombatHandler.Generic
             }
         }
 
-        private void SynchronizePetCombatState(Pet pet)
+        protected void SynchronizePetCombatState(Pet pet)
         {
             if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
             {

@@ -139,7 +139,7 @@ namespace CombatHandler.Doctor
                             CombatActionPriority.High);
 
                 //Epsilon Purge
-                RegisterSpellProcessor(RelevantNanos.EpsilonPurge, EpsilonPurge);
+                RegisterSpellProcessor(RelevantNanos.EpsilonPurge, EpsilonPurge, CombatActionPriority.High);
 
                 //Perks
                 RegisterPerkProcessor(PerkHash.BattlegroupHeal1,

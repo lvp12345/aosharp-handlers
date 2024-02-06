@@ -983,11 +983,14 @@ namespace CombatHandler.Enf
 
             if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.Cycle)
             {
-                if (fightingTarget == null) { return false; }
+                SimpleChar attackingMob = DynelManager.NPCs.Where(c => c.IsAttacking && 
+                c.FightingTarget?.Identity == DynelManager.LocalPlayer?.Identity).FirstOrDefault();
 
-                if (Time.NormalTime > _absorbs + CycleAbsorbsDelay)
+                if (attackingMob == null) { return false; }
+
+                if (Time.AONormalTime > _absorbs + CycleAbsorbsDelay)
                 {
-                    _absorbs = Time.NormalTime;
+                    _absorbs = Time.AONormalTime;
                     return true;
                 }
             }

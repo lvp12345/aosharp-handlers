@@ -38,7 +38,7 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int MongoDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].MongoDelay : 1;
         [JsonIgnore]
-        public int CycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay : 1;
+        public int CycleAbsorbsDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay : 20;
         [JsonIgnore]
         public int CycleChallengerDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay : 1;
         [JsonIgnore]
@@ -523,7 +523,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> CycleAbsorbsDelayChangedEvent;
-        private int _cycleAbsorbsDelay = 1;
+        private int _cycleAbsorbsDelay = 20;
         public int CycleAbsorbsDelay
         {
             get

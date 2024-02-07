@@ -182,12 +182,93 @@ namespace CombatHandler.Generic
 
         public static bool SelfHealPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-
+            if (SelfHealPerkPercentage == 0) { return false; }
+            if (IsPlayerFlyingOrFalling()) { return false; }
             if (!perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
             {
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        //public static bool TargetHealPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsPlayerFlyingOrFalling()) { return false; }
+
+        //    if (TargetHealPerkPercentage == 0) { return false; }
+
+        //    if (!perk.IsAvailable) { return false; }
+
+        //    if (Team.IsInTeam)
+        //    {
+        //        SimpleChar teamMember = DynelManager.Players
+        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                && c.HealthPercent <= TargetHealPerkPercentage && c.IsInLineOfSight
+        //                && InNanoRange(c)
+        //                && c.IsAlive)
+        //            .OrderBy(c => c.HealthPercent)
+        //            .FirstOrDefault();
+
+        //        if (teamMember != null)
+        //        {
+        //            actionTarget.Target = teamMember;
+        //            actionTarget.ShouldSetTarget = true;
+
+        //            return true;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (DynelManager.LocalPlayer.HealthPercent <= TargetHealPerkPercentage)
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = DynelManager.LocalPlayer;
+        //            return true;
+        //        }
+        //    }
+
+        //    return false;
+        //}
+
+        public static bool TeamHealPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsPlayerFlyingOrFalling()) { return false; }
+
+            if (TeamHealPerkPercentage == 0) { return false; }
+
+            if (!perk.IsAvailable) { return false; }
+
+            if (Team.IsInTeam)
+            {
+                SimpleChar teamMember = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= TeamHealPerkPercentage && c.IsInLineOfSight
+                        && InNanoRange(c)
+                        && c.IsAlive)
+                    .OrderBy(c => c.HealthPercent)
+                    .FirstOrDefault();
+
+                if (teamMember != null)
+                {
+                    actionTarget.Target = teamMember;
+                    actionTarget.ShouldSetTarget = true;
+
+                    return true;
+                }
+            }
+            else
+            {
+                if (DynelManager.LocalPlayer.HealthPercent <= TeamHealPerkPercentage)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
             }
 
             return false;
@@ -206,32 +287,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        public static bool TeamHealPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-            {
-                SimpleChar _person = DynelManager.Players
-                    .Where(c => c.Health > 0
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= TeamHealPerkPercentage)
-                    .FirstOrDefault();
-
-                if (_person != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = _person;
-                    return true;
-                }
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= TeamHealPerkPercentage)
-            {
-                return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-        }
-
         public static bool TeamNanoPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsPlayerFlyingOrFalling()) { return false; }
@@ -246,7 +301,7 @@ namespace CombatHandler.Generic
 
                 if (_person != null)
                 {
-                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.ShouldSetTarget = false;
                     actionTarget.Target = _person;
                     return true;
                 }

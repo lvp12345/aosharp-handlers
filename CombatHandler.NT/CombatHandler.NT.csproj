@@ -74,6 +74,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\NTHealingView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\NTCalmingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

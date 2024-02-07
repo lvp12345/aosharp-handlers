@@ -25,6 +25,7 @@ namespace CombatHandler.Engineer
         private static Window _itemWindow;
         private static Window _perkWindow;
         private static Window _trimmersWindow;
+        private static Window _healingWindow;
 
         private static View _buffView;
         private static View _petView;
@@ -33,6 +34,7 @@ namespace CombatHandler.Engineer
         private static View _itemView;
         private static View _perkView;
         private static View _trimmersView;
+        private static View _healingView;
 
         private static double _ncuUpdateTime;
 
@@ -53,6 +55,7 @@ namespace CombatHandler.Engineer
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
+                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
@@ -113,6 +116,7 @@ namespace CombatHandler.Engineer
                 _settings.AddVariable("PistolTeam", true);
                 _settings.AddVariable("GrenadeTeam", true);
                 _settings.AddVariable("ShadowlandReflectBase", true);
+                _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.None);
                 _settings.AddVariable("DamageShields", false);
                 _settings.AddVariable("SLMap", false);
                 _settings.AddVariable("MEBuff", false);
@@ -171,6 +175,10 @@ namespace CombatHandler.Engineer
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "DamageShields"));
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).OrderByStackingOrder(),
+                   (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                   => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "RKReflectSelection"));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ShadowlandReflectBase).OrderByStackingOrder(),
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -294,6 +302,7 @@ namespace CombatHandler.Engineer
 
                 PluginDirectory = pluginDir;
 
+                Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
                 BioCocoonPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentage;
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
@@ -325,7 +334,7 @@ namespace CombatHandler.Engineer
             }
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _procWindow, _itemWindow, _perkWindow, _trimmersWindow };
+        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow, _trimmersWindow };
 
         #region Callbacks
 
@@ -500,10 +509,12 @@ namespace CombatHandler.Engineer
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
                 window.FindView("SphereDelayBox", out TextInputView sphereInput);
                 window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                 window.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
                 window.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
 
@@ -552,10 +563,12 @@ namespace CombatHandler.Engineer
                 container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
                 container.FindView("SphereDelayBox", out TextInputView sphereInput);
                 container.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                container.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                container.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                container.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                container.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                container.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                container.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                container.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                 container.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
                 container.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
 
@@ -613,6 +626,38 @@ namespace CombatHandler.Engineer
                 _buffWindow = container;
             }
         }
+        private void HandleHealingViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_healingView)) { return; }
+
+                _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerHealingView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "EngineerHealingView" }, _healingView);
+
+                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+            }
+            else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "EngineerHealingView" }, _healingView, out var container);
+                _healingWindow = container;
+
+                container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+            }
+        }
+
         private void HandleItemViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -772,6 +817,7 @@ namespace CombatHandler.Engineer
 
                 if (window != null && window.IsValid)
                 {
+                    window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                     window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
                     window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                     window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
@@ -780,14 +826,27 @@ namespace CombatHandler.Engineer
                     window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                     window.FindView("SphereDelayBox", out TextInputView sphereInput);
                     window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                    window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                    window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                    window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                    window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                    window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                     window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
                     window.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
                     window.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
+
+                    if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
+                    {
+                        if (int.TryParse(FountainOfLifeInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = Value;
+                            }
+                        }
+                    }
 
                     if (bioCocoonInput != null && !string.IsNullOrEmpty(bioCocoonInput.Text))
                     {
@@ -1028,6 +1087,12 @@ namespace CombatHandler.Engineer
                     {
                         buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = HandleBuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsWindow;
+                        healingView.Clicked = HandleHealingViewClick;
                     }
 
                     if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
@@ -1621,6 +1686,10 @@ namespace CombatHandler.Engineer
             None, Blind, PetSnare, ShieldRipper
         }
         public enum InitBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum RKReflectSelection
         {
             None, Self, Team
         }

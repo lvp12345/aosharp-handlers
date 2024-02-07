@@ -30,6 +30,7 @@ namespace CombatHandler.Metaphysicist
         private static Window _perkWindow;
         private static Window _nukesWindow;
         private static Window _weaponWindow;
+        private static Window _healingWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -40,6 +41,7 @@ namespace CombatHandler.Metaphysicist
         private static View _perkView;
         private static View _nukesView;
         private static View _weaponView;
+        private static View _healingView;
 
         private double _lastHealPetHealTime = 0.0;
         private double _lastMezzPetMezzTime = 0.0;
@@ -88,6 +90,7 @@ namespace CombatHandler.Metaphysicist
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
+                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
@@ -289,6 +292,7 @@ namespace CombatHandler.Metaphysicist
 
                 PluginDirectory = pluginDir;
 
+                Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
                 StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
@@ -316,7 +320,7 @@ namespace CombatHandler.Metaphysicist
             }
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _debuffWindow, _itemWindow, _perkWindow, _nukesWindow, _weaponWindow };
+        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _healingWindow, _debuffWindow, _itemWindow, _perkWindow, _nukesWindow, _weaponWindow };
 
         #region Callbacks
 
@@ -416,6 +420,37 @@ namespace CombatHandler.Metaphysicist
 
         #region Handles
 
+        private void HandleHealingViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_healingView)) { return; }
+
+                _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MPHealingView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "MPHealingView" }, _healingView);
+
+                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+            }
+            else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "MPHealingView" }, _healingView, out var container);
+                _healingWindow = container;
+
+                container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+            }
+        }
         private void PetAttackClicked(object s, ButtonBase button)
         {
             if (DynelManager.LocalPlayer.Pets.Length > 0)
@@ -430,17 +465,14 @@ namespace CombatHandler.Metaphysicist
                 }
             }
         }
-
         private void PetWaitClicked(object s, ButtonBase button)
         {
             PetWaitCommand(null, null, null);
         }
-
         private void PetWarpClicked(object s, ButtonBase button)
         {
             PetWarpCommand(null, null, null);
         }
-
         private void PetFollowClicked(object s, ButtonBase button)
         {
             PetFollowCommand(null, null, null);
@@ -450,8 +482,6 @@ namespace CombatHandler.Metaphysicist
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_petView)) { return; }
 
                 _petView = View.CreateFromXml(PluginDirectory + "\\UI\\MPPetsView.xml");
@@ -463,7 +493,6 @@ namespace CombatHandler.Metaphysicist
                 _petWindow = container;
             }
         }
-
         private void HandlePetCommandViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -480,7 +509,6 @@ namespace CombatHandler.Metaphysicist
                 _petCommandWindow = container;
             }
         }
-
         private void HandlePerkViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -493,10 +521,11 @@ namespace CombatHandler.Metaphysicist
 
                 window.FindView("SphereDelayBox", out TextInputView sphereInput);
                 window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
                 {
@@ -532,10 +561,11 @@ namespace CombatHandler.Metaphysicist
 
                 container.FindView("SphereDelayBox", out TextInputView sphereInput);
                 container.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                container.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                container.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                container.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                container.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                container.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                container.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                container.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
                 {
@@ -568,8 +598,6 @@ namespace CombatHandler.Metaphysicist
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MPBuffsView.xml");
@@ -581,7 +609,6 @@ namespace CombatHandler.Metaphysicist
                 _buffWindow = container;
             }
         }
-
         private void HandleWeaponViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -598,7 +625,6 @@ namespace CombatHandler.Metaphysicist
                 _weaponWindow = container;
             }
         }
-
         private void HandleDebuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -620,7 +646,6 @@ namespace CombatHandler.Metaphysicist
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\MPItemsView.xml");
@@ -711,8 +736,6 @@ namespace CombatHandler.Metaphysicist
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MPProcsView.xml");
@@ -724,13 +747,11 @@ namespace CombatHandler.Metaphysicist
                 _procWindow = container;
             }
         }
-
         private void HandleNukesViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-
                 if (window.Views.Contains(_nukesView)) { return; }
 
                 _nukesView = View.CreateFromXml(PluginDirectory + "\\UI\\MPNukesView.xml");
@@ -810,6 +831,7 @@ namespace CombatHandler.Metaphysicist
 
                 if (window != null && window.IsValid)
                 {
+                    window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                     window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                     window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
                     window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
@@ -817,12 +839,25 @@ namespace CombatHandler.Metaphysicist
                     window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                     window.FindView("SphereDelayBox", out TextInputView sphereInput);
                     window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                    window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                    window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                    window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                    window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                    window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                     window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+                    if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
+                    {
+                        if (int.TryParse(FountainOfLifeInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = Value;
+                            }
+                        }
+                    }
 
                     if (stimTargetInput != null)
                     {
@@ -1020,6 +1055,12 @@ namespace CombatHandler.Metaphysicist
                     {
                         buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = HandleBuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsWindow;
+                        healingView.Clicked = HandleHealingViewClick;
                     }
 
                     if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))

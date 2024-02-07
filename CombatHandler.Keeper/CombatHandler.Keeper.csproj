@@ -80,6 +80,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\KeeperHealingView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\KeeperPerksView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

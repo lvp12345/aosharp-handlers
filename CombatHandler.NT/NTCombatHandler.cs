@@ -6,8 +6,6 @@ using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FollowTargetMessage;
 
 namespace CombatHandler.NanoTechnician
 {
@@ -28,6 +26,7 @@ namespace CombatHandler.NanoTechnician
         private static Window _calmingWindow;
         private static Window _nukeWindow;
         private static Window _perkWindow;
+        private static Window _healingWindow;
 
         private static View _procView;
         private static View _itemView;
@@ -36,6 +35,7 @@ namespace CombatHandler.NanoTechnician
         private static View _calmView;
         private static View _nukeView;
         private static View _perkView;
+        private static View _healingView;
 
         private static SimpleChar _drainTarget;
 
@@ -52,6 +52,7 @@ namespace CombatHandler.NanoTechnician
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
+                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelayChangedEvent += CycleAbsorbsDelay_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentageChangedEvent += NanoAegisPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentageChangedEvent += NullitySpherePercentage_Changed;
@@ -225,6 +226,7 @@ namespace CombatHandler.NanoTechnician
 
                 PluginDirectory = pluginDir;
 
+                Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
                 CycleAbsorbsDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleAbsorbsDelay;
                 NanoAegisPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].NanoAegisPercentage;
                 NullitySpherePercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage;
@@ -256,7 +258,7 @@ namespace CombatHandler.NanoTechnician
                 }
             }
         }
-        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _calmingWindow, _buffWindow, _healingWindow, _procWindow, _debuffWindow, _nukeWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -303,7 +305,6 @@ namespace CombatHandler.NanoTechnician
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_debuffView)) { return; }
 
                 _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\NTDebuffsView.xml");
@@ -315,7 +316,6 @@ namespace CombatHandler.NanoTechnician
                 _debuffWindow = container;
             }
         }
-
         private void HandleCalmingViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -332,7 +332,6 @@ namespace CombatHandler.NanoTechnician
                 _calmingWindow = container;
             }
         }
-
         private void HandlePerkViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -345,10 +344,11 @@ namespace CombatHandler.NanoTechnician
 
                 window.FindView("SphereDelayBox", out TextInputView sphereInput);
                 window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
                 {
@@ -382,10 +382,11 @@ namespace CombatHandler.NanoTechnician
 
                 container.FindView("SphereDelayBox", out TextInputView sphereInput);
                 container.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                container.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                container.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                container.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                container.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                container.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                container.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                container.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
                 {
@@ -418,7 +419,6 @@ namespace CombatHandler.NanoTechnician
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_nukeView)) { return; }
 
                 _nukeView = View.CreateFromXml(PluginDirectory + "\\UI\\NTNukesView.xml");
@@ -435,7 +435,6 @@ namespace CombatHandler.NanoTechnician
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\NTBuffsView.xml");
@@ -497,12 +496,42 @@ namespace CombatHandler.NanoTechnician
                 }
             }
         }
+        private void HandleHealingViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_healingView)) { return; }
+
+                _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\NTHealingView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "NTHealingView" }, _healingView);
+
+                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+            }
+            else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "NTHealingView" }, _healingView, out var container);
+                _healingWindow = container;
+
+                container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+            }
+        }
         private void HandleItemViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\NTItemsView.xml");
@@ -593,8 +622,6 @@ namespace CombatHandler.NanoTechnician
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\NTProcsView.xml");
@@ -634,6 +661,7 @@ namespace CombatHandler.NanoTechnician
 
                 if (window != null && window.IsValid)
                 {
+                    window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                     window.FindView("AbsorbsDelayBox", out TextInputView absorbsInput);
                     window.FindView("NanoAegisPercentageBox", out TextInputView nanoAegisInput);
                     window.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
@@ -645,12 +673,25 @@ namespace CombatHandler.NanoTechnician
                     window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                     window.FindView("SphereDelayBox", out TextInputView sphereInput);
                     window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                    window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                    window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                    window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                    window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                    window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                     window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+                    if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
+                    {
+                        if (int.TryParse(FountainOfLifeInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = Value;
+                            }
+                        }
+                    }
 
                     if (absorbsInput != null && !string.IsNullOrEmpty(absorbsInput.Text))
                     {
@@ -865,6 +906,12 @@ namespace CombatHandler.NanoTechnician
                     {
                         buffView.Tag = SettingsController.settingsWindow;
                         buffView.Clicked = HandleBuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsWindow;
+                        healingView.Clicked = HandleHealingViewClick;
                     }
 
                     if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))

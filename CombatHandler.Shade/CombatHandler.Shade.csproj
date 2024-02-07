@@ -74,6 +74,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\ShadeHealingView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\ShadePerksView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

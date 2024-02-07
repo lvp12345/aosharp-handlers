@@ -76,6 +76,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\SoldierHealingView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\SoldierPerksView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

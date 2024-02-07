@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+
 using System.Threading.Tasks;
+
 using static CombatHandler.Generic.PerkCondtionProcessors;
 using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
@@ -39,8 +41,7 @@ namespace CombatHandler.Generic
         public static int CycleChallengerDelay = 0;
         public static int CycleRageDelay = 0;
         public static int CycleAbsorbsDelay = 0;
-        public static int HealPercentage = 0;
-        public static int CompleteHealPercentage = 0;
+
         public static int HealthDrainPercentage = 0;
         public static int NanoAegisPercentage = 0;
         public static int NullitySpherePercentage = 0;
@@ -61,6 +62,7 @@ namespace CombatHandler.Generic
         public static int DuckAbsorbsItemPercentage = 0;
         public static int BodyDevAbsorbsItemPercentage = 0;
         public static int StrengthAbsorbsItemPercentage = 0;
+        public static int TOTWPercentage = 0;
 
         public static int StimHealthPercentage = 0;
         public static int StimNanoPercentage = 0;
@@ -204,6 +206,8 @@ namespace CombatHandler.Generic
                 RegisterPerkProcessor(PerkHash.PowerBlast, PowerUp);
                 RegisterPerkProcessor(PerkHash.PowerCombo, PowerUp);
 
+                RegisterPerkProcessor(PerkHash.Survival, PowerUp);
+
                 RegisterPerkProcessor(PerkHash.Avalanche,
                 (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => ToggledNonTargetedCombatPerk(perkAction, ref actionTarget, fightingTarget, "AOEPerks"));
@@ -218,7 +222,7 @@ namespace CombatHandler.Generic
                 (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                  => ToggledNonTargetedCombatPerk(perkAction, ref actionTarget, fightingTarget, "AOEPerks"));
 
-                RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, FountainOfLife);
+                RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, Healing.FountainOfLife, CombatActionPriority.High);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.FlowerOfLifeLow, RelevantGenericItems.FlowerOfLifeHigh }, FlowerOfLife);
                 RegisterItemProcessor(RelevantGenericItems.ReflectGraft, RelevantGenericItems.ReflectGraft, ReflectGraft);
@@ -267,7 +271,7 @@ namespace CombatHandler.Generic
                 RelevantGenericItems.SitKit100, RelevantGenericItems.SitKit200, RelevantGenericItems.SitKit300, RelevantGenericItems.SitKit400 }, SitKit);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.DaTaunterLow, RelevantGenericItems.DaTaunterHigh }, DamageItem);
-                
+
                 RegisterItemProcessor(RelevantGenericItems.BracerofBrotherMalevolence, RelevantGenericItems.BracerofBrotherMalevolence, DamageItem);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
@@ -348,7 +352,7 @@ namespace CombatHandler.Generic
 
                 if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0) { return; }
 
-                SimpleChar fightingTarget = DynelManager.LocalPlayer.FightingTarget;
+                SimpleChar fightingTarget = DynelManager.LocalPlayer?.FightingTarget;
 
                 if (fightingTarget != null)
                 {
@@ -562,7 +566,7 @@ namespace CombatHandler.Generic
 
         public bool GenericTargetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
-            if (HealPercentage == 0)
+            if (Healing.TargetHealPercentage == 0)
             {
                 return false;
             }
@@ -573,7 +577,7 @@ namespace CombatHandler.Generic
             {
                 return false;
             }
-            if (healSelection == 1) 
+            if (healSelection == 1)
             {
                 if (Team.IsInTeam)
                 {
@@ -581,19 +585,19 @@ namespace CombatHandler.Generic
 
                     int count = DynelManager.Characters.Count(c =>
                         Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                        && c.HealthPercent <= HealPercentage && c.Health > 0);
+                        && c.HealthPercent <= Healing.TargetHealPercentage && c.Health > 0);
 
                     if (count >= 2)
                     {
                         return false;
                     }
                 }
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+                return FindMemberWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
             }
 
             if (healSelection == 2)
             {
-                return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
+                return FindPlayerWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
             }
 
             return false;
@@ -601,7 +605,7 @@ namespace CombatHandler.Generic
 
         public bool GenericTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
-            if (HealPercentage == 0)
+            if (Healing.TargetHealPercentage == 0)
             {
                 return false;
             }
@@ -621,14 +625,14 @@ namespace CombatHandler.Generic
 
                 int count = DynelManager.Characters.Count(c =>
                     Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                    && c.HealthPercent <= HealPercentage && c.Health > 0);
+                    && c.HealthPercent <= Healing.TargetHealPercentage && c.Health > 0);
 
                 shouldTeamHeal = (count > 2) || (healSelection == 3);
             }
 
             if (shouldTeamHeal)
             {
-                return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+                return FindMemberWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
             }
 
             return false;
@@ -1645,77 +1649,93 @@ namespace CombatHandler.Generic
 
         private void SpecialAttacks(SimpleChar target)
         {
-            foreach (SpecialAttack special in DynelManager.LocalPlayer.SpecialAttacks)
+            try
             {
-                if (!ShouldUseSpecialAttack(special))
-                {
-                    continue;
-                }
+                if (target == null) { return; }
 
-                if (!special.IsAvailable())
+                foreach (SpecialAttack special in DynelManager.LocalPlayer.SpecialAttacks)
                 {
-                    continue;
-                }
-
-                if (!special.IsInRange(target))
-                {
-                    continue;
-                }
-
-                if (special == SpecialAttack.FullAuto)
-                {
-                    if (special.IsAvailable())
+                    if (!ShouldUseSpecialAttack(special))
                     {
-                        Network.Send(new CharacterActionMessage()
-                        {
-                            Action = (CharacterActionType)210
-                        });
                         continue;
                     }
-                }
 
-                if (special == SpecialAttack.Burst)
-                {
-                    if (lastAttackInfoMessage.AmmoCount > 0)
+                    if (!special.IsAvailable())
                     {
-                        if (lastAttackInfoMessage.AmmoCount <= 3)
+                        continue;
+                    }
+
+                    if (!special.IsInRange(target))
+                    {
+                        continue;
+                    }
+
+                    if (special == SpecialAttack.FullAuto)
+                    {
+                        if (special.IsAvailable())
                         {
                             Network.Send(new CharacterActionMessage()
                             {
                                 Action = (CharacterActionType)210
                             });
-                        }
-                        else if (special.IsAvailable())
-                        {
                             continue;
                         }
                     }
-                    continue;
-                }
 
-                if (special == SpecialAttack.SneakAttack || special == SpecialAttack.AimedShot)
-                {
-                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sneak &&
-                        special.IsAvailable())
+                    if (special == SpecialAttack.Burst)
                     {
+                        if (lastAttackInfoMessage.AmmoCount > 0)
+                        {
+                            if (lastAttackInfoMessage.AmmoCount <= 3)
+                            {
+                                Network.Send(new CharacterActionMessage()
+                                {
+                                    Action = (CharacterActionType)210
+                                });
+                            }
+                            else if (special.IsAvailable())
+                            {
+                                continue;
+                            }
+                        }
                         continue;
                     }
-                    continue;
-                }
 
-                if (special == SpecialAttack.Backstab)
-                {
-                    if (special.IsAvailable() &&
-                        !DynelManager.LocalPlayer.FightingTarget.IsFacing(DynelManager.LocalPlayer))
+                    if (special == SpecialAttack.SneakAttack || special == SpecialAttack.AimedShot)
                     {
-                        
+                        if (DynelManager.LocalPlayer.MovementState == MovementState.Sneak &&
+                            special.IsAvailable())
+                        {
+                            continue;
+                        }
                         continue;
                     }
 
-                    continue;
-                }
+                    if (special == SpecialAttack.Backstab)
+                    {
+                        if (special.IsAvailable() &&
+                            !DynelManager.LocalPlayer.FightingTarget.IsFacing(DynelManager.LocalPlayer))
+                        {
 
-                special.UseOn(target);
+                            continue;
+                        }
+
+                        continue;
+                    }
+
+                    special.UseOn(target);
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
         }
 
@@ -1734,7 +1754,7 @@ namespace CombatHandler.Generic
 
         #region Checks
 
-        protected bool InNanoRange(SimpleChar target)
+        public static bool InNanoRange(SimpleChar target)
         {
             var nanoRange = DynelManager.LocalPlayer.GetStat(Stat.NanoRange);
 
@@ -1817,7 +1837,7 @@ namespace CombatHandler.Generic
             return DynelManager.LocalPlayer.RemainingNCU >= spell.NCU;
         }
 
-        protected bool CanCast(Spell spell)
+        public static bool CanCast(Spell spell)
         {
             if (Playfield.ModelIdentity.Instance == 152) { return false; }
 
@@ -1825,7 +1845,7 @@ namespace CombatHandler.Generic
 
             if (!Spell.List.Any(cast => cast.IsReady) || Spell.HasPendingCast) { return false; }
 
-            if (IsSettingEnabled("GlobalRez"))
+            if (_settings["GlobalRez"].AsBool())
             {
                 if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 1)
                 {
@@ -2413,18 +2433,49 @@ namespace CombatHandler.Generic
             CycleXpPerksDelay = e;
             Config.Save();
         }
-        public static void HealPercentage_Changed(object s, int e)
+
+        public static void TargetHealPercentage_Changed(object s, int e)
         {
-            Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = e;
-            HealPercentage = e;
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = e;
+            Healing.TargetHealPercentage = e;
             Config.Save();
         }
+
         public static void CompleteHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage = e;
-            CompleteHealPercentage = e;
+            Healing.CompleteHealPercentage = e;
             Config.Save();
         }
+
+        public static void FountainOfLifeHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = e;
+            Healing.FountainOfLifeHealPercentage = e;
+            Config.Save();
+        }
+
+        public static void TeamHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage = e;
+            Healing.TeamHealPercentage = e;
+            Config.Save();
+        }
+
+        public static void CompleteTeamHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage = e;
+            Healing.CompleteTeamHealPercentage = e;
+            Config.Save();
+        }
+
+        public static void TOTWPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].TOTWPercentage = e;
+            TOTWPercentage = e;
+            Config.Save();
+        }
+
         public static void HealthDrainPercentage_Changed(object s, int e)
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].HealthDrainPercentage = e;

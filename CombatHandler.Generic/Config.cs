@@ -29,11 +29,23 @@ namespace CombatHandler.Generic
         public int KitNanoPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage : 66;
         [JsonIgnore]
         public int HealthDrainPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].HealthDrainPercentage : 90;
+       
         [JsonIgnore]
-        public int HealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].HealPercentage : 90;
+        public int TargetHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage : 70;
+        
         [JsonIgnore]
         public int CompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage : 20;
+        
         [JsonIgnore]
+        public int FountainOfLifeHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage : 25;
+
+        [JsonIgnore]
+        public int TeamHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage : 90;
+
+        [JsonIgnore]
+        public int CompleteTeamHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage : 20;
+
+
         public int SingleTauntDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay : 1;
         [JsonIgnore]
         public int MongoDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].MongoDelay : 1;
@@ -58,21 +70,21 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int CycleWitOfTheAtroxPerkDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay : 1;
         [JsonIgnore]
-        public int SelfHealPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage : 75;
+        public int SelfHealPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage : 20;
         [JsonIgnore]
-        public int SelfNanoPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage : 75;
+        public int SelfNanoPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage : 20;
         [JsonIgnore]
-        public int TeamHealPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage : 65;
+        public int TeamHealPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage : 20;
         [JsonIgnore]
-        public int TeamNanoPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage : 65;
+        public int TeamNanoPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage :20;
         [JsonIgnore]
-        public int BattleGroupHeal1Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal1Percentage : 80;
+        public int BattleGroupHeal1Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal1Percentage : 60;
         [JsonIgnore]
-        public int BattleGroupHeal2Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal2Percentage : 70;
+        public int BattleGroupHeal2Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal2Percentage : 50;
         [JsonIgnore]
-        public int BattleGroupHeal3Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal3Percentage : 60;
+        public int BattleGroupHeal3Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal3Percentage : 40;
         [JsonIgnore]
-        public int BattleGroupHeal4Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4Percentage : 50;
+        public int BattleGroupHeal4Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4Percentage : 30;
         [JsonIgnore]
         public int DuckAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].DuckAbsorbsItemPercentage : 40;
         [JsonIgnore]
@@ -83,6 +95,10 @@ namespace CombatHandler.Generic
         public int CycleBioRegrowthDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay : 1;
         [JsonIgnore]
         public int BioRegrowthPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentage : 70;
+
+        [JsonIgnore]
+        public int TOTWPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TOTWPercentage : 35;
+
 
         #endregion
 
@@ -234,7 +250,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> SelfHealPerkPercentageChangedEvent;
-        private int _selfHealPerkPercentage = 75;
+        private int _selfHealPerkPercentage = 20;
         public int SelfHealPerkPercentage
         {
             get
@@ -251,7 +267,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> SelfNanoPerkPercentageChangedEvent;
-        private int _selfNanoPerkPercentage = 75;
+        private int _selfNanoPerkPercentage = 20;
         public int SelfNanoPerkPercentage
         {
             get
@@ -268,7 +284,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> TeamHealPerkPercentageChangedEvent;
-        private int _teamHealPerkPercentage = 65;
+        private int _teamHealPerkPercentage = 20;
         public int TeamHealPerkPercentage
         {
             get
@@ -285,7 +301,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> TeamNanoPerkPercentageChangedEvent;
-        private int _teamNanoPerkPercentage = 65;
+        private int _teamNanoPerkPercentage = 20;
         public int TeamNanoPerkPercentage
         {
             get
@@ -318,24 +334,28 @@ namespace CombatHandler.Generic
                 }
             }
         }
-        public event EventHandler<int> HealPercentageChangedEvent;
-        private int _healPercentage = 90;
-        public int HealPercentage
+
+        public event EventHandler<int> TargetHealPercentageChangedEvent;
+
+        private int _targetHealPercentage = 70;
+        public int TargetHealPercentage
         {
             get
             {
-                return _healPercentage;
+                return _targetHealPercentage;
             }
             set
             {
-                if (_healPercentage != value)
+                if (_targetHealPercentage != value)
                 {
-                    _healPercentage = value;
-                    HealPercentageChangedEvent?.Invoke(this, value);
+                    _targetHealPercentage = value;
+                    TargetHealPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }
+
         public event EventHandler<int> CompleteHealPercentageChangedEvent;
+
         private int _completeHealPercentage = 20;
         public int CompleteHealPercentage
         {
@@ -352,8 +372,66 @@ namespace CombatHandler.Generic
                 }
             }
         }
+
+        public event EventHandler<int> FountainOfLifeHealPercentageChangedEvent;
+
+        private int _fountainOfLifeHealPercentage = 20;
+        public int FountainOfLifeHealPercentage
+        {
+            get
+            {
+                return _fountainOfLifeHealPercentage;
+            }
+            set
+            {
+                if (_fountainOfLifeHealPercentage != value)
+                {
+                    _fountainOfLifeHealPercentage = value;
+                    FountainOfLifeHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
+        public event EventHandler<int> TeamHealPercentageChangedEvent;
+
+        private int _teamHealPercentage = 20;
+        public int TeamHealPercentage
+        {
+            get
+            {
+                return _teamHealPercentage;
+            }
+            set
+            {
+                if (_teamHealPercentage != value)
+                {
+                    _teamHealPercentage = value;
+                    TeamHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
+        public event EventHandler<int> CompleteTeamHealPercentageChangedEvent;
+
+        private int _completeTeamHealPercentage = 20;
+        public int CompleteTeamHealPercentage
+        {
+            get
+            {
+                return _completeTeamHealPercentage;
+            }
+            set
+            {
+                if (_completeTeamHealPercentage != value)
+                {
+                    _completeTeamHealPercentage = value;
+                    CompleteTeamHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
         public event EventHandler<int> BattleGroupHeal1PercentageChangedEvent;
-        private int _battleGroupHeal1Percentage = 80;
+        private int _battleGroupHeal1Percentage = 60;
         public int BattleGroupHeal1Percentage
         {
             get
@@ -370,7 +448,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> BattleGroupHeal2PercentageChangedEvent;
-        private int _battleGroupHeal2Percentage = 70;
+        private int _battleGroupHeal2Percentage = 50;
         public int BattleGroupHeal2Percentage
         {
             get
@@ -387,7 +465,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> BattleGroupHeal3PercentageChangedEvent;
-        private int _battleGroupHeal3Percentage = 60;
+        private int _battleGroupHeal3Percentage = 40;
         public int BattleGroupHeal3Percentage
         {
             get
@@ -404,7 +482,7 @@ namespace CombatHandler.Generic
             }
         }
         public event EventHandler<int> BattleGroupHeal4PercentageChangedEvent;
-        private int _battleGroupHeal4Percentage = 50;
+        private int _battleGroupHeal4Percentage = 30;
         public int BattleGroupHeal4Percentage
         {
             get
@@ -725,6 +803,24 @@ namespace CombatHandler.Generic
                 {
                     _bioRegrowthPercentage = value;
                     BioRegrowthPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
+        public event EventHandler<int> TOTWPercentageChangedEvent;
+        private int _tOTWPercentage = 35;
+        public int TOTWPercentage
+        {
+            get
+            {
+                return _tOTWPercentage;
+            }
+            set
+            {
+                if (_tOTWPercentage != value)
+                {
+                    _tOTWPercentage = value;
+                    TOTWPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

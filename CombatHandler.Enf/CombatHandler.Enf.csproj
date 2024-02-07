@@ -76,6 +76,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\EnforcerHealingView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\EnforcerItemsView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

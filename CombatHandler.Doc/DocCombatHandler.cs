@@ -6,9 +6,7 @@ using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Windows.Input;
 using static CombatHandler.Generic.PerkCondtionProcessors;
 
 namespace CombatHandler.Doctor
@@ -48,8 +46,14 @@ namespace CombatHandler.Doctor
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-                Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentageChangedEvent += HealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentageChangedEvent += TargetHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentageChangedEvent += TeamHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentageChangedEvent += CompleteTeamHealPercentage_Changed;
+
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TOTWPercentageChangedEvent += TOTWPercentage_Changed;
+
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
@@ -80,7 +84,7 @@ namespace CombatHandler.Doctor
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("TOTWBooks", true);
+                //_settings.AddVariable("TOTWBooks", true);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
@@ -93,7 +97,7 @@ namespace CombatHandler.Doctor
 
                 _settings.AddVariable("NanoTransmission", false);
 
-                _settings.AddVariable("HealSelection", (int)HealSelection.SingleTeam);
+                _settings.AddVariable("TeamHealSelection", (int)TeamHealSelection.TeamImprovedLifeChanneler);
 
                 _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
 
@@ -115,8 +119,9 @@ namespace CombatHandler.Doctor
 
                 _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
                 _settings.AddVariable("ShortHOT", false);
-                _settings.AddVariable("TeamImprovedLifeChanneler", true);
+                
                 _settings.AddVariable("SLMap", false);
+
 
                 _settings.AddVariable("CH", true);
                 _settings.AddVariable("LockCH", false);
@@ -124,19 +129,23 @@ namespace CombatHandler.Doctor
                 RegisterSettingsWindow("Doctor Handler", "DocSettingsView.xml");
 
                 //Healing
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(),
-                    CompleteHealing, CombatActionPriority.High);
+
                 RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.Heals,
-                           (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                           GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
-                           CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.CompleteTargetHealing, Healing.CompleteHealing, CombatActionPriority.High);
 
                 RegisterSpellProcessor(RelevantNanos.TeamHeals,
-                            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                            GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
-                            CombatActionPriority.High);
+                           (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                           TeamHealing(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
+                           CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler,
+                          (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                          TeamEnhancedDeathlessBlessing(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
+                          CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega,Healing.CompleteTeamHealing,CombatActionPriority.High);
 
                 //Epsilon Purge
                 RegisterSpellProcessor(RelevantNanos.EpsilonPurge, EpsilonPurge, CombatActionPriority.High);
@@ -171,8 +180,7 @@ namespace CombatHandler.Doctor
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
                 //Short Hp
-                RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth); //target
-                RegisterSpellProcessor(RelevantNanos.ImprovedLC, TeamImprovedLifeChanneler); //Team
+                RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
 
                 //Debuffs
                 RegisterSpellProcessor(RelevantNanos.InitDebuffs,
@@ -248,8 +256,14 @@ namespace CombatHandler.Doctor
 
                 PluginDirectory = pluginDir;
 
-                HealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage;
-                CompleteHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage;
+                Healing.TargetHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage;
+                Healing.CompleteHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage;
+                Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
+                Healing.TeamHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage;
+                Healing.CompleteTeamHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage;
+
+                TOTWPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TOTWPercentage;
+
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
                 StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
@@ -359,10 +373,12 @@ namespace CombatHandler.Doctor
 
                 window.FindView("SphereDelayBox", out TextInputView sphereInput);
                 window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                 window.FindView("BattleGroupHeal1PercentageBox", out TextInputView bgh1Input);
                 window.FindView("BattleGroupHeal2PercentageBox", out TextInputView bgh2Input);
                 window.FindView("BattleGroupHeal3PercentageBox", out TextInputView bgh3Input);
@@ -416,10 +432,12 @@ namespace CombatHandler.Doctor
 
                 container.FindView("SphereDelayBox", out TextInputView sphereInput);
                 container.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                container.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                container.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                container.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                container.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                container.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                container.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                container.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                 container.FindView("BattleGroupHeal1PercentageBox", out TextInputView bgh1Input);
                 container.FindView("BattleGroupHeal2PercentageBox", out TextInputView bgh2Input);
                 container.FindView("BattleGroupHeal3PercentageBox", out TextInputView bgh3Input);
@@ -470,25 +488,41 @@ namespace CombatHandler.Doctor
         private void HandleHealingViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
             if (window != null)
             {
-                //Do we need this?
                 if (window.Views.Contains(_healingView)) { return; }
 
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\DocHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "DocHealingView" }, _healingView);
 
-                window.FindView("HealPercentageBox", out TextInputView healInput);
-                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
+                window.FindView("TargetHealPercentageBox", out TextInputView TargetHealInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView CompleteHealInput);
+                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
+                window.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
 
-                if (healInput != null)
+                if (TargetHealInput != null)
                 {
-                    healInput.Text = $"{HealPercentage}";
+                    TargetHealInput.Text = $"{Healing.TargetHealPercentage}";
                 }
 
-                if (completeHealInput != null)
+                if (CompleteHealInput != null)
                 {
-                    completeHealInput.Text = $"{CompleteHealPercentage}";
+                    CompleteHealInput.Text = $"{Healing.CompleteHealPercentage}";
+                }
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (TeamHealInput != null)
+                {
+                    TeamHealInput.Text = $"{Healing.TeamHealPercentage}";
+                }
+                if (CompleteTeamHealInput != null)
+                {
+                    CompleteTeamHealInput.Text = $"{Healing.CompleteTeamHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -496,28 +530,41 @@ namespace CombatHandler.Doctor
                 SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "DocHealingView" }, _healingView, out var container);
                 _healingWindow = container;
 
-                container.FindView("HealPercentageBox", out TextInputView healInput);
-                container.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
+                container.FindView("TargetHealPercentageBox", out TextInputView TargetHealInput);
+                container.FindView("CompleteHealPercentageBox", out TextInputView CompleteHealInput);
+                container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                container.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
+                container.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
 
-                if (healInput != null)
+                if (TargetHealInput != null)
                 {
-                    healInput.Text = $"{HealPercentage}";
+                    TargetHealInput.Text = $"{Healing.TargetHealPercentage}";
                 }
 
-                if (completeHealInput != null)
+                if (CompleteHealInput != null)
                 {
-                    completeHealInput.Text = $"{CompleteHealPercentage}";
+                    CompleteHealInput.Text = $"{Healing.CompleteHealPercentage}";
+                }
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (TeamHealInput != null)
+                {
+                    TeamHealInput.Text = $"{Healing.TeamHealPercentage}";
+                }
+                if (CompleteTeamHealInput != null)
+                {
+                    CompleteTeamHealInput.Text = $"{Healing.CompleteTeamHealPercentage}";
                 }
             }
         }
-
         private void HandleDebuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_debuffView)) { return; }
 
                 _debuffView = View.CreateFromXml(PluginDirectory + "\\UI\\DocDebuffsView.xml");
@@ -534,7 +581,6 @@ namespace CombatHandler.Doctor
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\DocItemsView.xml");
@@ -547,6 +593,7 @@ namespace CombatHandler.Doctor
                 window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                window.FindView("TOTWItemPercentageBox", out TextInputView totwInput);
 
                 if (stimTargetInput != null)
                 {
@@ -575,6 +622,10 @@ namespace CombatHandler.Doctor
                 if (strengthInput != null)
                 {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
+                if (totwInput != null)
+                {
+                    totwInput.Text = $"{TOTWPercentage}";
                 }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
@@ -589,6 +640,7 @@ namespace CombatHandler.Doctor
                 container.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                 container.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                container.FindView("TOTWItemPercentageBox", out TextInputView totwInput);
 
                 if (stimTargetInput != null)
                 {
@@ -618,6 +670,10 @@ namespace CombatHandler.Doctor
                 {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
                 }
+                if (totwInput != null)
+                {
+                    totwInput.Text = $"{TOTWPercentage}";
+                }
             }
         }
         private void HandleProcViewClick(object s, ButtonBase button)
@@ -625,8 +681,6 @@ namespace CombatHandler.Doctor
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\DocProcsView.xml");
@@ -669,8 +723,12 @@ namespace CombatHandler.Doctor
 
                 if (window != null && window.IsValid)
                 {
-                    window.FindView("HealPercentageBox", out TextInputView healInput);
-                    window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
+                    window.FindView("TargetHealPercentageBox", out TextInputView TargetHealInput);
+                    window.FindView("CompleteHealPercentageBox", out TextInputView CompleteHealInput);
+                    window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                    window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
+                    window.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
+
                     window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                     window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
                     window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
@@ -678,35 +736,73 @@ namespace CombatHandler.Doctor
                     window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                     window.FindView("SphereDelayBox", out TextInputView sphereInput);
                     window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                    window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                    window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                    window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                    window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                    window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                     window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                    window.FindView("TOTWItemPercentageBox", out TextInputView totwInput);
+
                     window.FindView("BattleGroupHeal1PercentageBox", out TextInputView bg1Input);
                     window.FindView("BattleGroupHeal2PercentageBox", out TextInputView bg2Input);
                     window.FindView("BattleGroupHeal3PercentageBox", out TextInputView bg3Input);
                     window.FindView("BattleGroupHeal4PercentageBox", out TextInputView bg4Input);
 
-                    if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
+                    if (TargetHealInput != null && !string.IsNullOrEmpty(TargetHealInput.Text))
                     {
-                        if (int.TryParse(healInput.Text, out int healValue))
+                        if (int.TryParse(TargetHealInput.Text, out int healValue))
                         {
-                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage != healValue)
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage != healValue)
                             {
-                                Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = healValue;
+                                
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = healValue;
                             }
                         }
                     }
 
-                    if (completeHealInput != null && !string.IsNullOrEmpty(completeHealInput.Text))
+                    if (CompleteHealInput != null && !string.IsNullOrEmpty(CompleteHealInput.Text))
                     {
-                        if (int.TryParse(completeHealInput.Text, out int completeHealValue))
+                        if (int.TryParse(CompleteHealInput.Text, out int completeHealValue))
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage != completeHealValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage = completeHealValue;
+                            }
+                        }
+                    }
+
+                    if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
+                    {
+                        if (int.TryParse(FountainOfLifeInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = Value;
+                            }
+                        }
+                    }
+
+                    if (TeamHealInput != null && !string.IsNullOrEmpty(TeamHealInput.Text))
+                    {
+                        if (int.TryParse(TeamHealInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage = Value;
+                            }
+                        }
+                    }
+
+                    if (CompleteTeamHealInput != null && !string.IsNullOrEmpty(CompleteTeamHealInput.Text))
+                    {
+                        if (int.TryParse(CompleteTeamHealInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage = Value;
                             }
                         }
                     }
@@ -848,6 +944,17 @@ namespace CombatHandler.Doctor
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                            }
+                        }
+                    }
+
+                    if (totwInput != null && !string.IsNullOrEmpty(totwInput.Text))
+                    {
+                        if (int.TryParse(totwInput.Text, out int totwValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TOTWPercentage != totwValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TOTWPercentage = totwValue;
                             }
                         }
                     }
@@ -1034,21 +1141,58 @@ namespace CombatHandler.Doctor
 
         #region Healing
 
-        private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
-            if (!IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
+            int healSelection = _settings[selectionSetting].AsInt32();
 
-            if (IsSettingEnabled("LockCH")) { return false; }
+            if (healSelection == 1) { return false; }
 
-            return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
+            if (Healing.TeamHealPercentage == 0) { return false; }
+
+            if (!Team.IsInTeam) { return false; }
+
+            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+
+            var count = DynelManager.Characters.Count(c =>
+                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
+
+            if (count >= 2)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TeamEnhancedDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        {
+            int healSelection = _settings[selectionSetting].AsInt32();
+            
+            if (healSelection == 0) { return false; }
+            
+            if (Healing.TeamHealPercentage == 0) { return false; }
+
+            if (!Team.IsInTeam) { return false; }
+
+            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+
+            var count = DynelManager.Characters.Count(c =>
+                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
+
+            if (count >= 2)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("LockCH"))
+            if (_settings["LockCH"].AsBool())
             {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
@@ -1095,18 +1239,6 @@ namespace CombatHandler.Doctor
         #endregion
 
         #region Buffs
-
-        public bool TeamImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!_settings["TeamImprovedLifeChanneler"].AsBool()) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(275130))
-            {
-                return false;
-            }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
 
         private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1306,61 +1438,101 @@ namespace CombatHandler.Doctor
 
         private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TOTWBooks") || Item.HasPendingUse || Spell.List.Any(spell => spell.IsReady)
-                || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis))
+            if (TOTWPercentage == 0 || Item.HasPendingUse || Spell.List.Any(spell => spell.IsReady)
+               || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis) || fightingTarget == null)
             {
                 return false;
             }
 
             if (Team.IsInTeam)
             {
-                SimpleChar teamMember = null;
-                foreach (SimpleChar c in DynelManager.Players)
-                {
-                    if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                        && c.HealthPercent < 25
-                        && c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
-                        && c.Health > 0)
-                    {
-                        if (teamMember == null
-                            || c.HealthPercent < teamMember.HealthPercent
-                            || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
-                            || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
-                            || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
-                        {
-                            teamMember = c;
-                        }
-                    }
-                }
+                SimpleChar teamMember = DynelManager.Players
+                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && c.HealthPercent <= TOTWPercentage && c.IsInLineOfSight
+                        && InNanoRange(c)
+                        && c.IsAlive)
+                    .OrderBy(c => c.HealthPercent)
+                    .FirstOrDefault();
 
                 if (teamMember != null)
                 {
-                    actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = teamMember;
+                    actionTarget.ShouldSetTarget = true;
+
                     return true;
                 }
-
-                return false;
             }
-
-            if (DynelManager.LocalPlayer.HealthPercent < 25)
+            else
             {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
+                if (DynelManager.LocalPlayer.HealthPercent <= TOTWPercentage)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                    return true;
+                }
             }
 
             return false;
         }
 
+        //private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!IsSettingEnabled("TOTWBooks") || Item.HasPendingUse || Spell.List.Any(spell => spell.IsReady)
+        //        || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis) || fightingTarget == null)
+        //    {
+        //        return false;
+        //    }
+
+        //    if (Team.IsInTeam)
+        //    {
+        //        SimpleChar teamMember = null;
+
+        //        foreach (SimpleChar c in DynelManager.Players)
+        //        {
+        //            if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+        //                && c.HealthPercent <= TOTWPercentage
+        //                && c.IsInLineOfSight
+        //                && c.DistanceFrom(DynelManager.LocalPlayer) < 35f
+        //                && c.IsAlive)
+        //            {
+        //                if (teamMember == null
+        //                    || c.HealthPercent < teamMember.HealthPercent
+        //                    || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
+        //                    || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
+        //                    || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
+        //                {
+        //                    teamMember = c;
+        //                }
+        //            }
+        //        }
+
+        //        if (teamMember != null)
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = teamMember;
+        //            return true;
+        //        }
+
+        //        return false;
+        //    }
+
+        //    if (DynelManager.LocalPlayer.HealthPercent <= TOTWPercentage)
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = DynelManager.LocalPlayer;
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
+
         #endregion
 
         #region Misc
 
-        public enum HealSelection
+        public enum TeamHealSelection
         {
-            None, SingleTeam, SingleArea, Team
+            Teamheal, TeamImprovedLifeChanneler
         }
 
         public enum NukingSelection
@@ -1432,12 +1604,12 @@ namespace CombatHandler.Doctor
         private static class RelevantNanos
         {
 
-            public const int ImprovedLC = 275011;
+            public const int TeamImprovedLifeChanneler = 275011;
 
             public const int EpsilonPurge = 28659;
 
             public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
-                .Where(spell => spell.Id != ImprovedLC).ToArray();
+                .Where(spell => spell.Id != TeamImprovedLifeChanneler).ToArray();
 
             public const int TiredLimbs = 99578;
 
@@ -1447,6 +1619,7 @@ namespace CombatHandler.Doctor
             public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
 
             public const int AlphaAndOmega = 42409;
+            public static int[] CompleteTargetHealing = new[] { 270747, 28650 };
 
             public static int[] Heals = new[]
             { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,

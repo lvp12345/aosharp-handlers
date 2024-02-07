@@ -52,8 +52,12 @@ namespace CombatHandler.Agent
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-                Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentageChangedEvent += HealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentageChangedEvent += TargetHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
+                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentageChangedEvent += TeamHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentageChangedEvent += CompleteTeamHealPercentage_Changed;
+
+
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
@@ -97,10 +101,6 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.GrimReaper);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.LaserAim);
 
-                _settings.AddVariable("HealSelection", (int)HealSelection.None);
-
-                _settings.AddVariable("CH", false);
-
                 _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("ProcSelection", (int)ProcSelection.Damage);
@@ -112,17 +112,14 @@ namespace CombatHandler.Agent
                 RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
                 //Healing
-                RegisterSpellProcessor(RelevantNanos.CompleteHealing, CompleteHealing, CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.Heals,
-                           (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                           GenericTargetHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
-                           CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.CompleteHealing, Healing.CompleteHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, Healing.FountainOfLife, CombatActionPriority.High);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
-                            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                            GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
-                            CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), Healing.TeamHealing, CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, Healing.CompleteTeamHealing, CombatActionPriority.High);
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
@@ -213,8 +210,12 @@ namespace CombatHandler.Agent
 
                 PluginDirectory = pluginDir;
 
-                HealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage;
-                CompleteHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage;
+                Healing.TargetHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage;
+                Healing.CompleteHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage;
+                Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
+                Healing.TeamHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage;
+                Healing.CompleteTeamHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage;
+
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
                 StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
@@ -304,19 +305,33 @@ namespace CombatHandler.Agent
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
             {
@@ -332,22 +347,35 @@ namespace CombatHandler.Agent
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
                 if (stimTargetInput != null)
+                {
                     stimTargetInput.Text = $"{StimTargetName}";
+                }
                 if (stimHealthInput != null)
+                {
                     stimHealthInput.Text = $"{StimHealthPercentage}";
+                }
                 if (stimNanoInput != null)
+                {
                     stimNanoInput.Text = $"{StimNanoPercentage}";
+                }
                 if (kitHealthInput != null)
+                {
                     kitHealthInput.Text = $"{KitHealthPercentage}";
+                }
                 if (kitNanoInput != null)
+                {
                     kitNanoInput.Text = $"{KitNanoPercentage}";
+                }
                 if (bodyDevInput != null)
+                {
                     bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+                }
                 if (strengthInput != null)
+                {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
             }
         }
-
         private void HandlePerkViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -360,23 +388,36 @@ namespace CombatHandler.Agent
 
                 window.FindView("SphereDelayBox", out TextInputView sphereInput);
                 window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
             {
@@ -385,26 +426,38 @@ namespace CombatHandler.Agent
 
                 container.FindView("SphereDelayBox", out TextInputView sphereInput);
                 container.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                container.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                container.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                container.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                container.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                container.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                container.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                container.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
+                {
                     sphereInput.Text = $"{CycleSpherePerkDelay}";
+                }
                 if (witOfTheAtroxInput != null)
+                {
                     witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+                }
                 if (selfHealInput != null)
+                {
                     selfHealInput.Text = $"{SelfHealPerkPercentage}";
+                }
                 if (selfNanoInput != null)
+                {
                     selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+                }
                 if (teamHealInput != null)
+                {
                     teamHealInput.Text = $"{TeamHealPerkPercentage}";
+                }
                 if (teamNanoInput != null)
+                {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
             }
         }
-
         private void HandleProcViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -421,7 +474,6 @@ namespace CombatHandler.Agent
                 _procWindow = container;
             }
         }
-
         private void HandleFalseProfViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -438,8 +490,6 @@ namespace CombatHandler.Agent
                 _falseProfWindow = container;
             }
         }
-
-
         private void HandleMPSettingsViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -457,8 +507,6 @@ namespace CombatHandler.Agent
                 _mpWindow = container;
             }
         }
-
-
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -475,7 +523,6 @@ namespace CombatHandler.Agent
                 _buffWindow = container;
             }
         }
-
         private void HandleDebuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -490,7 +537,6 @@ namespace CombatHandler.Agent
                 _debuffWindow = container;
             }
         }
-
         private void HandleHealingViewClick(object s, ButtonBase button)
         {
 
@@ -502,28 +548,68 @@ namespace CombatHandler.Agent
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "AgentHealingView" }, _healingView);
 
-                window.FindView("HealPercentageBox", out TextInputView healInput);
-                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
+                window.FindView("TargetHealPercentageBox", out TextInputView TargetHealInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView CompleteHealInput);
+                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
+                window.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
 
-                if (healInput != null)
-                    healInput.Text = $"{HealPercentage}";
+                if (TargetHealInput != null)
+                {
+                    TargetHealInput.Text = $"{Healing.TargetHealPercentage}";
+                }
 
-                if (completeHealInput != null)
-                    completeHealInput.Text = $"{CompleteHealPercentage}";
+                if (CompleteHealInput != null)
+                {
+                    CompleteHealInput.Text = $"{Healing.CompleteHealPercentage}";
+                }
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (TeamHealInput != null)
+                {
+                    TeamHealInput.Text = $"{Healing.TeamHealPercentage}";
+                }
+                if (CompleteTeamHealInput != null)
+                {
+                    CompleteTeamHealInput.Text = $"{Healing.CompleteTeamHealPercentage}";
+                }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "AgentHealingView" }, _healingView, out var container);
                 _healingWindow = container;
 
-                container.FindView("HealPercentageBox", out TextInputView healInput);
-                container.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
+                container.FindView("TargetHealPercentageBox", out TextInputView TargetHealInput);
+                container.FindView("CompleteHealPercentageBox", out TextInputView CompleteHealInput);
+                container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                container.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
+                container.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
 
-                if (healInput != null)
-                    healInput.Text = $"{HealPercentage}";
+                if (TargetHealInput != null)
+                {
+                    TargetHealInput.Text = $"{Healing.TargetHealPercentage}";
+                }
 
-                if (completeHealInput != null)
-                    completeHealInput.Text = $"{CompleteHealPercentage}";
+                if (CompleteHealInput != null)
+                {
+                    CompleteHealInput.Text = $"{Healing.CompleteHealPercentage}";
+                }
+
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (TeamHealInput != null)
+                {
+                    TeamHealInput.Text = $"{Healing.TeamHealPercentage}";
+                }
+                if (CompleteTeamHealInput != null)
+                {
+                    CompleteTeamHealInput.Text = $"{Healing.CompleteTeamHealPercentage}";
+                }
             }
         }
 
@@ -532,7 +618,9 @@ namespace CombatHandler.Agent
         protected override void OnUpdate(float deltaTime)
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 1.2)
+            {
                 return;
+            }
 
             base.OnUpdate(deltaTime);
 
@@ -553,8 +641,12 @@ namespace CombatHandler.Agent
 
             if (window != null && window.IsValid)
             {
-                window.FindView("HealPercentageBox", out TextInputView healInput);
-                window.FindView("CompleteHealPercentageBox", out TextInputView completeHealInput);
+                window.FindView("TargetHealPercentageBox", out TextInputView TargetHealInput);
+                window.FindView("CompleteHealPercentageBox", out TextInputView CompleteHealInput);
+                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
+                window.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
+
                 window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                 window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
                 window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
@@ -562,86 +654,210 @@ namespace CombatHandler.Agent
                 window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                 window.FindView("SphereDelayBox", out TextInputView sphereInput);
                 window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
-                if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
-                    if (int.TryParse(healInput.Text, out int healValue))
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage != healValue)
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = healValue;
+                if (TargetHealInput != null && !string.IsNullOrEmpty(TargetHealInput.Text))
+                {
+                    if (int.TryParse(TargetHealInput.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage != healValue)
+                        {
 
-                if (completeHealInput != null && !string.IsNullOrEmpty(completeHealInput.Text))
-                    if (int.TryParse(completeHealInput.Text, out int completeHealValue))
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = healValue;
+                        }
+                    }
+                }
+
+                if (CompleteHealInput != null && !string.IsNullOrEmpty(CompleteHealInput.Text))
+                {
+                    if (int.TryParse(CompleteHealInput.Text, out int completeHealValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage != completeHealValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage = completeHealValue;
+                        }
+                    }
+                }
+
+                if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
+                {
+                    if (int.TryParse(FountainOfLifeInput.Text, out int Value))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage != Value)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = Value;
+                        }
+                    }
+                }
+
+                if (TeamHealInput != null && !string.IsNullOrEmpty(TeamHealInput.Text))
+                {
+                    if (int.TryParse(TeamHealInput.Text, out int Value))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage != Value)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage = Value;
+                        }
+                    }
+                }
+
+                if (CompleteTeamHealInput != null && !string.IsNullOrEmpty(CompleteTeamHealInput.Text))
+                {
+                    if (int.TryParse(CompleteTeamHealInput.Text, out int Value))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage != Value)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage = Value;
+                        }
+                    }
+                }
 
                 if (stimTargetInput != null)
+                {
                     if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                    {
                         Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
+                    }
+                }
 
                 if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
+                {
                     if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
+                        }
+                    }
+                }
 
                 if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
+                {
                     if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
+                        }
+                    }
+                }
 
                 if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                {
                     if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+                        }
+                    }
+                }
 
                 if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                {
                     if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+                        }
+                    }
+                }
 
                 if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
+                {
                     if (int.TryParse(sphereInput.Text, out int sphereValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
+                        }
+                    }
+                }
 
                 if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
+                {
                     if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+                        }
+                    }
+                }
 
                 if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
+                {
                     if (int.TryParse(selfHealInput.Text, out int selfHealValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
+                        }
+                    }
+                }
 
                 if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
+                {
                     if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
+                        }
+                    }
+                }
 
                 if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
+                {
                     if (int.TryParse(teamHealInput.Text, out int teamHealValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
+                        }
+                    }
+                }
 
                 if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
+                {
                     if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
+                        }
+                    }
+                }
 
                 if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
+                {
                     if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
+                        }
+                    }
+                }
 
                 if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
+                {
                     if (int.TryParse(strengthInput.Text, out int strengthValue))
+                    {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                        {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                        }
+                    }
+                }
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -795,30 +1011,6 @@ namespace CombatHandler.Agent
             }
         }
 
-        #region Healing
-
-        //private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || HealPercentage == 0) { return false; }
-
-        //    if (HealSelection.SingleTeam == (HealSelection)_settings["HealSelection"].AsInt32())
-        //        return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-        //    if (HealSelection.SingleArea == (HealSelection)_settings["HealSelection"].AsInt32())
-        //        return FindPlayerWithHealthBelow(HealPercentage, spell, ref actionTarget);
-
-        //    return false;
-        //}
-
-        private bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("CH") || CompleteHealPercentage == 0) { return false; }
-
-            return FindMemberWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
-        }
-
-        #endregion
-
         #region False Profs
 
         private bool FalseProfEnforcer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -969,14 +1161,6 @@ namespace CombatHandler.Agent
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
-        //private bool CritIncrease(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IsSettingEnabled("CritTeam"))
-        //        return GenericTeamBuff(spell, ref actionTarget);
-
-        //    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        //}
-
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ProcSelection.DeTaunt != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
@@ -1027,11 +1211,15 @@ namespace CombatHandler.Agent
                     .FirstOrDefault();
 
                 if (dyingTeamMember != null)
+                {
                     return dyingTeamMember;
+                }
             }
 
             if (DynelManager.LocalPlayer.HealthPercent < 90)
+            {
                 return DynelManager.LocalPlayer;
+            }
 
             Pet dyingPet = DynelManager.LocalPlayer.Pets
                  .Where(pet => pet.Character.HealthPercent < 90
@@ -1040,7 +1228,9 @@ namespace CombatHandler.Agent
                  .FirstOrDefault();
 
             if (dyingPet != null)
+            {
                 return dyingPet.Character;
+            }
 
             return null;
         }
@@ -1064,7 +1254,7 @@ namespace CombatHandler.Agent
             public static int AssassinsAimedShot = 275007;
             public static int SteadyNerves = 160795;
             public static int CompleteHealing = 28650;
-            public static int TeamCH = 42409; //Add logic later
+            public const int AlphaAndOmega = 42409;
             public const int TiredLimbs = 99578;
             public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder().Where(spell => spell.Id != TiredLimbs).ToArray();
             public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,

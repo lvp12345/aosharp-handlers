@@ -46,7 +46,8 @@ namespace CombatHandler.MartialArtist
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
-                Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentageChangedEvent += HealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentageChangedEvent += TargetHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
@@ -114,10 +115,10 @@ namespace CombatHandler.MartialArtist
 
                 //Heals
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
-                    Healing, CombatActionPriority.High);
+                    MAHealing, CombatActionPriority.High);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
-                    Healing, CombatActionPriority.High);
+                    MAHealing, CombatActionPriority.High);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
                             (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
@@ -223,7 +224,8 @@ namespace CombatHandler.MartialArtist
 
                 PluginDirectory = pluginDir;
 
-                HealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage;
+                Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
+                Healing.TargetHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage;
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
                 StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
@@ -298,7 +300,6 @@ namespace CombatHandler.MartialArtist
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\MAItemsView.xml");
@@ -396,10 +397,11 @@ namespace CombatHandler.MartialArtist
 
                 window.FindView("SphereDelayBox", out TextInputView sphereInput);
                 window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
                 {
@@ -433,10 +435,11 @@ namespace CombatHandler.MartialArtist
 
                 container.FindView("SphereDelayBox", out TextInputView sphereInput);
                 container.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                container.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                container.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                container.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                container.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                container.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                container.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                container.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                container.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
 
                 if (sphereInput != null)
                 {
@@ -469,7 +472,6 @@ namespace CombatHandler.MartialArtist
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\MAProcsView.xml");
@@ -481,13 +483,11 @@ namespace CombatHandler.MartialArtist
                 _procWindow = container;
             }
         }
-
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_buffView)) { return; }
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\MABuffsView.xml");
@@ -499,7 +499,6 @@ namespace CombatHandler.MartialArtist
                 _buffWindow = container;
             }
         }
-
         private void HandleSpecialAttacksViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -516,23 +515,26 @@ namespace CombatHandler.MartialArtist
                 _specialAttacksWindow = container;
             }
         }
-
         private void HandleHealingViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_healingView)) { return; }
 
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\MAHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "MAHealingView" }, _healingView);
 
                 window.FindView("HealPercentageBox", out TextInputView healInput);
+                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
 
                 if (healInput != null)
                 {
-                    healInput.Text = $"{HealPercentage}";
+                    healInput.Text = $"{Healing.TargetHealPercentage}";
+                }
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -541,20 +543,23 @@ namespace CombatHandler.MartialArtist
                 _healingWindow = container;
 
                 container.FindView("HealPercentageBox", out TextInputView healInput);
+                container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
 
                 if (healInput != null)
                 {
-                    healInput.Text = $"{HealPercentage}";
+                    healInput.Text = $"{Healing.TargetHealPercentage}";
+                }
+                if (FountainOfLifeInput != null)
+                {
+                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
                 }
             }
         }
-
         private void HandleTauntViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_tauntView)) { return; }
 
                 _tauntView = View.CreateFromXml(PluginDirectory + "\\UI\\MATauntsView.xml");
@@ -594,6 +599,7 @@ namespace CombatHandler.MartialArtist
 
                 if (window != null && window.IsValid)
                 {
+                    window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                     window.FindView("HealPercentageBox", out TextInputView healInput);
                     window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                     window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
@@ -602,20 +608,33 @@ namespace CombatHandler.MartialArtist
                     window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                     window.FindView("SphereDelayBox", out TextInputView sphereInput);
                     window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-                    window.FindView("SelfHealPercentageBox", out TextInputView selfHealInput);
-                    window.FindView("SelfNanoPercentageBox", out TextInputView selfNanoInput);
-                    window.FindView("TeamHealPercentageBox", out TextInputView teamHealInput);
-                    window.FindView("TeamNanoPercentageBox", out TextInputView teamNanoInput);
+
+                    window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
                     window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+                    if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
+                    {
+                        if (int.TryParse(FountainOfLifeInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = Value;
+                            }
+                        }
+                    }
 
                     if (healInput != null && !string.IsNullOrEmpty(healInput.Text))
                     {
                         if (int.TryParse(healInput.Text, out int healValue))
                         {
-                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage != healValue)
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage != healValue)
                             {
-                                Config.CharSettings[DynelManager.LocalPlayer.Name].HealPercentage = healValue;
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = healValue;
                             }
                         }
                     }
@@ -904,9 +923,9 @@ namespace CombatHandler.MartialArtist
 
         #region Healing
 
-        private bool Healing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MAHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HealPercentage == 0) { return false; }
+            if (Healing.TargetHealPercentage == 0) { return false; }
 
             if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
 
@@ -928,7 +947,7 @@ namespace CombatHandler.MartialArtist
                 return false;
             }
 
-            return FindMemberWithHealthBelow(HealPercentage, spell, ref actionTarget);
+            return FindMemberWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
         }
 
         #endregion

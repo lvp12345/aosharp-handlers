@@ -19,10 +19,10 @@
 			<TextView value="Team nano %" layout_borders="Rect(0,0,0,4)"/>
 		</View>
 		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(2,2,90,2)" max_size="Point(16000,-1)">
-			<TextInputView name="SelfHealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
-			<TextInputView name="SelfNanoPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
-			<TextInputView name="TeamHealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
-			<TextInputView name="TeamNanoPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
+			<TextInputView name="SelfHealPerkPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
+			<TextInputView name="SelfNanoPerkPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
+			<TextInputView name="TeamHealPerkPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
+			<TextInputView name="TeamNanoPerkPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(5,5,5,5)"/>
 		</View>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value="*Delay calculated as seconds." layout_borders="Rect(5,5,5,5)"/>

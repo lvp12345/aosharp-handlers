@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Windows.Interop;
 
 namespace SyncManager
 {
@@ -596,7 +595,9 @@ namespace SyncManager
 
         private void ProcessIDItem(UseMessage usableMsg)
         {
-            int[] ignoredItemIds = { 244655, 152028, 253187, 151693, 83919, 152029, 151692,253186, 83920, 291043, 204103, 204104, 204105, 204106, 204107,
+            int[] ignoredItemIds = { 301679, 85907, 85908, 267167, 305478, 206013, 204653, 245990, 204698, 206015, 305476, 156576, 
+                164780, 164781, 244204, 245323, 244214, 244216, 204593, 305493, 204595, 305491, 204598, 305495, 157296, 303179,
+                267168, 244655, 152028, 253187, 151693, 83919, 152029, 151692,253186, 83920, 291043, 204103, 204104, 204105, 204106, 204107,
                 303138, 303141, 303137, 204698, 204653, 206013, 267168, 267167, 305476, 305478, 303179 };
 
 

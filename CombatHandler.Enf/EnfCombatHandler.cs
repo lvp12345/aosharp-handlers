@@ -1069,7 +1069,7 @@ namespace CombatHandler.Enf
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && InNanoRange(c)
                         && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.Name != "Alien Heavy Patroller"
+                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
@@ -1089,7 +1089,7 @@ namespace CombatHandler.Enf
             if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.NormalTime > _singleTaunt + SingleTauntDelay)
             {
-                if (fightingTarget != null
+                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
                     && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
                     _singleTaunt = Time.NormalTime;
@@ -1108,11 +1108,11 @@ namespace CombatHandler.Enf
 
             SimpleChar mob = DynelManager.NPCs
                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                   && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f
+                   && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f && !debuffAreaTargetsToIgnore.Contains(c.Name)
                        && AttackingTeam(c))
                    .FirstOrDefault();
 
-            if (DynelManager.NPCs.Any(c => c.Health > 0 && c.Name == "Alien Heavy Patroller")) { return false; }
+            if (DynelManager.NPCs.Any(c => c.Health > 0)) { return false; }
 
             if (DynelManager.LocalPlayer.HealthPercent >= 30)
             {
@@ -1128,7 +1128,8 @@ namespace CombatHandler.Enf
                     }
                     if (_settings["MongoSelection"].AsInt32() == 2)
                     {
-                        if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f)
+                        if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f
+                            && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name))
                         {
                             _mongo = Time.NormalTime;
                             return true;

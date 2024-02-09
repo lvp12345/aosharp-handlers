@@ -116,6 +116,7 @@ namespace CombatHandler.Generic
                     "Green Tower",
                     "Blue Tower",
                     "Alien Cocoon",
+                    "Alien Coccoon",
                     "Outzone Supplier",
                     "Hollow Island Weed",
                     "Sheila Marlene",

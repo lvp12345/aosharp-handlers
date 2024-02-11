@@ -1112,8 +1112,6 @@ namespace CombatHandler.Enf
                        && AttackingTeam(c))
                    .FirstOrDefault();
 
-            if (DynelManager.NPCs.Any(c => c.Health > 0)) { return false; }
-
             if (DynelManager.LocalPlayer.HealthPercent >= 30)
             {
                 if (Time.NormalTime > _mongo + MongoDelay)

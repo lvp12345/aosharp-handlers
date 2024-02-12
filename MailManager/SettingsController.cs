@@ -61,9 +61,14 @@ namespace MailManager
                             settingsWindow.FindView("MailAmount", out TextInputView mailAmount);
 
                             if (mailCharacterName != null)
+                            {
                                 mailCharacterName.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterName}";
+                            }
+
                             if (mailAmount != null)
+                            {
                                 mailAmount.Text = $"{Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmount}";
+                            }
                         }
                     }
                     catch (Exception e)

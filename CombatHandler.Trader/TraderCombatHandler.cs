@@ -24,6 +24,7 @@ namespace CombatHandler.Trader
         private static Window _mezzWindow;
         private static Window _itemWindow;
         private static Window _perkWindow;
+        private static Window _petWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -32,6 +33,7 @@ namespace CombatHandler.Trader
         private static View _mezzView;
         private static View _itemView;
         private static View _perkView;
+        private static View _petView;
 
         private static SimpleChar _drainTarget;
 
@@ -95,6 +97,8 @@ namespace CombatHandler.Trader
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DebtCollection);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.UnopenedLetter);
+
+                _settings.AddVariable("PetSelection", (int)PetSelection.Boss);
 
                 _settings.AddVariable("LegShot", false);
 
@@ -323,6 +327,22 @@ namespace CombatHandler.Trader
             {
                 SettingsController.CreateSettingsTab(_debuffWindow, PluginDir, new WindowOptions() { Name = "Debuffs", XmlViewName = "TraderDebuffsView" }, _debuffView, out var container);
                 _debuffWindow = container;
+            }
+        }
+        private void HandlePetViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_petView)) { return; }
+
+                _petView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderPetsView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Pets", XmlViewName = "TraderPetsView" }, _petView);
+            }
+            else if (_petWindow == null || (_petWindow != null && !_petWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_petWindow, PluginDir, new WindowOptions() { Name = "Pets", XmlViewName = "TraderPetsView" }, _petView, out var container);
+                _petWindow = container;
             }
         }
         private void HandleHealingViewClick(object s, ButtonBase button)
@@ -846,6 +866,12 @@ namespace CombatHandler.Trader
                     {
                         perkView.Tag = SettingsController.settingsWindow;
                         perkView.Clicked = HandlePerkViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("PetsView", out Button petView))
+                    {
+                        petView.Tag = SettingsController.settingsWindow;
+                        petView.Clicked = HandlePetViewClick;
                     }
 
                     if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
@@ -1704,11 +1730,23 @@ namespace CombatHandler.Trader
 
         private bool PetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if ((PetSelection)_settings["PetSelection"].AsInt32() == PetSelection.None) { return false; }
             if (!CanCast(spell)) { return false; }
             if (fightingTarget == null) { return false; }
-            if (fightingTarget.MaxHealth < 1000000) { return false; }
 
-            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
+            if ((PetSelection)_settings["PetSelection"].AsInt32() == PetSelection.Target)
+            {
+                return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
+            }
+
+            if ((PetSelection)_settings["PetSelection"].AsInt32() == PetSelection.Boss)
+            {
+                if (fightingTarget.MaxHealth < 1000000) { return false; }
+
+                return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
+            }
+
+            return false;
         }
 
         protected void SyncPetCombat()
@@ -1865,6 +1903,11 @@ namespace CombatHandler.Trader
             Escrow = 1179599938,
             RefinanceLoans = 1145456965,
             PaymentPlan = 1348030540
+        }
+
+        public enum PetSelection
+        {
+            None, Target, Boss
         }
 
         #endregion

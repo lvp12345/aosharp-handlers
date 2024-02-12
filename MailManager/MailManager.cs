@@ -48,13 +48,13 @@ namespace MailManager
 
             Game.OnUpdate += OnUpdate;
 
-            _settings.AddVariable("Toggle", false);
+            _settings.AddVariable("Enable", false);
 
             Chat.RegisterCommand("mail", (string command, string[] param, ChatWindow chatWindow) =>
             {
                 if (!string.IsNullOrEmpty(MailCharacterName) && MailAmount > 0)
                 {
-                    _settings["Toggle"] = !_settings["Toggle"].AsBool();
+                    _settings["Enable"] = !_settings["Enable"].AsBool();
                     Chat.WriteLine("Sending..");
                 }
             });
@@ -71,7 +71,7 @@ namespace MailManager
                 Chat.WriteLine("/mailmanager for settings.");
             }
 
-            _settings["Toggle"] = false;
+            _settings["Enable"] = false;
 
             MailCharacterName = Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterName;
             MailAmount = Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmount;
@@ -141,11 +141,11 @@ namespace MailManager
                     writer.Write((short)PacketType.N3Message);
                     writer.Write((short)1);
                     writer.Write((short)0);
-                    writer.Write(DynelManager.LocalPlayer.Name);
+                    writer.Write(Game.ClientInst);
                     writer.Write((int)2);
                     writer.Write((int)N3MessageType.Mail);
                     writer.Write((int)IdentityType.SimpleChar);
-                    writer.Write(DynelManager.LocalPlayer.Name);
+                    writer.Write(Game.ClientInst);
                     writer.Write((byte)0);
 
                     //Body
@@ -174,7 +174,9 @@ namespace MailManager
                     byte mailInstance = reader.ReadByte();
 
                     if (mailInstance == 0)
+                    {
                         PopMail(reader);
+                    }
                 }
             }
         }
@@ -197,92 +199,99 @@ namespace MailManager
             reader.ReadInt32();
             reader.ReadByte();
 
-
             //Chat.WriteLine($"ID: {messageId} / From: {fromTitle} / Subject: {subjectTitle}");
             //Chat.WriteLine($"Mail populated.");
 
             if (_mailId == 0)
+            {
                 _mailId = messageId;
+            }
         }
-
 
 
         private void OnUpdate(object s, float deltaTime)
         {
-            if (!_settings["Toggle"].AsBool() && _init)
+            if (!_settings["Enable"].AsBool() || Game.IsZoning) { return; }
+            else
+            {
+                if (Time.AONormalTime > _mailOpenTimer)
+                {
+                    if (DynelManager.LocalPlayer.GetStat(Stat.Cash) == 0)
+                    {
+                        Task.Factory.StartNew(
+                            async () =>
+                            {
+                                if (!_init)
+                                {
+                                    Dynel _terminal = DynelManager.AllDynels.FirstOrDefault(c => c.Identity == IdentityType.MailTerminal);
+                                    await Task.Delay(1000);
+                                    _terminal?.Use();
+
+                                    _currentMailAmount = 0;
+                                    _init = true;
+                                }
+
+                                if (_mailId > 0)
+                                {
+                                    _currentMailAmount++;
+
+                                    if (_currentMailAmount >= MailAmount)
+                                    {
+                                        Chat.WriteLine($"Reached mail amount {MailAmount}.");
+                                        _settings["Enable"] = false;
+                                    }
+
+                                    Chat.WriteLine("Handling mail..");
+                                    await Task.Delay(1000);
+                                    ReadMail(_mailId);
+                                    Chat.WriteLine($"ReadMail: {_mailId}");
+                                    await Task.Delay(1100);
+                                    TakeAllMail(_mailId);
+                                    Chat.WriteLine($"TakeAllMail: {_mailId}");
+                                    await Task.Delay(1100);
+                                    DeleteMail(_mailId);
+                                    Chat.WriteLine($"DeleteMail: {_mailId}");
+                                    await Task.Delay(1100);
+                                    _mailId = 0;
+                                    await Task.Delay(2000);
+                                    ReadMail(0);
+                                    await Task.Delay(1000);
+                                }
+                            });
+                    }
+
+                    _mailOpenTimer = Time.AONormalTime + 3;
+                }
+
+                if (Time.AONormalTime > _mailSendTimer)
+                {
+                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.ComputerLiteracy))
+                    {
+                        if (DynelManager.LocalPlayer.GetStat(Stat.Cash) > 0)
+                        {
+                            Chat.WriteLine($"Sent {DynelManager.LocalPlayer.GetStat(Stat.Cash) - 200000} credits to {MailCharacterName}. {_currentMailAmount}/{MailAmount}");
+
+                            Network.Send(new MailMessage()
+                            {
+                                Unknown1 = 06,
+                                Recipient = $"{MailCharacterName}",
+                                Subject = "Sending creds.",
+                                Body = $"I've sent you {DynelManager.LocalPlayer.GetStat(Stat.Cash) - 200000} credits.",
+                                Item = Identity.None,
+                                Credits = DynelManager.LocalPlayer.GetStat(Stat.Cash) - 200000,
+                                Express = true
+                            });
+                        }
+                    }
+
+                    _mailSendTimer = Time.AONormalTime + 1;
+                }
+            }
+
+            if (!_settings["Enable"].AsBool() && _init)
             {
                 _currentMailAmount = 0;
                 _init = false;
-            }
-
-            if (_settings["Toggle"].AsBool() && !Game.IsZoning && Time.NormalTime > _mailOpenTimer + 10)
-            {
-                if (DynelManager.LocalPlayer.GetStat(Stat.Cash) == 0)
-                {
-                    Task.Factory.StartNew(
-                        async () =>
-                        {
-                            if (!_init)
-                            {
-                                Dynel _terminal = DynelManager.AllDynels.FirstOrDefault(c => c.Name == "Mail Terminal");
-                                await Task.Delay(500);
-                                if (_terminal != null)
-                                    _terminal.Use();
-
-                                _currentMailAmount = 0;
-                                _init = true;
-                            }
-
-                            if (_mailId > 0)
-                            {
-                                _currentMailAmount++;
-                                if (_currentMailAmount >= MailAmount)
-                                {
-                                    Chat.WriteLine($"Reached mail amount {MailAmount}.");
-                                    _settings["Toggle"] = false;
-                                }
-
-                                Chat.WriteLine("Handling mail..");
-                                await Task.Delay(500);
-                                ReadMail(_mailId);
-                                await Task.Delay(1000);
-                                TakeAllMail(_mailId);
-                                await Task.Delay(1000);
-                                DeleteMail(_mailId);
-                                await Task.Delay(1000);
-                                _mailId = 0;
-                                await Task.Delay(2000);
-                                ReadMail(0);
-                                await Task.Delay(1000);
-                            }
-                        });
-                }
-
-                _mailOpenTimer = Time.NormalTime;
-            }
-
-            if (_settings["Toggle"].AsBool() && !Game.IsZoning && Time.NormalTime > _mailSendTimer + 3)
-            {
-                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.ComputerLiteracy))
-                {
-                    if (DynelManager.LocalPlayer.GetStat(Stat.Cash) > 0)
-                    {
-                        Chat.WriteLine($"Sent {DynelManager.LocalPlayer.GetStat(Stat.Cash) - 200000} credits to {MailCharacterName}. {_currentMailAmount}/{MailAmount}");
-
-                        Network.Send(new MailMessage()
-                        {
-                            Unknown1 = 06,
-                            Recipient = $"{MailCharacterName}",
-                            Subject = "Sending creds.",
-                            Body = $"I've sent you {DynelManager.LocalPlayer.GetStat(Stat.Cash) - 200000} credits.",
-                            Item = Identity.None,
-                            Credits = DynelManager.LocalPlayer.GetStat(Stat.Cash) - 200000,
-                            Express = true
-                        });
-                    }
-                }
-
-                _mailSendTimer = Time.NormalTime;
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

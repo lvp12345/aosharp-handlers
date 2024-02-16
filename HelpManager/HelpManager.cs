@@ -237,7 +237,7 @@ namespace HelpManager
                 {
                     if (dynel.Name.Contains("Mine") || dynel.Name.Contains("Trap") || dynel.Name.Contains("Collision Spawn"))
                     {
-                        Debug.DrawSphere(dynel.Position, 1.0f, DebuggingColor.Red);
+                        Debug.DrawSphere(dynel.Position, dynel.Radius, DebuggingColor.Red);
                     }
                 }
             }

@@ -620,12 +620,12 @@ namespace CombatHandler.Enf
         {
             try
             {
-                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 0.5)
+                if (Game.IsZoning || Time.AONormalTime < _lastZonedTime + 0.5)
                     return;
 
                 base.OnUpdate(deltaTime);
 
-                if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+                if (Time.AONormalTime > _ncuUpdateTime + 1.0f)
                 {
                     RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -633,7 +633,7 @@ namespace CombatHandler.Enf
 
                     OnRemainingNCUMessage(0, ncuMessage);
 
-                    _ncuUpdateTime = Time.NormalTime;
+                    _ncuUpdateTime = Time.AONormalTime;
                 }
 
                 #region UI
@@ -1061,15 +1061,13 @@ namespace CombatHandler.Enf
             if (!CanCast(spell)) { return false; }
 
             if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
             {
                 SimpleChar mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && InNanoRange(c)
-                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
@@ -1078,7 +1076,7 @@ namespace CombatHandler.Enf
                 {
                     if (mob != null)
                     {
-                        _singleTaunt = Time.NormalTime;
+                        _singleTaunt = Time.AONormalTime;
                         actionTarget.ShouldSetTarget = true;
                         actionTarget.Target = mob;
                         return true;
@@ -1087,12 +1085,12 @@ namespace CombatHandler.Enf
             }
 
             if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
             {
                 if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
                     && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
-                    _singleTaunt = Time.NormalTime;
+                    _singleTaunt = Time.AONormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;
@@ -1114,13 +1112,13 @@ namespace CombatHandler.Enf
 
             if (DynelManager.LocalPlayer.HealthPercent >= 30)
             {
-                if (Time.NormalTime > _mongo + MongoDelay)
+                if (Time.AONormalTime > _mongo + MongoDelay)
                 {
                     if (_settings["MongoSelection"].AsInt32() == 1)
                     {
                         if (mob != null)
                         {
-                            _mongo = Time.NormalTime;
+                            _mongo = Time.AONormalTime;
                             return true;
                         }
                     }
@@ -1129,7 +1127,7 @@ namespace CombatHandler.Enf
                         if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f
                             && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name))
                         {
-                            _mongo = Time.NormalTime;
+                            _mongo = Time.AONormalTime;
                             return true;
                         }
                     }
@@ -1186,12 +1184,12 @@ namespace CombatHandler.Enf
 
         private bool CycleRage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CycleRage") && Time.NormalTime > _rage + CycleRageDelay
+            if (IsSettingEnabled("CycleRage") && Time.AONormalTime > _rage + CycleRageDelay
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
                 if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-                _rage = Time.NormalTime;
+                _rage = Time.AONormalTime;
                 return true;
             }
 
@@ -1202,12 +1200,12 @@ namespace CombatHandler.Enf
 
         private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CycleChallenger") && Time.NormalTime > _challenger + CycleChallengerDelay
+            if (IsSettingEnabled("CycleChallenger") && Time.AONormalTime > _challenger + CycleChallengerDelay
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
                 if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
 
-                _challenger = Time.NormalTime;
+                _challenger = Time.AONormalTime;
                 return true;
             }
 

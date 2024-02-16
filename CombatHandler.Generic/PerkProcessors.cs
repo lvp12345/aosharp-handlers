@@ -189,7 +189,7 @@ namespace CombatHandler.Generic
             if (DynelManager.LocalPlayer.HealthPercent <= SelfHealPerkPercentage)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
+                actionTarget.ShouldSetTarget = false;
                 return true;
             }
 

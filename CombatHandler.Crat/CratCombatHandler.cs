@@ -833,6 +833,11 @@ namespace CombatHandler.Bureaucrat
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
+                if (IsSettingEnabled("SyncPets"))
+                {
+                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
+                }
+
                 #region UI
 
                 var window = SettingsController.FindValidWindow(_windows);
@@ -1047,11 +1052,6 @@ namespace CombatHandler.Bureaucrat
                         PetFollow.Clicked = PetFollowClicked;
                     }
 
-                }
-
-                if (IsSettingEnabled("SyncPets"))
-                {
-                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
                 }
 
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)

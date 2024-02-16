@@ -95,6 +95,7 @@ namespace CombatHandler.Generic
 
         protected static HashSet<string> debuffAreaTargetsToIgnore = new HashSet<string>
         {
+                    //"Slayerdroid XXIV Turbo",
                     "Technological Officer Darwelsi",
                     "Immortal Guardian",
                     "Mature Abyss Orchid",
@@ -1611,7 +1612,7 @@ namespace CombatHandler.Generic
 
         protected void SynchronizePetCombatStateWithOwner(PetType attack, PetType support)
         {
-            if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastPetSyncTime > 1)
+            if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastPetSyncTime > 2.0)
             {
                 foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == attack || c.Type == support))
                 {
@@ -1624,22 +1625,28 @@ namespace CombatHandler.Generic
 
         protected void SynchronizePetCombatState(Pet pet)
         {
-            if (!DynelManager.LocalPlayer.IsAttacking && pet?.Character.IsAttacking == true)
-            {
-                pet?.Follow();
-            }
+            var petType = pet?.Character;
+            var localPlayer = DynelManager.LocalPlayer;
 
-            if (DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget != null)
+            if (localPlayer.IsAttacking)
             {
-                if (pet?.Character.IsAttacking == false)
+                if (petType.IsAttacking)
                 {
-                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                    if (petType.FightingTarget?.Identity != localPlayer.FightingTarget?.Identity)
+                    {
+                        pet?.Attack(localPlayer.FightingTarget.Identity);
+                    }
                 }
-
-                if (pet?.Character.IsAttacking == true && pet?.Character.FightingTarget != null
-                    && pet?.Character.FightingTarget.Identity != DynelManager.LocalPlayer.FightingTarget.Identity)
+                else
                 {
-                    pet?.Attack(DynelManager.LocalPlayer.FightingTarget.Identity);
+                    pet?.Attack(localPlayer.FightingTarget.Identity);
+                }
+            }
+            else
+            {
+                if (petType.IsAttacking)
+                {
+                    pet?.Follow();
                 }
             }
         }

@@ -1755,11 +1755,11 @@ namespace CombatHandler.Metaphysicist
             {
                 if ((PetMezzingSelection)_settings["PetMezzingSelection"].AsInt32() == PetMezzingSelection.Target)
                 {
-                        if (CanLookupPetsAfterZone() && Time.AONormalTime > _lastMezzPetMezzTime)
+                        if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastMezzPetMezzTime > 1)
                         {
                             SynchronizePetCombatState(mezzPet);
 
-                            _lastMezzPetMezzTime = Time.AONormalTime + 1;
+                            _lastMezzPetMezzTime = Time.AONormalTime;
                         }
                     }
                 else
@@ -1772,11 +1772,11 @@ namespace CombatHandler.Metaphysicist
                     }
                     else
                     {
-                        if (CanLookupPetsAfterZone() && Time.AONormalTime > _lastMezzPetMezzTime)
+                        if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastMezzPetMezzTime > 1)
                         {
                             SynchronizePetCombatState(mezzPet);
 
-                            _lastMezzPetMezzTime = Time.AONormalTime + 1;
+                            _lastMezzPetMezzTime = Time.AONormalTime;
                         }
                     }
                 }

@@ -130,7 +130,7 @@ namespace CombatHandler.Doctor
 
                 //Healing
 
-                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.CompleteTargetHealing, LockCH, CombatActionPriority.High);
 
                 RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.CompleteTargetHealing, Healing.CompleteHealing, CombatActionPriority.High);
@@ -1193,6 +1193,9 @@ namespace CombatHandler.Doctor
         {
             if (_settings["LockCH"].AsBool())
             {
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+
                 return true;
             }
 

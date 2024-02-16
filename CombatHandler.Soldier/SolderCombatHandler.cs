@@ -100,8 +100,8 @@ namespace CombatHandler.Soldier
                 _settings.AddVariable("RiotControl", false);
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.None);
-                _settings.AddVariable("TimedTauntsSelection", (int)TimedTauntsSelection.None);
+                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.Adds);
+                _settings.AddVariable("TimedTauntsSelection", (int)TimedTauntsSelection.Adds);
 
                 _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.None);
 
@@ -549,14 +549,14 @@ namespace CombatHandler.Soldier
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 0.6)
+            if (Game.IsZoning || Time.AONormalTime < _lastZonedTime + 0.6)
             {
                 return;
             }
 
             base.OnUpdate(deltaTime);
 
-            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+            if (Time.AONormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
 
@@ -564,7 +564,7 @@ namespace CombatHandler.Soldier
 
                 OnRemainingNCUMessage(0, ncuMessage);
 
-                _ncuUpdateTime = Time.NormalTime;
+                _ncuUpdateTime = Time.AONormalTime;
             }
 
             #region UI
@@ -940,57 +940,39 @@ namespace CombatHandler.Soldier
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                if (fightingTarget != null)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
-
-            if (SingleTauntsSelection.Boss == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                if (fightingTarget != null && fightingTarget?.MaxHealth > 1000000)
-                {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
-
-            if (SingleTauntsSelection.Area == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.NormalTime > _singleTaunt + SingleTauntDelay)
+            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
             {
                 SimpleChar mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget != null
-                        && c.FightingTarget?.Profession != Profession.Enforcer
+                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.Name != "Alien Heavy Patroller"
+                        && InNanoRange(c)
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
 
-                if (mob != null)
+                if (DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
-                    _singleTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = mob;
-                    return true;
+                    if (mob != null)
+                    {
+                        _singleTaunt = Time.AONormalTime;
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = mob;
+                        return true;
+                    }
                 }
-                else if (fightingTarget != null)
+            }
+
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
+            {
+                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
+                    && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
-                    _singleTaunt = Time.NormalTime;
+                    _singleTaunt = Time.AONormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;
@@ -1002,57 +984,39 @@ namespace CombatHandler.Soldier
 
         private bool TimedTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            if (TimedTauntsSelection.Target == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
-                && Time.NormalTime > _timedTaunt + TimedTauntDelay)
-            {
-                if (fightingTarget != null)
-                {
-                    _timedTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
-
-            if (TimedTauntsSelection.Boss == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
-                && Time.NormalTime > _timedTaunt + TimedTauntDelay)
-            {
-                if (fightingTarget != null && fightingTarget?.MaxHealth > 1000000)
-                {
-                    _timedTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
-            }
-
-            if (TimedTauntsSelection.Area == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
-                && Time.NormalTime > _timedTaunt + TimedTauntDelay)
+            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.AONormalTime > _timedTaunt + TimedTauntDelay)
             {
                 SimpleChar mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget != null
-                        && c.FightingTarget?.Profession != Profession.Enforcer
+                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.Name != "Alien Heavy Patroller"
+                        && InNanoRange(c)
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
 
-                if (mob != null)
+                if (DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
-                    _timedTaunt = Time.NormalTime;
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = mob;
-                    return true;
+                    if (mob != null)
+                    {
+                        _timedTaunt = Time.AONormalTime;
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = mob;
+                        return true;
+                    }
                 }
-                else if (fightingTarget != null)
+            }
+
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.AONormalTime > _timedTaunt + TimedTauntDelay)
+            {
+                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
+                    && DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
-                    _timedTaunt = Time.NormalTime;
+                    _timedTaunt = Time.AONormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;
@@ -1253,12 +1217,12 @@ namespace CombatHandler.Soldier
 
         public enum SingleTauntsSelection
         {
-            None, Target, Boss, Area
+            None, Target, Adds
         }
 
         public enum TimedTauntsSelection
         {
-            None, Target, Boss, Area
+            None, Target, Adds
         }
 
         public enum ProcType1Selection

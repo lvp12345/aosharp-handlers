@@ -118,7 +118,8 @@ namespace CombatHandler.Generic
 
             if (count >= 2)
             {
-                actionTarget.ShouldSetTarget = false;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 

@@ -140,6 +140,10 @@ namespace CombatHandler.Fixer
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
+                //Debuff removal
+                RegisterSpellProcessor(RelevantNanos.WakeUpCall, WakeUpCall);
+                RegisterSpellProcessor(RelevantNanos.RefactorNCUMatrix, RefactorNCUMatrix);
+
                 RegisterSpellProcessor(RelevantNanos.NCU, NCU);
 
                 //Spawn Armor
@@ -820,6 +824,58 @@ namespace CombatHandler.Fixer
             return false;
         }
 
+        protected bool WakeUpCall(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            SimpleChar target = DynelManager.Players
+            .FirstOrDefault(c => c.IsInLineOfSight
+                && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                && InNanoRange(c)
+                && c.Buffs.Contains(NanoLine.DOT_LineA)
+                || c.Buffs.Contains(NanoLine.DOT_LineB)
+                || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
+                || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
+                || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
+                || c.Buffs.Contains(NanoLine.Mezz)
+                || c.Buffs.Contains(NanoLine.InitiativeDebuffs)
+                || c.Buffs.Contains(NanoLine.NanoDrain_LineB)
+                || c.Buffs.Contains(NanoLine.Fear_PVP)
+                || c.Buffs.Contains(NanoLine.UnremovableSnare)
+                || c.Buffs.Contains((NanoLine)960));
+
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
+        }
+
+        protected bool RefactorNCUMatrix(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DOT_LineA) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DOT_LineB) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DOTAgentStrainA) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Mezz) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.InitiativeDebuffs) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DOTStrainC) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NanoDrain_LineB) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Fear_PVP) ||
+                DynelManager.LocalPlayer.Buffs.Contains(NanoLine.UnremovableSnare))
+            {
+                actionTarget.ShouldSetTarget = false;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region Debuffs
@@ -1049,6 +1105,8 @@ namespace CombatHandler.Fixer
             public const int GreaterPreservationMatrix = 275679;
             public const int SpinNanoweb = 85216;
             public const int IntenseAgglutinativeNanoweb = 223143;
+            public const int WakeUpCall = 279374;
+            public const int RefactorNCUMatrix = 275680;
 
             public static readonly int[] RKTargetRunspeed = { 93132, 93126, 93127, 93128, 93129, 93130, 93131, 93125 };
             public static readonly int[] RKTeamRunspeed = { 162595, 162589, 162603, 162593, 162599, 162591, 162597, 162601 };

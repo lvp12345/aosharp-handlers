@@ -95,6 +95,7 @@ namespace CombatHandler.Generic
 
         protected static HashSet<string> debuffAreaTargetsToIgnore = new HashSet<string>
         {
+                    "Dogmatic Pestilence",
                     //"Slayerdroid XXIV Turbo",
                     "Technological Officer Darwelsi",
                     "Immortal Guardian",
@@ -354,7 +355,7 @@ namespace CombatHandler.Generic
 
                 if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.0) { return; }
 
-                SimpleChar fightingTarget = DynelManager.LocalPlayer?.FightingTarget;
+                var fightingTarget = DynelManager.LocalPlayer?.FightingTarget;
 
                 if (fightingTarget != null)
                 {
@@ -366,10 +367,10 @@ namespace CombatHandler.Generic
 
                 #region UI
 
-                if (DynelManager.LocalPlayer.IsAttacking)
+                if (DynelManager.LocalPlayer.IsAttacking == true)
                 {
-                    var target = DynelManager.LocalPlayer.FightingTarget;
-                    if (target != null && DynelManager.Players.Any(p => p.Identity == target.Identity))
+                    var target = DynelManager.LocalPlayer?.FightingTarget;
+                    if (target != null && DynelManager.Players.Any(p => p.Identity == target?.Identity))
                     {
                         DynelManager.LocalPlayer.StopAttack();
                     }
@@ -566,45 +567,6 @@ namespace CombatHandler.Generic
 
         #region Healing
 
-        public bool GenericTargetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
-        {
-            if (Healing.TargetHealPercentage == 0)
-            {
-                return false;
-            }
-
-            int healSelection = _settings[selectionSetting].AsInt32();
-
-            if (healSelection == 0)
-            {
-                return false;
-            }
-            if (healSelection == 1)
-            {
-                if (Team.IsInTeam)
-                {
-                    int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
-
-                    int count = DynelManager.Characters.Count(c =>
-                        Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                        && c.HealthPercent <= Healing.TargetHealPercentage && c.Health > 0);
-
-                    if (count >= 2)
-                    {
-                        return false;
-                    }
-                }
-                return FindMemberWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
-            }
-
-            if (healSelection == 2)
-            {
-                return FindPlayerWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
-            }
-
-            return false;
-        }
-
         public bool GenericTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
             if (Healing.TargetHealPercentage == 0)
@@ -635,38 +597,6 @@ namespace CombatHandler.Generic
             if (shouldTeamHeal)
             {
                 return FindMemberWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
-            }
-
-            return false;
-        }
-
-        private bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-            {
-                SimpleChar teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent <= 30 && c.IsInLineOfSight
-                        && InNanoRange(c)
-                        && c.Health > 0)
-                    .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
-
-                if (teamMember != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = teamMember;
-                    return true;
-                }
-
-                return false;
-            }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 30)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
             }
 
             return false;
@@ -744,7 +674,7 @@ namespace CombatHandler.Generic
 
         protected bool PistolTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Team.IsInTeam && IsSettingEnabled("PistolTeam"))
+            if (Team.IsInTeam && _settings["PistolTeam"].AsBool())
             {
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
             }
@@ -1661,7 +1591,7 @@ namespace CombatHandler.Generic
             {
                 if (target == null) { return; }
 
-                foreach (SpecialAttack special in DynelManager.LocalPlayer.SpecialAttacks)
+                foreach (SpecialAttack special in DynelManager.LocalPlayer?.SpecialAttacks)
                 {
                     if (!ShouldUseSpecialAttack(special))
                     {
@@ -1722,13 +1652,20 @@ namespace CombatHandler.Generic
                     if (special == SpecialAttack.Backstab)
                     {
                         if (special.IsAvailable() &&
-                            !DynelManager.LocalPlayer.FightingTarget.IsFacing(DynelManager.LocalPlayer))
+                            !target.IsFacing(DynelManager.LocalPlayer))
                         {
-
                             continue;
                         }
 
                         continue;
+                    }
+
+                    if (special == SpecialAttack.Brawl)
+                    {
+                        if (special.IsAvailable() && special.IsInRange(target))
+                        {
+                            continue;
+                        }
                     }
 
                     special.UseOn(target);

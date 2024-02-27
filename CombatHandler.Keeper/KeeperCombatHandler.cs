@@ -59,6 +59,9 @@ namespace CombatHandler.Keeper
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentageChangedEvent += BioRegrowthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelayChangedEvent += CycleBioRegrowthPerkDelay_Changed;
 
+                _settings.AddVariable("AllPlayers", false);
+                _settings["AllPlayers"] = false;
+
                 _settings.AddVariable("Buffing", true);
                 _settings.AddVariable("Composites", true);
 

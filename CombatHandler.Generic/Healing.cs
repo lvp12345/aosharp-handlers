@@ -1,5 +1,4 @@
 ﻿using AOSharp.Core;
-using AOSharp.Core.UI;
 using System.Linq;
 
 namespace CombatHandler.Generic
@@ -19,6 +18,11 @@ namespace CombatHandler.Generic
         public static bool TargetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (TargetHealPercentage == 0) { return false; }
+
+            if (GenericCombatHandler._settings["AllPlayers"].AsBool())
+            {
+                return FindPlayerWithHealthBelow(TargetHealPercentage, spell, ref actionTarget);
+            }
 
             if (Team.IsInTeam)
             {
@@ -41,6 +45,11 @@ namespace CombatHandler.Generic
         {
             if (CompleteHealPercentage == 0) { return false; }
 
+            if (GenericCombatHandler._settings["AllPlayers"].AsBool())
+            {
+                return FindPlayerWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
+            }
+
             if (Team.IsInTeam)
             {
                 return FindMemberForTargetHeal(CompleteHealPercentage, spell, ref actionTarget);
@@ -61,6 +70,11 @@ namespace CombatHandler.Generic
         public static bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (FountainOfLifeHealPercentage == 0) { return false; }
+
+            if (GenericCombatHandler._settings["AllPlayers"].AsBool())
+            {
+                return FindPlayerWithHealthBelow(FountainOfLifeHealPercentage, spell, ref actionTarget);
+            }
 
             if (Team.IsInTeam)
             {

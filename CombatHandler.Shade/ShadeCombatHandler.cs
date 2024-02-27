@@ -28,6 +28,7 @@ namespace CombatHandler.Shade
         private static Window _itemWindow;
         private static Window _perkWindow;
         private static Window _healingWindow;
+        private static Window _specialAttacksWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -35,6 +36,7 @@ namespace CombatHandler.Shade
         private static View _itemView;
         private static View _perkView;
         private static View _healingView;
+        private static View _specialAttacksView;
 
         private static double _ncuUpdateTime;
 
@@ -64,6 +66,9 @@ namespace CombatHandler.Shade
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
+                _settings.AddVariable("AllPlayers", false);
+                _settings["AllPlayers"] = false;
+
                 _settings.AddVariable("Buffing", true);
                 _settings.AddVariable("Composites", true);
 
@@ -87,6 +92,13 @@ namespace CombatHandler.Shade
                 _settings.AddVariable("RunspeedTeam", false);
                 _settings.AddVariable("SLMap", false);
 
+                _settings.AddVariable("MASelection", (int)MASelection.StingoftheViper);
+                _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);
+                _settings.AddVariable("RiposteSelection", (int)RiposteSelection.None);
+                _settings.AddVariable("StrengthSelection", (int)StrengthSelection.None);
+                _settings.AddVariable("IntelligenceSelection", (int)IntelligenceSelection.None);
+                _settings.AddVariable("StaminaSelection", (int)StaminaSelection.None);
+
                 _settings.AddVariable("InitDebuffProc", false);
                 _settings.AddVariable("DamageProc", false);
                 _settings.AddVariable("DOTProc", false);
@@ -99,9 +111,10 @@ namespace CombatHandler.Shade
 
                 //Perks
                 RelevantPerks.SpiritPhylactery.ForEach(p => RegisterPerkProcessor(p, SpiritPhylacteryPerk));
-                RelevantPerks.TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk));
-                RelevantPerks.PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk));
-                RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
+                RelevantPerks.TotemicRites.ForEach(p => RegisterPerkProcessor(p, TotemicRitesPerk, CombatActionPriority.Medium));
+                RelevantPerks.PiercingMastery.ForEach(p => RegisterPerkProcessor(p, PiercingMasteryPerk, CombatActionPriority.Medium));
+                RegisterPerkProcessor(PerkHash.Symbiosis, SymbiosisPerk, CombatActionPriority.High);
+                RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.Low);
 
                 //Spells
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EmergencySneak).OrderByStackingOrder(), SmokeBombNano, CombatActionPriority.High);
@@ -150,7 +163,19 @@ namespace CombatHandler.Shade
 
                 //Items
                 RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
-                RegisterItemProcessor(RelevantItems.Sappo, RelevantItems.Sappo, Sappo);
+                
+                int maItem = _settings["MASelection"].AsInt32();
+                int dimachItem = _settings["DimachSelection"].AsInt32();
+                int riposteItem = _settings["RiposteSelection"].AsInt32();
+                int strengthItem = _settings["StrengthSelection"].AsInt32();
+                int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
+                int staminaItem = _settings["StaminaSelection"].AsInt32();
+                RegisterItemProcessor(maItem, maItem, MAItem);
+                RegisterItemProcessor(dimachItem, dimachItem, DimachItem);
+                RegisterItemProcessor(riposteItem, riposteItem, RiposteItem);
+                RegisterItemProcessor(strengthItem, strengthItem, StrengthItem);
+                RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
+                RegisterItemProcessor(staminaItem, staminaItem, StaminaItem);
 
                 //LE Proc
                 RegisterPerkProcessor(PerkHash.LEProcShadeBlackenedLegacy, LEProc1, CombatActionPriority.Low);
@@ -198,7 +223,7 @@ namespace CombatHandler.Shade
             }
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _healingWindow, _debuffWindow, _procWindow, _itemWindow, _perkWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _healingWindow, _debuffWindow, _specialAttacksWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
 
@@ -297,6 +322,22 @@ namespace CombatHandler.Shade
             {
                 SettingsController.CreateSettingsTab(_debuffWindow, PluginDir, new WindowOptions() { Name = "Debuffs", XmlViewName = "ShadeDebuffsView" }, _debuffView, out var container);
                 _debuffWindow = container;
+            }
+        }
+        private void HandleSpecialAttacksViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_specialAttacksView)) { return; }
+
+                _specialAttacksView = View.CreateFromXml(PluginDirectory + "\\UI\\ShadeSpecialAttacksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "ShadeSpecialAttacksView" }, _specialAttacksView);
+            }
+            else if (_specialAttacksWindow == null || (_specialAttacksWindow != null && !_specialAttacksWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_specialAttacksWindow, PluginDir, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "ShadeSpecialAttacksView" }, _specialAttacksView, out var container);
+                _specialAttacksWindow = container;
             }
         }
         private void HandlePerkViewClick(object s, ButtonBase button)
@@ -703,6 +744,12 @@ namespace CombatHandler.Shade
                     debuffView.Clicked = HandleDebuffViewClick;
                 }
 
+                if (SettingsController.settingsWindow.FindView("SpecialAttacksView", out Button specialAttacksView))
+                {
+                    specialAttacksView.Tag = SettingsController.settingsWindow;
+                    specialAttacksView.Clicked = HandleSpecialAttacksViewClick;
+                }
+
                 if (SettingsController.settingsWindow.FindView("ProcsView", out Button procView))
                 {
                     procView.Tag = SettingsController.settingsWindow;
@@ -872,15 +919,72 @@ namespace CombatHandler.Shade
 
         #region Items
 
-        private bool Sappo(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingtarget == null) { return false; }
+            item.Id = _settings["MASelection"].AsInt32();
 
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
             return true;
         }
+        private bool DimachItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["DimachSelection"].AsInt32();
 
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
+
+            return true;
+        }
+        private bool RiposteItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["RiposteSelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Riposte)) { return false; }
+
+            return true;
+        }
+        private bool StrengthItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["StrengthSelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
+
+            return true;
+        }
+        private bool IntelligenceItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["IntelligenceSelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Intelligence)) { return false; }
+
+            return true;
+        }
+        private bool StaminaItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["StaminaSelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Stamina)) { return false; }
+
+            return true;
+        }
 
         private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
@@ -906,12 +1010,14 @@ namespace CombatHandler.Shade
         #endregion
 
         #region Perks
+
         private bool PiercingMasteryPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
 
             // Don't PM if there are TR/SP chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.SpiritPhylactery.Contains(action.Hash)))) { return false; }
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && RelevantPerks.TotemicRites.Contains(action.Hash))) { return false; }
+            //|| RelevantPerks.SpiritPhylactery.Contains(action.Hash))
 
             if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))
                 return true;
@@ -921,8 +1027,8 @@ namespace CombatHandler.Shade
                 if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab))) { return false; }
             }
 
-            if (!(PerkAction.Find(PerkHash.Stab, out PerkAction perforate) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction lacerate))) { return true; }
-
+            if (!(PerkAction.Find(PerkHash.Perforate, out PerkAction perforate) && PerkAction.Find(PerkHash.Lacerate, out PerkAction lacerate))) { return true; }
+            
             if (perkAction.Hash == PerkHash.Impale)
             {
                 if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab || action == perforate || action == lacerate))) { return false; }
@@ -936,7 +1042,19 @@ namespace CombatHandler.Shade
             if (fightingTarget == null) { return false; }
 
             //Don't SP if there are TR/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) 
+            || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
+
+            return true;
+        }
+
+        private bool SymbiosisPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || PerkAction.List.Any(p => p.Hash == PerkHash.RitualOfDevotion && !p.IsAvailable)) { return false; }
+
+            if (PerkAction.List.Any(a => a.IsExecuting)) { return false; }
+
+            //actionTarget.ShouldSetTarget = true;
 
             return true;
         }
@@ -946,7 +1064,8 @@ namespace CombatHandler.Shade
             if (fightingTarget == null) { return false; }
 
             //Don't TR if there are SP/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash) || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash)
+            || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
 
             return true;
         }
@@ -1157,6 +1276,33 @@ namespace CombatHandler.Shade
                 PerkHash.UnsealedContagion,
                 PerkHash.CaptureVitality
             };
+        }
+
+        public enum MASelection
+        {
+            None, Sappo = 267525, StingoftheViper = 305542, ApeFistofKhalum = 204605, KarmicFist = 206191, Shen = 201281,
+            FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
+            AttackoftheSnake = 204330, AngelofNight = 204331
+        }
+        public enum DimachSelection
+        {
+            None, TouchOfSaiFung = 275018, TheWizdomofHuzzum = 303056, TreeofEnlightenment = 204607
+        }
+        public enum RiposteSelection
+        {
+            None, UponAWaveOfSummer = 205406, StampedeOfTheBoar = 305554
+        }
+        public enum StrengthSelection
+        {
+            None, Delirium = 267922
+        }
+        public enum IntelligenceSelection
+        {
+            None, Enigma = 267522
+        }
+        public enum StaminaSelection
+        {
+            None, InnerBalance = 267523
         }
 
         public enum ProcType1Selection

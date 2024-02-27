@@ -256,18 +256,22 @@ namespace CombatHandler.Generic
             {PerkHash.RibbonFlesh , PerkType.TargetDamage},
             {PerkHash.RighteousFury , PerkType.TargetDamage},
             {PerkHash.RighteousWrath , PerkType.TargetDamage},
+
             {PerkHash.RitualOfBlood , PerkType.Disabled},
             {PerkHash.RitualOfDevotion , PerkType.Disabled},
             {PerkHash.RitualOfSpirit , PerkType.Disabled},
             {PerkHash.RitualOfZeal , PerkType.Disabled},
+
             {PerkHash.SabotageQuarkField , PerkType.TargetDamage},
             {PerkHash.Sacrifice , PerkType.Disabled},
             {PerkHash.SealWounds , PerkType.Dot_Cleanse}, //Dots
             {PerkHash.SeismicSmash , PerkType.Disabled},
             {PerkHash.SeppukuSlash , PerkType.TargetDamage},
+
             {PerkHash.ShadowBullet , PerkType.TargetDamage},
             {PerkHash.ShadowKiller , PerkType.TargetDamage},
             {PerkHash.ShadowStab , PerkType.Disabled},
+
             {PerkHash.ShutdownRemoval , PerkType.NanoShutdown_Cleanse}, //Nano shutdown
             {PerkHash.SilentPlague , PerkType.TargetDamage},
             {PerkHash.SiphonBox , PerkType.Disabled},
@@ -293,7 +297,9 @@ namespace CombatHandler.Generic
             {PerkHash.SupressiveHorde , PerkType.DamageBuff},
             {PerkHash.Survival , PerkType.TeamHeal},
             {PerkHash.Sword , PerkType.TargetDamage},
-            {PerkHash.Symbiosis , PerkType.TargetDamage},
+
+            {PerkHash.Symbiosis , PerkType.Disabled},
+
             {PerkHash.TackyHack , PerkType.CombatBuff   },
             {PerkHash.TaintWounds , PerkType.TargetDamage},
             {PerkHash.TapNotumSource , PerkType.SelfNano},

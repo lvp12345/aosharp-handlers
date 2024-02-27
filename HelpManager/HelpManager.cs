@@ -22,12 +22,10 @@ namespace HelpManager
 
         public static Config Config { get; private set; }
 
-        private static Pet healpet;
-
         public static string PluginDirectory;
 
         private static double _sitPetUpdateTimer;
-        private static double _sitPetUsedTimer;
+
         private static double _shapeUsedTimer;
         private static double _morphPathingTimer;
         private static double _bellyPathingTimer;
@@ -73,7 +71,8 @@ namespace HelpManager
         {
             new Vector3(143.1f, 90.0f, 108.2f),
             new Vector3(156.1f, 90.0f, 102.3f),
-            new Vector3(178.0f, 90.0f, 97.6f)
+            new Vector3(178.0f, 90.0f, 97.6f),
+            new Vector3(132.0f, 90.0f, 117.0f),
         };
 
         List<Vector3> OutBellyPath = new List<Vector3>
@@ -229,15 +228,34 @@ namespace HelpManager
                 Kits kitsInstance = new Kits();
 
                 kitsInstance.SitAndUseKit();
+
+                if (Time.AONormalTime > _sitPetUpdateTimer + 2)
+                {
+                    if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
+                    {
+                        PetSitKit();
+                    }
+                    _sitPetUpdateTimer = Time.AONormalTime;
+                }
             }
 
             if (_settings["Traps"].AsBool())
             {
                 foreach (Dynel dynel in DynelManager.AllDynels.Where(d => DynelManager.LocalPlayer.Position.DistanceFrom(d.Position) < 60))
                 {
-                    if (dynel.Name.Contains("Mine") || dynel.Name.Contains("Trap") || dynel.Name.Contains("Collision Spawn"))
+                    if (dynel.Name.Contains("Mine") || dynel.Name.Contains("Trap") || dynel.Name.Contains("Collision Spawn")
+                        || dynel.Name == "Portal Warden" || dynel.Name == "Unstable Rift")
                     {
-                        Debug.DrawSphere(dynel.Position, dynel.Radius, DebuggingColor.Red);
+                        var rad = dynel.Radius;
+
+                        if (rad > 1)
+                        {
+                            Debug.DrawSphere(dynel.Position, rad, DebuggingColor.Red);
+                        }
+                        else
+                        {
+                            Debug.DrawSphere(dynel.Position, 1, DebuggingColor.Red);
+                        }
                     }
                 }
             }
@@ -259,23 +277,58 @@ namespace HelpManager
 
                 if (_settings["BellyPathing"].AsBool() && Time.AONormalTime > _bellyPathingTimer)
                 {
-                    Dynel Pustule = DynelManager.AllDynels
-                        .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 5f
-                            && x.Name == "Glowing Pustule")
-                        .FirstOrDefault();
+                    var Pustule = DynelManager.AllDynels
+                    .Where(x => x.Name == "Glowing Pustule")
+                    .FirstOrDefault();
 
-                    Pustule?.Use();
+                    var loaclPlayerPosition = DynelManager.LocalPlayer.Position;
 
-                    if (!MovementController.Instance.IsNavigating)
+                    var bellyRoom = Playfield.Rooms.FirstOrDefault(c => c.Name == "Abmouth's Stomach");
+                    var abbyRoom = Playfield.Rooms.FirstOrDefault(c => c.Name == "Abmouth Showdown");
+                    var playerRoom = DynelManager.LocalPlayer.Room;
+
+                    if (playerRoom == bellyRoom)
                     {
-                        if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(132.0f, 90.0f, 117.0f)) < 2f)
+                        if (Pustule != null)
                         {
-                            MovementController.Instance.SetPath(BellyPath);
+                            if (loaclPlayerPosition.DistanceFrom(Pustule.Position) > 5)
+                            {
+                                if (!MovementController.Instance.IsNavigating)
+                                {
+                                    if (loaclPlayerPosition.DistanceFrom(new Vector3(133.3458f, 90.01f, 118.7395f)) < 4f)
+                                    {
+                                        MovementController.Instance.SetDestination(new Vector3(131.9f, 90.0f, 104.8f));
+                                    }
+                                    else
+                                    {
+                                        MovementController.Instance.SetDestination(Pustule.Position);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (MovementController.Instance.IsNavigating)
+                                {
+                                    MovementController.Instance.Halt();
+                                }
+                                else
+                                {
+                                    Pustule.Use();
+                                }
+                            }
                         }
-
-                        if (DynelManager.LocalPlayer.Position.DistanceFrom(new Vector3(217.0f, 94.0f, 148.0f)) < 2f)
+                    }
+                    else
+                    {
+                        if (playerRoom == abbyRoom)
                         {
-                            MovementController.Instance.SetPath(OutBellyPath);
+                            if (!MovementController.Instance.IsNavigating)
+                            {
+                                if (loaclPlayerPosition.DistanceFrom(new Vector3(217.0f, 94.0f, 148.0f)) < 2f)
+                                {
+                                    MovementController.Instance.SetPath(OutBellyPath);
+                                }
+                            }
                         }
                     }
 
@@ -299,27 +352,30 @@ namespace HelpManager
                 }
             }
 
-            if (_settings["MorphPathing"].AsBool() && Time.AONormalTime > _morphPathingTimer + 2)
+            if (Playfield.ModelIdentity.Instance == 6015)
             {
-                if (!MovementController.Instance.IsNavigating)
+                if (_settings["MorphPathing"].AsBool() && Time.AONormalTime > _morphPathingTimer + 2)
                 {
-                    if (DynelManager.LocalPlayer.Buffs.Contains(281109))
+                    if (!MovementController.Instance.IsNavigating)
                     {
-                        Vector3 curr = DynelManager.LocalPlayer.Position;
+                        if (DynelManager.LocalPlayer.Buffs.Contains(281109))
+                        {
+                            Vector3 curr = DynelManager.LocalPlayer.Position;
 
-                        MovementController.Instance.SetPath(MorphBird);
-                        MovementController.Instance.AppendDestination(curr);
+                            MovementController.Instance.SetPath(MorphBird);
+                            MovementController.Instance.AppendDestination(curr);
+                        }
+
+                        if (DynelManager.LocalPlayer.Buffs.Contains(281108))
+                        {
+                            Vector3 curr = DynelManager.LocalPlayer.Position;
+
+                            MovementController.Instance.SetPath(MorphHorse);
+                            MovementController.Instance.AppendDestination(curr);
+                        }
                     }
-
-                    if (DynelManager.LocalPlayer.Buffs.Contains(281108))
-                    {
-                        Vector3 curr = DynelManager.LocalPlayer.Position;
-
-                        MovementController.Instance.SetPath(MorphHorse);
-                        MovementController.Instance.AppendDestination(curr);
-                    }
+                    _morphPathingTimer = Time.AONormalTime;
                 }
-                _morphPathingTimer = Time.AONormalTime;
             }
 
             if (Time.AONormalTime > _zixMorphTimer + 3)
@@ -330,15 +386,6 @@ namespace HelpManager
                 }
 
                 _zixMorphTimer = Time.AONormalTime;
-            }
-
-            if (Time.AONormalTime > _sitPetUpdateTimer + 2)
-            {
-                if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
-                {
-                    ListenerPetSit();
-                }
-                _sitPetUpdateTimer = Time.AONormalTime;
             }
 
             #region UI
@@ -520,33 +567,37 @@ namespace HelpManager
             }
         }
 
-        private void ListenerPetSit()
+        private void PetSitKit()
         {
             Kits kits = new Kits();
-            healpet = DynelManager.LocalPlayer.Pets.Where(x => x.Type == PetType.Heal).FirstOrDefault();
-
-            Item kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.Id)).FirstOrDefault();
+            var healpet = DynelManager.LocalPlayer.Pets.Where(x => x.Type == PetType.Heal).FirstOrDefault();
+            var kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.Id)).FirstOrDefault();
 
             if (healpet == null || kit == null) { return; }
 
-            if (_settings["AutoSit"].AsBool())
+            if (kits.CanUseSitKit() && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f 
+                && healpet.Character.IsInLineOfSight)
             {
-                if (kits.CanUseSitKit() && Time.AONormalTime > _sitPetUsedTimer + 16
-                    && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f && healpet.Character.IsInLineOfSight)
+                if (healpet.Character.NanoPercent <= 75)
                 {
-                    if (healpet.Character.Nano == 10) { return; }
-
-                    if (healpet.Character.Nano / PetMaxNanoPool() * 100 > 55) { return; }
-
-                    MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-
-                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit
-                        && DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
                     {
+                        if (DynelManager.LocalPlayer.MovementState != MovementState.Sit)
+                        {
+                            MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
+                        }
+                        else
+                        {
 
-                        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-
-                        _sitPetUsedTimer = Time.AONormalTime;
+                            kit.Use(healpet.Character, true);
+                        }
+                    }
+                    else
+                    {
+                        if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
+                        {
+                            MovementController.Instance.SetMovement(MovementAction.LeaveSit);
+                        }
                     }
                 }
             }
@@ -563,31 +614,6 @@ namespace HelpManager
             }
         }
 
-        private float PetMaxNanoPool()
-        {
-            if (healpet.Character.Level == 215)
-                return 5803;
-            else if (healpet.Character.Level == 192)
-                return 13310;
-            else if (healpet.Character.Level == 169)
-                return 11231;
-            else if (healpet.Character.Level == 146)
-                return 9153;
-            else if (healpet.Character.Level == 123)
-                return 7169;
-            else if (healpet.Character.Level == 99)
-                return 5327;
-            else if (healpet.Character.Level == 77)
-                return 3807;
-            else if (healpet.Character.Level == 55)
-                return 2404;
-            else if (healpet.Character.Level == 33)
-                return 1234;
-            else if (healpet.Character.Level == 14)
-                return 414;
-
-            return 0;
-        }
         private static class RelevantNanos
         {
             public static readonly int[] ZixMorph = { 288532, 302212 };

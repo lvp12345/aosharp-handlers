@@ -72,6 +72,9 @@ namespace CombatHandler.Doctor
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal3PercentageChangedEvent += BattleGroupHeal3Percentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal4PercentageChangedEvent += BattleGroupHeal4Percentage_Changed;
 
+                _settings.AddVariable("AllPlayers", false);
+                _settings["AllPlayers"] = false;
+
                 _settings.AddVariable("Buffing", true);
                 _settings.AddVariable("Composites", true);
 
@@ -83,8 +86,6 @@ namespace CombatHandler.Doctor
                 _settings.AddVariable("Grenades", false);
 
                 _settings.AddVariable("TauntTool", false);
-
-                //_settings.AddVariable("TOTWBooks", true);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
 
@@ -119,7 +120,7 @@ namespace CombatHandler.Doctor
 
                 _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
                 _settings.AddVariable("ShortHOT", false);
-                
+
                 _settings.AddVariable("SLMap", false);
 
 
@@ -142,10 +143,10 @@ namespace CombatHandler.Doctor
 
                 RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler,
                           (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                          TeamEnhancedDeathlessBlessing(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
+                          TeamImprovedLifeChannelerAsTeamHeal(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
                           CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega,Healing.CompleteTeamHealing,CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, Healing.CompleteTeamHealing, CombatActionPriority.High);
 
                 //Epsilon Purge
                 RegisterSpellProcessor(RelevantNanos.EpsilonPurge, EpsilonPurge, CombatActionPriority.High);
@@ -180,6 +181,7 @@ namespace CombatHandler.Doctor
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
 
                 //Short Hp
+                RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler, TeamImprovedLifeChanneler);
                 RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
 
                 //Debuffs
@@ -757,7 +759,7 @@ namespace CombatHandler.Doctor
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage != healValue)
                             {
-                                
+
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = healValue;
                             }
                         }
@@ -1165,12 +1167,12 @@ namespace CombatHandler.Doctor
             return false;
         }
 
-        private bool TeamEnhancedDeathlessBlessing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        private bool TeamImprovedLifeChannelerAsTeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
         {
             int healSelection = _settings[selectionSetting].AsInt32();
-            
+
             if (healSelection == 0) { return false; }
-            
+
             if (Healing.TeamHealPercentage == 0) { return false; }
 
             if (!Team.IsInTeam) { return false; }
@@ -1243,16 +1245,32 @@ namespace CombatHandler.Doctor
 
         #region Buffs
 
+        private bool TeamImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ShortHpSelection.TILC == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(275130)) { return false; }
+
+                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
         private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
+
+            if (ShortHpSelection.Self == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
+            {
+                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
 
             if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32() && Team.IsInTeam)
             {
                 return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            return false;
         }
 
         #endregion
@@ -1560,7 +1578,7 @@ namespace CombatHandler.Doctor
         }
         public enum ShortHpSelection
         {
-            None, Self, Team
+            None, Self, Team, TILC
         }
 
         public enum InitBuffSelection

@@ -5,9 +5,6 @@ using System.Linq;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.Movement;
 using System.Collections.Generic;
-using System.Security.Policy;
-using AOSharp.Core.UI;
-using CombatHandler.Generic;
 
 namespace HelpManager
 {

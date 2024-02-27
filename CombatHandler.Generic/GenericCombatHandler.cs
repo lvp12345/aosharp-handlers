@@ -1835,6 +1835,8 @@ namespace CombatHandler.Generic
 
             if (DynelManager.LocalPlayer.Buffs.Find(nanoline, out Buff buff))
             {
+                if (nanoline == NanoLine.FixerNCUBuff && buff.RemainingTime < 300f) return true;
+
                 if (spell.StackingOrder < buff.StackingOrder || DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
 
                 if (spell.StackingOrder == buff.StackingOrder && buff.RemainingTime > 20f) { return false; }

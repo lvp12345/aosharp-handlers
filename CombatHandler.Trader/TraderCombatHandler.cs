@@ -70,6 +70,9 @@ namespace CombatHandler.Trader
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
 
+                _settings.AddVariable("AllPlayers", false);
+                _settings["AllPlayers"] = false;
+
                 _settings.AddVariable("Buffing", true);
                 _settings.AddVariable("Composites", true);
 

@@ -73,6 +73,9 @@ namespace CombatHandler.Engineer
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentageChangedEvent += BioRegrowthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelayChangedEvent += CycleBioRegrowthPerkDelay_Changed;
 
+                _settings.AddVariable("AllPlayers", false);
+                _settings["AllPlayers"] = false;
+
                 _settings.AddVariable("Buffing", true);
                 _settings.AddVariable("Composites", true);
 
@@ -184,9 +187,7 @@ namespace CombatHandler.Engineer
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => NonCombatBuff(spell, ref actionTarget, fightingTarget, "ShadowlandReflectBase"));
 
-                RegisterSpellProcessor(RelevantNanos.EngineeringBuff,
-                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, "MEBuff"));
+                RegisterSpellProcessor(RelevantNanos.EngineeringBuff, MechanicalEngineering);
 
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
@@ -1306,6 +1307,23 @@ namespace CombatHandler.Engineer
         #endregion
 
         #region Buffs
+
+
+        private bool MechanicalEngineering(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["MEBuff"].AsBool()) { return false; }
+
+            if (fightingTarget != null) { return false; }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.EngineeringBuff))
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+
+            return false;
+        }
 
         private bool SettingPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
         {

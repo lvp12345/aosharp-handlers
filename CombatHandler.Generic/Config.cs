@@ -34,16 +34,16 @@ namespace CombatHandler.Generic
         public int TargetHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage : 70;
         
         [JsonIgnore]
-        public int CompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage : 20;
+        public int CompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage : 35;
         
         [JsonIgnore]
-        public int FountainOfLifeHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage : 25;
+        public int FountainOfLifeHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage : 30;
 
         [JsonIgnore]
         public int TeamHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage : 90;
 
         [JsonIgnore]
-        public int CompleteTeamHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage : 20;
+        public int CompleteTeamHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage : 35;
 
 
         public int SingleTauntDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay : 1;
@@ -356,7 +356,7 @@ namespace CombatHandler.Generic
 
         public event EventHandler<int> CompleteHealPercentageChangedEvent;
 
-        private int _completeHealPercentage = 20;
+        private int _completeHealPercentage = 35;
         public int CompleteHealPercentage
         {
             get
@@ -375,7 +375,7 @@ namespace CombatHandler.Generic
 
         public event EventHandler<int> FountainOfLifeHealPercentageChangedEvent;
 
-        private int _fountainOfLifeHealPercentage = 20;
+        private int _fountainOfLifeHealPercentage = 30;
         public int FountainOfLifeHealPercentage
         {
             get
@@ -394,7 +394,7 @@ namespace CombatHandler.Generic
 
         public event EventHandler<int> TeamHealPercentageChangedEvent;
 
-        private int _teamHealPercentage = 20;
+        private int _teamHealPercentage = 90;
         public int TeamHealPercentage
         {
             get
@@ -413,7 +413,7 @@ namespace CombatHandler.Generic
 
         public event EventHandler<int> CompleteTeamHealPercentageChangedEvent;
 
-        private int _completeTeamHealPercentage = 20;
+        private int _completeTeamHealPercentage = 35;
         public int CompleteTeamHealPercentage
         {
             get

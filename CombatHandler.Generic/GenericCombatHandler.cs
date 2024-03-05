@@ -1649,16 +1649,16 @@ namespace CombatHandler.Generic
                         continue;
                     }
 
-                    if (special == SpecialAttack.Backstab)
-                    {
-                        if (special.IsAvailable() &&
-                            !target.IsFacing(DynelManager.LocalPlayer))
-                        {
-                            continue;
-                        }
+                    //if (special == SpecialAttack.Backstab)
+                    //{
+                    //    if (special.IsAvailable() &&
+                    //        !target.IsFacing(DynelManager.LocalPlayer))
+                    //    {
+                    //        continue;
+                    //    }
 
-                        continue;
-                    }
+                    //    continue;
+                    //}
 
                     if (special == SpecialAttack.Brawl)
                     {

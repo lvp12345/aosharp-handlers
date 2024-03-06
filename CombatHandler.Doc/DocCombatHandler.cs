@@ -131,7 +131,7 @@ namespace CombatHandler.Doctor
 
                 //Healing
 
-                RegisterSpellProcessor(RelevantNanos.CompleteTargetHealing, LockCH, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
 
                 RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.CompleteTargetHealing, Healing.CompleteHealing, CombatActionPriority.High);

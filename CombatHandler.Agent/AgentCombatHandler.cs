@@ -1190,10 +1190,11 @@ namespace CombatHandler.Agent
         {
             if (Time.NormalTime - _lastSwitchedHealTime > 5)
             {
-                SimpleChar dyingTarget = GetTargetToHeal();
+                var dyingTarget = GetTargetToHeal();
                 if (dyingTarget != null)
                 {
-                    Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal).FirstOrDefault();
+                    var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal).FirstOrDefault();
+
                     if (healPet != null)
                     {
                         healPet.Heal(dyingTarget.Identity);
@@ -1207,7 +1208,7 @@ namespace CombatHandler.Agent
         {
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar dyingTeamMember = DynelManager.Players
+                var dyingTeamMember = DynelManager.Players
                     .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent < 90)
                     .OrderBy(c => c.HealthPercent)
@@ -1224,7 +1225,7 @@ namespace CombatHandler.Agent
                 return DynelManager.LocalPlayer;
             }
 
-            Pet dyingPet = DynelManager.LocalPlayer.Pets
+            var dyingPet = DynelManager.LocalPlayer.Pets
                  .Where(pet => pet.Character.HealthPercent < 90
                     && (pet.Type == PetType.Attack || pet.Type == PetType.Social))
                  .OrderBy(pet => pet.Character.HealthPercent)

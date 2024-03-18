@@ -1219,10 +1219,10 @@ namespace CombatHandler.Doctor
         {
             if (!IsSettingEnabled("EpsilonPurge")) { return false; }
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.IsInLineOfSight
             && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-            && InNanoRange(c)
+            && spell.IsInRange(c)
             && c.Buffs.Contains(NanoLine.DOT_LineA)
             || c.Buffs.Contains(NanoLine.DOT_LineB)
             || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
@@ -1303,7 +1303,7 @@ namespace CombatHandler.Doctor
 
         public static bool HaleandHearty(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
            .Where(c => HaleandHeartyDebuffs(c))
            .FirstOrDefault();
 
@@ -1327,7 +1327,7 @@ namespace CombatHandler.Doctor
                 }
             }
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => HaleandHeartyDebuffs(c))
             .FirstOrDefault();
 
@@ -1430,7 +1430,7 @@ namespace CombatHandler.Doctor
 
             if (Team.IsInTeam)
             {
-                List<SimpleChar> dyingTeamMember = DynelManager.Players
+                var dyingTeamMember = DynelManager.Players
                     .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                                 && c.HealthPercent <= healthPercentage)
                     .ToList();
@@ -1467,10 +1467,10 @@ namespace CombatHandler.Doctor
 
             if (Team.IsInTeam)
             {
-                SimpleChar teamMember = DynelManager.Players
+                var teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= TOTWPercentage && c.IsInLineOfSight
-                        && InNanoRange(c)
+                        && item.IsInRange(c)
                         && c.IsAlive)
                     .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();

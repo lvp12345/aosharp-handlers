@@ -1440,9 +1440,9 @@ namespace CombatHandler.Metaphysicist
             {
                 if (Team.IsInTeam)
                 {
-                    SimpleChar target = DynelManager.Players
+                    var target = DynelManager.Players
                         .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && InNanoRange(c)
+                            && spell.IsInRange(c)
                             && c.Health > 0
                             && SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
@@ -1560,10 +1560,10 @@ namespace CombatHandler.Metaphysicist
 
             if (Team.IsInTeam)
             {
-                SimpleChar target = DynelManager.Players
+                var target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksNanoSkillsOther(spell, c))
                     .FirstOrDefault();
@@ -1634,11 +1634,11 @@ namespace CombatHandler.Metaphysicist
             {
                 if (Team.IsInTeam)
                 {
-                    SimpleChar target = DynelManager.Players
+                    var target = DynelManager.Players
                    .Where(c => c.IsInLineOfSight
                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                        && c.Profession != Profession.NanoTechnician
-                       && InNanoRange(c)
+                       && spell.IsInRange(c)
                        && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
                    .FirstOrDefault();
 
@@ -1697,7 +1697,7 @@ namespace CombatHandler.Metaphysicist
             }
             else if (DynelManager.LocalPlayer.IsInTeam())
             {
-                SimpleChar dyingTeamMember = DynelManager.Characters
+                var dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent < 85)
@@ -1730,7 +1730,7 @@ namespace CombatHandler.Metaphysicist
 
         private void AssignTargetToHealPet()
         {
-            SimpleChar dyingTarget = GetTargetToHeal();
+            var dyingTarget = GetTargetToHeal();
 
             Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
             && pet.Character.Nano >= 1).FirstOrDefault();
@@ -1751,7 +1751,7 @@ namespace CombatHandler.Metaphysicist
 
         private void AssignTargetToMezzPet()
         {
-            Pet mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support
+            var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support
             && pet.Character.Nano >= 1).FirstOrDefault();
 
             if (mezzPet != null)
@@ -1767,7 +1767,7 @@ namespace CombatHandler.Metaphysicist
                     }
                 else
                 {
-                    SimpleChar targetToMezz = GetTargetToMezz();
+                    var targetToMezz = GetTargetToMezz();
 
                     if (targetToMezz != null)
                     {

@@ -264,7 +264,7 @@ namespace HelpManager
             {
                 if (_settings["Eumenides"].AsBool())
                 {
-                    SimpleChar _eumenides = DynelManager.NPCs.Where(c => c.Name == "Eumenides").FirstOrDefault();
+                    var _eumenides = DynelManager.NPCs.Where(c => c.Name == "Eumenides").FirstOrDefault();
 
                     if (DynelManager.LocalPlayer.Room.Name == "Shopping Dead-end")
                     {

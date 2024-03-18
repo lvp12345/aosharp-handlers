@@ -1100,12 +1100,12 @@ namespace CombatHandler.NanoTechnician
 
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.NPCs
+                var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.MaxHealth < 1000000)
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .ThenBy(c => c.Health)
@@ -1121,12 +1121,12 @@ namespace CombatHandler.NanoTechnician
 
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.NPCs
+                var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && !AttackingMob(c)
@@ -1154,12 +1154,12 @@ namespace CombatHandler.NanoTechnician
 
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.NPCs
+                var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.MaxHealth < 1000000)
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .ThenBy(c => c.Health)
@@ -1175,12 +1175,12 @@ namespace CombatHandler.NanoTechnician
 
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.NPCs
+                var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && !AttackingMob(c)
@@ -1263,12 +1263,12 @@ namespace CombatHandler.NanoTechnician
             if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
             if (!Team.IsInTeam) { return false; }
 
-            SimpleChar target = DynelManager.NPCs
+            var target = DynelManager.NPCs
                 .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                     && c.FightingTarget != null
                     && c.Health > 0
                     && c.IsInLineOfSight
-                    && InNanoRange(c)
+                    && spell.IsInRange(c)
                     && SpellChecksOther(spell, spell.Nanoline, c))
                 .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                 .FirstOrDefault();

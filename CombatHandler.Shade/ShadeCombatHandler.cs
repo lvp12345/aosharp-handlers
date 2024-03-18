@@ -1108,7 +1108,7 @@ namespace CombatHandler.Shade
         {
             if (Team.IsInTeam)
             {
-                SimpleChar target = DynelManager.Players
+                var target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0
@@ -1180,7 +1180,7 @@ namespace CombatHandler.Shade
 
             if (DynelManager.LocalPlayer.IsInTeam())
             {
-                List<SimpleChar> teamMembersLowHp = DynelManager.Characters
+                var teamMembersLowHp = DynelManager.Characters
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
                     .Where(c => c.HealthPercent <= 50)
                     .ToList();

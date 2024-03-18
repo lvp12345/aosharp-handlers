@@ -829,10 +829,10 @@ namespace CombatHandler.Fixer
 
         protected bool WakeUpCall(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .FirstOrDefault(c => c.IsInLineOfSight
                 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                && InNanoRange(c)
+                && spell.IsInRange(c)
                 && c.Buffs.Contains(NanoLine.DOT_LineA)
                 || c.Buffs.Contains(NanoLine.DOT_LineB)
                 || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
@@ -934,7 +934,7 @@ namespace CombatHandler.Fixer
 
             if (Team.IsInTeam)
             {
-                SimpleChar target = DynelManager.Players
+                var target = DynelManager.Players
                    .Where(c => c.IsInLineOfSight
                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
@@ -994,7 +994,7 @@ namespace CombatHandler.Fixer
             if (!IsSettingEnabled("Buffing")
                 || !IsSettingEnabled("AOESnare") || !CanCast(spell)) { return false; }
 
-            SimpleChar target = DynelManager.Characters
+            var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
                         && IsMoving(c)
                         && !c.Buffs.Contains(NanoLine.Root)
@@ -1019,7 +1019,7 @@ namespace CombatHandler.Fixer
             if (!IsSettingEnabled("Buffing")
                 || !IsSettingEnabled("AOESnare") || !CanCast(spell)) { return false; }
 
-            SimpleChar target = DynelManager.Characters
+            var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
                         && c.IsMoving
                         && !c.Buffs.Contains(NanoLine.Root)

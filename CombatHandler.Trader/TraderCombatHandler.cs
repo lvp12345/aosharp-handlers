@@ -1654,12 +1654,12 @@ namespace CombatHandler.Trader
 
             if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.NPCs
+                var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.MaxHealth < 1000000)
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .ThenBy(c => c.Health)
@@ -1675,12 +1675,12 @@ namespace CombatHandler.Trader
 
             if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-                SimpleChar target = DynelManager.NPCs
+                var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.MaxHealth < 1000000
                         && c.FightingTarget != null
                         && !AttackingMob(c)
@@ -1707,7 +1707,7 @@ namespace CombatHandler.Trader
         {
             if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
 
-            SimpleChar target = DynelManager.Characters
+            var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
                         && IsMoving(c)
                         && !c.Buffs.Contains(NanoLine.Root)

@@ -1232,7 +1232,7 @@ namespace CombatHandler.Bureaucrat
         {
             if (!IsSettingEnabled("Exoneration")) { return false; }
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
             && c.DistanceFrom(DynelManager.LocalPlayer) < 40f
             && c.Buffs.Contains(NanoLine.Root)
@@ -1408,12 +1408,13 @@ namespace CombatHandler.Bureaucrat
                 return false;
             }
 
-            IEnumerable<SimpleChar> targets = DynelManager.NPCs
+            var targets = DynelManager.NPCs
                 .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                     && c.Health > 0
                     && c.IsInLineOfSight
                     && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                    && InNanoRange(c)
+                    && spell.IsInRange(c)
+                    //&& spell.IsInRange(c)
                     && c.MaxHealth < 1000000);
 
             if (modeSelection == ModeSelection.Adds)
@@ -1424,7 +1425,7 @@ namespace CombatHandler.Bureaucrat
                         && AttackingTeam(c));
             }
 
-            SimpleChar target = targets
+            var target = targets
                 .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                 .ThenBy(c => c.Health)
                 .FirstOrDefault();
@@ -1443,9 +1444,9 @@ namespace CombatHandler.Bureaucrat
         {
             if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Calm12Man") || !CanCast(spell)) { return false; }
 
-            List<SimpleChar> targets = DynelManager.NPCs
+            var targets = DynelManager.NPCs
                 .Where(c => c.IsAlive
-                    && InNanoRange(c)
+                    && spell.IsInRange(c)
                     && (c.Name == "Right Hand of Madness" || c.Name == "Deranged Xan")
                     && (!c.Buffs.Contains(267535) || !c.Buffs.Contains(267536)))
                 .ToList();
@@ -1496,7 +1497,7 @@ namespace CombatHandler.Bureaucrat
             if (!IsSettingEnabled("Buffing")
                 || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
 
-            SimpleChar target = DynelManager.Characters
+            var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
                         && IsMoving(c)
                         && !c.Buffs.Contains(NanoLine.Root)
@@ -1521,7 +1522,7 @@ namespace CombatHandler.Bureaucrat
             if (!IsSettingEnabled("Buffing")
                 || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
 
-            SimpleChar target = DynelManager.Characters
+            var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
                         && c.IsMoving
                         && !c.Buffs.Contains(NanoLine.Root)

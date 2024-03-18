@@ -917,7 +917,7 @@ namespace CombatHandler.Soldier
             if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
             if (!Team.IsInTeam) { return false; }
 
-            SimpleChar target = DynelManager.NPCs
+            var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
                         && c.Health > 0
@@ -948,11 +948,11 @@ namespace CombatHandler.Soldier
             if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
             {
-                SimpleChar mob = DynelManager.NPCs
+                var mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
@@ -992,11 +992,11 @@ namespace CombatHandler.Soldier
             if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.AONormalTime > _timedTaunt + TimedTauntDelay)
             {
-                SimpleChar mob = DynelManager.NPCs
+                var mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
@@ -1054,7 +1054,7 @@ namespace CombatHandler.Soldier
             {
                 if (Team.IsInTeam)
                 {
-                    SimpleChar target = DynelManager.Players
+                    var target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
                             && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
@@ -1081,7 +1081,7 @@ namespace CombatHandler.Soldier
             {
                 if (Team.IsInTeam)
                 {
-                    SimpleChar target = DynelManager.Players
+                    var target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
                             && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
@@ -1108,7 +1108,7 @@ namespace CombatHandler.Soldier
             {
                 if (Team.IsInTeam)
                 {
-                    SimpleChar target = DynelManager.Players
+                    var target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
                             && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f

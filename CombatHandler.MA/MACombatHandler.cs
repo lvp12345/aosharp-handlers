@@ -1072,7 +1072,7 @@ namespace CombatHandler.MartialArtist
 
             if (SingleTauntSelection.Area == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
             {
-                SimpleChar mob = DynelManager.NPCs
+                var mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.FightingTarget?.Profession != Profession.Soldier
                         && c.FightingTarget?.Profession != Profession.Enforcer
@@ -1170,7 +1170,7 @@ namespace CombatHandler.MartialArtist
                 return NonCombatBuff(spell, ref actionTarget, fightingTarget);
             }
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && !(c.Profession == Profession.NanoTechnician || c.Profession == Profession.Trader)

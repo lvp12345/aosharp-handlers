@@ -150,10 +150,10 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                SimpleChar teamMember = DynelManager.Players
+                var teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
-                        && GenericCombatHandler.InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
@@ -173,10 +173,10 @@ namespace CombatHandler.Generic
         {
             if (!GenericCombatHandler.CanCast(spell)) { return false; }
 
-            SimpleChar player = DynelManager.Players
+            var player = DynelManager.Players
                 .Where(c => c.HealthPercent <= healthPercentThreshold
                     && c.IsInLineOfSight
-                    && GenericCombatHandler.InNanoRange(c)
+                    && spell.IsInRange(c)
                     && c.Health > 0)
                 .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();

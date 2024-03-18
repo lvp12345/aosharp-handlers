@@ -1066,11 +1066,11 @@ namespace CombatHandler.Enf
             if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
                 && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
             {
-                SimpleChar mob = DynelManager.NPCs
+                var mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && AttackingTeam(c))
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
@@ -1107,7 +1107,7 @@ namespace CombatHandler.Enf
         {
             if (_settings["MongoSelection"].AsInt32() == 0 || !CanCast(spell)) { return false; }
 
-            SimpleChar mob = DynelManager.NPCs
+            var mob = DynelManager.NPCs
                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                    && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f && !debuffAreaTargetsToIgnore.Contains(c.Name)
                        && AttackingTeam(c))
@@ -1170,7 +1170,7 @@ namespace CombatHandler.Enf
 
             if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.Cycle)
             {
-                SimpleChar attackingMob = DynelManager.NPCs.Where(c => c.IsAttacking && 
+                var attackingMob = DynelManager.NPCs.Where(c => c.IsAttacking && 
                 c.FightingTarget?.Identity == DynelManager.LocalPlayer?.Identity).FirstOrDefault();
 
                 if (attackingMob == null) { return false; }
@@ -1289,11 +1289,11 @@ namespace CombatHandler.Enf
 
             if (Team.IsInTeam)
             {
-                SimpleChar target = DynelManager.Players
+                var target = DynelManager.Players
                                .Where(c => c.IsInLineOfSight
                                && c.Identity != DynelManager.LocalPlayer.Identity
                                    && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                                   && InNanoRange(c)
+                                   && spell.IsInRange(c)
                                    && c.Health > 0
                                    && SpellChecksOther(spell, spell.Nanoline, c))
                                .FirstOrDefault();

@@ -481,7 +481,7 @@ namespace CombatHandler.Generic
 
                 if (!InCombat()) { return false; }
 
-                SimpleChar dyingTeamMember = DynelManager.Players
+                var dyingTeamMember = DynelManager.Players
                     .Where(c => c.Health > 70 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
                     .OrderBy(c => c.HealthPercent)
@@ -651,10 +651,10 @@ namespace CombatHandler.Generic
             if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id) ||
                 DynelManager.LocalPlayer.FightingTarget == null) { return false; }
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
                 .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c))
                 .FirstOrDefault();
@@ -742,10 +742,10 @@ namespace CombatHandler.Generic
                 return false;
             }
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
                 .Where(c => c.IsInLineOfSight
                     && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                    && InNanoRange(c)
+                    && spell.IsInRange(c)
                     && c.Health > 0
                     && SpellChecksOther(spell, spell.Nanoline, c))
                 .FirstOrDefault();
@@ -783,10 +783,10 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                SimpleChar target = DynelManager.Players
+                var target = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
@@ -808,10 +808,10 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                SimpleChar teamMember = DynelManager.Players
+                var teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.Health > 0)
                     .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
@@ -841,10 +841,10 @@ namespace CombatHandler.Generic
         {
             if (!CanCast(spell)) { return false; }
 
-            SimpleChar player = DynelManager.Players
+            var player = DynelManager.Players
                 .Where(c => c.HealthPercent <= healthPercentThreshold
                     && c.IsInLineOfSight
-                    && InNanoRange(c)
+                    && spell.IsInRange(c)
                     && c.Health > 0)
                 .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
@@ -990,14 +990,14 @@ namespace CombatHandler.Generic
 
             if (!CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
-            SimpleChar target = DynelManager.NPCs
+            var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
                         && c.Health > 0
                         && !c.Buffs.Contains(301844)
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && SpellChecksOther(spell, spell.Nanoline, c))
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
@@ -1018,14 +1018,14 @@ namespace CombatHandler.Generic
 
             if (!IsSettingEnabled(toggleName) || !CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
 
-            SimpleChar target = DynelManager.NPCs
+            var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
                         && c.Health > 0
                         && !c.Buffs.Contains(301844)
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && SpellChecksOther(spell, spell.Nanoline, c))
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
@@ -1062,10 +1062,10 @@ namespace CombatHandler.Generic
         {
             if (Team.IsInTeam)
             {
-                SimpleChar target = DynelManager.Players
+                var target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c)
                         && GetWieldedWeapons(c).HasFlag(supportedWeaponType))
@@ -1095,10 +1095,10 @@ namespace CombatHandler.Generic
         {
             if (Team.IsInTeam)
             {
-                SimpleChar target = DynelManager.Players
+                var target = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.Profession != Profession.NanoTechnician
-                        && InNanoRange(c)
+                        && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c)
                         && GetWieldedWeapons(c).HasFlag(supportedWeaponType))
@@ -1698,15 +1698,6 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Checks
-
-        public static bool InNanoRange(SimpleChar target)
-        {
-            var nanoRange = DynelManager.LocalPlayer.GetStat(Stat.NanoRange);
-
-            var distanceToTarget = target.Position.DistanceFrom(DynelManager.LocalPlayer.Position);
-
-            return distanceToTarget <= nanoRange;
-        }
 
         protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
         {

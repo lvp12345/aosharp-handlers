@@ -1260,7 +1260,7 @@ namespace CombatHandler.Engineer
             {
                 if (Team.IsInTeam)
                 {
-                    SimpleChar target = DynelManager.Players
+                    var target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
                             && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f

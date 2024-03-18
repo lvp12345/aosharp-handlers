@@ -112,7 +112,7 @@ namespace AssistManager
             if (_settings["Toggle"].AsBool()
                 && Time.NormalTime > _assistTimer + 0.5)
             {
-                SimpleChar identity = DynelManager.Characters
+                var identity = DynelManager.Characters
                     .Where(c => !string.IsNullOrEmpty(AssistPlayer)
                         && c.IsAlive && !c.Flags.HasFlag(CharacterFlags.Pet)
                         && c.Name == AssistPlayer)

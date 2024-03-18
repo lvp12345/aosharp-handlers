@@ -209,7 +209,7 @@ namespace CombatHandler.Generic
         //        SimpleChar teamMember = DynelManager.Players
         //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
         //                && c.HealthPercent <= TargetHealPerkPercentage && c.IsInLineOfSight
-        //                && InNanoRange(c)
+        //                && spell.IsInRange(c)
         //                && c.IsAlive)
         //            .OrderBy(c => c.HealthPercent)
         //            .FirstOrDefault();
@@ -245,10 +245,10 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                SimpleChar teamMember = DynelManager.Players
+                var teamMember = DynelManager.Players
                     .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent <= TeamHealPerkPercentage && c.IsInLineOfSight
-                        && InNanoRange(c)
+                        && perk.IsInRange(c)
                         && c.IsAlive)
                     .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
@@ -293,7 +293,7 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                SimpleChar _person = DynelManager.Players
+                var _person = DynelManager.Players
                     .Where(c => c.Health > 0
                         && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.NanoPercent <= TeamNanoPerkPercentage)
@@ -409,7 +409,7 @@ namespace CombatHandler.Generic
         public static bool NanoShutdown_TraderDebuff_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
                 .Where(c => c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive)
             || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack)
             || c.Buffs.Contains(NanoLine.NanoShutdownDebuff))
@@ -428,7 +428,7 @@ namespace CombatHandler.Generic
         public static bool Trader_Debuff_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive)
             || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack))
             .FirstOrDefault();
@@ -446,7 +446,7 @@ namespace CombatHandler.Generic
         public static bool AAO_Dots_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.AAODebuffs)
             || c.Buffs.Contains(NanoLine.TraderAAODrain)
             || c.Buffs.Contains(NanoLine.DOT_LineA)
@@ -472,7 +472,7 @@ namespace CombatHandler.Generic
         public static bool Root_Snare_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.Root)
             || c.Buffs.Contains(NanoLine.Snare))
             .FirstOrDefault();
@@ -490,7 +490,7 @@ namespace CombatHandler.Generic
         public static bool AOO_Trader_DOts_Init_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.AAODebuffs)
             || c.Buffs.Contains(NanoLine.TraderAAODrain)
             || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive)
@@ -519,7 +519,7 @@ namespace CombatHandler.Generic
         public static bool SelfAOO_Trader_DOts_Init_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.AAODebuffs)
             || c.Buffs.Contains(NanoLine.TraderAAODrain)
             || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive)
@@ -548,7 +548,7 @@ namespace CombatHandler.Generic
         public static bool Snare_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.Snare))
             .FirstOrDefault();
 
@@ -565,7 +565,7 @@ namespace CombatHandler.Generic
         public static bool Root_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.Root))
             .FirstOrDefault();
 
@@ -582,7 +582,7 @@ namespace CombatHandler.Generic
         public static bool Dot_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.DOT_LineA)
             || c.Buffs.Contains(NanoLine.DOT_LineB)
             || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
@@ -606,7 +606,7 @@ namespace CombatHandler.Generic
         public static bool NanoShutdown_CleansePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            SimpleChar target = DynelManager.Players
+            var target = DynelManager.Players
             .Where(c => c.Buffs.Contains(NanoLine.NanoShutdownDebuff))
             .FirstOrDefault();
 

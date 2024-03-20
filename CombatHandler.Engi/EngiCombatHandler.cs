@@ -142,7 +142,7 @@ namespace CombatHandler.Engineer
                 Game.TeleportEnded += OnZoned;
 
                 //Pet heals
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealing).OrderByStackingOrder(), PetHealing);
+                RegisterSpellProcessor(Spell.List.Where(s => RelevantNanos.PetHealing.Contains(s.Id)).OrderByStackingOrder(), PetHealing);
 
                 //Pet Aura 
                 //buffing
@@ -1640,7 +1640,6 @@ namespace CombatHandler.Engineer
             public const int SympatheticReactiveCocoon = 154550;
             public const int IntrusiveAuraCancellation = 204372;
             public const int BoostedTendons = 269463;
-            //public const int PetHealingGreater = 270351;
             public const int PetWarp = 209488;
             public static readonly int[] Warps = {
                 209488
@@ -1662,7 +1661,7 @@ namespace CombatHandler.Engineer
             public static readonly int[] DamageAura = { 154560, 154561 };
             public static readonly int[] ArmorAura = { 154562, 154563, 154564, 154565, 154566, 154567 };
             public static readonly int[] ShieldAura = { 154557, 154558, 154559 };
-            //public static readonly int[] PetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
+            public static readonly int[] PetHealing = { 270351, 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
             public static readonly int[] EngineeringBuff = { 273346, 227667, 227657 };
 

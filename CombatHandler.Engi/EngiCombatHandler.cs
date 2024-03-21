@@ -142,8 +142,8 @@ namespace CombatHandler.Engineer
                 Game.TeleportEnded += OnZoned;
 
                 //Pet heals
+                RegisterSpellProcessor(RelevantNanos.PetPercentHealing, PetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing, CombatActionPriority.High);
-                //RegisterSpellProcessor(Spell.List.Where(s => RelevantNanos.PetHealing.Contains(s.Id)).OrderByStackingOrder(), PetHealing);
 
                 //Pet Aura 
                 //buffing
@@ -1391,7 +1391,7 @@ namespace CombatHandler.Engineer
 
                 if (pet.Character.HealthPercent <= 90)
                 {
-                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.ShouldSetTarget = spell.Id != RelevantNanos.PetPercentHealing;
                     actionTarget.Target = pet.Character;
                     return true;
                 }
@@ -1662,7 +1662,8 @@ namespace CombatHandler.Engineer
             public static readonly int[] DamageAura = { 154560, 154561 };
             public static readonly int[] ArmorAura = { 154562, 154563, 154564, 154565, 154566, 154567 };
             public static readonly int[] ShieldAura = { 154557, 154558, 154559 };
-            public static readonly int[] PetHealing = { 270351, 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
+            public const int PetPercentHealing = 270351;
+            public static readonly int[] PetTargetHealing = { 116791, 116795, 116796, 116792, 116797, 116794, 116793 };
             public static readonly int[] ShieldOfObedientServant = { 270790, 202260 };
             public static readonly int[] EngineeringBuff = { 273346, 227667, 227657 };
 

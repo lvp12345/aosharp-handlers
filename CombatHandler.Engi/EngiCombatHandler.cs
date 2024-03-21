@@ -142,7 +142,8 @@ namespace CombatHandler.Engineer
                 Game.TeleportEnded += OnZoned;
 
                 //Pet heals
-                RegisterSpellProcessor(Spell.List.Where(s => RelevantNanos.PetHealing.Contains(s.Id)).OrderByStackingOrder(), PetHealing);
+                RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing, CombatActionPriority.High);
+                //RegisterSpellProcessor(Spell.List.Where(s => RelevantNanos.PetHealing.Contains(s.Id)).OrderByStackingOrder(), PetHealing);
 
                 //Pet Aura 
                 //buffing

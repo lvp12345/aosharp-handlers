@@ -1134,6 +1134,7 @@ namespace CombatHandler.MartialArtist
 
         private bool PercentEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsInsideInnerSanctum()) { return false; }
             if (SelfEvadeSelection.Percent != (SelfEvadeSelection)_settings["SelfEvadeSelection"].AsInt32()) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
@@ -1141,6 +1142,7 @@ namespace CombatHandler.MartialArtist
 
         private bool TargetEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsInsideInnerSanctum()) { return false; }
             if (SelfEvadeSelection.Target != (SelfEvadeSelection)_settings["SelfEvadeSelection"].AsInt32()) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);

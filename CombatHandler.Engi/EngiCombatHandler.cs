@@ -143,7 +143,7 @@ namespace CombatHandler.Engineer
 
                 //Pet heals
                 RegisterSpellProcessor(RelevantNanos.PetPercentHealing, PetHealing, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.PetHealing, PetHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.PetTargetHealing, PetHealing, CombatActionPriority.High);
 
                 //Pet Aura 
                 //buffing

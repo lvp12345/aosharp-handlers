@@ -989,7 +989,7 @@ namespace CombatHandler.Soldier
         {
             if (!CanCast(spell)) { return false; }
 
-            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+            if (TimedTauntsSelection.Adds == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
                 && Time.AONormalTime > _timedTaunt + TimedTauntDelay)
             {
                 var mob = DynelManager.NPCs
@@ -1013,7 +1013,7 @@ namespace CombatHandler.Soldier
                 }
             }
 
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+            if (TimedTauntsSelection.Target == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
                 && Time.AONormalTime > _timedTaunt + TimedTauntDelay)
             {
                 if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)

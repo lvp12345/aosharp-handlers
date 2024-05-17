@@ -5,6 +5,7 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CombatHandler.MartialArtist
@@ -198,12 +199,25 @@ namespace CombatHandler.MartialArtist
 
                 //Items
                 int maItem = _settings["MASelection"].AsInt32();
+                if (maItem == (int)MASelection.BirdofPrey)
+                {
+                    foreach(var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
+                    {
+
+                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                    }
+                }
+                else
+                {
+                    RegisterItemProcessor(maItem, maItem, MAItem);
+                }
                 int dimachItem = _settings["DimachSelection"].AsInt32();
                 int riposteItem = _settings["RiposteSelection"].AsInt32();
                 int strengthItem = _settings["StrengthSelection"].AsInt32();
                 int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
                 int staminaItem = _settings["StaminaSelection"].AsInt32();
-                RegisterItemProcessor(maItem, maItem, MAItem);
+                
+                
                 RegisterItemProcessor(dimachItem, dimachItem, DimachItem);
                 RegisterItemProcessor(riposteItem, riposteItem, RiposteItem);
                 RegisterItemProcessor(strengthItem, strengthItem, StrengthItem);
@@ -972,13 +986,14 @@ namespace CombatHandler.MartialArtist
 
         private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            item.Id = _settings["MASelection"].AsInt32();
+            
 
             if (item.Id == 0) { return false; }
             if (fightingtarget == null) { return false; }
             if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
+            
             return true;
         }
         private bool DimachItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

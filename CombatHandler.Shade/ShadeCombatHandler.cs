@@ -7,6 +7,7 @@ using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AOSharp.Core.Movement;
 
 namespace CombatHandler.Shade
 {
@@ -107,6 +108,8 @@ namespace CombatHandler.Shade
                 _settings.AddVariable("HealthDrain", false);
                 _settings.AddVariable("SpiritSiphon", false);
 
+                _settings.AddVariable("ShouldMoveBehindTarget", false);
+
                 RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
                 //Perks
@@ -163,7 +166,7 @@ namespace CombatHandler.Shade
 
                 //Items
                 RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
-                
+
                 int maItem = _settings["MASelection"].AsInt32();
                 int dimachItem = _settings["DimachSelection"].AsInt32();
                 int riposteItem = _settings["RiposteSelection"].AsInt32();
@@ -209,6 +212,7 @@ namespace CombatHandler.Shade
                 TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
                 BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+
             }
             catch (Exception ex)
             {
@@ -222,7 +226,6 @@ namespace CombatHandler.Shade
                 }
             }
         }
-
         public Window[] _windows => new Window[] { _buffWindow, _healingWindow, _debuffWindow, _specialAttacksWindow, _procWindow, _itemWindow, _perkWindow };
 
         #region Callbacks
@@ -1028,7 +1031,7 @@ namespace CombatHandler.Shade
             }
 
             if (!(PerkAction.Find(PerkHash.Perforate, out PerkAction perforate) && PerkAction.Find(PerkHash.Lacerate, out PerkAction lacerate))) { return true; }
-            
+
             if (perkAction.Hash == PerkHash.Impale)
             {
                 if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (action == stab || action == doubleStab || action == perforate || action == lacerate))) { return false; }
@@ -1042,7 +1045,7 @@ namespace CombatHandler.Shade
             if (fightingTarget == null) { return false; }
 
             //Don't SP if there are TR/PM chains in progress
-            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash) 
+            if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash)
             || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
 
             return true;

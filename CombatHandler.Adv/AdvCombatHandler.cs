@@ -103,6 +103,8 @@ namespace CombatHandler.Adventurer
 
                 _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.None);
 
+                _settings.AddVariable("ShouldMoveBehindTarget", false);
+
                 RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
                 //Healing

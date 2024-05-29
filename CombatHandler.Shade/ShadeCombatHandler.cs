@@ -90,6 +90,7 @@ namespace CombatHandler.Shade
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.Blackheart);
 
                 _settings.AddVariable("Runspeed", false);
+                _settings.AddVariable("AAD", false);
                 _settings.AddVariable("RunspeedTeam", false);
                 _settings.AddVariable("SLMap", false);
 
@@ -149,9 +150,10 @@ namespace CombatHandler.Shade
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.WeaponEffectAdd_On2).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AADBuffs).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, "AAD"));
 
                 RegisterSpellProcessor(RelevantNanos.ShadeDmgProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DamageProc"));
@@ -1115,7 +1117,7 @@ namespace CombatHandler.Shade
                     .Where(c => c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                         && c.Health > 0
-                        & SpellChecksOther(spell, spell.Nanoline, c))
+                        & SpellChecksOther(spell, NanoLine.RunspeedBuffs, c))
                     .FirstOrDefault();
 
                 if (target != null)

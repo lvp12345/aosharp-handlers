@@ -119,15 +119,54 @@ namespace SyncManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            foreach (Item item in Inventory.Items)
+            if (_settings["Enable"].AsBool())
             {
-                if (item.Slot.Type == IdentityType.Inventory)
+                foreach (Item item in Inventory.Items)
                 {
-                    if (!invSlots.ContainsKey(item.Slot.Instance))
+                    if (item.Slot.Type == IdentityType.Inventory)
                     {
-                        invSlots.Add(item.Slot.Instance, item.Id);
+                        if (!invSlots.ContainsKey(item.Slot.Instance))
+                        {
+                            invSlots.Add(item.Slot.Instance, item.Id);
+                        }
                     }
                 }
+
+                if (!_openBags && _settings["SyncBags"].AsBool())
+                {
+                    Inventory.Backpacks.ForEach(b =>
+                    {
+                        if (!b.IsOpen)
+                        {
+                            Item.Use(b.Slot);
+                            Item.Use(b.Slot);
+                        }
+                    });
+                    if (Inventory.Backpacks.All(b => b.IsOpen))
+                    {
+                        _openBags = true;
+                    }
+                }
+
+                if (Time.NormalTime > _useTimer + 0.1)
+                {
+                    if (!IsActiveWindow)
+                    {
+                        ListenerUseSync();
+                    }
+                    _useTimer = Time.NormalTime;
+                }
+
+                _ringNameToItemNameMap = new Dictionary<RingName, string>
+                {
+                    { RingName.PureNovictumRing, "Pure Novictum Ring" },
+                    { RingName.RimyRing, "Rimy Ring" },
+                    { RingName.AchromicRing, "Achromic Ring" },
+                    { RingName.SanguineRing, "Sanguine Ring" },
+                    { RingName.CaliginousRing, "Caliginous Ring" }
+                };
+
+                _itemNameToRingNameMap = _ringNameToItemNameMap.ToDictionary(pair => pair.Value, pair => pair.Key);
             }
 
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
@@ -156,31 +195,6 @@ namespace SyncManager
                 }
             }
 
-            if (!_openBags && _settings["SyncBags"].AsBool())
-            {
-                Inventory.Backpacks.ForEach(b =>
-                {
-                    if (!b.IsOpen)
-                    {
-                        Item.Use(b.Slot);
-                        Item.Use(b.Slot);
-                    }
-                });
-                if (Inventory.Backpacks.All(b => b.IsOpen))
-                {
-                    _openBags = true;
-                }
-            }
-
-            if (Time.NormalTime > _useTimer + 0.1)
-            {
-                if (!IsActiveWindow)
-                {
-                    ListenerUseSync();
-                }
-                _useTimer = Time.NormalTime;
-            }
-
             if (!_settings["Enable"].AsBool() && Enable)
             {
                 IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = false });
@@ -191,18 +205,6 @@ namespace SyncManager
                 IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = true });
                 Start();
             }
-
-            _ringNameToItemNameMap = new Dictionary<RingName, string>
-        {
-            { RingName.PureNovictumRing, "Pure Novictum Ring" },
-            { RingName.RimyRing, "Rimy Ring" },
-            { RingName.AchromicRing, "Achromic Ring" },
-            { RingName.SanguineRing, "Sanguine Ring" },
-            { RingName.CaliginousRing, "Caliginous Ring" }
-        };
-
-            _itemNameToRingNameMap = _ringNameToItemNameMap.ToDictionary(pair => pair.Value, pair => pair.Key);
-
         }
 
         #region Callbacks
@@ -515,6 +517,8 @@ namespace SyncManager
 
             if (Game.IsZoning) { return; }
 
+            if (!_settings["Enable"].AsBool()) { return; }
+
             MoveMessage moveMsg = (MoveMessage)msg;
 
             if (Playfield.Identity.Instance != moveMsg.PlayfieldId) { return; }
@@ -526,6 +530,8 @@ namespace SyncManager
 
         private void Lookat(int sender, IPCMessage look)
         {
+            if (!_settings["Enable"].AsBool()) { return; }
+
             TargetMessage targetMsg = (TargetMessage)look;
 
             var localPlayer = DynelManager.LocalPlayer;
@@ -542,6 +548,8 @@ namespace SyncManager
         {
             if (IsActiveWindow || Game.IsZoning) { return; }
 
+            if (!_settings["Enable"].AsBool()) { return; }
+
             var attackMsg = (AttackIPCMessage)msg;
 
             if (attackMsg.Start)
@@ -556,6 +564,8 @@ namespace SyncManager
         private void OnUseMessage(int sender, IPCMessage msg)
         {
             if (IsActiveWindow || Game.IsZoning) { return; }
+
+            if (!_settings["Enable"].AsBool()) { return; }
 
             UseMessage useMsg = (UseMessage)msg;
 
@@ -595,7 +605,7 @@ namespace SyncManager
 
         private void ProcessIDItem(UseMessage usableMsg)
         {
-            int[] ignoredItemIds = { 301679, 85907, 85908, 267167, 305478, 206013, 204653, 245990, 204698, 206015, 305476, 156576, 
+            int[] ignoredItemIds = { 301679, 85907, 85908, 267167, 305478, 206013, 204653, 245990, 204698, 206015, 305476, 156576,
                 164780, 164781, 244204, 245323, 244214, 244216, 204593, 305493, 204595, 305491, 204598, 305495, 157296, 303179,
                 267168, 244655, 152028, 253187, 151693, 83919, 152029, 151692,253186, 83920, 291043, 204103, 204104, 204105, 204106, 204107,
                 303138, 303141, 303137, 204698, 204653, 206013, 267168, 267167, 305476, 305478, 303179 };
@@ -622,6 +632,8 @@ namespace SyncManager
         }
         private void OnNpcChatMessage(int sender, IPCMessage msg)
         {
+            if (!_settings["Enable"].AsBool()) { return; }
+
             NpcChatIPCMessage chatMsg = (NpcChatIPCMessage)msg;
 
             if (chatMsg.OpenClose == true)

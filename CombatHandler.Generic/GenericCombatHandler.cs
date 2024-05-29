@@ -365,6 +365,12 @@ namespace CombatHandler.Generic
                 UseItems();
                 Ammo.CrateOfAmmo();
 
+                if (_settings["ShouldMoveBehindTarget"].AsBool())
+                {
+                    var moveBehind = new GetBehind();
+                    moveBehind.MoveBehindFightingtarget();
+                }
+
                 #region UI
 
                 if (DynelManager.LocalPlayer.IsAttacking == true)

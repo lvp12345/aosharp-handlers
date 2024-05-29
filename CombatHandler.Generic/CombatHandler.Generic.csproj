@@ -63,6 +63,7 @@
     <Compile Include="Ammo.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="GenericCombatHandler.cs" />
+    <Compile Include="GetBehind.cs" />
     <Compile Include="Healing.cs" />
     <Compile Include="IPCMessages\ClearBuffsMessage.cs" />
     <Compile Include="IPCMessages\DisbandMessage.cs" />

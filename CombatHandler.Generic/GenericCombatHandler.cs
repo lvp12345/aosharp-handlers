@@ -365,7 +365,7 @@ namespace CombatHandler.Generic
                 UseItems();
                 Ammo.CrateOfAmmo();
 
-                if (_settings["ShouldMoveBehindTarget"].AsBool())
+                if (_settings["ShouldMoveBehindTarget"] != null && _settings["ShouldMoveBehindTarget"].AsBool())
                 {
                     var moveBehind = new GetBehind();
                     moveBehind.MoveBehindFightingtarget();

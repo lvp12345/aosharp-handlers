@@ -2003,11 +2003,11 @@ namespace CombatHandler.Generic
                     Task.Factory.StartNew(
                         async () =>
                         {
-                            await Task.Delay(100);
+                            await Task.Delay(1000);
                             Team.ConvertToRaid();
                             await Task.Delay(1000);
                             SendTeamInvite(GetRemainingRegisteredCharacters());
-                            await Task.Delay(100);
+                            await Task.Delay(5000);
                         });
                 }
             }

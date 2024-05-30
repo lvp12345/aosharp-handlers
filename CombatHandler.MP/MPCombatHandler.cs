@@ -48,6 +48,7 @@ namespace CombatHandler.Metaphysicist
 
         private static double _ncuUpdateTime;
         public static double weaponDelay;
+        double weaponCheckDelay;
 
         public static List<string> allWeaponNames = new List<string>
             {
@@ -183,7 +184,7 @@ namespace CombatHandler.Metaphysicist
 
                 //Debuffs
                 //nukes
-                RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke, CombatActionPriority.Medium);
                 RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke);
 
                 //debuffs
@@ -250,31 +251,31 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
                 //Pets
-                RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
+                RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
-                RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
+                RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner, CombatActionPriority.High);
 
                 //Pet Buffs
-                RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
-                RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding);
-                RegisterSpellProcessor(RelevantNanos.InducedApathy, InducedApathy);
+                RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.InducedApathy, InducedApathy, CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, EvasionPet);
-                RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
-                RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
+                RegisterSpellProcessor(RelevantNanos.AnticipationofRetaliation, EvasionPet, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant, CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.MPCompositeNano, MezzPetMochies);
+                RegisterSpellProcessor(RelevantNanos.MPCompositeNano, MezzPetMochies, CombatActionPriority.High);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetSeed);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealingConstructEmpowerment).OrderByStackingOrder(), HealPetSeed);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AggressiveConstructEmpowerment).OrderByStackingOrder(), AttackPetSeed);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPAttackPetDamageType).OrderByStackingOrder(), DamageTypePet);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetSeed, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealingConstructEmpowerment).OrderByStackingOrder(), HealPetSeed, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AggressiveConstructEmpowerment).OrderByStackingOrder(), AttackPetSeed, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MPAttackPetDamageType).OrderByStackingOrder(), DamageTypePet, CombatActionPriority.High);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), NanoResistancePet);
-                RegisterSpellProcessor(RelevantNanos.PetDefensive, DefensivePet);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealDelta843).OrderByStackingOrder(), HealDeltaPet);
-                RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
-                RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetDamageOverTimeResistNanos).OrderByStackingOrder(), NanoResistancePet, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.PetDefensive, DefensivePet, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PetHealDelta843).OrderByStackingOrder(), HealDeltaPet, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet, CombatActionPriority.High);
 
                 //Pet Perks
 
@@ -801,31 +802,39 @@ namespace CombatHandler.Metaphysicist
 
                 if ((SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32() != SummonedWeaponSelection.None)
                 {
-                    if (HasWeapon())
+                    if (Time.AONormalTime > weaponCheckDelay && !DynelManager.LocalPlayer.IsAttacking && !Spell.HasPendingCast && Spell.List.Any(s => s.IsReady))
                     {
-                        foreach (Item weapon in Inventory.Items)
+                        //Chat.WriteLine("checking weapon in tick");
+                        if (HasWeapon())
                         {
-                            if (allWeaponNames.Contains(weapon.Name))
+                            foreach (Item weapon in Inventory.Items)
                             {
-                                List<EquipSlot> slot = weapon.EquipSlots;
-
-                                if (weapon.Slot.Type != IdentityType.WeaponPage)
+                                if (allWeaponNames.Contains(weapon.Name))
                                 {
-                                    if (Time.AONormalTime > weaponDelay + 10)
-                                    {
-                                        foreach (EquipSlot equipSlot in weapon.EquipSlots)
-                                        {
-                                            //Chat.WriteLine($"Weapon: {weapon.Name}, Slot: {equipSlot}");
-                                            weapon.Equip(equipSlot);
-                                            break;
-                                        }
+                                    List<EquipSlot> slot = weapon.EquipSlots;
 
-                                        weaponDelay = Time.AONormalTime;
+                                    if (weapon.Slot.Type != IdentityType.WeaponPage)
+                                    {
+                                        if (Time.AONormalTime > weaponDelay + 10)
+                                        {
+                                            foreach (EquipSlot equipSlot in weapon.EquipSlots)
+                                            {
+                                                //Chat.WriteLine($"Weapon: {weapon.Name}, Slot: {equipSlot}");
+                                                weapon.Equip(equipSlot);
+                                                break;
+                                            }
+
+                                            weaponDelay = Time.AONormalTime;
+                                        }
                                     }
                                 }
                             }
                         }
+
+                        weaponCheckDelay = Time.AONormalTime + 10;
+
                     }
+                    
                 }
 
                 #region UI
@@ -1585,21 +1594,28 @@ namespace CombatHandler.Metaphysicist
 
         protected bool TwoHandedWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HasWeapon()) { return false; }
-
             if (SummonedWeaponSelection.TwoHand == (SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32())
             {
-                return true;
+                if (Time.AONormalTime > weaponCheckDelay && !DynelManager.LocalPlayer.IsAttacking && !Spell.HasPendingCast && Spell.List.Any(s => s.IsReady))
+                {
+                    //Chat.WriteLine("Checking for two hand weapon");
+                    if (HasWeapon()) { return false; }
+                    return true;
+                } 
             }
 
             return false;
         }
         protected bool OneHandedWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HasWeapon()) { return false; }
-
             if (SummonedWeaponSelection.OnHand == (SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32())
             {
+                if (Time.AONormalTime > weaponCheckDelay && !DynelManager.LocalPlayer.IsAttacking && !Spell.HasPendingCast && Spell.List.Any(s => s.IsReady))
+                {
+                    //Chat.WriteLine("Checking for one hand weapons");
+                    if (HasWeapon()) { return false; }
+                }
+                    
                 return true;
             }
 
@@ -1607,10 +1623,14 @@ namespace CombatHandler.Metaphysicist
         }
         protected bool ShieldWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HasWeapon()) { return false; }
-
             if (SummonedWeaponSelection.Shield == (SummonedWeaponSelection)_settings["SummonedWeaponSelection"].AsInt32())
             {
+                if (Time.AONormalTime > weaponCheckDelay && !DynelManager.LocalPlayer.IsAttacking && !Spell.HasPendingCast && Spell.List.Any(s => s.IsReady))
+                {
+                    //Chat.WriteLine("Checking for Shield");
+                    if (HasWeapon()) { return false; }
+                }
+                   
                 return true;
             }
 

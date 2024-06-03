@@ -1105,16 +1105,25 @@ namespace CombatHandler.Enf
 
         private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["MongoSelection"].AsInt32() == 0 || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
 
             var mob = DynelManager.NPCs
-                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                   && c.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                       && AttackingTeam(c))
+                   .Where(attackingMob => attackingMob.IsAttacking && attackingMob.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                   && attackingMob.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f && !debuffAreaTargetsToIgnore.Contains(attackingMob.Name)
+                       && AttackingTeam(attackingMob))
                    .FirstOrDefault();
+
+            if (_settings["OSTMongo"].AsBool())
+            {
+                if (!spell.IsReady) { return false; }
+
+                return true;
+            }
 
             if (DynelManager.LocalPlayer.HealthPercent >= 30)
             {
+                if(_settings["MongoSelection"].AsInt32() == 0) { return false; }
+
                 if (Time.AONormalTime > _mongo + MongoDelay)
                 {
                     if (_settings["MongoSelection"].AsInt32() == 1)

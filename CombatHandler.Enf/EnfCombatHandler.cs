@@ -109,6 +109,7 @@ namespace CombatHandler.Enf
                 _settings.AddVariable("DamageShields", false);
                 _settings.AddVariable("AOEPerks", false);
                 _settings.AddVariable("SLMap", false);
+                _settings.AddVariable("OSTMongo", false);
 
                 _settings.AddVariable("AbsorbSelection", (int)AbsorbSelection.Normal);
 
@@ -1116,6 +1117,7 @@ namespace CombatHandler.Enf
             if (_settings["OSTMongo"].AsBool())
             {
                 if (!spell.IsReady) { return false; }
+                if (Spell.HasPendingCast) { return false; }
 
                 return true;
             }

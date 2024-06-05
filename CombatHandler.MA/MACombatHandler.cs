@@ -62,6 +62,7 @@ namespace CombatHandler.MartialArtist
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentageChangedEvent += StaminaAbsorbsItemPercentage_Changed;
 
                 _settings.AddVariable("AllPlayers", false);
                 _settings["AllPlayers"] = false;
@@ -256,6 +257,7 @@ namespace CombatHandler.MartialArtist
                 TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
                 BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+                StaminaAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentage;
             }
             catch (Exception ex)
             {
@@ -329,6 +331,7 @@ namespace CombatHandler.MartialArtist
                 window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                window.FindView("StaminaAbsorbsItemPercentageBox", out TextInputView staminaInput);
 
                 if (stimTargetInput != null)
                 {
@@ -357,6 +360,10 @@ namespace CombatHandler.MartialArtist
                 if (strengthInput != null)
                 {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
+                if (staminaInput != null)
+                {
+                    staminaInput.Text = $"{StaminaAbsorbsItemPercentage}";
                 }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
@@ -371,6 +378,7 @@ namespace CombatHandler.MartialArtist
                 container.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                 container.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                container.FindView("StaminaAbsorbsItemPercentageBox", out TextInputView staminaInput);
 
                 if (stimTargetInput != null)
                 {
@@ -399,6 +407,10 @@ namespace CombatHandler.MartialArtist
                 if (strengthInput != null)
                 {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
+                if (staminaInput != null)
+                {
+                    staminaInput.Text = $"{StaminaAbsorbsItemPercentage}";
                 }
             }
         }
@@ -633,6 +645,7 @@ namespace CombatHandler.MartialArtist
 
                     window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                    window.FindView("StaminaAbsorbsItemPercentageBox", out TextInputView staminaInput);
 
                     if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
                     {
@@ -792,6 +805,17 @@ namespace CombatHandler.MartialArtist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                            }
+                        }
+                    }
+
+                    if (staminaInput != null && !string.IsNullOrEmpty(staminaInput.Text))
+                    {
+                        if (int.TryParse(staminaInput.Text, out int staminaValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentage != staminaValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentage = staminaValue;
                             }
                         }
                     }
@@ -986,8 +1010,6 @@ namespace CombatHandler.MartialArtist
 
         private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            
-
             if (item.Id == 0) { return false; }
             if (fightingtarget == null) { return false; }
             if (Item.HasPendingUse) { return false; }
@@ -1048,6 +1070,7 @@ namespace CombatHandler.MartialArtist
             if (fightingtarget == null) { return false; }
             if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Stamina)) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > StaminaAbsorbsItemPercentage) { return false; }
 
             return true;
         }

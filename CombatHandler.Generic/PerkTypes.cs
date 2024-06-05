@@ -34,7 +34,7 @@ namespace CombatHandler.Generic
             {PerkHash.BattlegroupHeal3 , PerkType.Disabled},
             {PerkHash.BattlegroupHeal4 , PerkType.Disabled},
             {PerkHash.Bearhug , PerkType.TargetDamage},
-            {PerkHash.Beckoning , PerkType.TargetDamage},
+            {PerkHash.Beckoning , PerkType.advy_morph_perks},
             {PerkHash.BigSmash , PerkType.TargetDamage},
             {PerkHash.BioShield , PerkType.CombatBuff},
             {PerkHash.BioCocoon , PerkType.Disabled},
@@ -43,7 +43,7 @@ namespace CombatHandler.Generic
             {PerkHash.BladeOfNight , PerkType.TargetDamage},
             {PerkHash.BladeWhirlwind , PerkType.CombatBuff},
             {PerkHash.BlastNano , PerkType.TargetDamage},
-            {PerkHash.BleedingWounds , PerkType.TargetDamage},
+            {PerkHash.BleedingWounds , PerkType.advy_morph_perks},
             {PerkHash.BlessingOfLife , PerkType.TeamHeal},
             {PerkHash.BlindedByDelights , PerkType.TargetDamage},
             {PerkHash.BlindsideBlow , PerkType.TargetDamage},
@@ -100,7 +100,7 @@ namespace CombatHandler.Generic
             {PerkHash.DetonateStoneworks , PerkType.TargetDamage},
             {PerkHash.DevastatingBlow , PerkType.TargetDamage},
             {PerkHash.DevotionalArmor , PerkType.DamageBuff},
-            {PerkHash.Devour , PerkType.TargetDamage},
+            {PerkHash.Devour , PerkType.advy_morph_perks},
             {PerkHash.DevourEssence , PerkType.Disabled},
             {PerkHash.DevourVigor , PerkType.Disabled},
             {PerkHash.DevourVitality , PerkType.Disabled},
@@ -151,7 +151,7 @@ namespace CombatHandler.Generic
             {PerkHash.GroinKick , PerkType.TargetDamage},
             {PerkHash.Guardian , PerkType.CombatBuff},
             {PerkHash.Guesstimate , PerkType.TargetDamage},
-            {PerkHash.GuttingBlow , PerkType.TargetDamage},
+            {PerkHash.GuttingBlow , PerkType.advy_morph_perks},
             {PerkHash.HaleAndHearty , PerkType.Disabled}, //PerkType.AOO_Trader_DOts_Init_Cleanse
             {PerkHash.HammerAndAnvil , PerkType.DamageBuff},
             {PerkHash.HarmonizeBodyAndMind , PerkType.SelfHeal},
@@ -513,6 +513,6 @@ namespace CombatHandler.Generic
     {
         Generic, SelfBuff, SelfHeal, SelfNano, TeamHeal, TeamNano, TargetDamage, DamageBuff, CombatBuff,
         Pet_Buff, Pet_Heal, LEProc, Cleanse, Custom, Disabled, Unknown, Dot_Cleanse, NanoShutdown_TraderDebuff_Cleanse, Trader_Debuff_Cleanse,
-        AAO_Dots_Cleanse, Root_Snare_Cleanse, AOO_Trader_DOts_Init_Cleanse, Snare_Cleanse, Root_Cleanse, NanoShutdown_Cleanse, Combat_PetBuff
+        AAO_Dots_Cleanse, Root_Snare_Cleanse, AOO_Trader_DOts_Init_Cleanse, Snare_Cleanse, Root_Cleanse, NanoShutdown_Cleanse, Combat_PetBuff, advy_morph_perks
     }
 }

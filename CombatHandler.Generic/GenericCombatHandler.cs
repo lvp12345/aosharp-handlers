@@ -62,6 +62,7 @@ namespace CombatHandler.Generic
         public static int DuckAbsorbsItemPercentage = 0;
         public static int BodyDevAbsorbsItemPercentage = 0;
         public static int StrengthAbsorbsItemPercentage = 0;
+        public static int StaminaAbsorbsItemPercentage = 0;
         public static int TOTWPercentage = 0;
 
         public static int StimHealthPercentage = 0;
@@ -2569,6 +2570,13 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = e;
             StrengthAbsorbsItemPercentage = e;
+            Config.Save();
+        }
+
+        public static void StaminaAbsorbsItemPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentage = e;
+            StaminaAbsorbsItemPercentage = e;
             Config.Save();
         }
 

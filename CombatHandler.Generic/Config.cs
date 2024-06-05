@@ -91,6 +91,10 @@ namespace CombatHandler.Generic
         public int BodyDevAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage : 55;
         [JsonIgnore]
         public int StrengthAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage : 70;
+
+        [JsonIgnore]
+        public int StaminaAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentage : 50;
+
         [JsonIgnore]
         public int CycleBioRegrowthDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay : 1;
         [JsonIgnore]
@@ -546,6 +550,23 @@ namespace CombatHandler.Generic
                 {
                     _strengthAbsorbsItemPercentage = value;
                     StrengthAbsorbsItemPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> StaminaAbsorbsItemPercentageChangedEvent;
+        private int _staminaAbsorbsItemPercentage = 50;
+        public int StaminaAbsorbsItemPercentage
+        {
+            get
+            {
+                return _staminaAbsorbsItemPercentage;
+            }
+            set
+            {
+                if (_staminaAbsorbsItemPercentage != value)
+                {
+                    _staminaAbsorbsItemPercentage = value;
+                    StaminaAbsorbsItemPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

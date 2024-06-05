@@ -75,6 +75,8 @@ namespace CombatHandler.Generic
         private double CycleWitOfTheAtroxPerk = 0;
         private double CycleBioRegrowthPerk = 0;
 
+        public static List<int> AdvyMorphs = new List<int> { 217670, 25994, 263278, 82834, 275005, 85062, 217680, 85070 };
+
         private static double _updateTick;
         double _delay;
 
@@ -714,6 +716,8 @@ namespace CombatHandler.Generic
                 return false;
             }
 
+            if (AdvyMorphs.Any(buffId => DynelManager.LocalPlayer.Buffs.Contains(buffId))) { return false; }
+
             NanoLine nanoline = spell.Nanoline;
 
             if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id))
@@ -728,6 +732,38 @@ namespace CombatHandler.Generic
                 return true;
             }
 
+            return false;
+        }
+
+        protected bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("AAO"))
+            {
+                if (Team.IsInTeam)
+                {
+                    var target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && !(c.Buffs.Contains(NanoLine.AAOBuffs) || AdvyMorphs.Any(morphs => c.Buffs.Contains(morphs)))
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
+                        return true;
+                    }
+                }
+            }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.AAOBuffs))
+            {
+                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            }
+            
             return false;
         }
 

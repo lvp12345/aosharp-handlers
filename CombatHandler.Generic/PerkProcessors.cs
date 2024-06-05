@@ -33,6 +33,8 @@ namespace CombatHandler.Generic
                     return TeamNanoPerk;
                 case PerkType.TargetDamage:
                     return TargetedDamagePerk;
+                case PerkType.advy_morph_perks:
+                    return ADVYDamageBuffPerk;
                 case PerkType.DamageBuff:
                     return DamageBuffPerk;
                 case PerkType.CombatBuff:
@@ -103,6 +105,16 @@ namespace CombatHandler.Generic
                 }
 
             return false;
+        }
+
+        public static bool ADVYDamageBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Profession != Profession.Adventurer) { return false; }
+            if (fightingTarget == null) { return false; }
+           
+            if (!AdvyMorphs.Any(buffId => DynelManager.LocalPlayer.Buffs.Contains(buffId))) { return false; }
+
+            return true;
         }
 
         public static bool DamageBuffPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

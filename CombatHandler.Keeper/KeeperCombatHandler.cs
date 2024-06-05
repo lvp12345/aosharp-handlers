@@ -71,7 +71,7 @@ namespace CombatHandler.Keeper
 
                 _settings.AddVariable("EncaseInStone", false);
 
-                _settings.AddVariable("AAOBuffs", true);
+                _settings.AddVariable("AAO", true);
 
                 _settings.AddVariable("SharpObjects", false);
                 _settings.AddVariable("Grenades", false);
@@ -136,9 +136,11 @@ namespace CombatHandler.Keeper
                 RegisterSpellProcessor(RelevantNanos.ReaperAuras, ReaperAura);
 
                 //Team Buffs
-                RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked,
-                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "AAOBuffs"));
+                //RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked,
+                //(Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                //    => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "AAOBuffs"));
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
 
                 //LE Proc
                 RegisterPerkProcessor(PerkHash.LEProcKeeperRighteousSmite, LEProc1, CombatActionPriority.Low);

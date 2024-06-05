@@ -1108,10 +1108,12 @@ namespace CombatHandler.Adventurer
                 82064, 26695 };
 
             public static readonly int[] ArmorBuffs = { 74173, 74174, 74175, 74176, 74177, 74178 };
+
             public static readonly int[] DragonMorph = { 217670, 25994 };
             public static readonly int[] LeetMorph = { 263278, 82834 };
             public static readonly int[] WolfMorph = { 275005, 85062 };
             public static readonly int[] SaberMorph = { 217680, 85070 };
+
             public static readonly int[] DragonScales = { 302217, 302214 };
             public static readonly int[] WolfAgility = { 302235, 302232 };
             public static readonly int[] LeetCrit = { 302229, 302226 };

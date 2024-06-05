@@ -1048,32 +1048,32 @@ namespace CombatHandler.Soldier
 
         #region Buffs
 
-        private bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (IsSettingEnabled("AAO"))
-            {
-                if (Team.IsInTeam)
-                {
-                    var target = DynelManager.Players
-                        .Where(c => c.IsInLineOfSight
-                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && c.Health > 0
-                            && !c.Buffs.Contains(NanoLine.AAOBuffs) && !c.Buffs.Contains(NanoLine.AdventurerMorphBuff)
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
+        //private bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (IsSettingEnabled("AAO"))
+        //    {
+        //        if (Team.IsInTeam)
+        //        {
+        //            var target = DynelManager.Players
+        //                .Where(c => c.IsInLineOfSight
+        //                    && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+        //                    && c.Health > 0
+        //                    && !(c.Buffs.Contains(NanoLine.AAOBuffs) || c.Buffs.Contains(NanoLine.AdventurerMorphBuff))
+        //                    && SpellChecksOther(spell, spell.Nanoline, c))
+        //                .FirstOrDefault();
 
-                    if (target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = target;
-                        return true;
-                    }
-                }
-            }
+        //            if (target != null)
+        //            {
+        //                actionTarget.ShouldSetTarget = true;
+        //                actionTarget.Target = target;
+        //                return true;
+        //            }
+        //        }
+        //    }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
+        //    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        //}
 
         private bool RiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

@@ -927,6 +927,8 @@ namespace CombatHandler.Fixer
         {
             if (IsInsideInnerSanctum() || RunspeedSelection.Rk != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
 
+            if (AdvyMorphs.Any(buffId => DynelManager.LocalPlayer.Buffs.Contains(buffId))) { return false; }
+
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.ShadowlandsRunspeed))
             {
                 CancelBuffs(RelevantNanos.ShadowlandsRunspeed);

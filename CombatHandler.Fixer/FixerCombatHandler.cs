@@ -4,7 +4,10 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using SmokeLounge.AOtomation.Messaging.GameData;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CombatHandler.Fixer
@@ -497,6 +500,7 @@ namespace CombatHandler.Fixer
 
             base.OnUpdate(deltaTime);
             EquipBackArmor();
+            Bullets();
 
             if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
@@ -1071,6 +1075,56 @@ namespace CombatHandler.Fixer
 
         #region Misc
 
+        private static void Bullets()
+        {
+            if (BulletsSelection.None == (BulletsSelection)_settings["BulletsSelection"].AsInt32()) { return; }
+
+            Item bullets = null;
+            Item bulletsToCombine = null;
+
+            var RestockSpecialAmmo = Spell.List.FirstOrDefault(h => h.Id == 297632 && h.IsReady);
+
+            switch ((BulletsSelection)_settings["BulletsSelection"].AsInt32())
+            {
+                case BulletsSelection.Cluster:
+                    bullets = Inventory.Items.FirstOrDefault(item => RelevantItems.ClusterBullets.Contains(item.Id));
+                    bulletsToCombine = Inventory.Items.FirstOrDefault(item => RelevantItems.HomingPermorphaBullets.Contains(item.Id));
+                    break;
+                case BulletsSelection.Permorpha:
+                    bullets = Inventory.Items.FirstOrDefault(item => RelevantItems.HomingPermorphaBullets.Contains(item.Id));
+                    bulletsToCombine = Inventory.Items.FirstOrDefault(item => RelevantItems.ClusterBullets.Contains(item.Id));
+                    break;
+                case BulletsSelection.Any:
+                    bullets = Inventory.Items.FirstOrDefault(item => RelevantItems.HomingPermorphaBullets.Contains(item.Id)
+                    || RelevantItems.ClusterBullets.Contains(item.Id));
+                    break;
+                default:
+                    break;
+
+            }
+
+            List<Item> list = Inventory.Items.FindAll((Item x) => x.Name == bulletsToCombine?.Name);
+
+            if (list?.Count > 1)
+            {
+                CharacterActionMessage characterActionMessage = new CharacterActionMessage();
+                characterActionMessage.Action = (CharacterActionType)53;
+                characterActionMessage.Target = list[1].Slot;
+                Identity slot = list[0].Slot;
+                characterActionMessage.Parameter1 = (int)slot.Type;
+                slot = list[0].Slot;
+                characterActionMessage.Parameter2 = slot.Instance;
+                Network.Send(characterActionMessage);
+            }
+            else
+            {
+                if (bullets == null && Inventory.NumFreeSlots > 2 && !Spell.HasPendingCast)
+                {
+                    RestockSpecialAmmo?.Cast();
+                }
+            }
+        }
+
         private static bool IsMoving(SimpleChar target)
         {
             if (Playfield.Identity.Instance == 4021)
@@ -1153,7 +1207,7 @@ namespace CombatHandler.Fixer
 
         public enum BulletsSelection
         {
-            None, Cluster, Permorpha
+            None, Cluster, Permorpha, Any
         }
 
         public enum ArmorSelection

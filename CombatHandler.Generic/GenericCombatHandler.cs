@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
+using System.Runtime.Remoting.Messaging;
 
 namespace CombatHandler.Generic
 {
@@ -260,11 +261,7 @@ namespace CombatHandler.Generic
 
                 RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-                RegisterItemProcessor(new int[] {SharpObjectsItems.TearofOedipus, SharpObjectsItems.PoisonDartsoftheDeceptor,
-                SharpObjectsItems.MeteoriteSpikes, SharpObjectsItems.Lavacapsule, SharpObjectsItems.KoanShuriken, SharpObjectsItems.KizzermoleGumboil,
-                SharpObjectsItems.HeroesDiscus, SharpObjectsItems.FallenStar, SharpObjectsItems.EverburningCoal, SharpObjectsItems.ElectricBolts,
-                SharpObjectsItems.CircusThrowingDagger, SharpObjectsItems.ChunkofEternalIce, SharpObjectsItems.CapsuleofFulminatingNovictum,
-                SharpObjectsItems.AluminumThrowingDagger}, SharpObjects);
+                RegisterItemProcessor(SharpObjectsItems.ItemsOrderbyDmg, SharpObjects);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, DamageItem);
@@ -1176,9 +1173,12 @@ namespace CombatHandler.Generic
 
         protected virtual bool SharpObjects(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SharpObjects") || fightingTarget == null) { return false; }
+            if (!_settings["SharpObjects"].AsBool()) { return false; }
+            if (fightingTarget == null) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.SharpObject)) { return false; }
 
-            return DamageItem(item, fightingTarget, ref actionTarget);
+            actionTarget = (fightingTarget, true);
+            return true;
         }
         protected virtual bool Grenades(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -2114,22 +2114,6 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.FlurryOfBlowsHigh:
                     return Stat.AggDef;
 
-                case SharpObjectsItems.TearofOedipus:
-                case SharpObjectsItems.PoisonDartsoftheDeceptor:
-                case SharpObjectsItems.MeteoriteSpikes:
-                case SharpObjectsItems.Lavacapsule:
-                case SharpObjectsItems.KoanShuriken:
-                case SharpObjectsItems.KizzermoleGumboil:
-                case SharpObjectsItems.HeroesDiscus:
-                case SharpObjectsItems.FallenStar:
-                case SharpObjectsItems.EverburningCoal:
-                case SharpObjectsItems.ElectricBolts:
-                case SharpObjectsItems.CircusThrowingDagger:
-                case SharpObjectsItems.ChunkofEternalIce:
-                case SharpObjectsItems.CapsuleofFulminatingNovictum:
-                case SharpObjectsItems.AluminumThrowingDagger:
-                    return Stat.SharpObject;
-
                 case RelevantGenericItems.SteamingHotCupOfEnhancedCoffee:
                     return Stat.RunSpeed;
 
@@ -2185,20 +2169,23 @@ namespace CombatHandler.Generic
 
         public static class SharpObjectsItems
         {
-            public const int TearofOedipus = 244216;
-            public const int HeroesDiscus = 244215;
-            public const int Lavacapsule = 245990;
-            public const int FallenStar = 244214;
-            public const int EverburningCoal = 244210;
-            public const int PoisonDartsoftheDeceptor = 244208;
-            public const int KoanShuriken = 244211;
-            public const int CapsuleofFulminatingNovictum = 244209;
-            public const int KizzermoleGumboil = 245323;
-            public const int ChunkofEternalIce = 244206;
-            public const int AluminumThrowingDagger = 1646;
-            public const int CircusThrowingDagger = 244987;
-            public const int ElectricBolts = 244205;
-            public const int MeteoriteSpikes = 244204;
+            public static readonly int[] ItemsOrderbyDmg = new[]
+            {
+                244216, //TearofOedipus
+                244215, //HeroesDiscus
+                245990, //Lavacapsule
+                244214, //FallenStar
+                244210, //EverburningCoal
+                244208, //PoisonDartsoftheDeceptor
+                244211, //KoanShuriken
+                244209, //CapsuleofFulminatingNovictum
+                245323, //KizzermoleGumboil
+                244206, //ChunkofEternalIce
+                1646,   //AluminumThrowingDagger
+                244987, //CircusThrowingDagger
+                244205, //ElectricBolts
+                244204, //MeteoriteSpikes
+            };
         }
 
         public static class RelevantGenericItems

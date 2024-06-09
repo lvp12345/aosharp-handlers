@@ -261,7 +261,7 @@ namespace CombatHandler.Generic
 
                 RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-                RegisterItemProcessor(SharpObjectsItems.ItemsOrderbyDmg, SharpObjects);
+                RegisterItemProcessor(SharpObjectsItems.ItemsOrderbyQL, SharpObjects);
 
                 RegisterItemProcessor(RelevantGenericItems.ThrowingGrenade, Grenades);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, DamageItem);
@@ -1376,50 +1376,6 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        //private bool AmmoBoxBullets(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        //{
-        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
-
-        //    return !Inventory.Items
-        //        .Where(c => c.Name == "Ammo: Box of Bullets")
-        //        .Any();
-        //}
-
-        //private bool AmmoBoxEnergy(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        //{
-        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
-
-        //    return !Inventory.Items
-        //        .Where(c => c.Name == "Ammo: Box of Energy Weapon Ammo")
-        //        .Any();
-        //}
-
-        //private bool AmmoBoxShotgun(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        //{
-        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
-
-        //    return !Inventory.Items
-        //        .Where(c => c.Name == "Ammo: Box of Shotgun Shells")
-        //        .Any();
-        //}
-        //private bool AmmoBoxGrenade(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        //{
-        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
-
-        //    return !Inventory.Items
-        //        .Where(c => c.Name == "Ammo: Box of Launcher Grenades")
-        //        .Any();
-        //}
-
-        //private bool AmmoBoxArrows(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
-        //{
-        //    if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.WeaponSmithing)) { return false; }
-
-        //    return !Inventory.Items
-        //        .Where(c => c.Name == "Ammo: Box of Arrows")
-        //        .Any();
-        //}
-
         private bool EnforcerEnduranceBooster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
 
@@ -2168,22 +2124,26 @@ namespace CombatHandler.Generic
 
         public static class SharpObjectsItems
         {
-            public static readonly int[] ItemsOrderbyDmg = new[]
+            public static readonly int[] ItemsOrderbyQL = new[]
             {
-                244216, //TearofOedipus
-                244215, //HeroesDiscus
-                245990, //Lavacapsule
-                244214, //FallenStar
-                244210, //EverburningCoal
-                244208, //PoisonDartsoftheDeceptor
-                244211, //KoanShuriken
-                244209, //CapsuleofFulminatingNovictum
-                245323, //KizzermoleGumboil
-                244206, //ChunkofEternalIce
-                1646,   //AluminumThrowingDagger
-                244987, //CircusThrowingDagger
-                244205, //ElectricBolts
-                244204, //MeteoriteSpikes
+                244214, //Fallen Star
+                244215, //Heroes Discus
+                244216, //Tear of Oedipus
+                244211, //Koan Shuriken
+                245990, //Lava capsule
+                244208, //Poison Darts of the Deceptor
+                244209, //Capsule of Fulminating Novictum
+                164633, //Aluminum Throwing Dagger
+                164779, //Aluminum Throwing Dagger
+                244987, //Circus Throwing Dagger
+                244210, //Ever burning Coal
+                244204, //Meteorite Spikes
+                244206, //Chunk of Eternal Ice
+                244205, //Electric Bolts
+                244986, //Circus Throwing Dagger
+                245323, //Kizzermole Gumboil
+                164632, //Aluminum Throwing Dagger
+                164778, //Aluminum Throwing Dagger
             };
         }
 

@@ -260,7 +260,7 @@ namespace CombatHandler.Generic
 
                 RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-                RegisterItemProcessor(new int[] {RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.TearOfOedipus,
+                RegisterItemProcessor(new int[] {RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.TearOfOedipus, RelevantGenericItems.HeroesDiscus,
                 RelevantGenericItems.LavaCapsule, RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.FallenStar}, SharpObjects);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
@@ -2200,6 +2200,7 @@ namespace CombatHandler.Generic
             public const int KizzermoleGumboil = 245323;
             public const int FallenStar = 244214;
             public const int TearOfOedipus = 244216;
+            public const int HeroesDiscus = 244215;
 
             public const int RingofTatteredFlame = 204593;
             public const int RingofPurifyingFlame = 305493;

@@ -260,8 +260,11 @@ namespace CombatHandler.Generic
 
                 RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
-                RegisterItemProcessor(new int[] {RelevantGenericItems.MeteoriteSpikes, RelevantGenericItems.TearOfOedipus, RelevantGenericItems.HeroesDiscus,
-                RelevantGenericItems.LavaCapsule, RelevantGenericItems.KizzermoleGumboil, RelevantGenericItems.FallenStar}, SharpObjects);
+                RegisterItemProcessor(new int[] {SharpObjectsItems.TearofOedipus, SharpObjectsItems.PoisonDartsoftheDeceptor,
+                SharpObjectsItems.MeteoriteSpikes, SharpObjectsItems.Lavacapsule, SharpObjectsItems.KoanShuriken, SharpObjectsItems.KizzermoleGumboil,
+                SharpObjectsItems.HeroesDiscus, SharpObjectsItems.FallenStar, SharpObjectsItems.EverburningCoal, SharpObjectsItems.ElectricBolts,
+                SharpObjectsItems.CircusThrowingDagger, SharpObjectsItems.ChunkofEternalIce, SharpObjectsItems.CapsuleofFulminatingNovictum,
+                SharpObjectsItems.AluminumThrowingDagger}, SharpObjects);
 
                 RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, DamageItem);
@@ -2111,11 +2114,20 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.FlurryOfBlowsHigh:
                     return Stat.AggDef;
 
-                case RelevantGenericItems.MeteoriteSpikes:
-                case RelevantGenericItems.LavaCapsule:
-                case RelevantGenericItems.KizzermoleGumboil:
-                case RelevantGenericItems.FallenStar:
-                case RelevantGenericItems.TearOfOedipus:
+                case SharpObjectsItems.TearofOedipus:
+                case SharpObjectsItems.PoisonDartsoftheDeceptor:
+                case SharpObjectsItems.MeteoriteSpikes:
+                case SharpObjectsItems.Lavacapsule:
+                case SharpObjectsItems.KoanShuriken:
+                case SharpObjectsItems.KizzermoleGumboil:
+                case SharpObjectsItems.HeroesDiscus:
+                case SharpObjectsItems.FallenStar:
+                case SharpObjectsItems.EverburningCoal:
+                case SharpObjectsItems.ElectricBolts:
+                case SharpObjectsItems.CircusThrowingDagger:
+                case SharpObjectsItems.ChunkofEternalIce:
+                case SharpObjectsItems.CapsuleofFulminatingNovictum:
+                case SharpObjectsItems.AluminumThrowingDagger:
                     return Stat.SharpObject;
 
                 case RelevantGenericItems.SteamingHotCupOfEnhancedCoffee:
@@ -2171,6 +2183,24 @@ namespace CombatHandler.Generic
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
 
+        public static class SharpObjectsItems
+        {
+            public const int TearofOedipus = 244216;
+            public const int HeroesDiscus = 244215;
+            public const int Lavacapsule = 245990;
+            public const int FallenStar = 244214;
+            public const int EverburningCoal = 244210;
+            public const int PoisonDartsoftheDeceptor = 244208;
+            public const int KoanShuriken = 244211;
+            public const int CapsuleofFulminatingNovictum = 244209;
+            public const int KizzermoleGumboil = 245323;
+            public const int ChunkofEternalIce = 244206;
+            public const int AluminumThrowingDagger = 1646;
+            public const int CircusThrowingDagger = 244987;
+            public const int ElectricBolts = 244205;
+            public const int MeteoriteSpikes = 244204;
+        }
+
         public static class RelevantGenericItems
         {
             public const int ReflectGraft = 95225; //Hacked Boosted-Graft: Lesser Deflection Shield (Extended) 
@@ -2195,12 +2225,6 @@ namespace CombatHandler.Generic
 
             public const int HSRLow = 164780;
             public const int HSRHigh = 164781;
-
-            public const int MeteoriteSpikes = 244204;
-            public const int KizzermoleGumboil = 245323;
-            public const int FallenStar = 244214;
-            public const int TearOfOedipus = 244216;
-            public const int HeroesDiscus = 244215;
 
             public const int RingofTatteredFlame = 204593;
             public const int RingofPurifyingFlame = 305493;

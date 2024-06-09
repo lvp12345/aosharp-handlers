@@ -263,7 +263,7 @@ namespace CombatHandler.Generic
 
                 RegisterItemProcessor(SharpObjectsItems.ItemsOrderbyDmg, SharpObjects);
 
-                RegisterItemProcessor(new int[] { RelevantGenericItems.HSRLow, RelevantGenericItems.HSRHigh }, Grenades);
+                RegisterItemProcessor(RelevantGenericItems.ThrowingGrenade, Grenades);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.UponAWaveOfSummerLow, RelevantGenericItems.UponAWaveOfSummerHigh }, DamageItem);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.BlessedWithThunderLow, RelevantGenericItems.BlessedWithThunderHigh }, DamageItem);
 
@@ -1182,9 +1182,12 @@ namespace CombatHandler.Generic
         }
         protected virtual bool Grenades(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Grenades") || fightingTarget == null) { return false; }
+            if (!_settings["Grenades"].AsBool()) { return false; }
+            if (fightingTarget == null) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Grenade)) { return false; }
 
-            return DamageItem(item, fightingTarget, ref actionTarget);
+            actionTarget = (fightingTarget, true);
+            return true;
         }
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -2136,10 +2139,6 @@ namespace CombatHandler.Generic
                 case RelevantGenericItems.DaTaunterHigh:
                     return Stat.Psychology;
 
-                case RelevantGenericItems.HSRLow:
-                case RelevantGenericItems.HSRHigh:
-                    return Stat.Grenade;
-
                 case RelevantGenericItems.BracerofBrotherMalevolence:
                     return Stat.Psychic;
 
@@ -2210,8 +2209,13 @@ namespace CombatHandler.Generic
 
             public const int AssaultClassTank = 156576;
 
-            public const int HSRLow = 164780;
-            public const int HSRHigh = 164781;
+            public static readonly int[] ThrowingGrenade = new[]
+            {
+                164781, //HSR Hedgehog 23 Throwing Grenade
+                165117, //May Fly Throwing Grenade
+                164780, //HSR Hedgehog 23 Throwing Grenade
+                165116, //May Fly Throwing Grenade
+            };
 
             public const int RingofTatteredFlame = 204593;
             public const int RingofPurifyingFlame = 305493;

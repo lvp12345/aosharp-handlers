@@ -16,7 +16,9 @@ namespace CombatHandler.Agent
         private static bool ToggleComposites = false;
         private static bool ToggleRez = false;
 
-        private double _lastSwitchedHealTime = 0;
+        public static int[] FPSwitchSetting;
+
+        private double _lastHealPetHealTime = 0.0;
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
@@ -26,7 +28,16 @@ namespace CombatHandler.Agent
         private static Window _healingWindow;
         private static Window _perkWindow;
         private static Window _mpWindow;
-
+        private static Window _soldWindow;
+        private static Window _enfoWindow;
+        private static Window _engieWindow;
+        private static Window _docWindow;
+        private static Window _fixerWindow;
+        private static Window _cratWindow;
+        private static Window _maWindow;
+        private static Window _ntWindow;
+        private static Window _tradeWindow;
+        private static Window _advyWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -36,15 +47,32 @@ namespace CombatHandler.Agent
         private static View _healingView;
         private static View _perkView;
         private static View _mpView;
-
-        //private static SimpleChar _drainTarget;
-
+        private static View _soldView;
+        private static View _enfoView;
+        private static View _engieView;
+        private static View _docView;
+        private static View _fixerView;
+        private static View _cratView;
+        private static View _maView;
+        private static View _ntView;
+        private static View _tradeView;
+        private static View _advyView;
+        private static Window _morphWindow;
+        private static View _morphView;
         private static double _ncuUpdateTime;
+        private static double _mongo;
+        private static double _challenger;
+        private static double _singleTaunt;
+
+
+        private static SimpleChar _drainTarget;
 
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
         {
             try
             {
+                PluginDirectory = pluginDir;
+
                 IPCChannel.RegisterCallback((int)IPCOpcode.RemainingNCU, OnRemainingNCUMessage);
                 IPCChannel.RegisterCallback((int)IPCOpcode.GlobalBuffing, OnGlobalBuffingMessage);
                 IPCChannel.RegisterCallback((int)IPCOpcode.GlobalComposites, OnGlobalCompositesMessage);
@@ -54,9 +82,8 @@ namespace CombatHandler.Agent
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentageChangedEvent += TargetHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
-                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentageChangedEvent += TeamHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentageChangedEvent += TeamHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentageChangedEvent += CompleteTeamHealPercentage_Changed;
-
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
@@ -71,6 +98,10 @@ namespace CombatHandler.Agent
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelayChangedEvent += MongoDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelayChangedEvent += CycleChallengerDelay_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
+
 
                 _settings.AddVariable("AllPlayers", false);
                 _settings["AllPlayers"] = false;
@@ -95,8 +126,6 @@ namespace CombatHandler.Agent
 
                 _settings.AddVariable("CritTeam", false);
 
-                _settings.AddVariable("SpawnPets", true);
-
                 _settings.AddVariable("DOTASelection", (int)DOTASelection.None);
                 _settings.AddVariable("EvasionDebuffSelection", (int)EvasionDebuffSelection.None);
                 _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
@@ -104,25 +133,48 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.GrimReaper);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.LaserAim);
 
+                _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
+                _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
+
                 _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("ProcSelection", (int)ProcSelection.Damage);
 
                 _settings.AddVariable("Concentration", false);
-
+                _settings.AddVariable("TheShot", false);
                 _settings.AddVariable("FalseProfSelection", (int)FalseProfSelection.None);
+
+                _settings.AddVariable("RKNanoDrainSelection", (int)RKNanoDrainSelection.None);
+                _settings.AddVariable("ACDrainSelection", (int)ACDrainSelection.None);
+
+                _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
+
+                _settings.AddVariable("SpawnPets", true);
+                _settings.AddVariable("BuffPets", true);
+                _settings.AddVariable("WarpPets", false);
+
+
+                //doc
+                _settings.AddVariable("LockCH", false);
+                _settings.AddVariable("TeamHealSelection", (int)TeamHealSelection.TeamImprovedLifeChanneler);
+
+                //Adv
+                _settings.AddVariable("MorphSelection", (int)MorphSelection.None);
+                _settings.AddVariable("CatDamage", false);
+                //_settings.AddVariable("LeetOwz", true);
+
+                //enf
+                _settings.AddVariable("MongoSelection", (int)MongoSelection.Spam);
+                _settings.AddVariable("CycleChallenger", false);
+                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.Adds);
+                _settings.AddVariable("TargetedHpBuff", true);
+                _settings.AddVariable("OSTMongo", false);
+
 
                 RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
                 //Healing
-
-                RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.CompleteHealing, Healing.CompleteHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, Healing.FountainOfLife, CombatActionPriority.High);
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), Healing.TeamHealing, CombatActionPriority.High);
-
-                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, Healing.CompleteTeamHealing, CombatActionPriority.High);
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
@@ -148,6 +200,7 @@ namespace CombatHandler.Agent
                 RegisterSpellProcessor(RelevantNanos.DetauntProcs, DetauntProc);
                 RegisterSpellProcessor(RelevantNanos.DOTProcs, DamageProc);
 
+
                 //Team Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -169,30 +222,125 @@ namespace CombatHandler.Agent
                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"), CombatActionPriority.Medium);
 
-                //False Profs
-                RegisterSpellProcessor(RelevantNanos.FalseProfDoc, FalseProfDoctor);
-                RegisterSpellProcessor(RelevantNanos.FalseProfAdv, FalseProfAdventurer);
-                RegisterSpellProcessor(RelevantNanos.FalseProfCrat, FalseProfBeauracrat);
-                RegisterSpellProcessor(RelevantNanos.FalseProfEnf, FalseProfEnforcer);
-                RegisterSpellProcessor(RelevantNanos.FalseProfEng, FalseProfEngineer);
-                RegisterSpellProcessor(RelevantNanos.FalseProfFixer, FalseProfFixer);
-                RegisterSpellProcessor(RelevantNanos.FalseProfMa, FalseProfMartialArtist);
-                RegisterSpellProcessor(RelevantNanos.FalseProfMp, FalseProfMetaphysicist);
-                RegisterSpellProcessor(RelevantNanos.FalseProfNt, FalseProfNanoTechnician);
-                RegisterSpellProcessor(RelevantNanos.FalseProfSol, FalseProfSoldier);
-                RegisterSpellProcessor(RelevantNanos.FalseProfTrader, FalseProfTrader);
+                #region Adventurer
 
-                //Metaphysicist
+                //Heals
+                RegisterSpellProcessor(RelevantNanos.AdvyTargetHeals, AdvyTargetHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.AdvyTeamHeals, AdvyTeamHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.AdvyCompleteHeal, AdvyCompleteHealing, CombatActionPriority.High);
+
+                //buffs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._1HEdgedBuff).OrderByStackingOrder(), Melee);
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Ranged);
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(),
+
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+                RegisterSpellProcessor(RelevantNanos.ArmorBuffs, Armor);
+
+                //Morphs
+                RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
+                RegisterSpellProcessor(RelevantNanos.LeetMorph, LeetMorph);
+                RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
+                RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
+
+                //Morph Buffs
+                RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
+                RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
+                RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
+                RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
+
+                //Morph Cooldowns
+                RegisterSpellProcessor(RelevantNanos.CatDamage, CatDamage);
+                RegisterSpellProcessor(RelevantNanos.LeetOwz, LeetOwz);
+
+                #endregion
+
+                #region Doctor
+
+                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.DocHeals, DocTargetHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.DocCompleteTargetHealing, DocCompleteHealing, CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.DocTeamHeals,
+                           (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                           DocTeamHealing(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
+                           CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler,
+                          (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                          TeamImprovedLifeChannelerAsTeamHeal(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
+                          CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, DocCompleteTeamHealing, CombatActionPriority.High);
+
+
+                #endregion
+
+                #region Enforcer
+
+                //Taunts
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+
+                #endregion
+
+                #region Metaphysicist
+
+                //buffs
+                RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
                 //Pets
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AttackPets).OrderByStackingOrder(), AttackPetSpawner);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealPets).OrderByStackingOrder(), HealPetSpawner);
+                //petbuffs
+                RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
+                RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
+                RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
+                RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
 
-                //Soldier
+                RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+
+                #endregion
+
+                #region Soldier
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
 
-                //Trader
+                #endregion
+
+                #region Trader
+
+                //debuffs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderDebuffACNanos).OrderByStackingOrder(), ACDrain, CombatActionPriority.Medium);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Deprive).OrderByStackingOrder(), DepriveDrain, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack).OrderByStackingOrder(), RansackDrain, CombatActionPriority.High);
+
+                #endregion
 
                 //LE Procs
                 //type1
@@ -202,7 +350,7 @@ namespace CombatHandler.Agent
                 RegisterPerkProcessor(PerkHash.LEProcAgentIntenseMetabolism, LEProc1, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcAgentMinorNanobotEnhance, LEProc1, CombatActionPriority.Low);
 
-                //tupe2
+                //type2
                 RegisterPerkProcessor(PerkHash.LEProcAgentNotumChargedRounds, LEProc2, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcAgentLaserAim, LEProc2, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcAgentNanoEnhancedTargeting, LEProc2, CombatActionPriority.Low);
@@ -210,8 +358,6 @@ namespace CombatHandler.Agent
                 RegisterPerkProcessor(PerkHash.LEProcAgentCellKiller, LEProc2, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcAgentImprovedFocus, LEProc2, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcAgentBrokenAnkle, LEProc2, CombatActionPriority.Low);
-
-                PluginDirectory = pluginDir;
 
                 Healing.TargetHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage;
                 Healing.CompleteHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage;
@@ -232,6 +378,9 @@ namespace CombatHandler.Agent
                 TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
                 BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+                MongoDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelay;
+                CycleChallengerDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay;
+                SingleTauntDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay;
             }
             catch (Exception ex)
             {
@@ -246,13 +395,13 @@ namespace CombatHandler.Agent
             }
         }
 
-        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow, _mpWindow };
+        public Window[] _windows => new Window[] { _buffWindow, _debuffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow, _falseProfWindow, _advyWindow, _cratWindow, _docWindow, _enfoWindow,
+            _engieWindow, _fixerWindow, _maWindow, _mpWindow, _ntWindow, _soldWindow, _tradeWindow};
 
         #region Callbacks
 
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
-
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
             SettingsController.RemainingNCU[ncuMessage.Character] = ncuMessage.RemainingNCU;
         }
@@ -292,11 +441,13 @@ namespace CombatHandler.Agent
         private void HandleItemViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
             if (window != null)
             {
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentItemsView.xml");
+
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "AgentItemsView" }, _itemView);
 
                 window.FindView("StimTargetBox", out TextInputView stimTargetInput);
@@ -480,6 +631,7 @@ namespace CombatHandler.Agent
         private void HandleFalseProfViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
             if (window != null)
             {
                 if (window.Views.Contains(_falseProfView)) { return; }
@@ -493,23 +645,7 @@ namespace CombatHandler.Agent
                 _falseProfWindow = container;
             }
         }
-        private void HandleMPSettingsViewClick(object s, ButtonBase button)
-        {
-            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
-            {
 
-                if (window.Views.Contains(_mpView)) { return; }
-
-                _mpView = View.CreateFromXml(PluginDirectory + "\\UI\\AgentMPView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "MPView", XmlViewName = "AgentMPView" }, _mpView);
-            }
-            else if (_mpWindow == null || (_mpWindow != null && !_mpWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_mpWindow, PluginDir, new WindowOptions() { Name = "MPView", XmlViewName = "AgentMPView" }, _mpView, out var container);
-                _mpWindow = container;
-            }
-        }
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -542,7 +678,6 @@ namespace CombatHandler.Agent
         }
         private void HandleHealingViewClick(object s, ButtonBase button)
         {
-
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
@@ -616,488 +751,1210 @@ namespace CombatHandler.Agent
             }
         }
 
+        private void HandleMPViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_mpView)) { return; }
+
+                _mpView = View.CreateFromXml(PluginDirectory + "\\UI\\MPView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "MP", XmlViewName = "MPView" }, _mpView);
+            }
+            else if (_mpWindow == null || (_mpWindow != null && !_mpWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_mpWindow, PluginDir, new WindowOptions() { Name = "MP", XmlViewName = "MPView" }, _mpView, out var container);
+                _mpWindow = container;
+            }
+        }
+        private void HandleSoldViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_soldView)) { return; }
+
+                _soldView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Sold", XmlViewName = "SoldView" }, _soldView);
+            }
+            else if (_soldWindow == null || (_soldWindow != null && !_soldWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_soldWindow, PluginDir, new WindowOptions() { Name = "Sold", XmlViewName = "SoldView" }, _soldView, out var container);
+                _soldWindow = container;
+            }
+        }
+        private void HandleEnfoViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_enfoView)) { return; }
+
+                _enfoView = View.CreateFromXml(PluginDirectory + "\\UI\\EnfoView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Enfo", XmlViewName = "EnfoView" }, _enfoView);
+
+                window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+                window.FindView("MongoDelayBox", out TextInputView mongoInput);
+                window.FindView("ChallengerDelayBox", out TextInputView challengerInput);
+
+                if (singleInput != null)
+                {
+                    singleInput.Text = $"{SingleTauntDelay}";
+                }
+                if (mongoInput != null)
+                {
+                    mongoInput.Text = $"{MongoDelay}";
+                }
+                if (challengerInput != null)
+                {
+                    challengerInput.Text = $"{CycleChallengerDelay}";
+                }
+            }
+            else if (_enfoWindow == null || (_enfoWindow != null && !_enfoWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_enfoWindow, PluginDir, new WindowOptions() { Name = "Enfo", XmlViewName = "EnfoView" }, _enfoView, out var container);
+                _enfoWindow = container;
+
+                container.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+                container.FindView("MongoDelayBox", out TextInputView mongoInput);
+                container.FindView("ChallengerDelayBox", out TextInputView challengerInput);
+
+                if (singleInput != null)
+                {
+                    singleInput.Text = $"{SingleTauntDelay}";
+                }
+                if (mongoInput != null)
+                {
+                    mongoInput.Text = $"{MongoDelay}";
+                }
+                if (challengerInput != null)
+                {
+                    challengerInput.Text = $"{CycleChallengerDelay}";
+                }
+            }
+        }
+
+        private void HandleEngieViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_engieView)) { return; }
+
+                _engieView = View.CreateFromXml(PluginDirectory + "\\UI\\EngieView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Engie", XmlViewName = "EngieView" }, _engieView);
+            }
+            else if (_engieWindow == null || (_engieWindow != null && !_engieWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_engieWindow, PluginDir, new WindowOptions() { Name = "Engie", XmlViewName = "EngieView" }, _engieView, out var container);
+                _engieWindow = container;
+            }
+        }
+        private void HandleDocViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_docView)) { return; }
+
+                _docView = View.CreateFromXml(PluginDirectory + "\\UI\\docView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Doc", XmlViewName = "DocView" }, _docView);
+            }
+            else if (_docWindow == null || (_docWindow != null && !_docWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_docWindow, PluginDir, new WindowOptions() { Name = "Doc", XmlViewName = "DocView" }, _docView, out var container);
+                _docWindow = container;
+            }
+        }
+        private void HandleFixerViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_fixerView)) { return; }
+
+                _fixerView = View.CreateFromXml(PluginDirectory + "\\UI\\FixerView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Fixer", XmlViewName = "FixerView" }, _fixerView);
+            }
+            else if (_fixerWindow == null || (_fixerWindow != null && !_fixerWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_fixerWindow, PluginDir, new WindowOptions() { Name = "Fixer", XmlViewName = "FixerView" }, _fixerView, out var container);
+                _fixerWindow = container;
+            }
+        }
+        private void HandleCratViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_cratView)) { return; }
+
+                _cratView = View.CreateFromXml(PluginDirectory + "\\UI\\CratView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Crat", XmlViewName = "CratView" }, _cratView);
+            }
+            else if (_cratWindow == null || (_cratWindow != null && !_cratWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_cratWindow, PluginDir, new WindowOptions() { Name = "Crat", XmlViewName = "CratView" }, _cratView, out var container);
+                _cratWindow = container;
+            }
+        }
+        private void HandleMAViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_maView)) { return; }
+
+                _maView = View.CreateFromXml(PluginDirectory + "\\UI\\MAView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "MA", XmlViewName = "MAView" }, _maView);
+            }
+            else if (_maWindow == null || (_maWindow != null && !_maWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_maWindow, PluginDir, new WindowOptions() { Name = "MA", XmlViewName = "MAView" }, _maView, out var container);
+                _maWindow = container;
+            }
+        }
+        private void HandleNTViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_ntView)) { return; }
+
+                _ntView = View.CreateFromXml(PluginDirectory + "\\UI\\NTView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "NT", XmlViewName = "NTView" }, _ntView);
+            }
+            else if (_ntWindow == null || (_ntWindow != null && !_ntWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_ntWindow, PluginDir, new WindowOptions() { Name = "NT", XmlViewName = "NTView" }, _ntView, out var container);
+                _ntWindow = container;
+            }
+        }
+        private void HandleTradeViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_tradeView)) { return; }
+
+                _tradeView = View.CreateFromXml(PluginDirectory + "\\UI\\TradeView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Trade", XmlViewName = "TradeView" }, _tradeView);
+            }
+            else if (_tradeWindow == null || (_tradeWindow != null && !_tradeWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_tradeWindow, PluginDir, new WindowOptions() { Name = "Trade", XmlViewName = "TradeView" }, _tradeView, out var container);
+                _tradeWindow = container;
+            }
+        }
+        private void HandleAdvyViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+            if (window != null)
+            {
+                if (window.Views.Contains(_advyView)) { return; }
+
+                _advyView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvyView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Advy", XmlViewName = "AdvyView" }, _advyView);
+            }
+            else if (_advyWindow == null || (_advyWindow != null && !_advyWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_advyWindow, PluginDir, new WindowOptions() { Name = "Advy", XmlViewName = "AdvyView" }, _advyView, out var container);
+                _advyWindow = container;
+            }
+        }
+        private void HandleMorphViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_morphView)) { return; }
+
+                _morphView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvMorphView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Morphs", XmlViewName = "AdvMorphView" }, _morphView);
+            }
+            else if (_morphWindow == null || (_morphWindow != null && !_morphWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_morphWindow, PluginDir, new WindowOptions() { Name = "Morphs", XmlViewName = "AdvMorphView" }, _morphView, out var container);
+                _morphWindow = container;
+            }
+        }
         #endregion
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 1.2)
+            try
             {
-                return;
+                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 0.6)
+                {
+                    return;
+                }
+
+                base.OnUpdate(deltaTime);
+
+                if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+                {
+                    RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
+
+                    IPCChannel.Broadcast(ncuMessage);
+
+                    OnRemainingNCUMessage(0, ncuMessage);
+
+                    FP();
+
+                    _ncuUpdateTime = Time.NormalTime;
+                }
+
+                #region UI
+
+                var window = SettingsController.FindValidWindow(_windows);
+
+                if (window != null && window.IsValid)
+                {
+                    window.FindView("TargetHealPercentageBox", out TextInputView TargetHealInput);
+                    window.FindView("CompleteHealPercentageBox", out TextInputView CompleteHealInput);
+                    window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                    window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
+                    window.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
+
+                    window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+                    window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+                    window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+                    window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                    window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+                    window.FindView("SphereDelayBox", out TextInputView sphereInput);
+                    window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+
+                    window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+                    window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+                    window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+                    window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+
+                    window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
+                    window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                    window.FindView("MongoDelayBox", out TextInputView mongoInput);
+                    window.FindView("ChallengerDelayBox", out TextInputView challengerInput);
+                    window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+
+                    if (TargetHealInput != null && !string.IsNullOrEmpty(TargetHealInput.Text))
+                    {
+                        if (int.TryParse(TargetHealInput.Text, out int healValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage != healValue)
+                            {
+
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = healValue;
+                            }
+                        }
+                    }
+
+                    if (mongoInput != null && !string.IsNullOrEmpty(mongoInput.Text))
+                    {
+                        if (int.TryParse(mongoInput.Text, out int mongoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelay != mongoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelay = mongoValue;
+                            }
+                        }
+                    }
+
+                    if (challengerInput != null && !string.IsNullOrEmpty(challengerInput.Text))
+                    {
+                        if (int.TryParse(challengerInput.Text, out int challengerValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay != challengerValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay = challengerValue;
+                            }
+                        }
+                    }
+
+                    if (singleInput != null && !string.IsNullOrEmpty(singleInput.Text))
+                    {
+                        if (int.TryParse(singleInput.Text, out int singleValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay != singleValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay = singleValue;
+                            }
+                        }
+                    }
+
+                    if (CompleteHealInput != null && !string.IsNullOrEmpty(CompleteHealInput.Text))
+                    {
+                        if (int.TryParse(CompleteHealInput.Text, out int completeHealValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage != completeHealValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage = completeHealValue;
+                            }
+                        }
+                    }
+
+                    if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
+                    {
+                        if (int.TryParse(FountainOfLifeInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = Value;
+                            }
+                        }
+                    }
+
+                    if (TeamHealInput != null && !string.IsNullOrEmpty(TeamHealInput.Text))
+                    {
+                        if (int.TryParse(TeamHealInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage = Value;
+                            }
+                        }
+                    }
+
+                    if (CompleteTeamHealInput != null && !string.IsNullOrEmpty(CompleteTeamHealInput.Text))
+                    {
+                        if (int.TryParse(CompleteTeamHealInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage = Value;
+                            }
+                        }
+                    }
+
+                    if (stimTargetInput != null)
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
+                        }
+                    }
+
+                    if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
+                    {
+                        if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
+                            }
+                        }
+                    }
+
+                    if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
+                    {
+                        if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
+                            }
+                        }
+                    }
+
+                    if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                    {
+                        if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+                            }
+                        }
+                    }
+
+                    if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                    {
+                        if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+                            }
+                        }
+                    }
+
+                    if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
+                    {
+                        if (int.TryParse(sphereInput.Text, out int sphereValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
+                            }
+                        }
+                    }
+
+                    if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
+                    {
+                        if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
+                            }
+                        }
+                    }
+
+                    if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
+                    {
+                        if (int.TryParse(selfHealInput.Text, out int selfHealValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
+                            }
+                        }
+                    }
+
+                    if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
+                    {
+                        if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
+                            }
+                        }
+                    }
+
+                    if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
+                    {
+                        if (int.TryParse(teamHealInput.Text, out int teamHealValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
+                            }
+                        }
+                    }
+
+                    if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
+                    {
+                        if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
+                            }
+                        }
+                    }
+
+                    if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
+                    {
+                        if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
+                            }
+                        }
+                    }
+
+                    if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
+                    {
+                        if (int.TryParse(strengthInput.Text, out int strengthValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                            }
+                        }
+                    }
+
+                    if (window.FindView("MPView", out Button mpView))
+                    {
+                        mpView.Tag = SettingsController.settingsWindow;
+                        mpView.Clicked = HandleMPViewClick;
+                    }
+                    if (window.FindView("SoldView", out Button soldView))
+                    {
+                        soldView.Tag = SettingsController.settingsWindow;
+                        soldView.Clicked = HandleSoldViewClick;
+                    }
+                    if (window.FindView("EnfoView", out Button EnfoView))
+                    {
+                        EnfoView.Tag = SettingsController.settingsWindow;
+                        EnfoView.Clicked = HandleEnfoViewClick;
+                    }
+                    if (window.FindView("EngieView", out Button EngieView))
+                    {
+                        EngieView.Tag = SettingsController.settingsWindow;
+                        EngieView.Clicked = HandleEngieViewClick;
+                    }
+                    if (window.FindView("DocView", out Button DocView))
+                    {
+                        DocView.Tag = SettingsController.settingsWindow;
+                        DocView.Clicked = HandleDocViewClick;
+                    }
+                    if (window.FindView("FixerView", out Button FixerView))
+                    {
+                        FixerView.Tag = SettingsController.settingsWindow;
+                        FixerView.Clicked = HandleFixerViewClick;
+                    }
+                    if (window.FindView("CratView", out Button CratView))
+                    {
+                        CratView.Tag = SettingsController.settingsWindow;
+                        CratView.Clicked = HandleCratViewClick;
+                    }
+                    if (window.FindView("MAView", out Button MAView))
+                    {
+                        MAView.Tag = SettingsController.settingsWindow;
+                        MAView.Clicked = HandleMAViewClick;
+                    }
+                    if (window.FindView("NTView", out Button NTView))
+                    {
+                        NTView.Tag = SettingsController.settingsWindow;
+                        NTView.Clicked = HandleNTViewClick;
+                    }
+                    if (window.FindView("TradeView", out Button TradeView))
+                    {
+                        TradeView.Tag = SettingsController.settingsWindow;
+                        TradeView.Clicked = HandleTradeViewClick;
+                    }
+                    if (window.FindView("AdvyView", out Button AdvyView))
+                    {
+                        AdvyView.Tag = SettingsController.settingsWindow;
+                        AdvyView.Clicked = HandleAdvyViewClick;
+                    }
+                }
+
+                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                {
+                    if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                    {
+                        itemView.Tag = SettingsController.settingsWindow;
+                        itemView.Clicked = HandleItemViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
+                    {
+                        perkView.Tag = SettingsController.settingsWindow;
+                        perkView.Clicked = HandlePerkViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
+                    {
+                        healingView.Tag = SettingsController.settingsWindow;
+                        healingView.Clicked = HandleHealingViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
+                    {
+                        buffView.Tag = SettingsController.settingsWindow;
+                        buffView.Clicked = HandleBuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
+                    {
+                        debuffView.Tag = SettingsController.settingsWindow;
+                        debuffView.Clicked = HandleDebuffViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("FalseProfsView", out Button falseProfView))
+                    {
+                        falseProfView.Tag = SettingsController.settingsWindow;
+                        falseProfView.Clicked = HandleFalseProfViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("ProcView", out Button procView))
+                    {
+                        procView.Tag = SettingsController.settingsWindow;
+                        procView.Clicked = HandleProcViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("MorphView", out Button morphView))
+                    {
+                        morphView.Tag = SettingsController.settingsWindow;
+                        morphView.Clicked = HandleMorphViewClick;
+                    }
+
+
+                    if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    {
+                        CancelBuffs(RelevantNanos.DragonMorph);
+                    }
+                    if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    {
+                        CancelBuffs(RelevantNanos.LeetMorph);
+                    }
+                    if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    {
+                        CancelBuffs(RelevantNanos.SaberMorph);
+                    }
+                    if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    {
+                        CancelBuffs(RelevantNanos.WolfMorph);
+                    }
+
+                    #endregion
+
+                    #region GlobalBuffing
+
+                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                    {
+                        IPCChannel.Broadcast(new GlobalBuffingMessage()
+                        {
+                            Switch = false
+                        });
+
+                        ToggleBuffing = false;
+                        _settings["Buffing"] = false;
+                        _settings["GlobalBuffing"] = false;
+                    }
+
+                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                    {
+                        IPCChannel.Broadcast(new GlobalBuffingMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleBuffing = true;
+                        _settings["Buffing"] = true;
+                        _settings["GlobalBuffing"] = true;
+                    }
+
+                    #endregion
+
+                    #region Global Composites
+
+                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                    {
+                        IPCChannel.Broadcast(new GlobalCompositesMessage()
+                        {
+                            Switch = false
+                        });
+
+                        ToggleComposites = false;
+                        _settings["Composites"] = false;
+                        _settings["GlobalComposites"] = false;
+                    }
+                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                    {
+                        IPCChannel.Broadcast(new GlobalCompositesMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleComposites = true;
+                        _settings["Composites"] = true;
+                        _settings["GlobalComposites"] = true;
+                    }
+
+                    #endregion
+
+                    #region Global Resurrection
+
+                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                    {
+                        IPCChannel.Broadcast(new GlobalRezMessage()
+                        {
+
+                            Switch = false
+                        });
+
+                        ToggleRez = false;
+                        _settings["GlobalRez"] = false;
+                    }
+                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                    {
+                        IPCChannel.Broadcast(new GlobalRezMessage()
+                        {
+                            Switch = true
+                        });
+
+                        ToggleRez = true;
+                        _settings["GlobalRez"] = true;
+                    }
+
+                    #endregion
+
+
+                    if (CanLookupPetsAfterZone() && DynelManager.LocalPlayer.Pets.Count() >= 1)
+                    {
+                        SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
+                        AssignTargetToHealPet();
+                    }
+
+                    if (ProcSelection.Damage == (ProcSelection)_settings["ProcSelection"].AsInt32())
+                    {
+                        CancelBuffs(RelevantNanos.DetauntProcs);
+                    }
+                    if (ProcSelection.DeTaunt == (ProcSelection)_settings["ProcSelection"].AsInt32())
+                    {
+                        CancelBuffs(RelevantNanos.DOTProcs);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
+        }
+
+
+        #region Adventurer
+
+        #region Healing
+
+        private bool AdvyTargetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            return Healing.TargetHealing(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool AdvyTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            return Healing.TeamHealing(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool AdvyCompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            return Healing.CompleteHealing(spell, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Morphs
+
+        private bool DragonMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+        private bool LeetMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+        private bool WolfMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+        private bool SaberMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+
+        #endregion
+
+        #region Morph Buffs
+
+        private bool WolfAgility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.WolfAgility)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+        private bool SaberDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.SaberDamage)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+        private bool LeetCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.LeetCrit)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+        private bool DragonScales(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.DragonScales)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+        private bool CatDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
+
+            return ToggledTargetDebuff("CatDamage", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+            //return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+
+        }
+        private bool LeetOwz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+
+            //return ToggledTargetDebuff("LeetOwz", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        #endregion
+
+        #region Buffs
+
+        protected bool Ranged(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
+        }
+
+        protected bool Melee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
+        }
+
+        private bool Armor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
+
+            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+        }
+        #endregion
+
+        #endregion
+
+        #region Doctor
+
+        #region Healing
+
+        private bool DocTargetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfDoc)) { return false; }
+
+            return Healing.TargetHealing(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DocCompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfDoc)) { return false; }
+
+            return Healing.CompleteHealing(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool DocTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfDoc)) { return false; }
+
+            int healSelection = _settings[selectionSetting].AsInt32();
+
+            if (healSelection == 1) { return false; }
+
+            if (Healing.TeamHealPercentage == 0) { return false; }
+
+            if (!Team.IsInTeam) { return false; }
+
+            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+
+            var count = DynelManager.Characters.Count(c =>
+                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
+
+            if (count >= 2)
+            {
+                return true;
             }
 
-            base.OnUpdate(deltaTime);
+            return false;
+        }
 
-            if (Time.NormalTime > _ncuUpdateTime + 1.0f)
+        private bool DocCompleteTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfDoc)) { return false; }
+
+            return Healing.CompleteTeamHealing(spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool TeamImprovedLifeChannelerAsTeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfDoc)) { return false; }
+
+            int healSelection = _settings[selectionSetting].AsInt32();
+
+            if (healSelection == 0) { return false; }
+
+            if (Healing.TeamHealPercentage == 0) { return false; }
+
+            if (!Team.IsInTeam) { return false; }
+
+            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+
+            var count = DynelManager.Characters.Count(c =>
+                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+                && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
+
+            if (count >= 2)
             {
-                RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
-
-                IPCChannel.Broadcast(ncuMessage);
-
-                OnRemainingNCUMessage(0, ncuMessage);
-
-                _ncuUpdateTime = Time.NormalTime;
+                return true;
             }
 
-            #region UI
+            return false;
+        }
 
-            var window = SettingsController.FindValidWindow(_windows);
-
-            if (window != null && window.IsValid)
+        private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (_settings["LockCH"].AsBool())
             {
-                window.FindView("TargetHealPercentageBox", out TextInputView TargetHealInput);
-                window.FindView("CompleteHealPercentageBox", out TextInputView CompleteHealInput);
-                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
-                window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
-                window.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
 
-                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
-                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
-                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
-                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
-                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
-                window.FindView("SphereDelayBox", out TextInputView sphereInput);
-                window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+                return true;
+            }
 
-                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+            return false;
+        }
 
-                window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
-                window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+        #endregion
 
-                if (TargetHealInput != null && !string.IsNullOrEmpty(TargetHealInput.Text))
+        #endregion
+
+        #region Enforcer
+
+        private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell)) { return false; }
+
+            var mob = DynelManager.NPCs
+                   .Where(attackingMob => attackingMob.IsAttacking && attackingMob.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                   && attackingMob.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f && !debuffAreaTargetsToIgnore.Contains(attackingMob.Name)
+                       && AttackingTeam(attackingMob))
+                   .FirstOrDefault();
+
+            if (_settings["OSTMongo"].AsBool())
+            {
+                if (!spell.IsReady) { return false; }
+                if (Spell.HasPendingCast) { return false; }
+
+                return true;
+            }
+
+            if (DynelManager.LocalPlayer.HealthPercent >= 30)
+            {
+                if (_settings["MongoSelection"].AsInt32() == 0) { return false; }
+
+                if (Time.AONormalTime > _mongo + MongoDelay)
                 {
-                    if (int.TryParse(TargetHealInput.Text, out int healValue))
+                    if (_settings["MongoSelection"].AsInt32() == 1)
                     {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage != healValue)
+                        if (mob != null)
                         {
-
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = healValue;
+                            _mongo = Time.AONormalTime;
+                            return true;
                         }
                     }
-                }
-
-                if (CompleteHealInput != null && !string.IsNullOrEmpty(CompleteHealInput.Text))
-                {
-                    if (int.TryParse(CompleteHealInput.Text, out int completeHealValue))
+                    if (_settings["MongoSelection"].AsInt32() == 2)
                     {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage != completeHealValue)
+                        if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f
+                            && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name))
                         {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage = completeHealValue;
-                        }
-                    }
-                }
-
-                if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
-                {
-                    if (int.TryParse(FountainOfLifeInput.Text, out int Value))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage != Value)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage = Value;
-                        }
-                    }
-                }
-
-                if (TeamHealInput != null && !string.IsNullOrEmpty(TeamHealInput.Text))
-                {
-                    if (int.TryParse(TeamHealInput.Text, out int Value))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage != Value)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage = Value;
-                        }
-                    }
-                }
-
-                if (CompleteTeamHealInput != null && !string.IsNullOrEmpty(CompleteTeamHealInput.Text))
-                {
-                    if (int.TryParse(CompleteTeamHealInput.Text, out int Value))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage != Value)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage = Value;
-                        }
-                    }
-                }
-
-                if (stimTargetInput != null)
-                {
-                    if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
-                    {
-                        Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName = stimTargetInput.Text;
-                    }
-                }
-
-                if (stimHealthInput != null && !string.IsNullOrEmpty(stimHealthInput.Text))
-                {
-                    if (int.TryParse(stimHealthInput.Text, out int stimHealthValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
-                        }
-                    }
-                }
-
-                if (stimNanoInput != null && !string.IsNullOrEmpty(stimNanoInput.Text))
-                {
-                    if (int.TryParse(stimNanoInput.Text, out int stimNanoValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage != stimNanoValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage = stimNanoValue;
-                        }
-                    }
-                }
-
-                if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
-                {
-                    if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
-                        }
-                    }
-                }
-
-                if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
-                {
-                    if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
-                        }
-                    }
-                }
-
-                if (sphereInput != null && !string.IsNullOrEmpty(sphereInput.Text))
-                {
-                    if (int.TryParse(sphereInput.Text, out int sphereValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay != sphereValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay = sphereValue;
-                        }
-                    }
-                }
-
-                if (witOfTheAtroxInput != null && !string.IsNullOrEmpty(witOfTheAtroxInput.Text))
-                {
-                    if (int.TryParse(witOfTheAtroxInput.Text, out int witOfTheAtroxValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay != witOfTheAtroxValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay = witOfTheAtroxValue;
-                        }
-                    }
-                }
-
-                if (selfHealInput != null && !string.IsNullOrEmpty(selfHealInput.Text))
-                {
-                    if (int.TryParse(selfHealInput.Text, out int selfHealValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage != selfHealValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage = selfHealValue;
-                        }
-                    }
-                }
-
-                if (selfNanoInput != null && !string.IsNullOrEmpty(selfNanoInput.Text))
-                {
-                    if (int.TryParse(selfNanoInput.Text, out int selfNanoValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage != selfNanoValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage = selfNanoValue;
-                        }
-                    }
-                }
-
-                if (teamHealInput != null && !string.IsNullOrEmpty(teamHealInput.Text))
-                {
-                    if (int.TryParse(teamHealInput.Text, out int teamHealValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage != teamHealValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage = teamHealValue;
-                        }
-                    }
-                }
-
-                if (teamNanoInput != null && !string.IsNullOrEmpty(teamNanoInput.Text))
-                {
-                    if (int.TryParse(teamNanoInput.Text, out int teamNanoValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
-                        }
-                    }
-                }
-
-                if (bodyDevInput != null && !string.IsNullOrEmpty(bodyDevInput.Text))
-                {
-                    if (int.TryParse(bodyDevInput.Text, out int bodyDevValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage != bodyDevValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage = bodyDevValue;
-                        }
-                    }
-                }
-
-                if (strengthInput != null && !string.IsNullOrEmpty(strengthInput.Text))
-                {
-                    if (int.TryParse(strengthInput.Text, out int strengthValue))
-                    {
-                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage != strengthValue)
-                        {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage = strengthValue;
+                            _mongo = Time.AONormalTime;
+                            return true;
                         }
                     }
                 }
             }
 
-            if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+            return false;
+        }
+        private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!CanCast(spell)) { return false; }
+
+            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
             {
-                if (SettingsController.settingsWindow.FindView("ItemsView", out Button itemView))
+                var mob = DynelManager.NPCs
+                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                        && c.IsInLineOfSight
+                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && spell.IsInRange(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.MaxHealth)
+                    .FirstOrDefault();
+
+                if (DynelManager.LocalPlayer.HealthPercent >= 30)
                 {
-                    itemView.Tag = SettingsController.settingsWindow;
-                    itemView.Clicked = HandleItemViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("PerksView", out Button perkView))
-                {
-                    perkView.Tag = SettingsController.settingsWindow;
-                    perkView.Clicked = HandlePerkViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("HealingView", out Button healingView))
-                {
-                    healingView.Tag = SettingsController.settingsWindow;
-                    healingView.Clicked = HandleHealingViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("BuffsView", out Button buffView))
-                {
-                    buffView.Tag = SettingsController.settingsWindow;
-                    buffView.Clicked = HandleBuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("DebuffsView", out Button debuffView))
-                {
-                    debuffView.Tag = SettingsController.settingsWindow;
-                    debuffView.Clicked = HandleDebuffViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("FalseProfsView", out Button falseProfView))
-                {
-                    falseProfView.Tag = SettingsController.settingsWindow;
-                    falseProfView.Clicked = HandleFalseProfViewClick;
-                }
-
-                if (SettingsController.settingsWindow.FindView("ProcView", out Button procView))
-                {
-                    procView.Tag = SettingsController.settingsWindow;
-                    procView.Clicked = HandleProcViewClick;
-                }
-
-
-                if (SettingsController.settingsWindow.FindView("MPView", out Button mpView))
-                {
-                    mpView.Tag = SettingsController.settingsWindow;
-                    mpView.Clicked = HandleMPSettingsViewClick;
-                }
-
-                #endregion
-
-                #region GlobalBuffing
-
-                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    if (mob != null)
                     {
-                        Switch = false
-                    });
-
-                    ToggleBuffing = false;
-                    _settings["Buffing"] = false;
-                    _settings["GlobalBuffing"] = false;
+                        _singleTaunt = Time.AONormalTime;
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = mob;
+                        return true;
+                    }
                 }
-
-                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleBuffing = true;
-                    _settings["Buffing"] = true;
-                    _settings["GlobalBuffing"] = true;
-                }
-
-                #endregion
-
-                #region Global Composites
-
-                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleComposites = false;
-                    _settings["Composites"] = false;
-                    _settings["GlobalComposites"] = false;
-                }
-                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleComposites = true;
-                    _settings["Composites"] = true;
-                    _settings["GlobalComposites"] = true;
-                }
-
-                #endregion
-
-                #region Global Resurrection
-
-                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-
-                        Switch = false
-                    });
-
-                    ToggleRez = false;
-                    _settings["GlobalRez"] = false;
-                }
-                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleRez = true;
-                    _settings["GlobalRez"] = true;
-                }
-
-                #endregion
             }
 
-            if (CanLookupPetsAfterZone() && DynelManager.LocalPlayer.Pets.Count() >= 1)
+            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
+                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
             {
-                SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Attack);
-                AssignTargetToHealPet();
+                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
+                    && DynelManager.LocalPlayer.HealthPercent >= 30)
+                {
+                    _singleTaunt = Time.AONormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
             }
 
-            if (ProcSelection.Damage == (ProcSelection)_settings["ProcSelection"].AsInt32())
+            return false;
+        }
+        private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsSettingEnabled("CycleChallenger") && Time.AONormalTime > _challenger + CycleChallengerDelay
+                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
-                CancelBuffs(RelevantNanos.DetauntProcs);
+                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+
+                _challenger = Time.AONormalTime;
+                return true;
             }
-            if (ProcSelection.DeTaunt == (ProcSelection)_settings["ProcSelection"].AsInt32())
-            {
-                CancelBuffs(RelevantNanos.DOTProcs);
-            }
+
+            return false;
         }
 
-        #region False Profs
-
-        private bool FalseProfEnforcer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Enforcer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfEngineer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Engineer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfNanoTechnician(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.NanoTechnician != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfTrader(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Trader != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfBeauracrat(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Beauracrat != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfMartialArtist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.MartialArtist != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfFixer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Fixer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfAdventurer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Adventurer != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfDoctor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Doctor != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool FalseProfSoldier(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Soldier != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-        private bool FalseProfMetaphysicist(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (FalseProfSelection.Metaphysicist != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
-
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
         #endregion
 
         #region MP
 
+        private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
+
+            if (CostBuffSelection.Team == (CostBuffSelection)_settings["CostBuffSelection"].AsInt32())
+            {
+                if (Team.IsInTeam)
+                {
+                    var target = DynelManager.Players
+                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && spell.IsInRange(c)
+                            && c.Health > 0
+                            && SpellChecksOther(spell, spell.Nanoline, c))
+                        .FirstOrDefault();
+
+                    if (target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = target;
+                        return true;
+                    }
+                }
+            }
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+
+        private bool Chant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
+
+            return PetTargetBuff(NanoLine.MPPetInitiativeBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool InstillDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
+
+            return PetTargetBuff(NanoLine.MPPetDamageBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool ShortTermDamagePet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
+
+            return PetTargetBuff(NanoLine.PetShortTermDamageBuffs, PetType.Attack, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool CostPet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
+
+            return PetTargetBuff(NanoLine.NPCostBuff, PetType.Heal, spell, fightingTarget, ref actionTarget)
+                || PetTargetBuff(NanoLine.NPCostBuff, PetType.Support, spell, fightingTarget, ref actionTarget);
+        }
+
+        private bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+
+            return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
+        }
+
         private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfMp.Contains(c.Id))) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
 
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
 
@@ -1106,7 +1963,7 @@ namespace CombatHandler.Agent
 
         private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfMp.Contains(c.Id))) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
 
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
 
@@ -1133,19 +1990,243 @@ namespace CombatHandler.Agent
 
         #region Trader
 
+        private bool RKNanoDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfTrader)) { return false; }
+
+            RKNanoDrainSelection selection = (RKNanoDrainSelection)_settings["RKNanoDrainSelection"].AsInt32();
+
+            if (NeedsReload()) { return false; }
+
+            switch (selection)
+            {
+                case RKNanoDrainSelection.Target:
+                case RKNanoDrainSelection.Boss:
+                    if (selection == RKNanoDrainSelection.Boss && (fightingTarget == null || fightingTarget.MaxHealth < 1000000))
+                    {
+                        return false;
+                    }
+
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
+                default:
+                    return false;
+            }
+        }
+
+        private bool ACDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfTrader)) { return false; }
+
+            if (NeedsReload()) { return false; }
+
+            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+
+            if (ACDrainSelection.Target == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
+            {
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (ACDrainSelection.Boss == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
+            {
+                if (fightingTarget?.MaxHealth < 1000000) { return false; }
+
+                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (ACDrainSelection.Area == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
+            {
+                if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
+                {
+                    if (spell.StackingOrder <= buff.StackingOrder)
+                    {
+                        if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU)) { return false; }
+
+                        if (buff.RemainingTime > 20) { return false; }
+
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = _drainTarget;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = _drainTarget;
+                return true;
+            }
+
+            return false;
+        }
+
         private bool RansackDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (FalseProfSelection.Trader != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfTrader)) { return false; }
 
-            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+            RansackSelection ransackSelection = (RansackSelection)_settings["RansackSelection"].AsInt32();
+
+            if (NeedsReload()) { return false; }
+
+            switch (ransackSelection)
+            {
+                case RansackSelection.Target:
+                    return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+
+                case RansackSelection.Boss:
+                    if (fightingTarget?.MaxHealth < 1000000)
+                    {
+                        if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff playerBuffs))
+                        {
+                            if (spell.StackingOrder > playerBuffs.StackingOrder)
+                            {
+                                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+                            }
+                            else
+                            {
+                                if (playerBuffs.RemainingTime > 25)
+                                {
+                                    return false;
+                                }
+                                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+                            }
+                        }
+                        else
+                        {
+                            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+                        }
+                    }
+                    else
+                    {
+                        return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Ransack, fightingTarget, ref actionTarget);
+                    }
+
+                case RansackSelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    {
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                            {
+                                return false;
+                            }
+
+                            if (buff.RemainingTime > 25)
+                            {
+                                return false;
+                            }
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    {
+                        return false;
+                    }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
+                    return false;
+            }
         }
 
         private bool DepriveDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (FalseProfSelection.Trader != (FalseProfSelection)_settings["FalseProfSelection"].AsInt32()) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfTrader)) { return false; }
 
-            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+            DepriveSelection depriveSelection = (DepriveSelection)_settings["DepriveSelection"].AsInt32();
+
+            if (NeedsReload()) { return false; }
+
+            switch (depriveSelection)
+            {
+                case DepriveSelection.Target:
+                    return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+
+                case DepriveSelection.Boss:
+                    if (fightingTarget?.MaxHealth < 1000000)
+                    {
+                        if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff playerBuffs))
+                        {
+                            if (spell.StackingOrder > playerBuffs.StackingOrder)
+                            {
+                                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                            }
+                            else
+                            {
+                                if (playerBuffs.RemainingTime > 25)
+                                {
+                                    return false;
+                                }
+                                return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                            }
+                        }
+                        else
+                        {
+                            return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                        }
+                    }
+                    else
+                    {
+                        return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
+                    }
+                case DepriveSelection.Area:
+                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    {
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff buff))
+                    {
+                        if (spell.StackingOrder <= buff.StackingOrder)
+                        {
+                            if (DynelManager.LocalPlayer.RemainingNCU < Math.Abs(spell.NCU - buff.NCU))
+                            {
+                                return false;
+                            }
+
+                            if (buff.RemainingTime > 25)
+                            {
+                                return false;
+                            }
+
+                            actionTarget.ShouldSetTarget = true;
+                            actionTarget.Target = _drainTarget;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (DynelManager.LocalPlayer.RemainingNCU < spell.NCU)
+                    {
+                        return false;
+                    }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = _drainTarget;
+                    return true;
+
+                default:
+                    return false;
+            }
         }
+
         #endregion
 
         #region Buffs
@@ -1186,19 +2267,80 @@ namespace CombatHandler.Agent
 
         #region Misc
 
+        private void FPSwitch()
+        {
+            switch (_settings["FalseProfSelection"].AsInt32())
+            {
+                case 1:
+                    FPSwitchSetting = RelevantNanos.FalseProfMp;
+                    break;
+                case 2:
+                    FPSwitchSetting = RelevantNanos.FalseProfSol;
+                    break;
+                case 3:
+                    FPSwitchSetting = RelevantNanos.FalseProfEnf;
+                    break;
+                case 4:
+                    FPSwitchSetting = RelevantNanos.FalseProfEng;
+                    break;
+                case 5:
+                    FPSwitchSetting = RelevantNanos.FalseProfDoc;
+                    break;
+                case 6:
+                    FPSwitchSetting = RelevantNanos.FalseProfFixer;
+                    break;
+                case 7:
+                    FPSwitchSetting = RelevantNanos.FalseProfCrat;
+                    break;
+                case 8:
+                    FPSwitchSetting = RelevantNanos.FalseProfMa;
+                    break;
+                case 9:
+                    FPSwitchSetting = RelevantNanos.FalseProfNt;
+                    break;
+                case 10:
+                    FPSwitchSetting = RelevantNanos.FalseProfTrader;
+                    break;
+                case 11:
+                    FPSwitchSetting = RelevantNanos.FalseProfAdv;
+                    break;
+                default:
+                    FPSwitchSetting = new int[0];
+                    break;
+            }
+        }
+
+        private void FP()
+        {
+            FPSwitch();
+
+            if (FPSwitchSetting.Length == 0) { return; }
+
+            var fpBuff = Spell.List.FirstOrDefault(h => FPSwitchSetting.Contains(h.Id));
+
+            if (!Spell.HasPendingCast && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FalseProfession)
+                && fpBuff.MeetsUseReqs())
+            {
+                fpBuff?.Cast(DynelManager.LocalPlayer, true);
+            }
+        }
+
         private void AssignTargetToHealPet()
         {
-            if (Time.NormalTime - _lastSwitchedHealTime > 5)
+            var dyingTarget = GetTargetToHeal();
+
+            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
+            && pet.Character.Nano >= 1).FirstOrDefault();
+
+            if (healPet != null)
             {
-                var dyingTarget = GetTargetToHeal();
                 if (dyingTarget != null)
                 {
-                    var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal).FirstOrDefault();
-
-                    if (healPet != null)
+                    if (Time.AONormalTime > _lastHealPetHealTime)
                     {
+                        //Chat.WriteLine($"{healPet.Character.Name} healing {dyingTarget.Name}", ChatColor.Green);
                         healPet.Heal(dyingTarget.Identity);
-                        _lastSwitchedHealTime = Time.NormalTime;
+                        _lastHealPetHealTime = Time.AONormalTime + 3;
                     }
                 }
             }
@@ -1241,36 +2383,115 @@ namespace CombatHandler.Agent
 
         private static class RelevantNanos
         {
-            public static int[] DetauntProcs = { 226437, 226435, 226433, 226431, 226429, 226427 };
-            public static int[] FalseProfDoc = { 117210, 117221, 32033 };
-            public static int[] FalseProfEng = { 117213, 117224, 32034 };
-            public static int[] FalseProfSol = { 117216, 117227, 32038 };
-            public static int[] FalseProfCrat = { 117209, 117220, 32032 };
-            public static int[] FalseProfTrader = { 117211, 117222, 32040 };
-            public static int[] FalseProfAdv = { 117214, 117225, 32030 };
-            public static int[] FalseProfMp = { 117208, 117219, 32036 };
-            public static int[] FalseProfFixer = { 117212, 117223, 32039 };
-            public static int[] FalseProfEnf = { 117217, 117228, 32041 };
-            public static int[] FalseProfMa = { 117215, 117226, 32035 };
-            public static int[] FalseProfNt = { 117207, 117218, 32037 };
-            public static int[] DOTProcs = { 226425, 226423, 226421, 226419, 226417, 226415, 226413, 226410 };
-            public static int[] TeamCritBuffs = { 160791, 160789, 160787 };
+            public static readonly int[] DetauntProcs = { 226437, 226435, 226433, 226431, 226429, 226427 };
+            public static readonly int[] DOTProcs = { 226425, 226423, 226421, 226419, 226417, 226415, 226413, 226410 };
+
+            public static readonly int[] FalseProfMp = { 117208, 117219, 32036 };
+            public static readonly int[] FalseProfSol = { 117216, 117227, 32038 };
+            public static readonly int[] FalseProfEnf = { 117217, 117228, 32041 };
+            public static readonly int[] FalseProfEng = { 117213, 117224, 32034 };
+            public static readonly int[] FalseProfDoc = { 117210, 117221, 32033 };
+            public static readonly int[] FalseProfFixer = { 117212, 117223, 32039 };
+            public static readonly int[] FalseProfCrat = { 117209, 117220, 32032 };
+            public static readonly int[] FalseProfMa = { 117215, 117226, 32035 };
+            public static readonly int[] FalseProfNt = { 117207, 117218, 32037 };
+            public static readonly int[] FalseProfTrader = { 117211, 117222, 32040 };
+            public static readonly int[] FalseProfAdv = { 117214, 117225, 32030 };
+
+            public static readonly int[] TeamCritBuffs = { 160791, 160789, 160787 };
             public static int AssassinsAimedShot = 275007;
             public static int SteadyNerves = 160795;
             public static int CompleteHealing = 28650;
-            public const int AlphaAndOmega = 42409;
+
             public const int TiredLimbs = 99578;
+
             public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder().Where(spell => spell.Id != TiredLimbs).ToArray();
-            public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
-                43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
-                43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
-                28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
+
+            //public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281,
+            //    43878, 43881, 43886, 43885,
+            //    43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
+            //    43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
+            //    28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665,
+            //    223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677, 136678, 136679,
+            //    136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
+            //    82064, 26695 };
+
+            //Adv
+            public static int[] AdvyTargetHeals = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
+                136678, 136679, 136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
+                82064, 26695 };
+
+            public static int[] AdvyTeamHeals = new[] { 273285, 270770, 82051, 82052, 82053, 82054, 82055, 82056, 82057, 82057, 82058, 26696 };
+
+            public const int AdvyCompleteHeal = 136672;
+
+            public static readonly int[] ArmorBuffs = { 74173, 74174, 74175, 74176, 74177, 74178 };
+
+            public static readonly int[] DragonMorph = { 217670, 25994 };
+            public static readonly int[] LeetMorph = { 263278, 82834 };
+            public static readonly int[] WolfMorph = { 275005, 85062 };
+            public static readonly int[] SaberMorph = { 217680, 85070 };
+
+            public static readonly int[] DragonScales = { 302217, 302214 };
+            public static readonly int[] WolfAgility = { 302235, 302232 };
+            public static readonly int[] LeetCrit = { 302229, 302226 };
+            public static readonly int[] SaberDamage = { 302243, 302240 };
+            public static readonly int[] SaberBuff = { 162313, 162315, 162317, 162319, 162321 };
+            public static readonly int[] CatDamage = { 162321, 162319, 162317, 162315, 162313, };
+            public static readonly int[] LeetOwz = { 162119, 162117, 275817, 162121 };
+
+
+            public static int[] TargetArmorBuffs = { 74178, 74177, 74176, 74175, 74174, 74173 };
+            public static readonly int[] TargetedDamageShields = { 55812, 55836, 55835, 55833, 55834, 55831, 55832, 55830, 55829, 55828, 55826, 55827,
+                55825, 55824, 55823, 55821, 55822, 55819, 55820, 55816, 55818, 55817, 55814, 55815, 55813, 55837 };
+
+            //Doc
+            public const int AlphaAndOmega = 42409;
+            public static int[] DocCompleteTargetHealing = new[] { 270747, 28650 };
+
+            public static int[] DocHeals = new[] {  223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281, 43878, 43881, 43886, 43885,
+                        43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
+                        43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
+                        28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665 };
+
+            public static int[] DocTeamHeals = new[]
+            { 273312, 273315, 270349, 43891, 223291, 43892, 43893, 43894, 43895, 43896, 43897, 43898, 43899,
+                        43900, 43901, 43903, 43902, 42404, 43905, 43904, 42395, 43907, 43908, 43906, 42398, 43910, 43909, 42402,
+                        43911, 43913, 42405, 43912, 43914, 43915, 27804, 43916, 43917, 42403, 42408
+            };
+
+            public const int TeamImprovedLifeChanneler = 275011;
+
+            //mp
+            public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
+            public static readonly int[] InstillDamageBuffs = { 270800, 285101, 116814, 116817, 116812, 116816, 116821, 116815, 116813 };
+            public static readonly int[] ChantBuffs = { 116819, 116818, 116811, 116820 };
+            public static readonly int[] PetShortTermDamage = { 267598, 205193, 151827, 205189, 205187, 151828, 205185, 151824, 205183,
+            151830, 205191, 151826, 205195, 151825, 205197, 151831 };
+            public const int PetWarp = 209488;
+
+            //enf
+            public static readonly int[] SingleTargetTaunt = { 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
+            public const int CORUSCATING_SCREEN = 55751;
+            public static readonly int[] FortifyBuffs = { 273320, 270350, 117686, 117688, 117682, 117687, 117685, 117684, 117683, 117680, 117681 };
+            public static readonly int[] AbsorbACBuff = { 270350, 117686, 117688, 117682, 117687, 117685, 117684, 117683, 117680, 117681 };
 
         }
+
+        public enum TeamHealSelection
+        {
+            Teamheal, TeamImprovedLifeChanneler
+        }
+
         public enum FalseProfSelection
         {
             None, Metaphysicist, Soldier, Enforcer, Engineer, Doctor, Fixer, Beauracrat, MartialArtist, NanoTechnician, Trader, Adventurer
         }
+        public enum MorphSelection
+        {
+            None, Dragon, Saber, Wolf, Leet
+        }
+
         public enum HealSelection
         {
             None, SingleTeam, SingleArea, Team
@@ -1311,6 +2532,34 @@ namespace CombatHandler.Agent
         public enum ProcSelection
         {
             None, Damage, DeTaunt
+        }
+        public enum RansackSelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum DepriveSelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum RKNanoDrainSelection
+        {
+            None, Target, Boss
+        }
+        public enum ACDrainSelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum CostBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum MongoSelection
+        {
+            None, Adds, Spam
+        }
+        public enum SingleTauntsSelection
+        {
+            None, Target, Adds
         }
 
         #endregion

@@ -4,6 +4,7 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CombatHandler.Adventurer
@@ -31,6 +32,10 @@ namespace CombatHandler.Adventurer
         private static View _perkView;
 
         private static double _ncuUpdateTime;
+
+
+        public static List<int> AdvyBuffs = new List<int> { 302217, 302214, 302235, 302232, 302229, 302226, 302243, 302240, 302223, 302220 };
+
 
         public AdvCombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -95,11 +100,16 @@ namespace CombatHandler.Adventurer
 
                 _settings.AddVariable("ArmorBuff", false);
 
+                _settings.AddVariable("CatDamage", true);
+                _settings.AddVariable("LeetOwz", true);
+                _settings.AddVariable("Tara", true);
+
                 _settings.AddVariable("TeamArmorBuffs", false);
                 _settings.AddVariable("DamageShields", false);
                 _settings.AddVariable("XPBonus", false);
                 _settings.AddVariable("RunspeedBuffs", false);
                 _settings.AddVariable("SLMap", false);
+                _settings.AddVariable("PoisonousBite", false);
 
                 _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.None);
 
@@ -108,7 +118,6 @@ namespace CombatHandler.Adventurer
                 RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
                 //Healing
-
                 RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), Healing.CompleteHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),Healing.TeamHealing,CombatActionPriority.High);
@@ -126,6 +135,7 @@ namespace CombatHandler.Adventurer
                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
                 RegisterSpellProcessor(RelevantNanos.ArmorBuffs, Armor);
+                RegisterSpellProcessor(RelevantNanos.PoisonousBite, PoisonousBite);
 
                 //Team Buffs
                 RegisterSpellProcessor(RelevantNanos.TargetArmorBuffs,
@@ -150,12 +160,19 @@ namespace CombatHandler.Adventurer
                 RegisterSpellProcessor(RelevantNanos.LeetMorph, LeetMorph);
                 RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
                 RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
+                RegisterSpellProcessor(RelevantNanos.TreeMorph, TreeMorph);
 
                 //Morph Buffs
                 RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
                 RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
                 RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
                 RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
+                RegisterSpellProcessor(RelevantNanos.TreeBuff, TreeBuff);
+
+                //Morph Cooldowns
+                RegisterSpellProcessor(RelevantNanos.CatDamage, CatDamage);
+                RegisterSpellProcessor(RelevantNanos.LeetOwz, LeetOwz);
+                RegisterSpellProcessor(RelevantNanos.Tara, Tara);
 
                 //LE Procs
                 //type1
@@ -869,6 +886,10 @@ namespace CombatHandler.Adventurer
                 {
                     CancelBuffs(RelevantNanos.WolfMorph);
                 }
+                if (MorphSelection.Tree != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.TreeMorph);
+                }
 
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
@@ -1042,43 +1063,126 @@ namespace CombatHandler.Adventurer
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
-
-        private bool WolfAgility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TreeMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
-
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
+            if (MorphSelection.Tree != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
+        private bool WolfAgility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.WolfAgility)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
         private bool SaberDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.SaberDamage)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+        private bool LeetCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.LeetCrit)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+        private bool DragonScales(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.DragonScales)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+        private bool TreeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (MorphSelection.Tree != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.TreeMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.TreeBuff)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
+        private bool CatDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            return ToggledTargetDebuff("CatDamage", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
-        private bool LeetCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool LeetOwz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            return ToggledTargetDebuff("LeetOwz", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
-        private bool DragonScales(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool Tara(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            return ToggledTargetDebuff("LeetOwz", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+        private bool PoisonousBite(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["PoisonousBite"].AsBool()) { return false; }
+
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (!AdvyMorphs.Any(buffId => DynelManager.LocalPlayer.Buffs.Contains(buffId))) { return false; }
+
+            if (!AdvyBuffs.Any(buffId => DynelManager.LocalPlayer.Buffs.Contains(buffId))) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.PoisonousBite)) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
         }
 
-        #endregion
+            #endregion
 
-        #region Buffs
+            #region Buffs
 
         protected bool Ranged(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1097,6 +1201,7 @@ namespace CombatHandler.Adventurer
             return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
+
         #endregion
 
         #region Misc
@@ -1108,16 +1213,20 @@ namespace CombatHandler.Adventurer
                 82064, 26695 };
 
             public static readonly int[] ArmorBuffs = { 74173, 74174, 74175, 74176, 74177, 74178 };
-
+            public static readonly int[] PoisonousBite = { 273288 };
             public static readonly int[] DragonMorph = { 217670, 25994 };
             public static readonly int[] LeetMorph = { 263278, 82834 };
             public static readonly int[] WolfMorph = { 275005, 85062 };
             public static readonly int[] SaberMorph = { 217680, 85070 };
-
+            public static readonly int[] TreeMorph = { 229666, 229884, 229887, 229889 };
             public static readonly int[] DragonScales = { 302217, 302214 };
             public static readonly int[] WolfAgility = { 302235, 302232 };
             public static readonly int[] LeetCrit = { 302229, 302226 };
             public static readonly int[] SaberDamage = { 302243, 302240 };
+            public static readonly int[] TreeBuff = { 302223, 302220 };
+            public static readonly int[] CatDamage = { 162321, 162319, 162317, 162315, 162313, };
+            public static readonly int[] LeetOwz = { 162119, 162117, 275817, 162121 };
+            public static readonly int[] Tara = { 169441 };
 
             public static int[] TargetArmorBuffs = { 74178, 74177, 74176, 74175, 74174, 74173 };
             public static readonly int[] TargetedDamageShields = { 55812, 55836, 55835, 55833, 55834, 55831, 55832, 55830, 55829, 55828, 55826, 55827,
@@ -1134,7 +1243,7 @@ namespace CombatHandler.Adventurer
         }
         public enum MorphSelection
         {
-            None, Dragon, Saber, Wolf, Leet
+            None, Dragon, Saber, Wolf, Leet, Tree
         }
 
         public enum TreatmentBuffSelection

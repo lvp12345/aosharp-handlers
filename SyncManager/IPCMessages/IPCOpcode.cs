@@ -9,5 +9,6 @@
         NpcChat = 204,
         StartStop = 205,
         UISettings = 206,
+        Spread = 207,
     }
 }

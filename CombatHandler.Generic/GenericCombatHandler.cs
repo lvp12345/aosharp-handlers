@@ -378,8 +378,7 @@ namespace CombatHandler.Generic
 
                 if (DynelManager.LocalPlayer.IsAttacking == true)
                 {
-                    var target = DynelManager.LocalPlayer?.FightingTarget;
-                    if (target != null && DynelManager.Players.Any(p => p.Identity == target?.Identity))
+                    if (DynelManager.Players.Any(p => p.Identity == DynelManager.LocalPlayer.FightingTarget?.Identity))
                     {
                         DynelManager.LocalPlayer.StopAttack();
                     }

@@ -311,7 +311,7 @@ namespace CombatHandler.Generic
             {PerkHash.TheDirector , PerkType.Disabled},
             {PerkHash.ThermalDetonation , PerkType.TargetDamage},
             {PerkHash.ThermalPrimer , PerkType.TargetDamage},
-            {PerkHash.TheShot , PerkType.TargetDamage},
+            {PerkHash.TheShot , PerkType.Disabled},
             {PerkHash.Tick , PerkType.TargetDamage},
             {PerkHash.ToxicShock , PerkType.TargetDamage},
             {PerkHash.Tracer , PerkType.TargetDamage},

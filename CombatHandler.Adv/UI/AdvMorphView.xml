@@ -8,6 +8,8 @@
       <RadioButton label="Saber" value="2"/>
       <RadioButton label="Wolf" value="3"/>
       <RadioButton label="Leet" value="4"/>
+	  <RadioButton label="Tree" value="5"/>
+	  <OptionCheckBox label="Poisonous Bite" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__PoisonousBite" layout_borders="Rect(10,1,5,1)"/>
     </OptionRadioButtonGroup>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

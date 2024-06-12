@@ -791,7 +791,7 @@ namespace CombatHandler.Metaphysicist
 
                 if (IsSettingEnabled("SyncPets"))
                 {
-                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Attack);
+                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
                 }
 
                 if (CanLookupPetsAfterZone())
@@ -1808,13 +1808,15 @@ namespace CombatHandler.Metaphysicist
 
         private void PetMezzing(Pet mezzPet, SimpleChar targetToMezz)
         {
+            if (mezzPet == null || targetToMezz == null) { return; } 
+
             if (targetToMezz != null)
             {
                 if (Time.AONormalTime > _lastMezzPetMezzTime)
                 {
                     if (mezzPet?.Character.IsAttacking == true)
                     {
-                        if (mezzPet?.Character.FightingTarget != targetToMezz)
+                        if (mezzPet?.Character.FightingTarget.Identity != targetToMezz.Identity)
                         {
                             mezzPet?.Attack(targetToMezz.Identity);
                             _lastMezzPetMezzTime = Time.AONormalTime + 2;

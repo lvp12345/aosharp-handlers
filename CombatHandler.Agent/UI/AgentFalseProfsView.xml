@@ -1,21 +1,48 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="Left" view_layout="Vertical" name="False Professions" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-	  <OptionRadioButtonGroup label="" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__FalseProfSelection">
-		  <RadioButton label="None" value="0"/>
-		  <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		  <RadioButton label="Metaphysicist" value="1"/>
-		  <RadioButton label="Soldier" value="2"/>
-		  <RadioButton label="Enforcer" value="3"/>
-		  <RadioButton label="Engineer" value="4"/>
-		  <RadioButton label="Doctor" value="5"/>
-		  <RadioButton label="Fixer" value="6"/>
-		  <RadioButton label="Beauracrat" value="7"/>
-		  <RadioButton label="Martial Artist" value="8"/>
-		  <RadioButton label="Nano Technician" value="9"/>
-		  <RadioButton label="Trader" value="10"/>
-		  <RadioButton label="Adventurer" value="11"/>
-	  </OptionRadioButtonGroup>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-  </BorderView>
+	<BorderView v_alignment="TOP" h_alignment="Center" view_layout="Vertical" name="False Professions" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__FalseProfSelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Metaphysicist" value="1"/>
+			<RadioButton label="Soldier" value="2"/>
+			<RadioButton label="Enforcer" value="3"/>
+			<RadioButton label="Engineer" value="4"/>
+			<RadioButton label="Doctor" value="5"/>
+			<RadioButton label="Fixer" value="6"/>
+			<RadioButton label="Beauracrat" value="7"/>
+			<RadioButton label="Martial Artist" value="8"/>
+			<RadioButton label="Nano Technician" value="9"/>
+			<RadioButton label="Trader" value="10"/>
+			<RadioButton label="Adventurer" value="11"/>
+		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<Button name="MPView" label="MP" layout_borders="Rect(5,5,3,5)"/>
+			<Button name="SoldView" label="Soldier" layout_borders="Rect(5,5,3,5)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<Button name="EnfoView" label="Enforcer" layout_borders="Rect(5,5,3,5)"/>
+			<Button name="EngieView" label="Engineer" layout_borders="Rect(5,5,3,5)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<Button name="DocView" label="Doctor" layout_borders="Rect(5,5,3,5)"/>
+			<Button name="FixerView" label="Fixer" layout_borders="Rect(5,5,3,5)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<Button name="CratView" label="Crat" layout_borders="Rect(5,5,3,5)"/>
+			<Button name="MAView" label="MA" layout_borders="Rect(5,5,3,5)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<Button name="NTView" label="NT" layout_borders="Rect(5,5,3,5)"/>
+			<Button name="TradeView" label="Trader" layout_borders="Rect(5,5,3,5)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="CENTER" view_layout="horizontal" layout_borders="Rect(50,5,50,5)" max_size="Point(16000,-1)">
+			<Button name="AdvyView" label="Adventurer" layout_borders="Rect(5,5,3,5)"/>
+		</View>
+
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>
 </root>

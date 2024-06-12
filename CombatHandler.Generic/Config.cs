@@ -45,8 +45,9 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int CompleteTeamHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentage : 35;
 
-
+        [JsonIgnore]
         public int SingleTauntDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay : 1;
+        
         [JsonIgnore]
         public int MongoDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].MongoDelay : 1;
         [JsonIgnore]
@@ -576,6 +577,7 @@ namespace CombatHandler.Generic
         {
             get
             {
+                
                 return _mongoDelay;
             }
             set

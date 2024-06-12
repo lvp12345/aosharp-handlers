@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace SyncManager
 {
@@ -83,6 +84,7 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, Lookat);
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Spread, ReceivedSpreadOutCommand);
 
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
@@ -103,6 +105,16 @@ namespace SyncManager
                 Chat.WriteLine("SyncManager Loaded!");
                 Chat.WriteLine("/syncmanager for settings.");
             }
+        }
+
+        private void ReceivedSpreadOutCommand(int arg1, IPCMessage message)
+        {
+            SpreadCommand msg = message as SpreadCommand;
+    
+            Vector3 randoPos = msg.Position;
+            randoPos.AddRandomness((int)3.0f);
+
+            MovementController.Instance.SetDestination(randoPos);
         }
 
         private void BroadcastSettingsReceived(int arg1, IPCMessage message)
@@ -193,6 +205,12 @@ namespace SyncManager
                     settingsButton.Tag = SettingsController.settingsWindow;
                     settingsButton.Clicked = UISettingsButtonClicked;
                 }
+
+                if (SettingsController.settingsWindow.FindView("SpreadOut", out Button SpreadButton))
+                {
+                    SpreadButton.Tag = SettingsController.settingsWindow;
+                    SpreadButton.Clicked = HandleSpreadButtonClicked;
+                }
             }
 
             if (!_settings["Enable"].AsBool() && Enable)
@@ -205,6 +223,16 @@ namespace SyncManager
                 IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = true });
                 Start();
             }
+        }
+
+        private void HandleSpreadButtonClicked(object sender, ButtonBase e)
+        {
+            Chat.WriteLine("Button clicked");
+
+            IPCChannel.Broadcast(new SpreadCommand
+            {
+                Position = DynelManager.LocalPlayer.Position,
+            });
         }
 
         #region Callbacks

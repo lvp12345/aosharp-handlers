@@ -9,9 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-
 using System.Threading.Tasks;
-
 using static CombatHandler.Generic.PerkCondtionProcessors;
 using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
@@ -208,6 +206,7 @@ namespace CombatHandler.Generic
                 RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
                 RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
                 RegisterPerkProcessor(PerkHash.LegShot, LegShot);
+                RegisterPerkProcessor(PerkHash.TheShot, TheShot);
                 RegisterPerkProcessor(PerkHash.PowerVolley, PowerUp);
                 RegisterPerkProcessor(PerkHash.PowerShock, PowerUp);
                 RegisterPerkProcessor(PerkHash.PowerBlast, PowerUp);
@@ -427,6 +426,17 @@ namespace CombatHandler.Generic
             if (!perk.IsAvailable || fightingTarget == null) { return false; }
 
             if (!IsSettingEnabled("LegShot")) { return false; }
+
+            if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
+
+            return DamagePerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        protected bool TheShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perk.IsAvailable || fightingTarget == null) { return false; }
+
+            if (!IsSettingEnabled("TheShot")) { return false; }
 
             if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
 
@@ -763,7 +773,7 @@ namespace CombatHandler.Generic
             {
                 return NonCombatBuff(spell, ref actionTarget, fightingTarget);
             }
-            
+
             return false;
         }
 
@@ -1544,29 +1554,29 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected void SynchronizePetCombatStateWithOwner(PetType attack, PetType support)
+        protected void SynchronizePetCombatStateWithOwner(PetType Attack, PetType Support)
         {
-            if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastPetSyncTime > 2.0)
+            if (CanLookupPetsAfterZone()&& Time.AONormalTime > _lastPetSyncTime)
             {
-                foreach (Pet _pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == attack || c.Type == support))
+                foreach (var pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == Attack || c.Type == Support))
                 {
-                    SynchronizePetCombatState(_pet);
+                    SynchronizePetCombatState(pet);
                 }
 
-                _lastPetSyncTime = Time.AONormalTime;
+                _lastPetSyncTime = Time.AONormalTime + 0.5;
             }
         }
 
         protected void SynchronizePetCombatState(Pet pet)
         {
-            var petType = pet?.Character;
             var localPlayer = DynelManager.LocalPlayer;
 
-            if (localPlayer.IsAttacking)
+
+            if (localPlayer.IsAttacking == true)
             {
-                if (petType.IsAttacking)
+                if (pet.Character.IsAttacking == true)
                 {
-                    if (petType.FightingTarget?.Identity != localPlayer.FightingTarget?.Identity)
+                    if (pet.Character.FightingTarget?.Identity != localPlayer.FightingTarget?.Identity)
                     {
                         pet?.Attack(localPlayer.FightingTarget.Identity);
                     }
@@ -1578,7 +1588,7 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (petType.IsAttacking)
+                if (pet.Character.IsAttacking == true)
                 {
                     pet?.Follow();
                 }
@@ -1653,16 +1663,15 @@ namespace CombatHandler.Generic
                         continue;
                     }
 
-                    //if (special == SpecialAttack.Backstab)
-                    //{
-                    //    if (special.IsAvailable() &&
-                    //        !target.IsFacing(DynelManager.LocalPlayer))
-                    //    {
-                    //        continue;
-                    //    }
+                    if (special == SpecialAttack.Backstab)
+                    {
+                        if (special.IsAvailable() && target.FightingTarget.Identity != DynelManager.LocalPlayer.Identity)
+                        {
+                            continue;
+                        }
 
-                    //    continue;
-                    //}
+                        continue;
+                    }
 
                     if (special == SpecialAttack.Brawl)
                     {

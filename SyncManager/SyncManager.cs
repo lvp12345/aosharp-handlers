@@ -95,6 +95,13 @@ namespace SyncManager
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("syncnpctrade", SyncNpcTradeSwitch);
+            Chat.RegisterCommand("spreadem", (string command, string[] param, ChatWindow chatWindow) =>
+            {
+                IPCChannel.Broadcast(new SpreadCommand
+                {
+                    Position = DynelManager.LocalPlayer.Position,
+                });
+            });
 
             if (Game.IsNewEngine)
             {
@@ -227,8 +234,6 @@ namespace SyncManager
 
         private void HandleSpreadButtonClicked(object sender, ButtonBase e)
         {
-            Chat.WriteLine("Button clicked");
-
             IPCChannel.Broadcast(new SpreadCommand
             {
                 Position = DynelManager.LocalPlayer.Position,

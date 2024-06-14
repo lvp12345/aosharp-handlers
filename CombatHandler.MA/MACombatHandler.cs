@@ -1249,8 +1249,8 @@ namespace CombatHandler.MartialArtist
             public static int[] TargetEvades = { 28903, 28878, 28872 };
             public static int[] TeamCritBuffs = { 160574, 160575, 160576 };
             public static int[] Taunts = { 301936, 100214, 100216, 100215, 100217, 28866 };
-            public static int[] TargetArmorBuffs = { 75351, 75336, 75338, 28869, 75337, 75339, 75340, 75342, 75341, 75343, 28907,
-                75344, 75345, 75347, 75346, 28905, 75348, 75349, 75350 };
+            public static int[] TargetArmorBuffs = { 75351, 75336, 75338, 28869, 75337, 75339, 75340, 75342, 75341, 75343, 28907, 75344, 75345,
+                75347, 75346, 28905, 75348, 75349, 75350 };
             public static int[] DamageTypeMelee = { 270798, 28892 };
             public static int[] DamageTypeFire = { 81827, 81824, 28876 };
             public static int[] DamageTypeEnergy = { 81825, 81823, 81826, 81829 };

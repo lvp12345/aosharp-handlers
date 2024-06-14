@@ -25,6 +25,7 @@
 		<TextView value="/syncuse - Enables sync use." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/synctrade - Enables sync trading." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/syncchat - Enables sync chat." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/spreadem - Same as the Spread Out button." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 	</BorderView>
 </root>

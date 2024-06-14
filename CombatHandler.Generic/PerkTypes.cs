@@ -270,7 +270,7 @@ namespace CombatHandler.Generic
 
             {PerkHash.ShadowBullet , PerkType.TargetDamage},
             {PerkHash.ShadowKiller , PerkType.TargetDamage},
-            {PerkHash.ShadowStab , PerkType.Disabled},
+            {PerkHash.ShadowStab , PerkType.TargetDamage},
 
             {PerkHash.ShutdownRemoval , PerkType.NanoShutdown_Cleanse}, //Nano shutdown
             {PerkHash.SilentPlague , PerkType.TargetDamage},

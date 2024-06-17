@@ -5,6 +5,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
+using AOSharp.Pathfinding;
 using HelpManager.IPCMessages;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace HelpManager
 
         public static Config Config { get; private set; }
 
-        public static string PluginDirectory;
+        public static SMovementController SMovementController { get; set; }
 
         private static double _sitPetUpdateTimer;
 
@@ -43,11 +44,15 @@ namespace HelpManager
         public static Window _assistWindow;
         public static Window _infoWindow;
         public static Window _eumenidesWindow;
+        public static Window _pohWindow;
 
         public static View _followView;
         public static View _assistView;
         public static View _infoView;
         public static View _eumenidesView;
+        public static View _pohView;
+        public static Vector3 returnPosition;
+        public static bool InPos;
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -94,23 +99,46 @@ namespace HelpManager
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
+        [Obsolete]
         public override void Run(string pluginDir)
         {
+            _settings = new Settings("HelpManager");
+
+            PluginDir = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+
+            SMovementControllerSettings mSettings = new SMovementControllerSettings
+            {
+                NavMeshSettings = new SNavMeshSettings { DrawNavMesh = true, DrawDistance = 30 },
+
+                PathSettings = new SPathSettings
+                {
+                    DrawPath = true,
+                    MinRotSpeed = 10,
+                    MaxRotSpeed = 30,
+                    UnstuckUpdate = 5000,
+                    UnstuckThreshold = 2f,
+                    RotUpdate = 10,
+                    MovementUpdate = 200,
+                    PathRadius = 0.26f,
+                    Extents = new Vector3(1.0f, 0.1f, 1.0f)
+                }
+            };
+
+            SMovementController.Set(mSettings);
+            SMovementController.AutoLoadNavmeshes($"{PluginDir}\\Meshes");
 
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
             KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
             KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
 
-            PluginDir = pluginDir;
-
-            _settings = new Settings("HelpManager");
-
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmCast);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
             IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
             IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
+            IPCChannel.RegisterCallback((int)IPCOpcode.POHPathing, POHPathingReceived);
+            IPCChannel.RegisterCallback((int)IPCOpcode.POHBool, POHBoolReceived);
 
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
             Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
@@ -126,8 +154,10 @@ namespace HelpManager
             _settings.AddVariable("BellyPathing", false);
             _settings.AddVariable("Eumenides", false);
             _settings.AddVariable("Db3Shapes", false);
+            _settings.AddVariable("Rift", false);
 
             _settings.AddVariable("Positions", (int)Positions.Center);
+            _settings.AddVariable("POHPositions", (int)POHPositions.None);
 
             Chat.RegisterCommand("autosit", AutoSitSwitch);
 
@@ -142,8 +172,6 @@ namespace HelpManager
                 Chat.WriteLine("HelpManager Loaded!");
                 Chat.WriteLine("/helpmanager for settings.");
             }
-
-            PluginDirectory = pluginDir;
         }
 
         public override void Teardown()
@@ -151,7 +179,7 @@ namespace HelpManager
             SettingsController.CleanUp();
         }
 
-        public Window[] _windows => new Window[] { _assistWindow, _followWindow, _eumenidesWindow };
+        public Window[] _windows => new Window[] { _assistWindow, _followWindow, _infoWindow, _eumenidesWindow, _pohWindow };
 
         public static void IPCChannel_Changed(object s, int e)
         {
@@ -182,6 +210,43 @@ namespace HelpManager
             _infoWindow.Show(true);
         }
 
+        private void EumenidesView(object s, ButtonBase button)
+        {
+            _eumenidesWindow = Window.CreateFromXml("Eumenides", PluginDirectory + "\\UI\\HelpManagerEumenidesView.xml",
+                windowSize: new Rect(0, 0, 440, 510),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            _eumenidesWindow.Show(true);
+        }
+
+        private void POHView(object s, ButtonBase button)
+        {
+            _pohWindow = Window.CreateFromXml("POH", PluginDirectory + "\\UI\\HelpManagerPOHView.xml",
+                windowSize: new Rect(0, 0, 440, 510),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            _pohWindow.Show(true);
+        }
+
+        private void POHPathButtonClicked(object s, ButtonBase button)
+        {
+            if (Playfield.ModelIdentity.Instance != 8020) return;
+
+            IPCChannel.Broadcast(new POHPathing
+            {
+                Position = DynelManager.LocalPlayer.Position,
+            });
+
+            if (returnPosition == Vector3.Zero)
+            {
+                returnPosition = DynelManager.LocalPlayer.Position;
+            }
+
+            POH.HandlePathingToPOS();
+        }
+
         private void UISettingsButtonClicked(object s, ButtonBase button)
         {
             IPCChannel.Broadcast(new UISettings()
@@ -192,16 +257,6 @@ namespace HelpManager
                 Eumenides = _settings["Eumenides"].AsBool(),
                 Db3Shapes = _settings["Db3Shapes"].AsBool(),
             });
-        }
-
-        private void EumenidesView(object s, ButtonBase button)
-        {
-            _eumenidesWindow = Window.CreateFromXml("Eumenides", PluginDirectory + "\\UI\\HelpManagerEumenidesView.xml",
-                windowSize: new Rect(0, 0, 440, 510),
-                windowStyle: WindowStyle.Default,
-                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
-
-            _eumenidesWindow.Show(true);
         }
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
@@ -218,6 +273,42 @@ namespace HelpManager
                 _settings["BellyPathing"] = uISettings.BellyPathing;
                 _settings["Eumenides"] = uISettings.Eumenides;
                 _settings["Db3Shapes"] = uISettings.Db3Shapes;
+            }
+        }
+
+        private void POHPathingReceived(int arg1, IPCMessage message)
+        {
+            if (Playfield.ModelIdentity.Instance != 8020) return;
+
+            POHPathing Pos = message as POHPathing;
+
+            if (returnPosition == Vector3.Zero)
+            {
+                returnPosition = Pos.Position;
+            }
+
+            POH.HandlePathingToPOS();
+        }
+
+        private void POHBoolReceived(int arg1, IPCMessage message)
+        {
+            POHBool pos = message as POHBool;
+
+            if (pos.AtPOS1)
+            {
+                Chat.WriteLine("Pos 1 ready");
+            }
+            if (pos.AtPOS2)
+            {
+                Chat.WriteLine("Pos 2 ready");
+            }
+            if (pos.AtPOS3)
+            {
+                Chat.WriteLine("Pos 3 ready");
+            }
+            if (pos.AtPOS4)
+            {
+                Chat.WriteLine("Pos 4 ready");
             }
         }
 
@@ -243,8 +334,7 @@ namespace HelpManager
             {
                 foreach (Dynel dynel in DynelManager.AllDynels.Where(d => DynelManager.LocalPlayer.Position.DistanceFrom(d.Position) < 60))
                 {
-                    if (dynel.Name.Contains("Mine") || dynel.Name.Contains("Trap") || dynel.Name.Contains("Collision Spawn")
-                        || dynel.Name == "Portal Warden" || dynel.Name == "Unstable Rift")
+                    if (dynel.Name.Contains("Mine") || dynel.Name.Contains("Trap") || dynel.Name.Contains("Collision Spawn"))
                     {
                         var rad = dynel.Radius;
 
@@ -255,6 +345,44 @@ namespace HelpManager
                         else
                         {
                             Debug.DrawSphere(dynel.Position, 1, DebuggingColor.Red);
+                        }
+                    }
+                }
+            }
+
+            if (Playfield.ModelIdentity.Instance == 8020)
+            {
+                AtPos();
+
+                if (DynelManager.LocalPlayer.Position.DistanceFrom(returnPosition) < 1)
+                {
+                    if (!SMovementController.IsNavigating())
+                    {
+                        returnPosition = Vector3.Zero;
+                        InPos = false;
+                    }
+                }
+            }
+
+            if (Playfield.ModelIdentity.Instance == 8050)
+            {
+                if (_settings["Rift"].AsBool())
+                {
+                    foreach (var rift in DynelManager.AllDynels.Where(d => d.Name == "Unstable Rift" && d.Identity.Type == IdentityType.Terminal))
+                    {
+                        var timeremaining = rift.GetStat(Stat.TimeExist);
+
+                        if (timeremaining < 1000)
+                        {
+                            Debug.DrawSphere(rift.Position, 5, DebuggingColor.Red);
+                        }
+                        else if (timeremaining < 2000)
+                        {
+                            Debug.DrawSphere(rift.Position, 10, DebuggingColor.Yellow);
+                        }
+                        else if (timeremaining < 3000)
+                        {
+                            Debug.DrawSphere(rift.Position, 20, DebuggingColor.Green);
                         }
                     }
                 }
@@ -439,15 +567,87 @@ namespace HelpManager
                         settingsButton.Tag = SettingsController.settingsWindow;
                         settingsButton.Clicked = UISettingsButtonClicked;
                     }
+                    if (SettingsController.settingsWindow.FindView("POHPathButton", out Button pathButton))
+                    {
+                        pathButton.Tag = SettingsController.settingsWindow;
+                        pathButton.Clicked = POHPathButtonClicked;
+                    }
                     if (SettingsController.settingsWindow.FindView("EumenidesPositionsView", out Button eumenidesView))
                     {
                         eumenidesView.Tag = SettingsController.settingsWindow;
                         eumenidesView.Clicked = EumenidesView;
                     }
+                    if (SettingsController.settingsWindow.FindView("POHView", out Button pohView))
+                    {
+                        pohView.Tag = SettingsController.settingsWindow;
+                        pohView.Clicked = POHView;
+                    }
                 }
+
                 _uiDelay = Time.AONormalTime;
             }
             #endregion
+        }
+
+        void AtPos()
+        {
+            //floor 0ne
+            var pos1 = new Vector3(204.1, 7.8, 99.1);
+            var pos2 = new Vector3(228.2, 7.8, 112.3);
+
+            //floor two
+            var pos3 = new Vector3(71.2, 6.0, 117.2);
+            var pos4 = new Vector3(50.2, 6.0, 48.9);
+            var pos5 = new Vector3(122.8, 6.0, 37.1);
+
+            //floor three
+            var pos6 = new Vector3(291.5, 9.0, 223.1);
+            var pos7 = new Vector3(275.1, 6.0, 180.9);
+            var pos8 = new Vector3(336.6, 6.0, 134.1);
+            var pos9 = new Vector3(357.0, 6.0, 30.2);
+
+            var playerPos = DynelManager.LocalPlayer.Position;
+
+            if (!InPos)
+            {
+                if (playerPos.DistanceFrom(pos1) < 1 || playerPos.DistanceFrom(pos3) < 1 || playerPos.DistanceFrom(pos6) < 1)
+                {
+                    Chat.WriteLine("Pos 1 ready");
+                    IPCChannel.Broadcast(new POHBool
+                    {
+                        AtPOS1 = true,
+                        
+                    });
+                    InPos = true;
+                }
+                else if (playerPos.DistanceFrom(pos2) < 1 || playerPos.DistanceFrom(pos4) < 1 || playerPos.DistanceFrom(pos7) < 1)
+                {
+                    Chat.WriteLine("Pos 2 ready");
+                    IPCChannel.Broadcast(new POHBool
+                    {
+                        AtPOS2 = true,
+                    });
+                    InPos = true;
+                }
+                else if (playerPos.DistanceFrom(pos5) < 1 || playerPos.DistanceFrom(pos8) < 1)
+                {
+                    Chat.WriteLine("Pos 3 ready");
+                    IPCChannel.Broadcast(new POHBool
+                    {
+                        AtPOS3 = true,
+                    });
+                    InPos = true;
+                }
+                else if (playerPos.DistanceFrom(pos9) < 1)
+                {
+                    Chat.WriteLine("Pos 4 ready");
+                    IPCChannel.Broadcast(new POHBool
+                    {
+                        AtPOS4 = true,
+                    });
+                    InPos = true;
+                }
+            }
         }
 
         private void OnYalmCast(int sender, IPCMessage msg)
@@ -575,7 +775,7 @@ namespace HelpManager
 
             if (healpet == null || kit == null) { return; }
 
-            if (kits.CanUseSitKit() && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f 
+            if (kits.CanUseSitKit() && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f
                 && healpet.Character.IsInLineOfSight)
             {
                 if (healpet.Character.NanoPercent <= 75)
@@ -635,6 +835,15 @@ namespace HelpManager
             FrontLeft,
             FrontRight,
             Door,
+        }
+
+        public enum POHPositions
+        {
+            None,
+            PortalGuardian1,
+            PortalGuardian2,
+            PortalGuardian3,
+            PortalGuardian4,
         }
     }
 }

@@ -571,20 +571,18 @@ namespace GMIManager
 
                         if (openBags)
                         {
-                            foreach (var item in Inventory.Items)
+                            foreach (var item in Inventory.Items.Where(i => i.Name == GMIItemName && i.Slot.Type == IdentityType.Inventory))
                             {
-                                if (item.Name == GMIItemName && item.Slot.Type == IdentityType.Inventory)
+                                GMI.Deposit(item);
+                            }
+
+                            foreach (var bag in Inventory.Backpacks)
+                            {
+                                foreach (var MoveItem in bag.Items.Where(i => i.Name == GMIItemName))
                                 {
-                                    GMI.Deposit(item);
-                                }
-                                else
-                                {
-                                    foreach (var bag in Inventory.Backpacks)
+                                    if (MoveItem.Slot.Type != IdentityType.Inventory)
                                     {
-                                        foreach (var MoveItem in bag.Items.Where(i => i.Name == GMIItemName))
-                                        {
-                                            MoveItem.MoveToInventory();
-                                        }
+                                        MoveItem.MoveToInventory();
                                     }
                                 }
                             }

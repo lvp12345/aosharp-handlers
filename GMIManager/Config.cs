@@ -55,17 +55,11 @@ namespace GMIManager
 
         public void Save()
         {
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP");
-
-            if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager"))
-                Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager");
 
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager\\{Game.ClientInst}"))
+            {
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\AOSP\\GMIManager\\{Game.ClientInst}");
+            }
 
             File.WriteAllText(_path, JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
         }
@@ -75,8 +69,6 @@ namespace GMIManager
     {
         public event EventHandler<string> GMIBuyOrderNameChangedEventChangedEvent;
         private string _gMIBuyOrderName = string.Empty;
-        public event EventHandler<string> GMIItemNameChangedEventChangedEvent;
-        private string _gMIItemName = string.Empty;
 
         public string GMIBuyOrderName
         {
@@ -131,6 +123,9 @@ namespace GMIManager
                 }
             }
         }
+
+        public event EventHandler<string> GMIItemNameChangedEventChangedEvent;
+        private string _gMIItemName = string.Empty;
 
         public string GMIItemName
         {

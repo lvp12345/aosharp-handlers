@@ -63,13 +63,24 @@ namespace GMIManager
                             settingsWindow.FindView("GMIItemName", out TextInputView gMIItemName);
 
                             if (gMIBuyOrdersName != null)
+                            {
                                 gMIBuyOrdersName.Text = $"{Config.CharSettings[Game.ClientInst].GMIBuyOrderName}";
+                            }
+
                             if (gMIBuyOrdersEndPrice != null)
+                            {
                                 gMIBuyOrdersEndPrice.Text = $"{Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice}";
+                            }
+
                             if (gMIWithdrawAmount != null)
+                            {
                                 gMIWithdrawAmount.Text = $"{Config.CharSettings[Game.ClientInst].GMIWithdrawAmount}";
+                            }
+
                             if (gMIItemName != null)
+                            {
                                 gMIItemName.Text = $"{Config.CharSettings[Game.ClientInst].GMIItemName}";
+                            }
                         }
                     }
                     catch (Exception e)

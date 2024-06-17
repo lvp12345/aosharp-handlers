@@ -4,9 +4,9 @@ using AOSharp.Core;
 using AOSharp.Core.GMI;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
+using SmokeLounge.AOtomation.Messaging.GameData;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -66,6 +66,7 @@ namespace GMIManager
 
         public static string previousErrorMessage = string.Empty;
 
+        [Obsolete]
         public override void Run(string pluginDir)
         {
             try
@@ -79,8 +80,8 @@ namespace GMIManager
                 Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPriceChangedEvent += GMIBuyOrderEndPrice_Changed;
                 Config.CharSettings[Game.ClientInst].GMIWithdrawAmountChangedEvent += GMIWithdrawAmount_Changed;
                 Config.CharSettings[Game.ClientInst].GMIItemNameChangedEventChangedEvent += GMIItemName_Changed;
-                Network.PacketReceived += HandleMail;
 
+                Network.PacketReceived += HandleMail;
                 Game.OnUpdate += OnUpdate;
 
                 _settings.AddVariable("ModeSelection", (int)ModeSelection.Withdraw);
@@ -199,7 +200,6 @@ namespace GMIManager
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
 
-
         public static void ReadMail(int msgId)
         {
             SendShortMailMsg(MailMsgType.Read, msgId);
@@ -287,10 +287,6 @@ namespace GMIManager
             reader.ReadInt32();
             reader.ReadInt32();
             reader.ReadByte();
-
-
-            //Chat.WriteLine($"ID: {messageId} / From: {fromTitle} / Subject: {subjectTitle}");
-            // Chat.WriteLine($"Mail populated.");
 
             if (_mailId == 0)
             {
@@ -395,7 +391,6 @@ namespace GMIManager
 
             if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32())
             {
-
                 MyMarketBuyOrder ourOrder = myOrders.BuyOrders.Where(x => x.Name == GMIBuyOrderName
                 && x.Price < GMIBuyOrderEndPrice).OrderByDescending(x => x.Price).FirstOrDefault();
 
@@ -426,13 +421,8 @@ namespace GMIManager
                         _queuedCash = (ulong)_marketCredits - (ulong)marketInventory.Credits;
                         _marketCredits = marketInventory.Credits;
                     }
-                    else
-                    {
-                        //Chat.WriteLine($"No credits {marketInventory.Credits}.");
-                    }
                 });
             }
-
         }
 
 
@@ -456,9 +446,7 @@ namespace GMIManager
                         _initStart = false;
                     }
 
-                    if (!_initStart
-                        && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                        && Time.NormalTime > _timeOut + 9999999999)
+                    if (!_initStart && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32() && Time.NormalTime > _timeOut + 9999999999)
                     {
                         _init = false;
                         _initStart = true;
@@ -467,8 +455,7 @@ namespace GMIManager
                         Chat.WriteLine("Timed out.");
                     }
 
-                    if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                        && Time.NormalTime > _gmiWithdrawTimer + 9)
+                    if (ModeSelection.Withdraw == (ModeSelection)_settings["ModeSelection"].AsInt32() && Time.NormalTime > _gmiWithdrawTimer + 9)
                     {
                         if ((_gmiWithdrawAmount < GMIWithdrawAmount) || GMIWithdrawAmount == 0)
                         {
@@ -491,25 +478,21 @@ namespace GMIManager
                         _gmiWithdrawTimer = Time.NormalTime;
                     }
 
-                    if (ModeSelection.Refresh == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                        && Time.NormalTime > _gmiUpdateTimer + 2.5)
+                    if (ModeSelection.Refresh == (ModeSelection)_settings["ModeSelection"].AsInt32()  && Time.NormalTime > _gmiUpdateTimer + 2.5)
                     {
                         RequestGMIInventory();
 
                         _gmiUpdateTimer = Time.NormalTime;
                     }
 
-                    if (_init
-                        && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                        && Time.NormalTime > _gmiUpdateTimer + 3)
+                    if (_init && ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()  && Time.NormalTime > _gmiUpdateTimer + 3)
                     {
                         RequestGMIInventory();
 
                         _gmiUpdateTimer = Time.NormalTime;
                     }
 
-                    if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32()
-                        && Time.NormalTime > _mailOpenTimer + 7)
+                    if (ModeSelection.Modify == (ModeSelection)_settings["ModeSelection"].AsInt32() && Time.NormalTime > _mailOpenTimer + 7)
                     {
                         Task.Factory.StartNew(
                             async () =>
@@ -563,16 +546,11 @@ namespace GMIManager
 
                     if (ModeSelection.Item == (ModeSelection)_settings["ModeSelection"].AsInt32() && Time.NormalTime > _mailOpenTimer + 1)
                     {
-                        Item _item = Inventory.Items
-                                       .Where(c => c.Name.Contains(GMIItemName))
-                                       .FirstOrDefault();
-
                         Task.Factory.StartNew(
                             async () =>
                             {
                                 if (_mailId > 0)
                                 {
-
                                     await Task.Delay(200);
                                     ReadMail(_mailId);
                                     await Task.Delay(200);
@@ -590,33 +568,40 @@ namespace GMIManager
                                 }
                             });
 
-                        if (_item != null)
-                        {
 
-                            GMI.Deposit(_item);
-                        }
-
-                        if (_item == null)
+                        if (openBags)
                         {
-                            if (!openBags)
+                            foreach (var item in Inventory.Items)
                             {
-                                List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
-                                foreach (Item bag in bags)
+                                if (item.Name == GMIItemName)
                                 {
-                                    bag.Use();
-                                    bag.Use();
-                                    openBags = true;
+                                    if (item.Slot.Type == IdentityType.Inventory)
+                                    {
+                                        GMI.Deposit(item);
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (var bag in Inventory.Backpacks)
+                                    {
+                                        foreach (var MoveItem in bag.Items.Where(i => i.Name == GMIItemName))
+                                        {
+                                            MoveItem.MoveToInventory();
+                                        }
+                                    }
                                 }
                             }
+                        }
+                        else
+                        {
+                            var bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
 
-                            Container Bag = Inventory.Backpacks.FirstOrDefault(c => c.IsOpen && c.Items.Count() > 0);
-
-                            if (Bag != null)
-                                foreach (Item MoveItem in Bag.Items.Take(Inventory.NumFreeSlots - 1))
-                                    if (MoveItem.Name.Contains(GMIItemName))
-                                    {
-                                        MoveItem.MoveToInventory();
-                                    }
+                            foreach (Item bag in bags)
+                            {
+                                bag.Use();
+                                bag.Use();
+                                openBags = true;
+                            }
                         }
 
                         _mailOpenTimer = Time.NormalTime;
@@ -646,7 +631,6 @@ namespace GMIManager
                             Config.CharSettings[Game.ClientInst].GMIBuyOrderEndPrice = gMIBuyOrdersEndPriceValue;
                         }
                     }
-
 
                     if (gMIWithdrawAmountInput != null && !string.IsNullOrEmpty(gMIWithdrawAmountInput.Text))
                     {

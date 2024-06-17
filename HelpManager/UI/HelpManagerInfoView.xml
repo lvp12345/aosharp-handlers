@@ -1,10 +1,16 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Info" layout_borders="Rect(2,2,2,2)" max_size="Point(16000,-1)">
+		<TextView value=" " layout_borders="Rect(2,2,2,2)"/>
 		<TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/yalm - Toggles yalm (if you cancel the ncu, will need to type twice)." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/autosit - Toggles auto sitting." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="(POH) Path to Portal Mobs/Return;" layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Assign position to your characters, clear mobs on the floor, disable AttackBuddy and Sync(move) then press 'path to portal mob'. " layout_borders="Rect(2,2,2,2)"/>
+		<TextView value="When all in position, enable Attackbuddy. After the kill, press 'path' again to return to starting position and resume Sync. " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="(POH) Hightlight Rifts: Red is 10 or less, yellow is 10-20 and green is 20 + (seconds left) " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 	</BorderView>
 </root>

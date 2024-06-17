@@ -176,6 +176,9 @@ namespace CombatHandler.Agent
                 //Healing
                 RegisterSpellProcessor(RelevantGenericNanos.FountainOfLife, Healing.FountainOfLife, CombatActionPriority.High);
 
+                //Perk
+                RegisterPerkProcessor(PerkHash.TheShot, TheShot);
+
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1513,7 +1516,6 @@ namespace CombatHandler.Agent
             }
         }
 
-
         #region Adventurer
 
         #region Healing
@@ -1683,6 +1685,61 @@ namespace CombatHandler.Agent
 
             return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
+        #endregion
+
+        #endregion
+
+        #region Agent
+
+        #region Perks
+
+        protected bool TheShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perk.IsAvailable || fightingTarget == null) { return false; }
+
+            if (!_settings["TheShot"].AsBool()) { return false; }
+
+            if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
+
+            return PerkCondtionProcessors.DamagePerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Buffs
+
+        private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return ToggledTargetDebuff("Concentration", spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        private bool Rifle(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.AssassinsAimedShot, out Buff AAS)) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.SteadyNerves, out Buff SN)) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+
+        private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcSelection.DeTaunt != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+
+        private bool DamageProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ProcSelection.Damage != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+
+        #endregion
+
+        #region Debuffs
+
         #endregion
 
         #endregion
@@ -1874,10 +1931,10 @@ namespace CombatHandler.Agent
         }
         private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CycleChallenger") && Time.AONormalTime > _challenger + CycleChallengerDelay
+            if (_settings["CycleChallenger"].AsBool() && Time.AONormalTime > _challenger + CycleChallengerDelay
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
-                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+                if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
                 _challenger = Time.AONormalTime;
                 return true;
@@ -1947,7 +2004,7 @@ namespace CombatHandler.Agent
 
         private bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["WarpPets"].AsBool() || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
 
             return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
         }
@@ -1977,7 +2034,7 @@ namespace CombatHandler.Agent
 
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfSol.Contains(c.Id)) || !IsSettingEnabled("Buffing")) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfSol.Contains(c.Id)) || !_settings["Buffing"].AsBool()) { return false; }
 
             if (fightingtarget == null || !CanCast(spell)) { return false; }
 
@@ -2020,7 +2077,7 @@ namespace CombatHandler.Agent
 
             if (NeedsReload()) { return false; }
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (ACDrainSelection.Target == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
             {
@@ -2104,7 +2161,7 @@ namespace CombatHandler.Agent
                     }
 
                 case RansackSelection.Area:
-                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null)
                     {
                         return false;
                     }
@@ -2185,8 +2242,9 @@ namespace CombatHandler.Agent
                     {
                         return TargetDebuff(spell, NanoLine.TraderSkillTransferTargetDebuff_Deprive, fightingTarget, ref actionTarget);
                     }
+
                 case DepriveSelection.Area:
-                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null)
                     {
                         return false;
                     }
@@ -2229,41 +2287,7 @@ namespace CombatHandler.Agent
 
         #endregion
 
-        #region Buffs
-
-        private bool Concentration(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            return ToggledTargetDebuff("Concentration", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
-
-        private bool Rifle(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.AssassinsAimedShot, out Buff AAS)) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.SteadyNerves, out Buff SN)) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-
-        private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcSelection.DeTaunt != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-
-        private bool DamageProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (ProcSelection.Damage != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-
-        #endregion
-
-        #region Debuffs
-
-        #endregion
+      
 
         #region Misc
 

@@ -804,7 +804,7 @@ namespace CombatHandler.Engineer
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
-                if (IsSettingEnabled("SyncPets"))
+                if (_settings["SyncPets"].AsBool())
                 {
                     SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
                 }
@@ -1241,7 +1241,7 @@ namespace CombatHandler.Engineer
 
         private bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (Team.IsInTeam && IsSettingEnabled("GrenadeTeam"))
+            if (Team.IsInTeam && _settings["GrenadeTeam"].AsBool())
             {
                 return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
             }
@@ -1339,7 +1339,7 @@ namespace CombatHandler.Engineer
 
         private bool ShieldOfTheObedientServant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["BuffPets"].AsBool() || !CanLookupPetsAfterZone()) { return false; }
 
             if (!CanCast(spell)) { return false; }
 
@@ -1367,7 +1367,7 @@ namespace CombatHandler.Engineer
 
         private bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["WarpPets"].AsBool() || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
 
             return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
         }
@@ -1378,7 +1378,7 @@ namespace CombatHandler.Engineer
 
         private bool PetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("HealPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["HealPets"].AsBool() || !CanLookupPetsAfterZone()) { return false; }
 
             if (!CanCast(spell)) { return false; }
 
@@ -1499,7 +1499,7 @@ namespace CombatHandler.Engineer
 
             PetProcSelection currentSetting = (PetProcSelection)_settings["PetProcSelection"].AsInt32();
 
-            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
+            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !_settings["BuffPets"].AsBool())
             {
                 return false;
             }
@@ -1535,7 +1535,7 @@ namespace CombatHandler.Engineer
             PetPerkSelection currentSetting = (PetPerkSelection)_settings["PetPerkSelection"].AsInt32();
 
             if (currentSetting == PetPerkSelection.None || currentSetting != petPerkSelection
-                || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
+                || !CanLookupPetsAfterZone() || !_settings["BuffPets"].AsBool())
             {
                 return false;
             }

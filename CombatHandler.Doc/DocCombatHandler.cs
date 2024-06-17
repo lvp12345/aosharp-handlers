@@ -1206,7 +1206,7 @@ namespace CombatHandler.Doctor
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ShortHOT") || !InCombat()) { return false; }
+            if (!_settings["ShortHOT"].AsBool() || !InCombat()) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -1217,7 +1217,7 @@ namespace CombatHandler.Doctor
 
         private bool EpsilonPurge(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("EpsilonPurge")) { return false; }
+            if (!_settings["EpsilonPurge"].AsBool()) { return false; }
 
             var target = DynelManager.Players
             .Where(c => c.IsInLineOfSight
@@ -1357,7 +1357,7 @@ namespace CombatHandler.Doctor
 
         private bool NanoTransmission(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NanoTransmission")) { return false; }
+            if (!_settings["NanoTransmission"].AsBool()) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }

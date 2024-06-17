@@ -789,7 +789,7 @@ namespace CombatHandler.Metaphysicist
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
-                if (IsSettingEnabled("SyncPets"))
+                if (_settings["SyncPets"].AsBool())
                 {
                     SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
                 }
@@ -1266,7 +1266,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !IsSettingEnabled("MezzPet")) { return false; }
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0 || !_settings["MezzPet"].AsBool()) { return false; }
 
             return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
         }
@@ -1360,7 +1360,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool InducedApathy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["BuffPets"].AsBool() || !CanLookupPetsAfterZone()) { return false; }
 
             if (!CanCast(spell)) { return false; }
 
@@ -1384,7 +1384,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool MastersBidding(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["BuffPets"].AsBool() || !CanLookupPetsAfterZone()) { return false; }
 
             if (!CanCast(spell)) { return false; }
 
@@ -1414,7 +1414,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["WarpPets"].AsBool() || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
 
             return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
         }
@@ -1479,7 +1479,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool MatCre(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            if (_settings["Replenish"].AsBool() && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
             {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -1489,7 +1489,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool PsyMod(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            if (_settings["Replenish"].AsBool() && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
             {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -1499,7 +1499,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool MatLoc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            if (_settings["Replenish"].AsBool() && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
             {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -1509,7 +1509,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool SenImp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            if (_settings["Replenish"].AsBool() && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
             {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -1519,7 +1519,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool BioMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            if (_settings["Replenish"].AsBool() && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
             {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -1529,7 +1529,7 @@ namespace CombatHandler.Metaphysicist
 
         private bool MattMet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Replenish") && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
+            if (_settings["Replenish"].AsBool() && CompositeNanoSkillsBuffSelection.None == (CompositeNanoSkillsBuffSelection)_settings["CompositeNanoSkillsBuffSelection"].AsInt32())
             {
                 return GenericNanoSkillsBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -1680,7 +1680,7 @@ namespace CombatHandler.Metaphysicist
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (IsSettingEnabled("Evades"))
+            if (_settings["Evades"].AsBool())
             {
                 return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
             }

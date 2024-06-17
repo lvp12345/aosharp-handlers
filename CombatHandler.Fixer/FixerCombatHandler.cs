@@ -898,7 +898,7 @@ namespace CombatHandler.Fixer
 
         private bool Grid(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)
                 || ArmorSelection.Grid != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
 
             return !Inventory.Items.Any(x => RelevantItems.Grid.Contains(x.HighId));
@@ -906,7 +906,7 @@ namespace CombatHandler.Fixer
 
         private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)
                 || ArmorSelection.ShadowwebSpinner != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
 
             return !Inventory.Items.Any(x => RelevantItems.ShadowwebSpinner.Contains(x.HighId));
@@ -918,7 +918,7 @@ namespace CombatHandler.Fixer
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ShortHOT") || !InCombat()) { return false; }
+            if (!_settings["ShortHOT"].AsBool() || !InCombat()) { return false; }
 
             return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
@@ -997,8 +997,8 @@ namespace CombatHandler.Fixer
 
         private bool AOESnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")
-                || !IsSettingEnabled("AOESnare") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool()
+                || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
 
             var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
@@ -1022,8 +1022,8 @@ namespace CombatHandler.Fixer
 
         private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")
-                || !IsSettingEnabled("AOESnare") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool()
+                || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
 
             var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight

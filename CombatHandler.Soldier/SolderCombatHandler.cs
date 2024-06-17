@@ -914,7 +914,7 @@ namespace CombatHandler.Soldier
         {
             if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
 
-            if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
+            if (!CanCast(spell) || !_settings["DeTaunt"].AsBool()) { return false; }
             if (!Team.IsInTeam) { return false; }
 
             var target = DynelManager.NPCs
@@ -1035,7 +1035,7 @@ namespace CombatHandler.Soldier
 
         private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!_settings["Buffing"].AsBool()) { return false; }
 
             if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
 
@@ -1077,7 +1077,7 @@ namespace CombatHandler.Soldier
 
         private bool RiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("RiotControl"))
+            if (_settings["RiotControl"].AsBool())
             {
                 if (Team.IsInTeam)
                 {
@@ -1104,7 +1104,7 @@ namespace CombatHandler.Soldier
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CompHeavyArt"))
+            if (_settings["CompHeavyArt"].AsBool())
             {
                 if (Team.IsInTeam)
                 {
@@ -1167,7 +1167,7 @@ namespace CombatHandler.Soldier
 
         private bool Phalanx(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TeamArmorBuff")) { return false; }
+            if (!_settings["TeamArmorBuff"].AsBool()) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(162357)) { return false; }
 
@@ -1177,7 +1177,7 @@ namespace CombatHandler.Soldier
 
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!_settings["Buffing"].AsBool()) { return false; }
 
             if (fightingtarget == null || !CanCast(spell)) { return false; }
 
@@ -1193,7 +1193,7 @@ namespace CombatHandler.Soldier
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (IsSettingEnabled("Evades"))
+            if (_settings["Evades"].AsBool())
             {
                 return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
             }

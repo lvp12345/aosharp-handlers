@@ -1096,7 +1096,7 @@ namespace CombatHandler.Trader
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (Team.IsInTeam && IsSettingEnabled("Evades"))
+            if (Team.IsInTeam && _settings["Evades"].AsBool())
             {
                 return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -1227,7 +1227,7 @@ namespace CombatHandler.Trader
                     }
 
                 case RansackSelection.Area:
-                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null)
                     {
                         return false;
                     }
@@ -1297,7 +1297,7 @@ namespace CombatHandler.Trader
                     }
 
                 case DepriveSelection.Area:
-                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null)
                     {
                         return false;
                     }
@@ -1372,7 +1372,7 @@ namespace CombatHandler.Trader
                     }
 
                 case MPDamageDebuffLineASelection.Area:
-                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null)
                     {
                         return false;
                     }
@@ -1426,7 +1426,7 @@ namespace CombatHandler.Trader
                     return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
                 case TraderShutdownSkillDebuffSelection.Area:
-                    if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null)
+                    if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null)
                     {
                         return false;
                     }
@@ -1478,7 +1478,7 @@ namespace CombatHandler.Trader
                 return TargetDebuff(spell, NanoLine.TraderNanoTheft1, fightingTarget, ref actionTarget);
             }
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (AAODrainSelection.Area == (AAODrainSelection)_settings["AAODrainSelection"].AsInt32())
             {
@@ -1524,7 +1524,7 @@ namespace CombatHandler.Trader
                 return TargetDebuff(spell, NanoLine.TraderNanoTheft2, fightingTarget, ref actionTarget);
             }
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (AADDrainSelection.Area == (AADDrainSelection)_settings["AADDrainSelection"].AsInt32())
             {
@@ -1612,7 +1612,7 @@ namespace CombatHandler.Trader
                 return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
             }
 
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || _drainTarget == null) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell) || _drainTarget == null) { return false; }
 
             if (ACDrainSelection.Area == (ACDrainSelection)_settings["ACDrainSelection"].AsInt32())
             {
@@ -1648,7 +1648,7 @@ namespace CombatHandler.Trader
 
         private bool Mezz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
             if (ModeSelection.None == (ModeSelection)_settings["ModeSelection"].AsInt32()) { return false; }
 
@@ -1705,7 +1705,7 @@ namespace CombatHandler.Trader
         #region Roots
         private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !_settings["Root"].AsBool() || !CanCast(spell)) { return false; }
 
             var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight

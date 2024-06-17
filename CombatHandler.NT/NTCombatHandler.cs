@@ -1050,7 +1050,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool PierceNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Pierce") || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (!_settings["Pierce"].AsBool() || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return true;
         }
@@ -1098,7 +1098,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool Stun(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
             if (CalmingSelection.Stun != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
 
@@ -1152,7 +1152,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool Calm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
             if (CalmingSelection.Calm != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
 
@@ -1253,7 +1253,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool FlimFocus(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("FlimFocus")) { return false; }
+            if (!_settings["FlimFocus"].AsBool()) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
@@ -1264,7 +1264,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell) || !IsSettingEnabled("DeTaunt")) { return false; }
+            if (!CanCast(spell) || !_settings["DeTaunt"].AsBool()) { return false; }
             if (!Team.IsInTeam) { return false; }
 
             var target = DynelManager.NPCs
@@ -1309,7 +1309,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool NanoHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NanoHOTTeam"))
+            if (_settings["NanoHOTTeam"].AsBool())
             {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
             }
@@ -1319,7 +1319,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool Cost(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CostTeam"))
+            if (_settings["CostTeam"].AsBool())
             {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
             }
@@ -1329,14 +1329,14 @@ namespace CombatHandler.NanoTechnician
 
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
             return DynelManager.LocalPlayer.HealthPercent <= NanoAegisPercentage && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
             return DynelManager.LocalPlayer.HealthPercent <= NullitySpherePercentage && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
         }
@@ -1345,10 +1345,10 @@ namespace CombatHandler.NanoTechnician
         {
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
 
-            if (IsSettingEnabled("CycleAbsorbs") && Time.NormalTime > _absorbs + CycleAbsorbsDelay
+            if (_settings["CycleAbsorbs"].AsBool() && Time.NormalTime > _absorbs + CycleAbsorbsDelay
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
-                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+                if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
                 _absorbs = Time.NormalTime;
                 return true;
@@ -1359,7 +1359,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return DynelManager.LocalPlayer.NanoPercent <= IzgimmersWealthPercentage;
         }
@@ -1372,7 +1372,7 @@ namespace CombatHandler.NanoTechnician
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (IsSettingEnabled("Evades"))
+            if (_settings["Evades"].AsBool())
             {
                 return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
             }
@@ -1382,7 +1382,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool NFRangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NFRangeBuff"))
+            if (_settings["NFRangeBuff"].AsBool())
             {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
             }
@@ -1396,7 +1396,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool NotumItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("NotumGraft")) { return false; }
+            if (!_settings["NotumGraft"].AsBool()) { return false; }
             if (Item.HasPendingUse || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MaxNanoEnergy)
             || DynelManager.LocalPlayer.NanoPercent >= 75) { return false; }
 
@@ -1405,7 +1405,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool Illusionist(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Illusionist")) { return false; }
+            if (!_settings["Illusionist"].AsBool()) { return false; }
             if (fightingtarget == null) { return false; }
             if (fightingtarget?.MaxHealth < 1000000) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Contains(274736) || Item.HasPendingUse) { return false; }

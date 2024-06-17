@@ -853,7 +853,7 @@ namespace CombatHandler.Keeper
 
         private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("RecastAntiFear")) { return true; }
+            if (_settings["RecastAntiFear"].AsBool()) { return true; }
 
             return Buff(spell, spell.Nanoline, ref actionTarget);
         }

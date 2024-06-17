@@ -206,7 +206,6 @@ namespace CombatHandler.Generic
                 RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
                 RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
                 RegisterPerkProcessor(PerkHash.LegShot, LegShot);
-                RegisterPerkProcessor(PerkHash.TheShot, TheShot);
                 RegisterPerkProcessor(PerkHash.PowerVolley, PowerUp);
                 RegisterPerkProcessor(PerkHash.PowerShock, PowerUp);
                 RegisterPerkProcessor(PerkHash.PowerBlast, PowerUp);
@@ -423,20 +422,9 @@ namespace CombatHandler.Generic
 
         protected bool LegShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["LegShot"].AsBool()) { return false; }
+
             if (!perk.IsAvailable || fightingTarget == null) { return false; }
-
-            if (!IsSettingEnabled("LegShot")) { return false; }
-
-            if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
-
-            return DamagePerk(perk, fightingTarget, ref actionTarget);
-        }
-
-        protected bool TheShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!perk.IsAvailable || fightingTarget == null) { return false; }
-
-            if (!IsSettingEnabled("TheShot")) { return false; }
 
             if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
 
@@ -461,7 +449,7 @@ namespace CombatHandler.Generic
 
         protected bool ToggledDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("DamagePerk")) { return false; }
+            if (_settings["DamagePerk"].AsBool()) { return false; }
 
             return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }
@@ -576,7 +564,7 @@ namespace CombatHandler.Generic
 
         private bool EncaseInStone(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("EncaseInStone") || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+            if (!_settings["EncaseInStone"].AsBool() || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
@@ -625,7 +613,7 @@ namespace CombatHandler.Generic
         #region Comps
         protected bool CompositeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Composites") || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id))
+            if (!_settings["Composites"].AsBool() || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id))
             {
                 return false;
             }
@@ -747,7 +735,7 @@ namespace CombatHandler.Generic
 
         protected bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("AAO"))
+            if (_settings["AAO"].AsBool())
             {
                 if (Team.IsInTeam)
                 {
@@ -831,7 +819,7 @@ namespace CombatHandler.Generic
 
         protected bool CheckNotProfsBeforeCast(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
             if (Team.IsInTeam)
             {
@@ -1019,7 +1007,7 @@ namespace CombatHandler.Generic
         {
             if (NeedsReload()) { return false; }
 
-            if (fightingTarget == null || !IsSettingEnabled(settingName)) { return false; }
+            if (fightingTarget == null || !_settings[settingName].AsBool()) { return false; }
 
             if (debuffAreaTargetsToIgnore.Contains(fightingTarget.Name))
             {
@@ -1040,7 +1028,7 @@ namespace CombatHandler.Generic
         {
             if (NeedsReload()) { return false; }
 
-            if (!CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
+            if (!CanCast(spell) || !_settings["Buffing"].AsBool()) { return false; }
 
             var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
@@ -1068,7 +1056,7 @@ namespace CombatHandler.Generic
         {
             if (NeedsReload()) { return false; }
 
-            if (!IsSettingEnabled(toggleName) || !CanCast(spell) || !IsSettingEnabled("Buffing")) { return false; }
+            if (!_settings[toggleName].AsBool() || !CanCast(spell) || !_settings["Buffing"].AsBool()) { return false; }
 
             var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
@@ -1289,7 +1277,7 @@ namespace CombatHandler.Generic
 
         private bool SitKit(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("Kits"))
+            if (_settings["Kits"].AsBool())
             {
                 if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
                     || Item.HasPendingUse
@@ -1507,7 +1495,7 @@ namespace CombatHandler.Generic
 
         protected bool CanSpawnPets(PetType petType)
         {
-            if (!IsSettingEnabled("SpawnPets") || !CanLookupPetsAfterZone() || PetAlreadySpawned(petType)) { return false; }
+            if (!_settings["SpawnPets"].AsBool() || !CanLookupPetsAfterZone() || PetAlreadySpawned(petType)) { return false; }
 
             return true;
         }
@@ -1535,7 +1523,7 @@ namespace CombatHandler.Generic
 
         protected bool PetTargetBuff(NanoLine buffNanoLine, PetType petType, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["BuffPets"].AsBool() || !CanLookupPetsAfterZone()) { return false; }
 
             if (!CanCast(spell)) { return false; }
 
@@ -1714,7 +1702,7 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksNanoSkillsPlayer(Spell spell, SimpleChar fightingTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Find(spell.Nanoline, out Buff buff))
             {
@@ -1728,7 +1716,7 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksNanoSkillsOther(Spell spell, SimpleChar fightingTarget)
         {
-            if (!IsSettingEnabled("Buffing")
+            if (!_settings["Buffing"].AsBool()
                 || !CanCast(spell)
                 || Playfield.ModelIdentity.Instance == 152
                 || !fightingTarget.IsInLineOfSight
@@ -1745,7 +1733,7 @@ namespace CombatHandler.Generic
         }
         protected bool SpellChecksOther(Spell spell, NanoLine nanoline, SimpleChar fightingTarget)
         {
-            if (!IsSettingEnabled("Buffing")
+            if (!_settings["Buffing"].AsBool()
                 || !CanCast(spell)
                 || !fightingTarget.IsInLineOfSight
                 || (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity))) { return false; }
@@ -1770,7 +1758,7 @@ namespace CombatHandler.Generic
 
         protected bool SpellChecksPlayer(Spell spell, NanoLine nanoline)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
 
             if (RelevantGenericNanos.HpBuffs.Contains(spell.Id) && DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DoctorHPBuffs)) { return false; }
 
@@ -1837,11 +1825,6 @@ namespace CombatHandler.Generic
                     buff.Remove();
                 }
             }
-        }
-
-        protected bool IsSettingEnabled(string settingName)
-        {
-            return _settings[settingName].AsBool();
         }
 
         protected bool HasNCU(Spell spell, SimpleChar target)

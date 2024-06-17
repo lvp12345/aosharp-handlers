@@ -1106,7 +1106,7 @@ namespace CombatHandler.MartialArtist
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
             if (SingleTauntSelection.Area == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
             {
@@ -1147,7 +1147,7 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("ControlledDestructionNoShutdown")) { return false; }
+            if (!_settings["ControlledDestructionNoShutdown"].AsBool()) { return false; }
             if (fightingTarget == null) { return false; }
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
@@ -1155,7 +1155,7 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !IsSettingEnabled("ControlledDestructionWithShutdown")
+            if (fightingTarget == null || !_settings["ControlledDestructionWithShutdown"].AsBool()
                 || DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
@@ -1163,7 +1163,7 @@ namespace CombatHandler.MartialArtist
 
         private bool FistsOfTheWinterFlameNano(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("FistsoftheWinterFlame")) { return false; }
+            if (!_settings["FistsoftheWinterFlame"].AsBool()) { return false; }
 
             if (fightingTarget == null || fightingTarget?.HealthPercent <= 50) { return false; }
 
@@ -1194,7 +1194,7 @@ namespace CombatHandler.MartialArtist
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (!IsSettingEnabled("Evades")) { return false; }
+            if (!_settings["Evades"].AsBool()) { return false; }
 
             return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "Evades");
 
@@ -1203,7 +1203,7 @@ namespace CombatHandler.MartialArtist
         private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
 
-            if (!IsSettingEnabled("CritBuff")) { return false; }
+            if (!_settings["CritBuff"].AsBool()) { return false; }
 
             if (!Team.IsInTeam)
             {

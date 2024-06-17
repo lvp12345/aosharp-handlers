@@ -1157,7 +1157,7 @@ namespace CombatHandler.Enf
 
         private bool TrollForm(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("TrollForm") || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+            if (!_settings["TrollForm"].AsBool() || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
 
             return CyclePerks(perk, fightingTarget, ref actionTarget);
         }
@@ -1168,7 +1168,7 @@ namespace CombatHandler.Enf
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
             if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.None) { return false; }
 
@@ -1198,10 +1198,10 @@ namespace CombatHandler.Enf
 
         private bool CycleRage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CycleRage") && Time.AONormalTime > _rage + CycleRageDelay
+            if (_settings["CycleRage"].AsBool() && Time.AONormalTime > _rage + CycleRageDelay
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
-                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+                if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
                 _rage = Time.AONormalTime;
                 return true;
@@ -1214,10 +1214,10 @@ namespace CombatHandler.Enf
 
         private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("CycleChallenger") && Time.AONormalTime > _challenger + CycleChallengerDelay
+            if (_settings["CycleChallenger"].AsBool() && Time.AONormalTime > _challenger + CycleChallengerDelay
                 && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
             {
-                if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+                if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
                 _challenger = Time.AONormalTime;
                 return true;
@@ -1263,7 +1263,7 @@ namespace CombatHandler.Enf
             spell.Id = _settings["DamageChangeBuffSelection"].AsInt32();
 
             if (spell.Id == 0) { return false; }
-            if (!IsSettingEnabled("Buffing") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
             if (DynelManager.LocalPlayer.FightingTarget != null) { return false; }
 
             if (DynelManager.LocalPlayer.RemainingNCU >= Math.Abs(spell.NCU))
@@ -1286,7 +1286,7 @@ namespace CombatHandler.Enf
 
         private bool InitiativeBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("InitiativeBuffs"))
+            if (_settings["InitiativeBuffs"].AsBool())
             {
                 return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
             }

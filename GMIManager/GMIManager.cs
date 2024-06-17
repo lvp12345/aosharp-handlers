@@ -573,12 +573,9 @@ namespace GMIManager
                         {
                             foreach (var item in Inventory.Items)
                             {
-                                if (item.Name == GMIItemName)
+                                if (item.Name == GMIItemName && item.Slot.Type == IdentityType.Inventory)
                                 {
-                                    if (item.Slot.Type == IdentityType.Inventory)
-                                    {
-                                        GMI.Deposit(item);
-                                    }
+                                    GMI.Deposit(item);
                                 }
                                 else
                                 {

@@ -6,5 +6,7 @@
         YalmUse = 301,
         YalmOff = 302,
         UISettings = 303,
+        POHPathing = 304,
+        POHBool = 305,
     }
 }

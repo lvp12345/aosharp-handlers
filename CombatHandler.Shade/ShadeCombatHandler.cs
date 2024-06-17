@@ -900,23 +900,23 @@ namespace CombatHandler.Shade
                 Chat.WriteLine("Only activate one Proc option.");
             }
 
-            if (!IsSettingEnabled("Runspeed") && !IsSettingEnabled("RunspeedTeam"))
+            if (!_settings["Runspeed"].AsBool() && !_settings["RunspeedTeam"].AsBool())
             {
                 CancelBuffs(RelevantNanos.FasterThanYourShadow);
             }
-            if (!IsSettingEnabled("InitDebuffProc"))
+            if (!_settings["InitDebuffProc"].AsBool())
             {
                 CancelBuffs(RelevantNanos.ShadeInitDebuffProc);
             }
-            if (!IsSettingEnabled("DamageProc"))
+            if (!_settings["DamageProc"].AsBool())
             {
                 CancelBuffs(RelevantNanos.ShadeDmgProc);
             }
-            if (!IsSettingEnabled("DOTProc"))
+            if (!_settings["DOTProc"].AsBool())
             {
                 CancelBuffs(RelevantNanos.ShadeDOTProc);
             }
-            if (!IsSettingEnabled("StunProc"))
+            if (!_settings["StunProc"].AsBool())
             {
                 CancelBuffs(RelevantNanos.ShadeStunProc);
             }
@@ -1087,7 +1087,7 @@ namespace CombatHandler.Shade
         {
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (IsSettingEnabled("RunspeedTeam"))
+            if (_settings["RunspeedTeam"].AsBool())
             {
                 if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
                 {
@@ -1097,7 +1097,7 @@ namespace CombatHandler.Shade
                 return FTYSTeamBuff(spell, fightingTarget, ref actionTarget);
             }
 
-            if (IsSettingEnabled("Runspeed"))
+            if (_settings["Runspeed"].AsBool())
             {
                 if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
                 {
@@ -1135,7 +1135,7 @@ namespace CombatHandler.Shade
 
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!_settings["Buffing"].AsBool()) { return false; }
 
             actionTarget.ShouldSetTarget = false;
 
@@ -1146,7 +1146,7 @@ namespace CombatHandler.Shade
 
         private bool SpiritSiphon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("SpiritSiphon")) { return false; }
+            if (!_settings["SpiritSiphon"].AsBool()) { return false; }
 
             if (fightingTarget == null && _shadeSiphon)
             {
@@ -1176,7 +1176,7 @@ namespace CombatHandler.Shade
 
         private bool ShadesCaress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")) { return false; }
+            if (!_settings["Buffing"].AsBool()) { return false; }
 
             if (!DynelManager.LocalPlayer.IsAttacking || fightingTarget == null
                  || !CanCast(spell)) { return false; }

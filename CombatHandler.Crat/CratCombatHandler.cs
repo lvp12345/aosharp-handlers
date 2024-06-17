@@ -835,7 +835,7 @@ namespace CombatHandler.Bureaucrat
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
-                if (IsSettingEnabled("SyncPets"))
+                if (_settings["SyncPets"].AsBool())
                 {
                     SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
                 }
@@ -1230,7 +1230,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool RootReducer(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Exoneration")) { return false; }
+            if (!_settings["Exoneration"].AsBool()) { return false; }
 
             var target = DynelManager.Players
             .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
@@ -1259,7 +1259,7 @@ namespace CombatHandler.Bureaucrat
 
         protected bool Leadership(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+            if (!_settings["CycleXpPerks"].AsBool() || !perk.IsAvailable) { return false; }
 
             if (Time.NormalTime > CycleXpPerks + CycleXpPerksDelay)
             {
@@ -1278,7 +1278,7 @@ namespace CombatHandler.Bureaucrat
 
         protected bool Governance(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+            if (!_settings["CycleXpPerks"].AsBool() || !perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
@@ -1291,7 +1291,7 @@ namespace CombatHandler.Bureaucrat
         }
         protected bool TheDirector(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("CycleXpPerks") || !perk.IsAvailable) { return false; }
+            if (!_settings["CycleXpPerks"].AsBool() || !perk.IsAvailable) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.ShortTermXPGain)) { return false; }
 
@@ -1314,7 +1314,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NanoDeltaTeam"))
+            if (_settings["NanoDeltaTeam"].AsBool())
             {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
             }
@@ -1324,7 +1324,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool PsyIntBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsSettingEnabled("NeuronalStimulatorTeam"))
+            if (_settings["NeuronalStimulatorTeam"].AsBool())
             {
                 return CheckNotProfsBeforeCast(spell, fightingTarget, ref actionTarget);
             }
@@ -1368,7 +1368,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool WorkplaceDepressionTargetDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Nuking")
+            if (fightingTarget == null || !CanCast(spell) || !_settings["Nuking"].AsBool()
                 || fightingTarget.Buffs.Contains(273632) || fightingTarget.Buffs.Contains(301842)
                 || (fightingTarget.HealthPercent < 40 && fightingTarget.MaxHealth < 1000000)) { return false; }
 
@@ -1376,7 +1376,7 @@ namespace CombatHandler.Bureaucrat
         }
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !CanCast(spell) || !IsSettingEnabled("Nuking")) { return false; }
+            if (fightingTarget == null || !CanCast(spell) || !_settings["Nuking"].AsBool()) { return false; }
 
             if (Spell.Find(273631, out Spell workplace))
             {
@@ -1442,7 +1442,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool Calm12Man(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing") || !IsSettingEnabled("Calm12Man") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !_settings["Calm12Man"].AsBool() || !CanCast(spell)) { return false; }
 
             var targets = DynelManager.NPCs
                 .Where(c => c.IsAlive
@@ -1494,8 +1494,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")
-                || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool()
+                || !_settings["Root"].AsBool() || !CanCast(spell)) { return false; }
 
             var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
@@ -1519,8 +1519,8 @@ namespace CombatHandler.Bureaucrat
 
         private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("Buffing")
-                || !IsSettingEnabled("Root") || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool()
+                || !_settings["Root"].AsBool() || !CanCast(spell)) { return false; }
 
             var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
@@ -1581,7 +1581,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool DroidMatrixBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("BuffPets") || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["BuffPets"].AsBool() || !CanLookupPetsAfterZone()) { return false; }
 
             if (!CanCast(spell)) { return false; }
 
@@ -1612,7 +1612,7 @@ namespace CombatHandler.Bureaucrat
         {
             SupportPetProcSelection currentSetting = (SupportPetProcSelection)_settings["SupportPetProcSelection"].AsInt32();
 
-            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
+            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !_settings["BuffPets"].AsBool())
             {
                 return false;
             }
@@ -1644,7 +1644,7 @@ namespace CombatHandler.Bureaucrat
         {
             AttackPetProcSelection currentSetting = (AttackPetProcSelection)_settings["AttackPetProcSelection"].AsInt32();
 
-            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !IsSettingEnabled("BuffPets"))
+            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !_settings["BuffPets"].AsBool())
             {
                 return false;
             }
@@ -1678,7 +1678,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool PetWarp(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!IsSettingEnabled("WarpPets") || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
+            if (!_settings["WarpPets"].AsBool() || !CanCast(spell) || !CanLookupPetsAfterZone()) { return false; }
 
             return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
         }
@@ -1690,7 +1690,7 @@ namespace CombatHandler.Bureaucrat
         private bool PetTrimmer(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget,
                         string settingName, Func<Pet, bool> canTrimFunc, Action<PetType> updateStatus, Action<PetType> updateTime)
         {
-            if (!IsSettingEnabled(settingName) || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
+            if (!_settings[settingName].AsBool() || !CanLookupPetsAfterZone() || !CanTrim()) { return false; }
 
             double currentTime = Time.NormalTime;
             if ((settingName == "DivertHpTrimmer" && currentTime - _lastPetTrimDivertHpTime[PetType.Attack] < DelayBetweenDiverTrims) ||

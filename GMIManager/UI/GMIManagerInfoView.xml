@@ -2,6 +2,7 @@
 <root>
 	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="MailManagerInfoView" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Should be the only plugin injected! " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Withdraw - withdraws 900m at a time the upto the Withdraw amount." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Modify - reads mail, deposits credits and modifies a buy order to End price. " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Refresh - moves credits from one order to another with same name." layout_borders="Rect(0,0,0,2)"/>

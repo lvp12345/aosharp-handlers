@@ -488,7 +488,7 @@ namespace CombatHandler.Generic
                 if (!InCombat()) { return false; }
 
                 var dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 70 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => c.Health > 70 && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent <= BioRegrowthPercentage)
                     .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
@@ -659,7 +659,7 @@ namespace CombatHandler.Generic
 
             var target = DynelManager.Players
                 .Where(c => c.IsInLineOfSight
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c))
@@ -741,7 +741,7 @@ namespace CombatHandler.Generic
                 {
                     var target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
-                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                             && c.Health > 0
                             && !(c.Buffs.Contains(NanoLine.AAOBuffs) || AdvyMorphs.Any(morphs => c.Buffs.Contains(morphs)))
@@ -784,7 +784,7 @@ namespace CombatHandler.Generic
 
             var target = DynelManager.Players
                 .Where(c => c.IsInLineOfSight
-                    && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                     && spell.IsInRange(c)
                     && c.Health > 0
                     && SpellChecksOther(spell, spell.Nanoline, c))
@@ -824,7 +824,7 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 var target = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.Profession != Profession.Keeper && c.Profession != Profession.Engineer
                         && spell.IsInRange(c)
                         && c.Health > 0
@@ -849,7 +849,7 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 var teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
                         && spell.IsInRange(c)
                         && c.Health > 0)
@@ -1104,7 +1104,7 @@ namespace CombatHandler.Generic
             {
                 var target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksOther(spell, spell.Nanoline, c)
@@ -1136,7 +1136,7 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 var target = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.Profession != Profession.NanoTechnician
                         && spell.IsInRange(c)
                         && c.Health > 0
@@ -1327,7 +1327,7 @@ namespace CombatHandler.Generic
             if (targetSelection == StimTargetSelection.Team)
             {
                 target = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance) &&
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance) &&
                                 (c.HealthPercent <= StimHealthPercentage || c.NanoPercent <= StimNanoPercentage) &&
                                 c.IsInLineOfSight &&
                                 c.DistanceFrom(DynelManager.LocalPlayer) < 10f &&
@@ -1861,8 +1861,11 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget?.Name)
-                      || (bool)mob.FightingTarget?.IsPet;
+                return Team.Members.Any(t => t.Identity == mob.FightingTarget?.Identity)
+                    || (bool)mob.FightingTarget?.IsPet;
+
+                //return Team.Members.Select(m => m.Name).Contains(mob.FightingTarget?.Name)
+                //      || (bool)mob.FightingTarget?.IsPet;
             }
 
             return mob.FightingTarget?.Name == DynelManager.LocalPlayer.Name
@@ -1877,7 +1880,7 @@ namespace CombatHandler.Generic
             {
                 return Team.Members.Any(m => m.Character != null && m.Character.IsAttacking) ||
                        DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
-                                                    Team.Members.Select(m => m.Identity).Contains(npc.FightingTarget.Identity));
+                                                    Team.Members.Any(t => t.Identity.Instance == npc.Identity.Instance));
             }
 
             return localPlayer.IsAttacking ||

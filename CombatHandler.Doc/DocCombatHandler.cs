@@ -1221,7 +1221,7 @@ namespace CombatHandler.Doctor
 
             var target = DynelManager.Players
             .Where(c => c.IsInLineOfSight
-            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
             && spell.IsInRange(c)
             && c.Buffs.Contains(NanoLine.DOT_LineA)
             || c.Buffs.Contains(NanoLine.DOT_LineB)
@@ -1431,7 +1431,7 @@ namespace CombatHandler.Doctor
             if (Team.IsInTeam)
             {
                 var dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 0 && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => c.Health > 0 && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                                 && c.HealthPercent <= healthPercentage)
                     .ToList();
 
@@ -1468,7 +1468,7 @@ namespace CombatHandler.Doctor
             if (Team.IsInTeam)
             {
                 var teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent <= TOTWPercentage && c.IsInLineOfSight
                         && item.IsInRange(c)
                         && c.IsAlive)

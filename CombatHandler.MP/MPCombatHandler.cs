@@ -1450,7 +1450,7 @@ namespace CombatHandler.Metaphysicist
                 if (Team.IsInTeam)
                 {
                     var target = DynelManager.Players
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && spell.IsInRange(c)
                             && c.Health > 0
                             && SpellChecksOther(spell, spell.Nanoline, c))
@@ -1571,7 +1571,7 @@ namespace CombatHandler.Metaphysicist
             {
                 var target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksNanoSkillsOther(spell, c))
@@ -1656,7 +1656,7 @@ namespace CombatHandler.Metaphysicist
                 {
                     var target = DynelManager.Players
                    .Where(c => c.IsInLineOfSight
-                       && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                       && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                        && c.Profession != Profession.NanoTechnician
                        && spell.IsInRange(c)
                        && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
@@ -1719,7 +1719,7 @@ namespace CombatHandler.Metaphysicist
             {
                 var dyingTeamMember = DynelManager.Characters
                     .Where(c => c.IsAlive)
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance))
                     .Where(c => c.HealthPercent < 85)
                     .Where(c => DynelManager.LocalPlayer.DistanceFrom(c) < 30f)
                     .OrderBy(c => c.HealthPercent)

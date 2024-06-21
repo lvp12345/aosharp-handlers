@@ -256,7 +256,7 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner, CombatActionPriority.High);
 
                 //Pet Buffs
-                RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
                 RegisterSpellProcessor(RelevantNanos.MastersBidding, MastersBidding, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.InducedApathy, InducedApathy, CombatActionPriority.High);
 

@@ -219,7 +219,7 @@ namespace CombatHandler.Generic
         //    if (Team.IsInTeam)
         //    {
         //        SimpleChar teamMember = DynelManager.Players
-        //            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //            .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
         //                && c.HealthPercent <= TargetHealPerkPercentage && c.IsInLineOfSight
         //                && spell.IsInRange(c)
         //                && c.IsAlive)
@@ -258,7 +258,7 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 var teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent <= TeamHealPerkPercentage && c.IsInLineOfSight
                         && perk.IsInRange(c)
                         && c.IsAlive)
@@ -307,7 +307,7 @@ namespace CombatHandler.Generic
             {
                 var _person = DynelManager.Players
                     .Where(c => c.Health > 0
-                        && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.NanoPercent <= TeamNanoPerkPercentage)
                     .FirstOrDefault();
 

@@ -151,7 +151,7 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 var teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
                         && spell.IsInRange(c)
                         && c.Health > 0)

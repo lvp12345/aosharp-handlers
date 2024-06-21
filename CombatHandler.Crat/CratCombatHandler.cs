@@ -7,8 +7,6 @@ using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static CombatHandler.Bureaucrat.CratCombatHandler;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Bureaucrat
 {
@@ -1233,7 +1231,7 @@ namespace CombatHandler.Bureaucrat
             if (!_settings["Exoneration"].AsBool()) { return false; }
 
             var target = DynelManager.Players
-            .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+            .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
             && c.DistanceFrom(DynelManager.LocalPlayer) < 40f
             && c.Buffs.Contains(NanoLine.Root)
             || c.Buffs.Contains(NanoLine.Snare)

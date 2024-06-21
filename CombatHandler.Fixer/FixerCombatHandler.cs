@@ -835,7 +835,7 @@ namespace CombatHandler.Fixer
         {
             var target = DynelManager.Players
             .FirstOrDefault(c => c.IsInLineOfSight
-                && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                 && spell.IsInRange(c)
                 && c.Buffs.Contains(NanoLine.DOT_LineA)
                 || c.Buffs.Contains(NanoLine.DOT_LineB)
@@ -942,7 +942,7 @@ namespace CombatHandler.Fixer
             {
                 var target = DynelManager.Players
                    .Where(c => c.IsInLineOfSight
-                       && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                       && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                        && c.Health > 0
                        && !(c.Buffs.Contains(NanoLine.MajorEvasionBuffs) || c.Buffs.Contains(NanoLine.RunspeedBuffs)))

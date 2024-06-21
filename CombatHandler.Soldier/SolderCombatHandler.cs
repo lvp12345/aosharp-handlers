@@ -1056,7 +1056,7 @@ namespace CombatHandler.Soldier
         //        {
         //            var target = DynelManager.Players
         //                .Where(c => c.IsInLineOfSight
-        //                    && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+        //                    && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
         //                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
         //                    && c.Health > 0
         //                    && !(c.Buffs.Contains(NanoLine.AAOBuffs) || c.Buffs.Contains(NanoLine.AdventurerMorphBuff))
@@ -1083,7 +1083,7 @@ namespace CombatHandler.Soldier
                 {
                     var target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
-                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                             && c.Health > 0
                             && c.SpecialAttacks.Contains(SpecialAttack.Burst)
@@ -1110,7 +1110,7 @@ namespace CombatHandler.Soldier
                 {
                     var target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
-                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                             && c.Health > 0
                             && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs)

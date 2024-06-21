@@ -1303,7 +1303,7 @@ namespace CombatHandler.Enf
                 var target = DynelManager.Players
                                .Where(c => c.IsInLineOfSight
                                && c.Identity != DynelManager.LocalPlayer.Identity
-                                   && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                                   && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                                    && spell.IsInRange(c)
                                    && c.Health > 0
                                    && SpellChecksOther(spell, spell.Nanoline, c))

@@ -117,11 +117,17 @@ namespace SyncManager
         private void ReceivedSpreadOutCommand(int arg1, IPCMessage message)
         {
             SpreadCommand msg = message as SpreadCommand;
-    
             Vector3 randoPos = msg.Position;
             randoPos.AddRandomness((int)3.0f);
+            var player = DynelManager.LocalPlayer;
 
-            MovementController.Instance.SetDestination(randoPos);
+            if (msg.instance == Playfield.ModelIdentity.Instance)
+            {
+                if (player.Position.Distance2DFrom(randoPos) < 10 && player.Position.Distance2DFrom (randoPos) > 1)
+                {
+                    MovementController.Instance.SetDestination(randoPos);
+                }
+            }
         }
 
         private void BroadcastSettingsReceived(int arg1, IPCMessage message)
@@ -237,6 +243,7 @@ namespace SyncManager
             IPCChannel.Broadcast(new SpreadCommand
             {
                 Position = DynelManager.LocalPlayer.Position,
+                instance = Playfield.ModelIdentity.Instance,
             });
         }
 

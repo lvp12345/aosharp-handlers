@@ -1,4 +1,5 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Core;
 using AOSharp.Core.IPC;
 using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
 
@@ -11,5 +12,8 @@ namespace SyncManager.IPCMessages
 
         [AoMember(0)]
         public Vector3 Position { get; set; }
+
+        [AoMember(1)]
+        public int instance { get; set; }
     }
 }

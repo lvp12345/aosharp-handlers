@@ -1,9 +1,11 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CombatHandler.Engineer
@@ -213,8 +215,8 @@ namespace CombatHandler.Engineer
 
                 //Pets
                 //pet spawners
-                RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Attack).Select(c => c.Key).ToArray(), CastPets);
-                RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Support).Select(c => c.Key).ToArray(), CastPets);
+                RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Attack).Select(c => c.Key).ToArray(), CastPets, CombatActionPriority.High);
+                RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Support).Select(c => c.Key).ToArray(), CastPets, CombatActionPriority.High);
 
                 //pet buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(),
@@ -1305,6 +1307,29 @@ namespace CombatHandler.Engineer
             return false;
         }
 
+        protected bool PetSpawner(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Game.IsZoning) { return false; }
+
+            if (!petData.ContainsKey(spell.Id)) { return false; }
+
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell))
+            {
+                if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
+
+                shell.Use();
+            }
+
+            if (Inventory.NumFreeSlots == 0) { return false; }
+
+            if (DynelManager.LocalPlayer.Pets.Where(c => c.Type == petData[spell.Id].PetType || c.Type == PetType.Unknown).Count() >= 1)
+            {
+                return false;
+            }
+
+            return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
+        }
+
         #endregion
 
         #region Buffs
@@ -1389,7 +1414,7 @@ namespace CombatHandler.Engineer
                     continue;
                 }
 
-                if (pet.Character.HealthPercent <= 90)
+                if (pet.Character.HealthPercent <= 90 && pet.Character.Health > 0)
                 {
                     actionTarget.ShouldSetTarget = spell.Id != RelevantNanos.PetPercentHealing;
                     actionTarget.Target = pet.Character;

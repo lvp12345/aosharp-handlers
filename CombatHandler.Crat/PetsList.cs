@@ -11,7 +11,6 @@ namespace CombatHandler.Bureaucrat
                 { 273300, new PetSpellData(273301, 273301, PetType.Attack) }, // CEO Guardian
                 { 235386, new PetSpellData(239828, 239828, PetType.Attack) }, // Corporate Guardian
                 { 46391, new PetSpellData(96213, 96213, PetType.Attack) }, // Director-Grade Bodyguard
-                //added @BeyondDezign
                 { 46381, new PetSpellData(96213, 150737, PetType.Attack) }, // Executive-Grade Bodyguard
                 { 46356, new PetSpellData(150737, 150738, PetType.Attack) }, // Supervisor-Grade Bodyguard
                 { 46410, new PetSpellData(150737, 150738, PetType.Attack) }, // Advanced Bodyguard

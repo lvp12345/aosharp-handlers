@@ -1471,28 +1471,28 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        //protected bool PetSpawner(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (Game.IsZoning) { return false; }
+        protected bool PetSpawner(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (Game.IsZoning) { return false; }
 
-        //    if (!petData.ContainsKey(spell.Id)) { return false; }
+            if (!petData.ContainsKey(spell.Id)) { return false; }
 
-        //    if (Inventory.Find(petData[spell.Id].ShellId, out Item shell))
-        //    {
-        //        if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
+            if (Inventory.Find(petData[spell.Id].ShellId, out Item shell))
+            {
+                if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
 
-        //        shell.Use();
-        //    }
+                shell.Use();
+            }
 
-        //    if (Inventory.NumFreeSlots == 0) { return false; }
+            if (Inventory.NumFreeSlots == 0) { return false; }
 
-        //    if (DynelManager.LocalPlayer.Pets.Where(c => c.Type == petData[spell.Id].PetType || c.Type == PetType.Unknown).Count() >= 1)
-        //    {
-        //        return false;
-        //    }
+            if (DynelManager.LocalPlayer.Pets.Where(c => c.Type == petData[spell.Id].PetType || c.Type == PetType.Unknown).Count() >= 1)
+            {
+                return false;
+            }
 
-        //    return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
-        //}
+            return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
+        }
 
         protected bool CanSpawnPets(PetType petType)
         {

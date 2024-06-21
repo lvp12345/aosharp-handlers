@@ -120,7 +120,7 @@ namespace CombatHandler.Adventurer
                 //Healing
                 RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), Healing.CompleteHealing, CombatActionPriority.High);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),Healing.TeamHealing,CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), Healing.TeamHealing, CombatActionPriority.High);
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._1HEdgedBuff).OrderByStackingOrder(), Melee);
@@ -161,6 +161,7 @@ namespace CombatHandler.Adventurer
                 RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
                 RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
                 RegisterSpellProcessor(RelevantNanos.TreeMorph, TreeMorph);
+                RegisterSpellProcessor(RelevantNanos.BirdMorph, BirdMorph);
 
                 //Morph Buffs
                 RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
@@ -216,6 +217,25 @@ namespace CombatHandler.Adventurer
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
                 BioRegrowthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentage;
                 CycleBioRegrowthPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay;
+
+                Chat.RegisterCommand("morphs", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
+                    if (window != null)
+                    {
+                        if (window.Views.Contains(_morphView)) { return; }
+
+                        _morphView = View.CreateFromXml(PluginDirectory + "\\UI\\AdvMorphView.xml");
+                        SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Morphs", XmlViewName = "AdvMorphView" }, _morphView);
+                    }
+                    else if (_morphWindow == null || (_morphWindow != null && !_morphWindow.IsValid))
+                    {
+                        SettingsController.CreateSettingsTab(_morphWindow, PluginDir, new WindowOptions() { Name = "Morphs", XmlViewName = "AdvMorphView" }, _morphView, out var container);
+                        _morphWindow = container;
+                    }
+
+                });
             }
             catch (Exception ex)
             {
@@ -594,7 +614,6 @@ namespace CombatHandler.Adventurer
                 _morphWindow = container;
             }
         }
-
         #endregion
 
         protected override void OnUpdate(float deltaTime)
@@ -890,6 +909,10 @@ namespace CombatHandler.Adventurer
                 {
                     CancelBuffs(RelevantNanos.TreeMorph);
                 }
+                if (MorphSelection.Bird != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.BirdMorph);
+                }
 
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
@@ -1069,6 +1092,12 @@ namespace CombatHandler.Adventurer
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
+        private bool BirdMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (MorphSelection.Bird != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
         private bool WolfAgility(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             var localPlayer = DynelManager.LocalPlayer;
@@ -1180,9 +1209,9 @@ namespace CombatHandler.Adventurer
             return true;
         }
 
-            #endregion
+        #endregion
 
-            #region Buffs
+        #region Buffs
 
         protected bool Ranged(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1219,6 +1248,7 @@ namespace CombatHandler.Adventurer
             public static readonly int[] WolfMorph = { 275005, 85062 };
             public static readonly int[] SaberMorph = { 217680, 85070 };
             public static readonly int[] TreeMorph = { 229666, 229884, 229887, 229889 };
+            public static readonly int[] BirdMorph = { 82835 };
             public static readonly int[] DragonScales = { 302217, 302214 };
             public static readonly int[] WolfAgility = { 302235, 302232 };
             public static readonly int[] LeetCrit = { 302229, 302226 };
@@ -1243,7 +1273,7 @@ namespace CombatHandler.Adventurer
         }
         public enum MorphSelection
         {
-            None, Dragon, Saber, Wolf, Leet, Tree
+            None, Dragon, Saber, Wolf, Leet, Tree, Bird
         }
 
         public enum TreatmentBuffSelection

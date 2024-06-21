@@ -1,4 +1,5 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Core;
 using System.Collections.Generic;
 
 namespace CombatHandler.Generic

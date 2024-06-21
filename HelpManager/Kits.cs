@@ -52,6 +52,7 @@ namespace HelpManager
             }
 
             List<Item> sitKits = Inventory.FindAll("Health and Nano Recharger").Where(c => c.Id != 297274).ToList();
+
             if (sitKits.Any())
             {
                 return sitKits.OrderBy(x => x.QualityLevel).Any(sitKit => MeetsSkillRequirement(sitKit));
@@ -85,16 +86,33 @@ namespace HelpManager
 
             if (Team.IsInTeam)
             {
-                return Team.Members.Any(m => m.Character != null && m.Character.IsAttacking) ||
-                       DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
-                                                    Team.Members.Select(m => m.Identity).Contains(npc.FightingTarget.Identity));
-            }
+                if (Team.Members.Any(m => m.Character.IsAttacking || m.Character.FightingTarget != null)) { return true; }
 
-            return localPlayer.IsAttacking ||
-                   (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && pet.Character.IsAttacking)) ||
-                   DynelManager.NPCs.Any(npc => npc.FightingTarget != null &&
-                                                (npc.FightingTarget.Identity == localPlayer.Identity ||
-                                                 (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && npc.FightingTarget.Identity == pet.Character.Identity))));
+                if (DynelManager.NPCs.Any(npc => npc.FightingTarget != null 
+                && (Team.Members.Any(t => t.Identity == npc.FightingTarget?.Identity) || npc.FightingTarget.IsPet))) { return true; }
+
+                if (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character.IsAttacking)) { return true; }
+                if (DynelManager.NPCs.Any(npc => npc.FightingTarget != null && (npc.FightingTarget.Identity == localPlayer.Identity ||
+                   (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && npc.FightingTarget.Identity == pet.Character.Identity)))))
+
+                {
+                    return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                if (localPlayer.IsAttacking || localPlayer.FightingTarget != null) { return true; }
+                if (localPlayer.Pets != null && localPlayer.Pets.Any(pet=>pet.Character.IsAttacking)) { return true; }
+                if (DynelManager.NPCs.Any(npc => npc.FightingTarget != null && (npc.FightingTarget.Identity == localPlayer.Identity ||
+                   (localPlayer.Pets != null && localPlayer.Pets.Any(pet => pet.Character != null && npc.FightingTarget.Identity == pet.Character.Identity)))))
+                {
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         public static bool Casting()

@@ -1186,7 +1186,7 @@ namespace CombatHandler.Shade
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 var teamMembersLowHp = DynelManager.Characters
-                    .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance))
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance))
                     .Where(c => c.HealthPercent <= 50)
                     .ToList();
 

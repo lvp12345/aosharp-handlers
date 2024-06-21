@@ -1956,7 +1956,7 @@ namespace CombatHandler.Agent
                 if (Team.IsInTeam)
                 {
                     var target = DynelManager.Players
-                        .Where(c => Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                        .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && spell.IsInRange(c)
                             && c.Health > 0
                             && SpellChecksOther(spell, spell.Nanoline, c))
@@ -2375,7 +2375,7 @@ namespace CombatHandler.Agent
             if (DynelManager.LocalPlayer.IsInTeam())
             {
                 var dyingTeamMember = DynelManager.Players
-                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                    .Where(c => c.IsAlive && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && c.HealthPercent < 90)
                     .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();

@@ -1263,7 +1263,7 @@ namespace CombatHandler.Engineer
                 {
                     var target = DynelManager.Players
                         .Where(c => c.IsInLineOfSight
-                            && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
+                            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
                             && c.Health > 0
                             && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician

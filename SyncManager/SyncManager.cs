@@ -52,6 +52,7 @@ namespace SyncManager
         private static extern IntPtr GetForegroundWindow();
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
+        [Obsolete]
         public override void Run(string pluginDir)
         {
             _settings = new Settings("SyncManager");
@@ -100,6 +101,7 @@ namespace SyncManager
                 IPCChannel.Broadcast(new SpreadCommand
                 {
                     Position = DynelManager.LocalPlayer.Position,
+                    instance = Playfield.ModelIdentity.Instance,
                 });
             });
 

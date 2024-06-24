@@ -268,7 +268,7 @@ namespace CombatHandler.Generic
 
                 RegisterItemProcessor(RelevantGenericItems.RezCanIds, RezCan);
 
-                RegisterItemProcessor(new int[] { RelevantGenericItems.ExpCan1, RelevantGenericItems.ExpCan2 }, ExpCan);
+                RegisterItemProcessor(RelevantGenericItems.ExpCans, ExpCan);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.InsuranceCan1, RelevantGenericItems.InsuranceCan2 }, InsuranceCan);
                 RegisterItemProcessor(new int[] { RelevantGenericItems.HealthAndNanoStim1, RelevantGenericItems.HealthAndNanoStim200, RelevantGenericItems.HealthAndNanoStim400 }, HealthAndNanoStim, CombatActionPriority.High);
 
@@ -2245,9 +2245,6 @@ namespace CombatHandler.Generic
             public const int RezCan1 = 301070;
             public const int RezCan2 = 303390;
 
-            public const int ExpCan1 = 288769;
-            public const int ExpCan2 = 303376;
-
             public const int InsuranceCan1 = 300728;
             public const int InsuranceCan2 = 303389;
 
@@ -2273,6 +2270,11 @@ namespace CombatHandler.Generic
             public const int WenWen = 129656;
 
             public const int Drone = 303188;
+
+            public static readonly int[] ExpCans = new[]
+           {
+                303376, 288772, 288771, 288769, 288788, 288787, 288786, 288792, 288791, 288790
+            };
 
             public static readonly int[] TauntTools = new[]
             {

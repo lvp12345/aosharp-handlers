@@ -1551,8 +1551,8 @@ namespace CombatHandler.Generic
 
             if (!CanCast(spell)) { return false; }
 
-            var rootedPet = DynelManager.LocalPlayer.Pets.FirstOrDefault(c => c.Character == null || c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare)
-                    || c.Character.Buffs.Contains(NanoLine.Mezz));
+            var rootedPet = DynelManager.LocalPlayer.Pets.FirstOrDefault(c => !c.Character.Buffs.Contains(224391)
+           && (c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare) || c.Character.Buffs.Contains(NanoLine.Mezz)));
 
             if (rootedPet != null)
             {

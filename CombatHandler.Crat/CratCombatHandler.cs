@@ -154,6 +154,7 @@ namespace CombatHandler.Bureaucrat
                 _settings.AddVariable("Root", true);
 
                 _settings.AddVariable("CycleXpPerks", false);
+                _settings.AddVariable("XPBonus", false);
 
                 _settings.AddVariable("Calm12Man", false);
                 //_settings.AddVariable("CalmSector7", false);
@@ -211,6 +212,7 @@ namespace CombatHandler.Bureaucrat
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuffSelection"));
 
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExperienceConstructs_XPBonus).OrderByStackingOrder(), XPBonus);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaBuffs).OrderByStackingOrder(), NanoDelta);
                 RegisterSpellProcessor(RelevantNanos.PistolBuffs, PistolTeam);

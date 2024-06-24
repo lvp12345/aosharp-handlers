@@ -110,7 +110,7 @@ namespace HelpManager
 
             SMovementControllerSettings mSettings = new SMovementControllerSettings
             {
-                NavMeshSettings = new SNavMeshSettings { DrawNavMesh = true, DrawDistance = 30 },
+                NavMeshSettings = new SNavMeshSettings { DrawNavMesh = false, DrawDistance = 30 },
 
                 PathSettings = new SPathSettings
                 {

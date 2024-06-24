@@ -144,9 +144,9 @@ namespace CombatHandler.Adventurer
                 RegisterSpellProcessor(RelevantNanos.TargetedDamageShields,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "DamageShields"));
-                RegisterSpellProcessor(RelevantNanos.LearningbyDoing,
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "XPBonus"));
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExperienceConstructs_XPBonus).OrderByStackingOrder(), XPBonus);
+
                 RegisterSpellProcessor(RelevantNanos.TeamRunSpeedBuffs,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "RunspeedBuffs"));
@@ -1261,7 +1261,6 @@ namespace CombatHandler.Adventurer
             public static int[] TargetArmorBuffs = { 74178, 74177, 74176, 74175, 74174, 74173 };
             public static readonly int[] TargetedDamageShields = { 55812, 55836, 55835, 55833, 55834, 55831, 55832, 55830, 55829, 55828, 55826, 55827,
                 55825, 55824, 55823, 55821, 55822, 55819, 55820, 55816, 55818, 55817, 55814, 55815, 55813, 55837 };
-            public const int LearningbyDoing = 263277;
 
             public static readonly int[] TeamRunSpeedBuffs = { 26705, 26237 };
 

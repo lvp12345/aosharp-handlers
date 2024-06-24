@@ -734,6 +734,40 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        protected bool XPBonus(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (_settings["XPBonus"].AsBool())
+            {
+                if (Team.IsInTeam)
+                {
+                    var target = DynelManager.Players
+                        .Where(c => c.IsInLineOfSight
+                            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                            && c.Health > 0
+                            && SpellChecksOther(spell, NanoLine.XPBonus, c))
+                        .FirstOrDefault();
+
+                    if (target != null)
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = DynelManager.LocalPlayer;
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (SpellChecksOther(spell, NanoLine.XPBonus, DynelManager.LocalPlayer))
+                    {
+                        actionTarget.ShouldSetTarget = true;
+                        actionTarget.Target = DynelManager.LocalPlayer;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         protected bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (_settings["AAO"].AsBool())

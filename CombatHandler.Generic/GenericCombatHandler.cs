@@ -1249,6 +1249,7 @@ namespace CombatHandler.Generic
 
         private bool RezCan(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) <= 1) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.FirstAid)) { return false; }
 
             actiontarget.ShouldSetTarget = false;

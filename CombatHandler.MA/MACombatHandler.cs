@@ -125,10 +125,13 @@ namespace CombatHandler.MartialArtist
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
                     MAHealing, CombatActionPriority.High);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
-                            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                            GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
-                            CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), Healing.TeamHealing, 
+                    CombatActionPriority.High);
+
+                //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
+                //            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                //            GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
+                //            CombatActionPriority.High);
 
                 //Taunts
                 RegisterSpellProcessor(RelevantNanos.Taunts, SingleTargetTaunt, CombatActionPriority.High);
@@ -974,6 +977,7 @@ namespace CombatHandler.MartialArtist
             {
                 NanoLine alternativeLine = spell.Nanoline == NanoLine.SingleTargetHealing ? NanoLine.TeamHealing : NanoLine.SingleTargetHealing;
                 var alternativeSpells = Spell.GetSpellsForNanoline(alternativeLine).OrderByStackingOrder();
+
                 foreach (var altSpell in alternativeSpells)
                 {
                     if (altSpell.IsReady)
@@ -988,7 +992,7 @@ namespace CombatHandler.MartialArtist
                 return false;
             }
 
-            return FindMemberWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
+            return Healing.FindMemberForTargetHeal(Healing.TargetHealPercentage, spell, ref actionTarget);
         }
 
         #endregion

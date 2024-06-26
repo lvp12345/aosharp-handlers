@@ -574,40 +574,40 @@ namespace CombatHandler.Generic
 
         #region Healing
 
-        public bool GenericTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
-        {
-            if (Healing.TargetHealPercentage == 0)
-            {
-                return false;
-            }
+        //public bool GenericTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        //{
+        //    if (Healing.TargetHealPercentage == 0)
+        //    {
+        //        return false;
+        //    }
 
-            int healSelection = _settings[selectionSetting].AsInt32();
+        //    int healSelection = _settings[selectionSetting].AsInt32();
 
-            if (healSelection == 0)
-            {
-                return false;
-            }
+        //    if (healSelection == 0)
+        //    {
+        //        return false;
+        //    }
 
-            bool shouldTeamHeal = false;
+        //    bool shouldTeamHeal = false;
 
-            if (Team.IsInTeam)
-            {
-                int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+        //    if (Team.IsInTeam)
+        //    {
+        //        int teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
 
-                int count = DynelManager.Characters.Count(c =>
-                    Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                    && c.HealthPercent <= Healing.TargetHealPercentage && c.Health > 0);
+        //        int count = DynelManager.Characters.Count(c =>
+        //            Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+        //            && c.HealthPercent <= Healing.TargetHealPercentage && c.Health > 0);
 
-                shouldTeamHeal = (count > 2) || (healSelection == 3);
-            }
+        //        shouldTeamHeal = (count > 2) || (healSelection == 3);
+        //    }
 
-            if (shouldTeamHeal)
-            {
-                return FindMemberWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
-            }
+        //    if (shouldTeamHeal)
+        //    {
+        //        return FindMemberWithHealthBelow(Healing.TargetHealPercentage, spell, ref actionTarget);
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         #endregion
 
@@ -877,62 +877,62 @@ namespace CombatHandler.Generic
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
-        protected bool FindMemberWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!CanCast(spell)) { return false; }
+        //protected bool FindMemberWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!CanCast(spell)) { return false; }
 
-            if (Team.IsInTeam)
-            {
-                var teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                        && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
-                        && spell.IsInRange(c)
-                        && c.Health > 0)
-                    .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
+        //    if (Team.IsInTeam)
+        //    {
+        //        var teamMember = DynelManager.Players
+        //            .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+        //                && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
+        //                && spell.IsInRange(c)
+        //                && c.Health > 0)
+        //            .OrderBy(c => c.HealthPercent)
+        //            .FirstOrDefault();
 
-                if (teamMember != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = teamMember;
-                    return true;
-                }
+        //        if (teamMember != null)
+        //        {
+        //            actionTarget.ShouldSetTarget = true;
+        //            actionTarget.Target = teamMember;
+        //            return true;
+        //        }
 
-                return false;
-            }
+        //        return false;
+        //    }
 
 
-            if (DynelManager.LocalPlayer.HealthPercent <= healthPercentThreshold)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
+        //    if (DynelManager.LocalPlayer.HealthPercent <= healthPercentThreshold)
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = DynelManager.LocalPlayer;
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
-        protected bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!CanCast(spell)) { return false; }
+        //protected bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!CanCast(spell)) { return false; }
 
-            var player = DynelManager.Players
-                .Where(c => c.HealthPercent <= healthPercentThreshold
-                    && c.IsInLineOfSight
-                    && spell.IsInRange(c)
-                    && c.Health > 0)
-                .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
+        //    var player = DynelManager.Players
+        //        .Where(c => c.HealthPercent <= healthPercentThreshold
+        //            && c.IsInLineOfSight
+        //            && spell.IsInRange(c)
+        //            && c.Health > 0)
+        //        .OrderBy(c => c.HealthPercent)
+        //            .FirstOrDefault();
 
-            if (player != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = player;
-                return true;
-            }
+        //    if (player != null)
+        //    {
+        //        actionTarget.ShouldSetTarget = true;
+        //        actionTarget.Target = player;
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         #endregion
 

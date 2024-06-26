@@ -12,5 +12,15 @@
 			<RadioButton label="Team" value="2"/>
 		</OptionRadioButtonGroup>
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Nukes on?" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__Nukes" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Mind quake line" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DebuffNuke" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Single Nuke" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__NormalNuke" layout_borders="Rect(10,1,5,1)"/>
+		<TextView value="" layout_borders="Rect(0,0,2,0)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="Note: If 'Mind quake line' and 'Single Nuke' are selected," layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="'Mind quake' will only cast when the debuff wears off." layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="If only one is selected, it will spam that line." layout_borders="Rect(5,5,5,5)"/>
+		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>
 </root>

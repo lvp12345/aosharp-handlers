@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Debug = AOSharp.Core.Debug;
 
 
@@ -20,6 +21,7 @@ namespace HelpManager
     public class HelpManager : AOPluginEntry
     {
         private static IPCChannel IPCChannel;
+        public static string previousErrorMessage = string.Empty;
 
         public static Config Config { get; private set; }
 
@@ -102,75 +104,89 @@ namespace HelpManager
         [Obsolete]
         public override void Run(string pluginDir)
         {
-            _settings = new Settings("HelpManager");
-
-            PluginDir = pluginDir;
-
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
-
-            SMovementControllerSettings mSettings = new SMovementControllerSettings
+            try
             {
-                NavMeshSettings = new SNavMeshSettings { DrawNavMesh = false, DrawDistance = 30 },
+                _settings = new Settings("HelpManager");
 
-                PathSettings = new SPathSettings
+                PluginDir = pluginDir;
+
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+
+                SMovementControllerSettings mSettings = new SMovementControllerSettings
                 {
-                    DrawPath = true,
-                    MinRotSpeed = 10,
-                    MaxRotSpeed = 30,
-                    UnstuckUpdate = 5000,
-                    UnstuckThreshold = 2f,
-                    RotUpdate = 10,
-                    MovementUpdate = 200,
-                    PathRadius = 0.26f,
-                    Extents = new Vector3(1.0f, 0.1f, 1.0f)
+                    NavMeshSettings = new SNavMeshSettings { DrawNavMesh = false, DrawDistance = 30 },
+
+                    PathSettings = new SPathSettings
+                    {
+                        DrawPath = true,
+                        MinRotSpeed = 10,
+                        MaxRotSpeed = 30,
+                        UnstuckUpdate = 5000,
+                        UnstuckThreshold = 2f,
+                        RotUpdate = 10,
+                        MovementUpdate = 200,
+                        PathRadius = 0.26f,
+                        Extents = new Vector3(1.0f, 0.1f, 1.0f)
+                    }
+                };
+
+                SMovementController.Set(mSettings);
+                SMovementController.AutoLoadNavmeshes($"{PluginDir}\\Meshes");
+
+                IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
+                KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
+                KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+
+                IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmCast);
+                IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
+                IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
+                IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
+                IPCChannel.RegisterCallback((int)IPCOpcode.POHPathing, POHPathingReceived);
+                IPCChannel.RegisterCallback((int)IPCOpcode.POHBool, POHBoolReceived);
+
+                Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
+
+                RegisterSettingsWindow("Help Manager", "HelpManagerSettingWindow.xml");
+
+                Game.OnUpdate += OnUpdate;
+
+                _settings.AddVariable("AutoSit", false);
+                _settings.AddVariable("Traps", false);
+                _settings.AddVariable("MorphPathing", false);
+                _settings.AddVariable("BellyPathing", false);
+                _settings.AddVariable("Eumenides", false);
+                _settings.AddVariable("Db3Shapes", false);
+                _settings.AddVariable("Rift", false);
+
+                _settings.AddVariable("Positions", (int)Positions.Center);
+                _settings.AddVariable("POHPositions", (int)POHPositions.None);
+
+                Chat.RegisterCommand("autosit", AutoSitSwitch);
+
+                Chat.RegisterCommand("yalm", YalmCommand);
+
+                if (Game.IsNewEngine)
+                {
+                    Chat.WriteLine("Does not work on this engine!");
                 }
-            };
-
-            SMovementController.Set(mSettings);
-            SMovementController.AutoLoadNavmeshes($"{PluginDir}\\Meshes");
-
-            IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
-            KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
-            KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
-
-            IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmCast);
-            IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
-            IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
-            IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
-            IPCChannel.RegisterCallback((int)IPCOpcode.POHPathing, POHPathingReceived);
-            IPCChannel.RegisterCallback((int)IPCOpcode.POHBool, POHBoolReceived);
-
-            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
-            Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentageChangedEvent += KitNanoPercentage_Changed;
-
-            RegisterSettingsWindow("Help Manager", "HelpManagerSettingWindow.xml");
-
-            Game.OnUpdate += OnUpdate;
-
-            _settings.AddVariable("AutoSit", false);
-            _settings.AddVariable("Traps", false);
-            _settings.AddVariable("MorphPathing", false);
-            _settings.AddVariable("BellyPathing", false);
-            _settings.AddVariable("Eumenides", false);
-            _settings.AddVariable("Db3Shapes", false);
-            _settings.AddVariable("Rift", false);
-
-            _settings.AddVariable("Positions", (int)Positions.Center);
-            _settings.AddVariable("POHPositions", (int)POHPositions.None);
-
-            Chat.RegisterCommand("autosit", AutoSitSwitch);
-
-            Chat.RegisterCommand("yalm", YalmCommand);
-
-            if (Game.IsNewEngine)
-            {
-                Chat.WriteLine("Does not work on this engine!");
+                else
+                {
+                    Chat.WriteLine("HelpManager Loaded!");
+                    Chat.WriteLine("/helpmanager for settings.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Chat.WriteLine("HelpManager Loaded!");
-                Chat.WriteLine("/helpmanager for settings.");
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
         }
 
@@ -314,279 +330,295 @@ namespace HelpManager
 
         private void OnUpdate(object s, float deltaTime)
         {
-            if (_settings["AutoSit"].AsBool())
+            try
             {
-                Kits kitsInstance = new Kits();
 
-                kitsInstance.SitAndUseKit();
-
-                if (Time.AONormalTime > _sitPetUpdateTimer + 2)
+                if (_settings["AutoSit"].AsBool())
                 {
-                    if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
+                    Kits kitsInstance = new Kits();
+
+                    kitsInstance.SitAndUseKit();
+
+                    if (Time.AONormalTime > _sitPetUpdateTimer + 2)
                     {
-                        PetSitKit();
-                    }
-                    _sitPetUpdateTimer = Time.AONormalTime;
-                }
-            }
-
-            if (_settings["Traps"].AsBool())
-            {
-                foreach (Dynel dynel in DynelManager.AllDynels.Where(d => DynelManager.LocalPlayer.Position.DistanceFrom(d.Position) < 60))
-                {
-                    if (dynel.Name.Contains("Mine") || dynel.Name.Contains("Trap") || dynel.Name.Contains("Collision Spawn"))
-                    {
-                        var rad = dynel.Radius;
-
-                        if (rad > 1)
+                        if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
                         {
-                            Debug.DrawSphere(dynel.Position, rad, DebuggingColor.Red);
+                            PetSitKit();
                         }
-                        else
-                        {
-                            Debug.DrawSphere(dynel.Position, 1, DebuggingColor.Red);
-                        }
-                    }
-                }
-            }
-
-            if (Playfield.ModelIdentity.Instance == 8020)
-            {
-                AtPos();
-
-                if (DynelManager.LocalPlayer.Position.DistanceFrom(returnPosition) < 1)
-                {
-                    if (!SMovementController.IsNavigating())
-                    {
-                        returnPosition = Vector3.Zero;
-                        InPos = false;
-                    }
-                }
-            }
-
-            if (Playfield.ModelIdentity.Instance == 8050)
-            {
-                if (_settings["Rift"].AsBool())
-                {
-                    foreach (var rift in DynelManager.AllDynels.Where(d => d.Name == "Unstable Rift" && d.Identity.Type == IdentityType.Terminal))
-                    {
-                        var timeremaining = rift.GetStat(Stat.TimeExist);
-
-                        if (timeremaining < 1000)
-                        {
-                            Debug.DrawSphere(rift.Position, 5, DebuggingColor.Red);
-                        }
-                        else if (timeremaining < 2000)
-                        {
-                            Debug.DrawSphere(rift.Position, 10, DebuggingColor.Yellow);
-                        }
-                        else if (timeremaining < 3000)
-                        {
-                            Debug.DrawSphere(rift.Position, 20, DebuggingColor.Green);
-                        }
-                    }
-                }
-            }
-
-            if (Playfield.ModelIdentity.Instance == 9070)
-            {
-                if (_settings["Eumenides"].AsBool())
-                {
-                    var _eumenides = DynelManager.NPCs.Where(c => c.Name == "Eumenides").FirstOrDefault();
-
-                    if (DynelManager.LocalPlayer.Room.Name == "Shopping Dead-end")
-                    {
-                        if (_eumenides != null)
-                        {
-                            Eumenides.HandleEumenides();
-                        }
+                        _sitPetUpdateTimer = Time.AONormalTime;
                     }
                 }
 
-                if (_settings["BellyPathing"].AsBool() && Time.AONormalTime > _bellyPathingTimer)
+                if (_settings["Traps"].AsBool())
                 {
-                    var Pustule = DynelManager.AllDynels
-                    .Where(x => x.Name == "Glowing Pustule")
-                    .FirstOrDefault();
-
-                    var loaclPlayerPosition = DynelManager.LocalPlayer.Position;
-
-                    var bellyRoom = Playfield.Rooms.FirstOrDefault(c => c.Name == "Abmouth's Stomach");
-                    var abbyRoom = Playfield.Rooms.FirstOrDefault(c => c.Name == "Abmouth Showdown");
-                    var playerRoom = DynelManager.LocalPlayer.Room;
-
-                    if (playerRoom == bellyRoom)
+                    foreach (Dynel dynel in DynelManager.AllDynels.Where(d => DynelManager.LocalPlayer.Position.DistanceFrom(d.Position) < 60))
                     {
-                        if (Pustule != null)
+                        if (dynel.Name.Contains("Mine") || dynel.Name.Contains("Trap") || dynel.Name.Contains("Collision Spawn"))
                         {
-                            if (loaclPlayerPosition.DistanceFrom(Pustule.Position) > 5)
+                            var rad = dynel.Radius;
+
+                            if (rad > 1)
                             {
-                                if (!MovementController.Instance.IsNavigating)
-                                {
-                                    if (loaclPlayerPosition.DistanceFrom(new Vector3(133.3458f, 90.01f, 118.7395f)) < 4f)
-                                    {
-                                        MovementController.Instance.SetDestination(new Vector3(131.9f, 90.0f, 104.8f));
-                                    }
-                                    else
-                                    {
-                                        MovementController.Instance.SetDestination(Pustule.Position);
-                                    }
-                                }
+                                Debug.DrawSphere(dynel.Position, rad, DebuggingColor.Red);
                             }
                             else
                             {
-                                if (MovementController.Instance.IsNavigating)
+                                Debug.DrawSphere(dynel.Position, 1, DebuggingColor.Red);
+                            }
+                        }
+                    }
+                }
+
+                if (Playfield.ModelIdentity.Instance == 8020)
+                {
+                    AtPos();
+
+                    if (DynelManager.LocalPlayer.Position.DistanceFrom(returnPosition) < 1)
+                    {
+                        if (!SMovementController.IsNavigating())
+                        {
+                            returnPosition = Vector3.Zero;
+                            InPos = false;
+                        }
+                    }
+                }
+
+                if (Playfield.ModelIdentity.Instance == 8050)
+                {
+                    if (_settings["Rift"].AsBool())
+                    {
+                        foreach (var rift in DynelManager.AllDynels.Where(d => d.Name == "Unstable Rift" && d.Identity.Type == IdentityType.Terminal))
+                        {
+                            var timeremaining = rift.GetStat(Stat.TimeExist);
+
+                            if (timeremaining < 1000)
+                            {
+                                Debug.DrawSphere(rift.Position, 5, DebuggingColor.Red);
+                            }
+                            else if (timeremaining < 2000)
+                            {
+                                Debug.DrawSphere(rift.Position, 10, DebuggingColor.Yellow);
+                            }
+                            else if (timeremaining < 3000)
+                            {
+                                Debug.DrawSphere(rift.Position, 20, DebuggingColor.Green);
+                            }
+                        }
+                    }
+                }
+
+                if (Playfield.ModelIdentity.Instance == 9070)
+                {
+                    if (_settings["Eumenides"].AsBool())
+                    {
+                        var _eumenides = DynelManager.NPCs.Where(c => c.Name == "Eumenides").FirstOrDefault();
+
+                        if (DynelManager.LocalPlayer.Room.Name == "Shopping Dead-end")
+                        {
+                            if (_eumenides != null)
+                            {
+                                Eumenides.HandleEumenides();
+                            }
+                        }
+                    }
+
+                    if (_settings["BellyPathing"].AsBool() && Time.AONormalTime > _bellyPathingTimer)
+                    {
+                        var Pustule = DynelManager.AllDynels
+                        .Where(x => x.Name == "Glowing Pustule")
+                        .FirstOrDefault();
+
+                        var loaclPlayerPosition = DynelManager.LocalPlayer.Position;
+
+                        var bellyRoom = Playfield.Rooms.FirstOrDefault(c => c.Name == "Abmouth's Stomach");
+                        var abbyRoom = Playfield.Rooms.FirstOrDefault(c => c.Name == "Abmouth Showdown");
+                        var playerRoom = DynelManager.LocalPlayer.Room;
+
+                        if (playerRoom == bellyRoom)
+                        {
+                            if (Pustule != null)
+                            {
+                                if (loaclPlayerPosition.DistanceFrom(Pustule.Position) > 5)
                                 {
-                                    MovementController.Instance.Halt();
+                                    if (!MovementController.Instance.IsNavigating)
+                                    {
+                                        if (loaclPlayerPosition.DistanceFrom(new Vector3(133.3458f, 90.01f, 118.7395f)) < 4f)
+                                        {
+                                            MovementController.Instance.SetDestination(new Vector3(131.9f, 90.0f, 104.8f));
+                                        }
+                                        else
+                                        {
+                                            MovementController.Instance.SetDestination(Pustule.Position);
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    Pustule.Use();
+                                    if (MovementController.Instance.IsNavigating)
+                                    {
+                                        MovementController.Instance.Halt();
+                                    }
+                                    else
+                                    {
+                                        Pustule.Use();
+                                    }
                                 }
                             }
                         }
-                    }
-                    else
-                    {
-                        if (playerRoom == abbyRoom)
+                        else
                         {
-                            if (!MovementController.Instance.IsNavigating)
+                            if (playerRoom == abbyRoom)
                             {
-                                if (loaclPlayerPosition.DistanceFrom(new Vector3(217.0f, 94.0f, 148.0f)) < 2f)
+                                if (!MovementController.Instance.IsNavigating)
                                 {
-                                    MovementController.Instance.SetPath(OutBellyPath);
+                                    if (loaclPlayerPosition.DistanceFrom(new Vector3(217.0f, 94.0f, 148.0f)) < 2f)
+                                    {
+                                        MovementController.Instance.SetPath(OutBellyPath);
+                                    }
                                 }
                             }
                         }
+
+                        _bellyPathingTimer = Time.AONormalTime + 1;
                     }
-
-                    _bellyPathingTimer = Time.AONormalTime + 1;
                 }
-            }
 
-            if (Playfield.ModelIdentity.Instance == 4021)
-            {
-                if (_settings["Db3Shapes"].AsBool() && Time.AONormalTime > _shapeUsedTimer + 0.5)
+                if (Playfield.ModelIdentity.Instance == 4021)
                 {
-                    Dynel shape = DynelManager.AllDynels
-                        .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 5f
-                            && (x.Name == "Triangle of Nano Power" || x.Name == "Cylinder of Speed"
-                        || x.Name == "Torus of Aim" || x.Name == "Square of Attack Power"))
-                        .FirstOrDefault();
-
-                    shape?.Use();
-
-                    _shapeUsedTimer = Time.AONormalTime;
-                }
-            }
-
-            if (Playfield.ModelIdentity.Instance == 6015)
-            {
-                if (_settings["MorphPathing"].AsBool() && Time.AONormalTime > _morphPathingTimer + 2)
-                {
-                    if (!MovementController.Instance.IsNavigating)
+                    if (_settings["Db3Shapes"].AsBool() && Time.AONormalTime > _shapeUsedTimer + 0.5)
                     {
-                        if (DynelManager.LocalPlayer.Buffs.Contains(281109))
-                        {
-                            Vector3 curr = DynelManager.LocalPlayer.Position;
+                        Dynel shape = DynelManager.AllDynels
+                            .Where(x => x.Identity.Type == IdentityType.Terminal && DynelManager.LocalPlayer.DistanceFrom(x) < 5f
+                                && (x.Name == "Triangle of Nano Power" || x.Name == "Cylinder of Speed"
+                            || x.Name == "Torus of Aim" || x.Name == "Square of Attack Power"))
+                            .FirstOrDefault();
 
-                            MovementController.Instance.SetPath(MorphBird);
-                            MovementController.Instance.AppendDestination(curr);
-                        }
+                        shape?.Use();
 
-                        if (DynelManager.LocalPlayer.Buffs.Contains(281108))
-                        {
-                            Vector3 curr = DynelManager.LocalPlayer.Position;
-
-                            MovementController.Instance.SetPath(MorphHorse);
-                            MovementController.Instance.AppendDestination(curr);
-                        }
+                        _shapeUsedTimer = Time.AONormalTime;
                     }
-                    _morphPathingTimer = Time.AONormalTime;
-                }
-            }
-
-            if (Time.AONormalTime > _zixMorphTimer + 3)
-            {
-                if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
-                {
-                    CancelBuffs(RelevantNanos.ZixMorph);
                 }
 
-                _zixMorphTimer = Time.AONormalTime;
-            }
-
-            #region UI
-
-            if (Time.AONormalTime > _uiDelay + 1.0)
-            {
-                if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                if (Playfield.ModelIdentity.Instance == 6015)
                 {
-                    SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
-                    SettingsController.settingsWindow.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
-                    SettingsController.settingsWindow.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
-
-                    if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                    if (_settings["MorphPathing"].AsBool() && Time.AONormalTime > _morphPathingTimer + 2)
                     {
-                        if (int.TryParse(channelInput.Text, out int channelValue)
-                            && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                        if (!MovementController.Instance.IsNavigating)
                         {
-                            Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
-                        }
-                    }
-
-                    if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
-                    {
-                        if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
-                        {
-                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                            if (DynelManager.LocalPlayer.Buffs.Contains(281109))
                             {
-                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+                                Vector3 curr = DynelManager.LocalPlayer.Position;
+
+                                MovementController.Instance.SetPath(MorphBird);
+                                MovementController.Instance.AppendDestination(curr);
+                            }
+
+                            if (DynelManager.LocalPlayer.Buffs.Contains(281108))
+                            {
+                                Vector3 curr = DynelManager.LocalPlayer.Position;
+
+                                MovementController.Instance.SetPath(MorphHorse);
+                                MovementController.Instance.AppendDestination(curr);
                             }
                         }
-                    }
-
-                    if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
-                    {
-                        if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
-                        {
-                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
-                            {
-                                Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
-                            }
-                        }
-                    }
-
-                    if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
-                    {
-                        infoView.Tag = SettingsController.settingsWindow;
-                        infoView.Clicked = InfoView;
-                    }
-                    if (SettingsController.settingsWindow.FindView("BroadcastSettingsView", out Button settingsButton))
-                    {
-                        settingsButton.Tag = SettingsController.settingsWindow;
-                        settingsButton.Clicked = UISettingsButtonClicked;
-                    }
-                    if (SettingsController.settingsWindow.FindView("POHPathButton", out Button pathButton))
-                    {
-                        pathButton.Tag = SettingsController.settingsWindow;
-                        pathButton.Clicked = POHPathButtonClicked;
-                    }
-                    if (SettingsController.settingsWindow.FindView("EumenidesPositionsView", out Button eumenidesView))
-                    {
-                        eumenidesView.Tag = SettingsController.settingsWindow;
-                        eumenidesView.Clicked = EumenidesView;
-                    }
-                    if (SettingsController.settingsWindow.FindView("POHView", out Button pohView))
-                    {
-                        pohView.Tag = SettingsController.settingsWindow;
-                        pohView.Clicked = POHView;
+                        _morphPathingTimer = Time.AONormalTime;
                     }
                 }
 
-                _uiDelay = Time.AONormalTime;
+                if (Time.AONormalTime > _zixMorphTimer + 3)
+                {
+                    if (DynelManager.LocalPlayer.Buffs.Contains(288532) || DynelManager.LocalPlayer.Buffs.Contains(302212))
+                    {
+                        CancelBuffs(RelevantNanos.ZixMorph);
+                    }
+
+                    _zixMorphTimer = Time.AONormalTime;
+                }
+
+                #region UI
+
+                if (Time.AONormalTime > _uiDelay + 1.0)
+                {
+                    if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
+                    {
+                        SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
+                        SettingsController.settingsWindow.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+                        SettingsController.settingsWindow.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+
+                        if (channelInput != null && !string.IsNullOrEmpty(channelInput.Text))
+                        {
+                            if (int.TryParse(channelInput.Text, out int channelValue)
+                                && Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel != channelValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel = channelValue;
+                            }
+                        }
+
+                        if (kitHealthInput != null && !string.IsNullOrEmpty(kitHealthInput.Text))
+                        {
+                            if (int.TryParse(kitHealthInput.Text, out int kitHealthValue))
+                            {
+                                if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage != kitHealthValue)
+                                {
+                                    Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage = kitHealthValue;
+                                }
+                            }
+                        }
+
+                        if (kitNanoInput != null && !string.IsNullOrEmpty(kitNanoInput.Text))
+                        {
+                            if (int.TryParse(kitNanoInput.Text, out int kitNanoValue))
+                            {
+                                if (Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage != kitNanoValue)
+                                {
+                                    Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage = kitNanoValue;
+                                }
+                            }
+                        }
+
+                        if (SettingsController.settingsWindow.FindView("HelpManagerInfoView", out Button infoView))
+                        {
+                            infoView.Tag = SettingsController.settingsWindow;
+                            infoView.Clicked = InfoView;
+                        }
+                        if (SettingsController.settingsWindow.FindView("BroadcastSettingsView", out Button settingsButton))
+                        {
+                            settingsButton.Tag = SettingsController.settingsWindow;
+                            settingsButton.Clicked = UISettingsButtonClicked;
+                        }
+                        if (SettingsController.settingsWindow.FindView("POHPathButton", out Button pathButton))
+                        {
+                            pathButton.Tag = SettingsController.settingsWindow;
+                            pathButton.Clicked = POHPathButtonClicked;
+                        }
+                        if (SettingsController.settingsWindow.FindView("EumenidesPositionsView", out Button eumenidesView))
+                        {
+                            eumenidesView.Tag = SettingsController.settingsWindow;
+                            eumenidesView.Clicked = EumenidesView;
+                        }
+                        if (SettingsController.settingsWindow.FindView("POHView", out Button pohView))
+                        {
+                            pohView.Tag = SettingsController.settingsWindow;
+                            pohView.Clicked = POHView;
+                        }
+                    }
+
+                    _uiDelay = Time.AONormalTime;
+                }
+                #endregion
+
             }
-            #endregion
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
 
         void AtPos()
@@ -616,7 +648,7 @@ namespace HelpManager
                     IPCChannel.Broadcast(new POHBool
                     {
                         AtPOS1 = true,
-                        
+
                     });
                     InPos = true;
                 }
@@ -844,6 +876,20 @@ namespace HelpManager
             PortalGuardian2,
             PortalGuardian3,
             PortalGuardian4,
+        }
+
+        public static int GetLineNumber(Exception ex)
+        {
+            var lineNumber = 0;
+
+            var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
+
+            if (lineMatch.Success)
+            {
+                lineNumber = int.Parse(lineMatch.Groups[1].Value);
+            }
+
+            return lineNumber;
         }
     }
 }

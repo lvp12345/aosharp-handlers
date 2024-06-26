@@ -853,9 +853,13 @@ namespace CombatHandler.Keeper
 
         private bool RecastAntiFear(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["RecastAntiFear"].AsBool()) { return true; }
+            if (!_settings["RecastAntiFear"].AsBool()) return false;
 
-            return Buff(spell, spell.Nanoline, ref actionTarget);
+            if (Playfield.ModelIdentity.Instance != 6015) return false;
+
+            if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "Left Hand of Insanity")) return false;
+
+            return true;
         }
 
         protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

@@ -1193,15 +1193,23 @@ namespace CombatHandler.Doctor
 
         private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["LockCH"].AsBool())
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
+            if (!_settings["LockCH"].AsBool()) return false;
 
-                return true;
+            switch (Playfield.ModelIdentity.Instance)
+            {
+                case 6015: // 12m
+                    if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "Deranged Xan")) { return false; }
+                    break;
+                case 8020: // poh
+                    if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "The Maiden")) { return false; }
+                    break;
+                default:
+                    return false;
             }
 
-            return false;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1468,12 +1476,12 @@ namespace CombatHandler.Doctor
             if (Team.IsInTeam)
             {
                 var teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                        && c.HealthPercent <= TOTWPercentage && c.IsInLineOfSight
-                        && item.IsInRange(c)
-                        && c.IsAlive)
-                    .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
+                   .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                       && c.HealthPercent <= TOTWPercentage && c.IsInLineOfSight
+                       && item.IsInRange(c)
+                       && c.Health > 0)
+                   .OrderBy(c => c.HealthPercent)
+                   .FirstOrDefault();
 
                 if (teamMember != null)
                 {
@@ -1495,57 +1503,6 @@ namespace CombatHandler.Doctor
 
             return false;
         }
-
-        //private bool TOTWHeal(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!IsSettingEnabled("TOTWBooks") || Item.HasPendingUse || Spell.List.Any(spell => spell.IsReady)
-        //        || DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis) || fightingTarget == null)
-        //    {
-        //        return false;
-        //    }
-
-        //    if (Team.IsInTeam)
-        //    {
-        //        SimpleChar teamMember = null;
-
-        //        foreach (SimpleChar c in DynelManager.Players)
-        //        {
-        //            if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-        //                && c.HealthPercent <= TOTWPercentage
-        //                && c.IsInLineOfSight
-        //                && c.DistanceFrom(DynelManager.LocalPlayer) < 35f
-        //                && c.IsAlive)
-        //            {
-        //                if (teamMember == null
-        //                    || c.HealthPercent < teamMember.HealthPercent
-        //                    || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
-        //                    || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
-        //                    || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
-        //                {
-        //                    teamMember = c;
-        //                }
-        //            }
-        //        }
-
-        //        if (teamMember != null)
-        //        {
-        //            actionTarget.ShouldSetTarget = true;
-        //            actionTarget.Target = teamMember;
-        //            return true;
-        //        }
-
-        //        return false;
-        //    }
-
-        //    if (DynelManager.LocalPlayer.HealthPercent <= TOTWPercentage)
-        //    {
-        //        actionTarget.ShouldSetTarget = true;
-        //        actionTarget.Target = DynelManager.LocalPlayer;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
 
         #endregion
 

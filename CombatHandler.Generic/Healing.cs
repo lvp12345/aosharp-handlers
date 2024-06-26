@@ -1,4 +1,5 @@
 ﻿using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using System.Linq;
 
 namespace CombatHandler.Generic

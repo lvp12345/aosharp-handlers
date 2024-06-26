@@ -1823,15 +1823,31 @@ namespace CombatHandler.Agent
 
         private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["LockCH"].AsBool())
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
+            if (!_settings["LockCH"].AsBool()) return false;
 
-                return true;
+            switch (Playfield.ModelIdentity.Instance)
+            {
+                case 6015: // 12m
+                    if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "Deranged Xan"))
+                    {
+                        return false;
+                    }
+                    break;
+
+                case 8020: // poh
+                    if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "The Maiden"))
+                    {
+                        return false;
+                    }
+                    break;
+
+                default:
+                    return false;
             }
 
-            return false;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         #endregion

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static CombatHandler.Generic.PerkCondtionProcessors;
+using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Doctor
 {
@@ -130,7 +131,6 @@ namespace CombatHandler.Doctor
                 RegisterSettingsWindow("Doctor Handler", "DocSettingsView.xml");
 
                 //Healing
-
                 RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
 
                 RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
@@ -1153,13 +1153,12 @@ namespace CombatHandler.Doctor
 
             if (!Team.IsInTeam) { return false; }
 
-            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+            var dyingTeamMembersCount = Team.Members
+                   .Count(m => m.Character != null
+                            && m.Character.Health > 0
+                            && m.Character.HealthPercent <= Healing.TeamHealPercentage);
 
-            var count = DynelManager.Characters.Count(c =>
-                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
-
-            if (count >= 2)
+            if (dyingTeamMembersCount >= 2)
             {
                 return true;
             }
@@ -1177,13 +1176,18 @@ namespace CombatHandler.Doctor
 
             if (!Team.IsInTeam) { return false; }
 
-            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+            var dyingTeamMembersCount = Team.Members
+                    .Count(m => m.Character != null
+                             && m.Character.Health > 0
+                             && m.Character.HealthPercent <= Healing.TeamHealPercentage);
 
-            var count = DynelManager.Characters.Count(c =>
-                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
+            //var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
 
-            if (count >= 2)
+            //var count = DynelManager.Characters.Count(c =>
+            //    Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+            //    && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
+
+            if (dyingTeamMembersCount >= 2)
             {
                 return true;
             }
@@ -1225,27 +1229,52 @@ namespace CombatHandler.Doctor
         {
             if (!_settings["EpsilonPurge"].AsBool()) { return false; }
 
-            var target = DynelManager.Players
-            .Where(c => c.IsInLineOfSight
-            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-            && spell.IsInRange(c)
-            && c.Buffs.Contains(NanoLine.DOT_LineA)
-            || c.Buffs.Contains(NanoLine.DOT_LineB)
-            || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
-            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
-            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
-            || c.Buffs.Contains(NanoLine.DOTStrainC))
-            .FirstOrDefault();
+            var target = Team.Members
+                .Select(m => m.Character)
+                .FirstOrDefault(c => c != null
+                                  && c.IsInLineOfSight
+                                  && spell.IsInRange(c)
+                                  && (c.Buffs.Contains(NanoLine.DOT_LineA)
+                                      || c.Buffs.Contains(NanoLine.DOT_LineB)
+                                      || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
+                                      || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
+                                      || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
+                                      || c.Buffs.Contains(NanoLine.DOTStrainC)));
 
             if (target != null)
             {
-                actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = target;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
-
             return false;
         }
+
+        //private bool EpsilonPurge(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!_settings["EpsilonPurge"].AsBool()) { return false; }
+
+        //    var target = DynelManager.Players
+        //    .Where(c => c.IsInLineOfSight
+        //    && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+        //    && spell.IsInRange(c)
+        //    && c.Buffs.Contains(NanoLine.DOT_LineA)
+        //    || c.Buffs.Contains(NanoLine.DOT_LineB)
+        //    || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
+        //    || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
+        //    || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
+        //    || c.Buffs.Contains(NanoLine.DOTStrainC))
+        //    .FirstOrDefault();
+
+        //    if (target != null)
+        //    {
+        //        actionTarget.Target = target;
+        //        actionTarget.ShouldSetTarget = true;
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
 
         #endregion
 
@@ -1307,58 +1336,51 @@ namespace CombatHandler.Doctor
 
         #region Perks
 
-        public static bool HaleandHearty(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool HaleandHearty(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            var target = DynelManager.Players
-           .Where(c => HaleandHeartyDebuffs(c))
-           .FirstOrDefault();
+            if (!perk.IsAvailable) { return false; }
 
-            if (HaleandHeartyDebuffs(target))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = target;
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool TeamHaleandHearty(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (PerkAction.Find("Hale and Hearty", out PerkAction _HaleandHearty))
-            {
-                if (_HaleandHearty.IsAvailable)
-                {
-                    return false;
-                }
-            }
-
-            var target = DynelManager.Players
-            .Where(c => HaleandHeartyDebuffs(c))
-            .FirstOrDefault();
+            var target = Team.Members .Select(m => m.Character) .FirstOrDefault(HaleandHeartyDebuffs);
 
             if (target != null)
             {
+                actionTarget.Target = target;
+                actionTarget.ShouldSetTarget = true;
+                
                 return true;
             }
-
             return false;
+        }
+
+        public static bool TeamHaleandHearty(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!perk.IsAvailable) { return false; }
+
+            if (PerkAction.Find("Hale and Hearty", out PerkAction _HaleandHearty) && _HaleandHearty.IsAvailable)
+            {
+                return false;
+            }
+
+            return Team.Members.Any(m => m.Character != null && HaleandHeartyDebuffs(m.Character));
         }
 
         static bool HaleandHeartyDebuffs(SimpleChar c)
         {
-            if (c != null)
-            {
-                return c.Buffs.Contains(NanoLine.AAODebuffs) || c.Buffs.Contains(NanoLine.TraderAAODrain)
-                       || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive) || c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack)
-                       || c.Buffs.Contains(NanoLine.DOT_LineA) || c.Buffs.Contains(NanoLine.DOT_LineB)
-                       || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA) || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
-                       || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB) || c.Buffs.Contains(NanoLine.DOTStrainC)
-                       || c.Buffs.Contains(NanoLine.PainLanceDoT) || c.Buffs.Contains(NanoLine.MINIDoT)
-                       || c.Buffs.Contains(NanoLine.InitiativeDebuffs);
-            }
-
-            return false;
+            return c != null && (
+                c.Buffs.Contains(NanoLine.AAODebuffs) ||
+                c.Buffs.Contains(NanoLine.TraderAAODrain) ||
+                c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Deprive) ||
+                c.Buffs.Contains(NanoLine.TraderSkillTransferTargetDebuff_Ransack) ||
+                c.Buffs.Contains(NanoLine.DOT_LineA) ||
+                c.Buffs.Contains(NanoLine.DOT_LineB) ||
+                c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA) ||
+                c.Buffs.Contains(NanoLine.DOTAgentStrainA) ||
+                c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB) ||
+                c.Buffs.Contains(NanoLine.DOTStrainC) ||
+                c.Buffs.Contains(NanoLine.PainLanceDoT) ||
+                c.Buffs.Contains(NanoLine.MINIDoT) ||
+                c.Buffs.Contains(NanoLine.InitiativeDebuffs)
+            );
         }
 
         private bool NanoTransmission(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1370,57 +1392,69 @@ namespace CombatHandler.Doctor
 
         private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null)
+            if (!perk.IsAvailable || Spell.List.Any(spell => spell.IsReady) || !InCombat())
             {
                 return false;
             }
 
             if (Team.IsInTeam)
             {
-                SimpleChar teamMember = null;
-                foreach (SimpleChar c in DynelManager.Players)
-                {
-                    if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                        && c.HealthPercent < 50
-                        && c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
-                        && c.Health > 0)
-                    {
-                        if (teamMember == null
-                            || c.HealthPercent < teamMember.HealthPercent
-                            || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
-                            || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
-                            || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
-                        {
-                            teamMember = c;
-                        }
-                    }
-                }
+                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+                t.Character.HealthPercent < 50 && perk.IsInRange(t.Character)).OrderBy(t => t.Character.HealthPercent)
+                .FirstOrDefault();
 
                 if (teamMember != null)
                 {
+                    actionTarget.Target = teamMember.Character;
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = teamMember;
                     return true;
                 }
-
-                return false;
             }
-
-            if (DynelManager.LocalPlayer.HealthPercent < 50)
+            else if (DynelManager.LocalPlayer.HealthPercent < 50)
             {
-                actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
             return false;
+
+            //if (Team.IsInTeam)
+            //{
+            //    SimpleChar teamMember = null;
+            //    foreach (SimpleChar c in DynelManager.Players)
+            //    {
+            //        if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+            //            && c.HealthPercent < 50
+            //            && c.IsInLineOfSight
+            //            && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
+            //            && c.Health > 0)
+            //        {
+            //            if (teamMember == null
+            //                || c.HealthPercent < teamMember.HealthPercent
+            //                || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
+            //                || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
+            //                || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
+            //            {
+            //                teamMember = c;
+            //            }
+            //        }
+            //    }
+
+            //    if (teamMember != null)
+            //    {
+            //        actionTarget.ShouldSetTarget = true;
+            //        actionTarget.Target = teamMember;
+            //        return true;
+            //    }
+
+            //    return false;
+            //}
         }
 
         protected bool BattleGroupHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int healthPercentage)
         {
             //int[] restrictedBuffIds = new[] { 209796, 209797, 209799, 209800 };
-
 
             if (!perk.IsAvailable || Spell.List.Any(spell => spell.IsReady) || !InCombat())
             {
@@ -1436,27 +1470,44 @@ namespace CombatHandler.Doctor
 
             if (Team.IsInTeam)
             {
-                var dyingTeamMember = DynelManager.Players
-                    .Where(c => c.Health > 0 && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                                && c.HealthPercent <= healthPercentage)
-                    .ToList();
+                var dyingTeamMembersCount = Team.Members
+                    .Count(m => m.Character != null
+                             && m.Character.Health > 0
+                             && m.Character.HealthPercent <= healthPercentage);
 
-                if (dyingTeamMember.Count >= 2)
+                if (dyingTeamMembersCount >= 2)
                 {
                     actionTarget.Target = DynelManager.LocalPlayer;
                     actionTarget.ShouldSetTarget = true;
                     return true;
                 }
             }
-
-            if (DynelManager.LocalPlayer.HealthPercent > healthPercentage)
+            else if (DynelManager.LocalPlayer.HealthPercent <= healthPercentage)
             {
-                return false;
-            }
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
 
-            actionTarget.Target = DynelManager.LocalPlayer;
-            actionTarget.ShouldSetTarget = true;
-            return true;
+            }
+            return false;
+
+            //if (Team.IsInTeam)
+            //{
+            //    var dyingTeamMember = DynelManager.Players
+            //        .Where(c => c.Health > 0 && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+            //                    && c.HealthPercent <= healthPercentage)
+            //        .ToList();
+
+            //    if (dyingTeamMember.Count >= 2)
+            //    {
+            //        actionTarget.Target = DynelManager.LocalPlayer;
+            //        actionTarget.ShouldSetTarget = true;
+            //        return true;
+            //    }
+            //}
+
+
+
         }
 
         #endregion
@@ -1473,28 +1524,42 @@ namespace CombatHandler.Doctor
 
             if (Team.IsInTeam)
             {
-                var teamMember = DynelManager.Players
-                   .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                       && c.HealthPercent <= TOTWPercentage && c.IsInLineOfSight
-                       && item.IsInRange(c)
-                       && c.Health > 0)
-                   .OrderBy(c => c.HealthPercent)
-                   .FirstOrDefault();
+                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+                t.Character.HealthPercent <= TOTWPercentage && item.IsInRange(t.Character)).OrderBy(t => t.Character.HealthPercent)
+                .FirstOrDefault();
 
                 if (teamMember != null)
                 {
-                    actionTarget.Target = teamMember;
+                    actionTarget.Target = teamMember.Character;
                     actionTarget.ShouldSetTarget = true;
-
                     return true;
                 }
             }
+
+            //if (Team.IsInTeam)
+            //{
+            //    var teamMember = DynelManager.Players
+            //       .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+            //           && c.HealthPercent <= TOTWPercentage && c.IsInLineOfSight
+            //           && item.IsInRange(c)
+            //           && c.Health > 0)
+            //       .OrderBy(c => c.HealthPercent)
+            //       .FirstOrDefault();
+
+            //    if (teamMember != null)
+            //    {
+            //        actionTarget.Target = teamMember;
+            //        actionTarget.ShouldSetTarget = true;
+
+            //        return true;
+            //    }
+            //}
             else
             {
                 if (DynelManager.LocalPlayer.HealthPercent <= TOTWPercentage)
                 {
-                    actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = DynelManager.LocalPlayer;
+                    actionTarget.ShouldSetTarget = true;
                     return true;
                 }
             }

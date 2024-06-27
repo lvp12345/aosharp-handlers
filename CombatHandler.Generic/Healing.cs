@@ -104,15 +104,21 @@ namespace CombatHandler.Generic
 
             if (!Team.IsInTeam) { return false; }
 
-            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+            var dyingTeamMembersCount = Team.Members
+                   .Count(m => m.Character != null
+                            && m.Character.Health > 0
+                            && m.Character.HealthPercent <= TeamHealPercentage);
 
-            var count = DynelManager.Characters.Count(c =>
-                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                && c.HealthPercent <= TeamHealPercentage && c.Health > 0);
+            //var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
 
-            if (count >= 2)
+            //var count = DynelManager.Characters.Count(c =>
+            //    Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+            //    && c.HealthPercent <= TeamHealPercentage && c.Health > 0);
+
+            if (dyingTeamMembersCount >= 2)
             {
-                actionTarget.ShouldSetTarget = false;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 
@@ -125,13 +131,18 @@ namespace CombatHandler.Generic
 
             if (!Team.IsInTeam) { return false; }
 
-            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+            var dyingTeamMembersCount = Team.Members
+                   .Count(m => m.Character != null
+                            && m.Character.Health > 0
+                            && m.Character.HealthPercent <= CompleteTeamHealPercentage);
 
-            var count = DynelManager.Characters.Count(c =>
-                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                && c.HealthPercent <= CompleteTeamHealPercentage && c.Health > 0);
+            //var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
 
-            if (count >= 2)
+            //var count = DynelManager.Characters.Count(c =>
+            //    Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
+            //    && c.HealthPercent <= CompleteTeamHealPercentage && c.Health > 0);
+
+            if (dyingTeamMembersCount >= 2)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;
@@ -145,47 +156,38 @@ namespace CombatHandler.Generic
 
         #endregion
 
-       static bool FindMemberForTargetHeal(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+       public static bool FindMemberForTargetHeal(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!GenericCombatHandler.CanCast(spell)) { return false; }
 
             if (Team.IsInTeam)
             {
-                var teamMember = DynelManager.Players
-                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                        && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight
-                        && spell.IsInRange(c)
-                        && c.Health > 0)
-                    .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
+                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+                t.Character.HealthPercent <= healthPercentThreshold && spell.IsInRange(t.Character)) .OrderBy(t => t.Character.HealthPercent)
+                .FirstOrDefault();
 
                 if (teamMember != null)
                 {
-                    actionTarget.Target = teamMember;
+                    actionTarget.Target = teamMember.Character;
                     actionTarget.ShouldSetTarget = true;
-
                     return true;
                 }
             }
             return false;
         }
 
-        static bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!GenericCombatHandler.CanCast(spell)) { return false; }
 
             var player = DynelManager.Players
-                .Where(c => c.HealthPercent <= healthPercentThreshold
-                    && c.IsInLineOfSight
-                    && spell.IsInRange(c)
-                    && c.Health > 0)
-                .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
+                .Where(c => c.Health > 0 && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight && spell.IsInRange(c))
+                .OrderBy(c => c.HealthPercent).FirstOrDefault();
 
             if (player != null)
             {
-                actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = player;
+                actionTarget.ShouldSetTarget = true;
                 return true;
             }
 

@@ -1207,8 +1207,6 @@ namespace CombatHandler.Doctor
                     return false;
             }
 
-            actionTarget.Target = DynelManager.LocalPlayer;
-            actionTarget.ShouldSetTarget = true;
             return true;
         }
 

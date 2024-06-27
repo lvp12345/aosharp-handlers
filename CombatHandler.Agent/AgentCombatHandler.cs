@@ -17,7 +17,7 @@ namespace CombatHandler.Agent
         private static bool ToggleRez = false;
 
         public static int[] FPSwitchSetting;
-
+        public static bool _syncPets;
         private double _lastHealPetHealTime = 0.0;
 
         private static Window _buffWindow;
@@ -64,6 +64,7 @@ namespace CombatHandler.Agent
         private static double _challenger;
         private static double _singleTaunt;
 
+        int check;
 
         private static SimpleChar _drainTarget;
 
@@ -79,6 +80,8 @@ namespace CombatHandler.Agent
                 IPCChannel.RegisterCallback((int)IPCOpcode.GlobalRez, OnGlobalRezMessage);
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
+                IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentageChangedEvent += TargetHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
@@ -101,14 +104,13 @@ namespace CombatHandler.Agent
                 Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelayChangedEvent += MongoDelay_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelayChangedEvent += CycleChallengerDelay_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
-
+                Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentageChangedEvent += NullitySpherePercentage_Changed;
 
                 _settings.AddVariable("AllPlayers", false);
                 _settings["AllPlayers"] = false;
 
                 _settings.AddVariable("Buffing", true);
                 _settings.AddVariable("Composites", true);
-
                 _settings.AddVariable("GlobalBuffing", true);
                 _settings.AddVariable("GlobalComposites", true);
                 _settings.AddVariable("GlobalRez", true);
@@ -121,47 +123,62 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("TauntTool", false);
 
                 _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
-
                 _settings.AddVariable("Kits", true);
 
-                _settings.AddVariable("CritTeam", false);
+                _settings.AddVariable("AAO", false); //used for CritTeam
 
                 _settings.AddVariable("DOTASelection", (int)DOTASelection.None);
+
                 _settings.AddVariable("EvasionDebuffSelection", (int)EvasionDebuffSelection.None);
-                _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.GrimReaper);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.LaserAim);
-
-                _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
-                _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
 
                 _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("ProcSelection", (int)ProcSelection.Damage);
 
                 _settings.AddVariable("Concentration", false);
+
                 _settings.AddVariable("TheShot", false);
+
                 _settings.AddVariable("FalseProfSelection", (int)FalseProfSelection.None);
 
+                //trader
                 _settings.AddVariable("RKNanoDrainSelection", (int)RKNanoDrainSelection.None);
                 _settings.AddVariable("ACDrainSelection", (int)ACDrainSelection.None);
+                _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
+                _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
+                _settings.AddVariable("TdrEvades", (int)TdrEvades.None);
 
+                //mp
                 _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
-
                 _settings.AddVariable("SpawnPets", true);
                 _settings.AddVariable("BuffPets", true);
                 _settings.AddVariable("WarpPets", false);
-
+                _settings.AddVariable("Nukes", false);
+                _settings.AddVariable("NormalNuke", false);
+                _settings.AddVariable("DebuffNuke", false);
+                _settings.AddVariable("SyncPets", true);
 
                 //doc
                 _settings.AddVariable("LockCH", false);
                 _settings.AddVariable("TeamHealSelection", (int)TeamHealSelection.TeamImprovedLifeChanneler);
+                _settings.AddVariable("PistolTeam", true);
+                _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
+                _settings.AddVariable("HealDeltaBuffSelection", (int)HealDeltaBuffSelection.None);
+                _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
+                _settings.AddVariable("ShortHOT", false);
+                _settings.AddVariable("EpsilonPurge", false);
+                _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
+                _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.Self);
+                _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
 
                 //Adv
                 _settings.AddVariable("MorphSelection", (int)MorphSelection.None);
                 _settings.AddVariable("CatDamage", false);
-                //_settings.AddVariable("LeetOwz", true);
+                _settings.AddVariable("AdvArmor", (int)AdvArmor.None);
+                _settings.AddVariable("AdvDmgShield", (int)AdvDmgShield.None);
 
                 //enf
                 _settings.AddVariable("MongoSelection", (int)MongoSelection.Spam);
@@ -169,7 +186,15 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.Adds);
                 _settings.AddVariable("TargetedHpBuff", true);
                 _settings.AddVariable("OSTMongo", false);
+                _settings.AddVariable("EnfDmgShield", (int)EnfDmgShield.None);
 
+                //nt
+                _settings.AddVariable("AOESelection", (int)AOESelection.None);
+                _settings.AddVariable("NTCost", (int)NTCost.None);
+                _settings.AddVariable("NFRangeBuff", (int)NFRangeBuff.None);
+                _settings.AddVariable("NanoHOTTeam", (int)NanoHOTTeam.None);
+                _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
+                _settings.AddVariable("NTEvades", (int)NTEvades.None);
 
                 RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
@@ -183,9 +208,8 @@ namespace CombatHandler.Agent
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AimedShotBuffs).OrderByStackingOrder(),
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AimedShotBuffs).OrderByStackingOrder(), Aimed);
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ConcealmentBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
@@ -203,14 +227,11 @@ namespace CombatHandler.Agent
                 RegisterSpellProcessor(RelevantNanos.DetauntProcs, DetauntProc);
                 RegisterSpellProcessor(RelevantNanos.DOTProcs, DamageProc);
 
-
                 //Team Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget));
-                RegisterSpellProcessor(RelevantNanos.TeamCritBuffs,
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "CritTeam"));
+                RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, AAO);
 
                 //Debuffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTAgentStrainA).OrderByStackingOrder(),
@@ -220,130 +241,6 @@ namespace CombatHandler.Agent
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent).OrderByStackingOrder(),
                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "EvasionDebuffSelection"), CombatActionPriority.Low);
-
-                RegisterSpellProcessor(RelevantNanos.InitDebuffs,
-                   (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"), CombatActionPriority.Medium);
-
-                #region Adventurer
-
-                //Heals
-                RegisterSpellProcessor(RelevantNanos.AdvyTargetHeals, AdvyTargetHealing, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.AdvyTeamHeals, AdvyTeamHealing, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.AdvyCompleteHeal, AdvyCompleteHealing, CombatActionPriority.High);
-
-                //buffs
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._1HEdgedBuff).OrderByStackingOrder(), Melee);
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Ranged);
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShieldUpgrades).OrderByStackingOrder(),
-
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(),
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-
-                RegisterSpellProcessor(RelevantNanos.ArmorBuffs, Armor);
-
-                //Morphs
-                RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
-                RegisterSpellProcessor(RelevantNanos.LeetMorph, LeetMorph);
-                RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
-                RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
-
-                //Morph Buffs
-                RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
-                RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
-                RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
-                RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
-
-                //Morph Cooldowns
-                RegisterSpellProcessor(RelevantNanos.CatDamage, CatDamage);
-                RegisterSpellProcessor(RelevantNanos.LeetOwz, LeetOwz);
-
-                #endregion
-
-                #region Doctor
-
-                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
-
-                RegisterSpellProcessor(RelevantNanos.DocHeals, DocTargetHealing, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.DocCompleteTargetHealing, DocCompleteHealing, CombatActionPriority.High);
-
-                RegisterSpellProcessor(RelevantNanos.DocTeamHeals,
-                           (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                           DocTeamHealing(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
-                           CombatActionPriority.High);
-
-                RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler,
-                          (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                          TeamImprovedLifeChannelerAsTeamHeal(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
-                          CombatActionPriority.High);
-
-                RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, DocCompleteTeamHealing, CombatActionPriority.High);
-
-
-                #endregion
-
-                #region Enforcer
-
-                //Taunts
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-
-
-                #endregion
-
-                #region Metaphysicist
-
-                //buffs
-                RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
-                //Pets
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AttackPets).OrderByStackingOrder(), AttackPetSpawner);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealPets).OrderByStackingOrder(), HealPetSpawner);
-                //petbuffs
-                RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
-                RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
-                RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
-                RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
-
-                RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
-
-                #endregion
-
-                #region Soldier
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
-
-                #endregion
-
-                #region Trader
-
-                //debuffs
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderDebuffACNanos).OrderByStackingOrder(), ACDrain, CombatActionPriority.Medium);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Deprive).OrderByStackingOrder(), DepriveDrain, CombatActionPriority.High);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack).OrderByStackingOrder(), RansackDrain, CombatActionPriority.High);
-
-                #endregion
 
                 //LE Procs
                 //type1
@@ -384,6 +281,7 @@ namespace CombatHandler.Agent
                 MongoDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].MongoDelay;
                 CycleChallengerDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleChallengerDelay;
                 SingleTauntDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay;
+                NullitySpherePercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage;
             }
             catch (Exception ex)
             {
@@ -402,7 +300,14 @@ namespace CombatHandler.Agent
             _engieWindow, _fixerWindow, _maWindow, _mpWindow, _ntWindow, _soldWindow, _tradeWindow};
 
         #region Callbacks
-
+        private void syncPetsOnEnabled()
+        {
+            _syncPets = true;
+        }
+        private void syncPetsOffDisabled()
+        {
+            _syncPets = false;
+        }
         public static void OnRemainingNCUMessage(int sender, IPCMessage msg)
         {
             RemainingNCUMessage ncuMessage = (RemainingNCUMessage)msg;
@@ -437,7 +342,17 @@ namespace CombatHandler.Agent
             _settings[$"GlobalRez"] = rezMsg.Switch;
 
         }
+        private void SyncPetsOnMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = true;
+            syncPetsOnEnabled();
+        }
 
+        private void SyncPetsOffMessage(int sender, IPCMessage msg)
+        {
+            _settings["SyncPets"] = false;
+            syncPetsOffDisabled();
+        }
         #endregion
 
         #region Handles
@@ -931,15 +846,32 @@ namespace CombatHandler.Agent
 
             if (window != null)
             {
+
                 if (window.Views.Contains(_ntView)) { return; }
 
                 _ntView = View.CreateFromXml(PluginDirectory + "\\UI\\NTView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "NT", XmlViewName = "NTView" }, _ntView);
+
+                window.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
+
+                if (nullSphereInput != null)
+                {
+                    nullSphereInput.Text = $"{NullitySpherePercentage}";
+                }
             }
             else if (_ntWindow == null || (_ntWindow != null && !_ntWindow.IsValid))
             {
-                SettingsController.CreateSettingsTab(_ntWindow, PluginDir, new WindowOptions() { Name = "NT", XmlViewName = "NTView" }, _ntView, out var container);
+                SettingsController.CreateSettingsTab(_ntWindow, PluginDir, new WindowOptions() { Name = "NTView", XmlViewName = "NTView" }, _ntView, out var container);
                 _ntWindow = container;
+
+                container.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
+
+                if (nullSphereInput != null)
+                {
+                    nullSphereInput.Text = $"{NullitySpherePercentage}";
+                }
+
+
             }
         }
         private void HandleTradeViewClick(object s, ButtonBase button)
@@ -1016,6 +948,274 @@ namespace CombatHandler.Agent
                     FP();
 
                     _ncuUpdateTime = Time.NormalTime;
+
+                }
+                if (_settings["SyncPets"].AsBool())
+                {
+                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
+                }
+
+                if (CanLookupPetsAfterZone())
+                {
+                    AssignTargetToHealPet();
+                }
+
+                var uiSetting = _settings["FalseProfSelection"].AsInt32();
+
+                switch (uiSetting)
+                {
+                    case 0:
+                        check = uiSetting;
+                        break;
+                    case 1://mp
+                        if (uiSetting != check)
+                        {
+                            #region Metaphysicist
+
+                            //buffs
+                            RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
+                            //Pets
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AttackPets).OrderByStackingOrder(), AttackPetSpawner);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealPets).OrderByStackingOrder(), HealPetSpawner);
+                            //petbuffs
+                            RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
+                            RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
+                            RegisterSpellProcessor(RelevantNanos.PetShortTermDamage, ShortTermDamagePet);
+                            RegisterSpellProcessor(RelevantNanos.CostBuffs, CostPet);
+                            RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
+                               (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                               => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                            //nukes
+                            RegisterSpellProcessor(RelevantNanos.WarmUpfNukes, WarmUpNuke, CombatActionPriority.Medium);
+                            RegisterSpellProcessor(RelevantNanos.MPNukes, MPNuke);
+
+                            #endregion
+                            Chat.WriteLine("Setting FP to Metaphysicist");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 2://sol
+                        if (uiSetting != check)
+                        {
+                            #region Soldier
+
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
+
+                            #endregion
+                            Chat.WriteLine("Setting FP to Soldier");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 3://enf
+                        if (uiSetting != check)
+                        {
+                            #region Enforcer
+
+                            //Taunts
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MongoBuff).OrderByStackingOrder(), Mongo, CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.SingleTargetTaunt, SingleTargetTaunt, CombatActionPriority.High);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HPBuff).OrderByStackingOrder(),
+                                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                            => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
+                                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "EnfDmgShield"));
+
+
+                            #endregion
+                            Chat.WriteLine("Setting FP to Enforcer");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 4://eng
+                        if (uiSetting != check)
+                        {
+                            Chat.WriteLine("Setting FP to Engineer");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 5://doc
+                        if (uiSetting != check)
+                        {
+                            #region Doctor
+
+                            //heals
+                            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, LockCH, CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.DocHeals, DocTargetHealing, CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.DocCompleteTargetHealing, DocCompleteHealing, CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.DocTeamHeals,
+                                       (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                                       DocTeamHealing(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
+                                       CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler,
+                                      (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                                      TeamImprovedLifeChannelerAsTeamHeal(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
+                                      CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, DocCompleteTeamHealing, CombatActionPriority.High);
+
+                            //Hots
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
+                            //buffs
+                            RegisterSpellProcessor(RelevantNanos.HPBuffs, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
+                                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuffSelection"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceBuffs).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NanoResistSelection"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealDeltaBuff).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "HealDeltaBuffSelection"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
+                            //Epsilon Purge
+                            RegisterSpellProcessor(RelevantNanos.EpsilonPurge, EpsilonPurge, CombatActionPriority.High);
+                            //Short hp AGENT CANNOT CAST TILC
+                            RegisterSpellProcessor(RelevantNanos.IndividualShortMaxHealths, ShortMaxHealth);
+                            //Debuffs
+                            RegisterSpellProcessor(RelevantNanos.InitDebuffs,
+                                 (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                  => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "InitDebuffSelection"), CombatActionPriority.Medium);
+
+                            #endregion
+                            Chat.WriteLine("Setting FP to Doctor");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 6://fix
+                        if (uiSetting != check)
+                        {
+                            Chat.WriteLine("Setting FP to Fixer");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 7://crat
+                        if (uiSetting != check)
+                        {
+                            Chat.WriteLine("Setting FP to Bureaucrat");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 8://ma
+                        if (uiSetting != check)
+                        {
+                            Chat.WriteLine("Setting FP to Martial artist");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 9://nt
+                        if (uiSetting != check)
+                        {
+                            #region NT
+
+                            //RK Nukes
+                            RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
+                            RegisterSpellProcessor(RelevantNanos.RKAOENukes,
+                                (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.RK), CombatActionPriority.Low);
+                            RegisterSpellProcessor(new[] { RelevantNanos.VolcanicEruption },
+                                (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.VE), CombatActionPriority.Low);
+                            //buffs
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
+                                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NFRangeBuff"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), MatCreaBuff);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(),
+                                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NanoHOTTeam"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(),
+                                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NTCost"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(),
+                                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NTEvades"));
+                            //debuffs
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
+
+                            #endregion
+                            Chat.WriteLine("Setting FP to Nano-technician");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 10://trader
+                        if (uiSetting != check)
+                        {
+                            #region Trader
+
+                            //debuffs
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDrain_LineA).OrderByStackingOrder(), RKNanoDrain);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderDebuffACNanos).OrderByStackingOrder(), ACDrain, CombatActionPriority.Medium);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Draw).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderACTransferTargetDebuff_Siphon).OrderByStackingOrder(), ACDrain, CombatActionPriority.Low);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Deprive).OrderByStackingOrder(), DepriveDrain, CombatActionPriority.High);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TraderSkillTransferTargetDebuff_Ransack).OrderByStackingOrder(), RansackDrain, CombatActionPriority.High);
+                            //buffs
+                            RegisterSpellProcessor(RelevantNanos.QuantumUncertanity,
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "TdrEvades"));
+
+                            #endregion
+                            Chat.WriteLine("Setting FP to Trader");
+                            check = uiSetting;
+                        }
+                        break;
+                    case 11://advy
+                        if (uiSetting != check)
+                        {
+                            #region Adventurer
+                            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv))
+                            {
+                                //Heals
+                                RegisterSpellProcessor(RelevantNanos.AdvyTargetHeals, AdvyTargetHealing, CombatActionPriority.High);
+                                RegisterSpellProcessor(RelevantNanos.AdvyTeamHeals, AdvyTeamHealing, CombatActionPriority.High);
+                                RegisterSpellProcessor(RelevantNanos.AdvyCompleteHeal, AdvyCompleteHealing, CombatActionPriority.High);
+
+                                //buffs
+                                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine._1HEdgedBuff).OrderByStackingOrder(), Melee);
+                                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), Ranged);
+                                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),
+                                    (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                    => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "AdvDmgShield"));
+                                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MultiwieldBuff).OrderByStackingOrder(),
+                                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                    => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                                RegisterSpellProcessor(RelevantNanos.ArmorBuffs,
+                                    (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                    => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "AdvArmor"));
+
+                                //Morphs
+                                RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
+                                RegisterSpellProcessor(RelevantNanos.LeetMorph, LeetMorph);
+                                RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
+                                RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
+                                RegisterSpellProcessor(RelevantNanos.BirdMorph, BirdMorph);
+
+                                //Morph Buffs
+                                RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
+                                RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
+                                RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
+                                RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
+
+                                //Morph Cooldowns
+                                RegisterSpellProcessor(RelevantNanos.CatDamage, CatDamage);
+
+                            }
+                            #endregion
+                            Chat.WriteLine("Setting FP to Adventurer");
+                            check = uiSetting;
+                        }
+                        break;
                 }
 
                 #region UI
@@ -1048,6 +1248,7 @@ namespace CombatHandler.Agent
                     window.FindView("MongoDelayBox", out TextInputView mongoInput);
                     window.FindView("ChallengerDelayBox", out TextInputView challengerInput);
                     window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
+                    window.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
 
                     if (TargetHealInput != null && !string.IsNullOrEmpty(TargetHealInput.Text))
                     {
@@ -1055,7 +1256,6 @@ namespace CombatHandler.Agent
                         {
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage != healValue)
                             {
-
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = healValue;
                             }
                         }
@@ -1278,6 +1478,30 @@ namespace CombatHandler.Agent
                         }
                     }
 
+                    if (nullSphereInput != null && !string.IsNullOrEmpty(nullSphereInput.Text))
+                    {
+                        if (int.TryParse(nullSphereInput.Text, out int nullSphereValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage != nullSphereValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage = nullSphereValue;
+                            }
+                        }
+                    }
+
+                    if (!_settings["SyncPets"].AsBool() && _syncPets)
+                    {
+                        IPCChannel.Broadcast(new PetSyncOffMessage());
+                        Chat.WriteLine("SyncPets disabled");
+                        syncPetsOffDisabled();
+                    }
+
+                    if (_settings["SyncPets"].AsBool() && !_syncPets)
+                    {
+                        IPCChannel.Broadcast(new PetSyncOnMessag());
+                        Chat.WriteLine("SyncPets enabled.");
+                        syncPetsOnEnabled();
+                    }
                     if (window.FindView("MPView", out Button mpView))
                     {
                         mpView.Tag = SettingsController.settingsWindow;
@@ -1385,7 +1609,6 @@ namespace CombatHandler.Agent
                         morphView.Clicked = HandleMorphViewClick;
                     }
 
-
                     if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32())
                     {
                         CancelBuffs(RelevantNanos.DragonMorph);
@@ -1401,6 +1624,10 @@ namespace CombatHandler.Agent
                     if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32())
                     {
                         CancelBuffs(RelevantNanos.WolfMorph);
+                    }
+                    if (MorphSelection.Bird != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    {
+                        CancelBuffs(RelevantNanos.BirdMorph);
                     }
 
                     #endregion
@@ -1487,12 +1714,6 @@ namespace CombatHandler.Agent
                     #endregion
 
 
-                    if (CanLookupPetsAfterZone() && DynelManager.LocalPlayer.Pets.Count() >= 1)
-                    {
-                        SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
-                        AssignTargetToHealPet();
-                    }
-
                     if (ProcSelection.Damage == (ProcSelection)_settings["ProcSelection"].AsInt32())
                     {
                         CancelBuffs(RelevantNanos.DetauntProcs);
@@ -1577,6 +1798,14 @@ namespace CombatHandler.Agent
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
+        private bool BirdMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+
+            if (MorphSelection.Bird != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
 
         #endregion
 
@@ -1649,16 +1878,6 @@ namespace CombatHandler.Agent
             //return NonCombatBuff(spell, ref actionTarget, fightingTarget);
 
         }
-        private bool LeetOwz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
-
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-
-            //return ToggledTargetDebuff("LeetOwz", spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
         #endregion
 
         #region Buffs
@@ -1675,15 +1894,6 @@ namespace CombatHandler.Agent
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
-        }
-
-        private bool Armor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
-
-            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
-
-            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
         #endregion
 
@@ -1719,8 +1929,14 @@ namespace CombatHandler.Agent
 
             if (DynelManager.LocalPlayer.Buffs.Find(RelevantNanos.SteadyNerves, out Buff SN)) { return false; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Rifle);
         }
+
+        private bool Aimed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Rifle);
+        }
+
 
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1828,27 +2044,72 @@ namespace CombatHandler.Agent
             switch (Playfield.ModelIdentity.Instance)
             {
                 case 6015: // 12m
-                    if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "Deranged Xan"))
-                    {
-                        return false;
-                    }
+                    if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "Deranged Xan")) { return false; }
                     break;
-
                 case 8020: // poh
-                    if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "The Maiden"))
-                    {
-                        return false;
-                    }
+                    if (!DynelManager.NPCs.Any(c => c.IsAlive && c.Name == "The Maiden")) { return false; }
                     break;
-
                 default:
                     return false;
             }
 
-            actionTarget.Target = DynelManager.LocalPlayer;
-            actionTarget.ShouldSetTarget = true;
             return true;
         }
+        private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["ShortHOT"].AsBool() || !InCombat()) { return false; }
+
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        }
+
+        #endregion
+
+        #region Buffs
+        private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
+
+            if (ShortHpSelection.Self == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
+            {
+                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32() && Team.IsInTeam)
+            {
+                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+            }
+
+            return false;
+        }
+        #endregion
+
+        #region Epsilion Purge
+        private bool EpsilonPurge(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["EpsilonPurge"].AsBool()) { return false; }
+
+            var target = DynelManager.Players
+            .Where(c => c.IsInLineOfSight
+            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+            && spell.IsInRange(c)
+            && c.Buffs.Contains(NanoLine.DOT_LineA)
+            || c.Buffs.Contains(NanoLine.DOT_LineB)
+            || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
+            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
+            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
+            || c.Buffs.Contains(NanoLine.DOTStrainC))
+            .FirstOrDefault();
+
+            if (target != null)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
+            }
+
+            return false;
+        }
+
 
         #endregion
 
@@ -2042,8 +2303,30 @@ namespace CombatHandler.Agent
 
             return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
         }
+        private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Nukes"].AsBool()) { return false; }
 
+            if (!_settings["DebuffNuke"].AsBool()) { return false; }
 
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (_settings["NormalNuke"].AsBool() && fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
+
+            return true;
+        }
+        private bool MPNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Nukes"].AsBool()) { return false; }
+
+            if (!_settings["NormalNuke"].AsBool()) { return false; }
+
+            if (fightingTarget == null || !CanCast(spell)) { return false; }
+
+            if (_settings["DebuffNuke"].AsBool() && !fightingTarget.Buffs.Contains(NanoLine.MetaphysicistMindDamageNanoDebuffs)) { return false; }
+
+            return true;
+        }
         #endregion
 
         #region Soldier
@@ -2300,10 +2583,56 @@ namespace CombatHandler.Agent
                     return false;
             }
         }
-
         #endregion
 
-      
+        #region NT
+        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, AOESelection aoeType)
+        {
+            var aoeSelection = (AOESelection)_settings["AOESelection"].AsInt32();
+
+            if (fightingTarget == null || !CanCast(spell) || aoeSelection != aoeType)
+                return false;
+
+            return true;
+        }
+        private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+
+            return DynelManager.LocalPlayer.HealthPercent <= NullitySpherePercentage;
+        }
+        private bool MatCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            //if (RelevantIgnoreNanos.CompNanoSkills.Contains(spell.Id)) { return false; }
+
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantIgnoreNanos.CompNanoSkills)) { return false; }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+        private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (AOESelection.None != (AOESelection)_settings["AOESelection"].AsInt32()
+                    || fightingTarget == null) { return false; }
+
+            return true;
+        }
+        private bool AOEBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BlindSelection.AOE != (BlindSelection)_settings["BlindSelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
+        }
+
+        private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (BlindSelection.Target != (BlindSelection)_settings["BlindSelection"].AsInt32()
+                || fightingTarget == null || !CanCast(spell)) { return false; }
+
+            return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
+        }
+
+        #endregion
 
         #region Misc
 
@@ -2358,10 +2687,13 @@ namespace CombatHandler.Agent
 
             var fpBuff = Spell.List.FirstOrDefault(h => FPSwitchSetting.Contains(h.Id));
 
-            if (!Spell.HasPendingCast && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FalseProfession)
-                && fpBuff.MeetsUseReqs())
+            if (fpBuff != null)
             {
-                fpBuff?.Cast(DynelManager.LocalPlayer, true);
+                if (!Spell.HasPendingCast && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FalseProfession)
+                                && fpBuff.MeetsUseReqs() && DynelManager.LocalPlayer.MovementStatePermitsCasting)
+                {
+                    fpBuff.Cast(DynelManager.LocalPlayer, true);
+                }
             }
         }
 
@@ -2388,10 +2720,10 @@ namespace CombatHandler.Agent
 
         private SimpleChar GetTargetToHeal()
         {
-            if (DynelManager.LocalPlayer.IsInTeam())
+            if (DynelManager.LocalPlayer.HealthPercent < 90)
             {
                 var dyingTeamMember = DynelManager.Players
-                    .Where(c => c.IsAlive && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
                         && c.HealthPercent < 90)
                     .OrderBy(c => c.HealthPercent)
                     .FirstOrDefault();
@@ -2401,21 +2733,19 @@ namespace CombatHandler.Agent
                     return dyingTeamMember;
                 }
             }
-
-            if (DynelManager.LocalPlayer.HealthPercent < 90)
+            else
             {
-                return DynelManager.LocalPlayer;
-            }
+                Pet dyingPet = DynelManager.LocalPlayer.Pets
+                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
+                     .Where(pet => pet.Character.HealthPercent < 80)
+                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
+                     .OrderBy(pet => pet.Character.HealthPercent)
+                     .FirstOrDefault();
 
-            var dyingPet = DynelManager.LocalPlayer.Pets
-                 .Where(pet => pet.Character.HealthPercent < 90
-                    && (pet.Type == PetType.Attack || pet.Type == PetType.Social))
-                 .OrderBy(pet => pet.Character.HealthPercent)
-                 .FirstOrDefault();
-
-            if (dyingPet != null)
-            {
-                return dyingPet.Character;
+                if (dyingPet != null)
+                {
+                    return dyingPet.Character;
+                }
             }
 
             return null;
@@ -2441,6 +2771,8 @@ namespace CombatHandler.Agent
             public static readonly int[] TeamCritBuffs = { 160791, 160789, 160787 };
             public static int AssassinsAimedShot = 275007;
             public static int SteadyNerves = 160795;
+
+
             public static int CompleteHealing = 28650;
 
             public const int TiredLimbs = 99578;
@@ -2460,30 +2792,21 @@ namespace CombatHandler.Agent
             public static int[] AdvyTargetHeals = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
                 136678, 136679, 136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
                 82064, 26695 };
-
             public static int[] AdvyTeamHeals = new[] { 273285, 270770, 82051, 82052, 82053, 82054, 82055, 82056, 82057, 82057, 82058, 26696 };
-
             public const int AdvyCompleteHeal = 136672;
-
             public static readonly int[] ArmorBuffs = { 74173, 74174, 74175, 74176, 74177, 74178 };
-
             public static readonly int[] DragonMorph = { 217670, 25994 };
             public static readonly int[] LeetMorph = { 263278, 82834 };
             public static readonly int[] WolfMorph = { 275005, 85062 };
             public static readonly int[] SaberMorph = { 217680, 85070 };
-
+            public static readonly int[] BirdMorph = { 82835 };
             public static readonly int[] DragonScales = { 302217, 302214 };
             public static readonly int[] WolfAgility = { 302235, 302232 };
             public static readonly int[] LeetCrit = { 302229, 302226 };
             public static readonly int[] SaberDamage = { 302243, 302240 };
             public static readonly int[] SaberBuff = { 162313, 162315, 162317, 162319, 162321 };
             public static readonly int[] CatDamage = { 162321, 162319, 162317, 162315, 162313, };
-            public static readonly int[] LeetOwz = { 162119, 162117, 275817, 162121 };
 
-
-            public static int[] TargetArmorBuffs = { 74178, 74177, 74176, 74175, 74174, 74173 };
-            public static readonly int[] TargetedDamageShields = { 55812, 55836, 55835, 55833, 55834, 55831, 55832, 55830, 55829, 55828, 55826, 55827,
-                55825, 55824, 55823, 55821, 55822, 55819, 55820, 55816, 55818, 55817, 55814, 55815, 55813, 55837 };
 
             //Doc
             public const int AlphaAndOmega = 42409;
@@ -2501,6 +2824,10 @@ namespace CombatHandler.Agent
             };
 
             public const int TeamImprovedLifeChanneler = 275011;
+            public const int EpsilonPurge = 28659;
+            public static readonly Spell[] IndividualShortMaxHealths = Spell.GetSpellsForNanoline(NanoLine.DoctorShortHPBuffs).OrderByStackingOrder()
+                 .Where(spell => spell.Id != TeamImprovedLifeChanneler).ToArray();
+            public static int[] HPBuffs = new[] { 95709, 28662, 95720, 95712, 95710, 95711, 28649, 95713, 28660, 95715, 95714, 95718, 95716, 95717, 95719, 42397 };
 
             //mp
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
@@ -2509,46 +2836,39 @@ namespace CombatHandler.Agent
             public static readonly int[] PetShortTermDamage = { 267598, 205193, 151827, 205189, 205187, 151828, 205185, 151824, 205183,
             151830, 205191, 151826, 205195, 151825, 205197, 151831 };
             public const int PetWarp = 209488;
+            public static readonly int[] WarmUpfNukes = { 270355, 125761, 29297, 125762, 29298, 29114 };
+            public static readonly int[] MPNukes = { 267878, 125763, 125760, 125765, 125764 };
 
             //enf
             public static readonly int[] SingleTargetTaunt = { 223121, 223119, 223117, 223115, 100209, 100210, 100212, 100211, 100213 };
             public const int CORUSCATING_SCREEN = 55751;
             public static readonly int[] FortifyBuffs = { 273320, 270350, 117686, 117688, 117682, 117687, 117685, 117684, 117683, 117680, 117681 };
-            public static readonly int[] AbsorbACBuff = { 270350, 117686, 117688, 117682, 117687, 117685, 117684, 117683, 117680, 117681 };
+
+            //Trader
+            public const int QuantumUncertanity = 30745;
+
+            //NT
+            public static readonly int[] RKAOENukes = { 28620, 28638, 28637, 28594, 45922, 45906, 45884, 28635, 28593, 45925, 45940,
+            45900, 28629, 45917, 45937, 28599, 45894, 45943, 28633, 28631};
+            public const int VolcanicEruption = 28638;
+            public static readonly int[] SingleTargetNukes = { 218168, 218164, 218162, 218160, 218158, 218156, 218154, 218152, 218150,
+                218148, 218146, 218144, 218142, 218140, 218138, 218136, 269473, 218134, 201935, 202262, 201933, 218132, 28618, 218124, 218130,
+                218122, 218120, 218128, 218118, 218126, 45226, 45192, 28619, 45230, 28623, 28604, 28616, 218116, 28597, 45210, 45236, 45197,
+                45233, 45247, 45199, 45235, 45234, 218114, 45258, 45217, 28600, 45198, 28613, 45919, 45195, 45225, 45260, 45891, 45254, 45890,
+                45213, 218112, 45215, 45915, 218104, 45252, 45214, 45251, 45929, 45220, 45920, 45222, 218102, 28598, 45911, 45237, 45216,
+                218110, 45913, 45901, 45212, 45206, 45912, 45883, 45245, 45140, 45904, 45218, 28626, 218108, 45261, 218100, 45909, 45203,
+                45228, 45903, 45200, 45939, 28592, 45242, 218098, 218106, 45885, 45926, 45241, 44538, 45908, 45250, 45934, 45138, 45932,
+                28632, 45205, 28609, 45209, 45246, 45935, 45921, 45227, 45207, 45942, 45191, 45924, 218096, 28610, 45914, 45208, 45893,
+                28621, 45211, 45916, 45933, 218094, 45240, 45259, 45941, 45910, 45253, 28614, 218092, 45221, 45204, 28634, 45196, 45886,
+                45201, 45928, 45193, 45323, 45244, 45889, 45895, 28605, 45219, 45223, 45938, 28628, 45232, 45248, 45898, 45202, 45923,
+                45229, 45907, 45139, 45887, 45231, 45882, 28627, 45936, 45194, 28639, 45243, 45931, 28630, 45137, 28607, 45257, 45880,
+                45256, 45249, 45888, 45255, 45881, 42543, 45927, 45902, 42540, 42541, 45899, 45905, 28611, 45897, 28601, 42542, 28608,
+                45918, 42539, 45892, 45930, 45879, 45896, 28612 };
+            public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
 
         }
 
-        public enum TeamHealSelection
-        {
-            Teamheal, TeamImprovedLifeChanneler
-        }
-
-        public enum FalseProfSelection
-        {
-            None, Metaphysicist, Soldier, Enforcer, Engineer, Doctor, Fixer, Beauracrat, MartialArtist, NanoTechnician, Trader, Adventurer
-        }
-        public enum MorphSelection
-        {
-            None, Dragon, Saber, Wolf, Leet
-        }
-
-        public enum HealSelection
-        {
-            None, SingleTeam, SingleArea, Team
-        }
-        public enum DOTASelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum EvasionDebuffSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum InitDebuffSelection
-        {
-            None, Target, Area, Boss
-        }
-
+        #region Agent LE procs
         public enum ProcType1Selection
         {
             GrimReaper = 1464554561,
@@ -2568,11 +2888,96 @@ namespace CombatHandler.Agent
             ImprovedFocus = 1413562956,
             BrokenAnkle = 1481851730
         }
+        #endregion
 
+        #region Agent Selections
+        public enum FalseProfSelection
+        {
+            None, Metaphysicist, Soldier, Enforcer, Engineer, Doctor, Fixer, Beauracrat, MartialArtist, NanoTechnician, Trader, Adventurer
+        }
+        public enum DOTASelection
+        {
+            None, Target, Area, Boss
+        }
+        public enum EvasionDebuffSelection
+        {
+            None, Target, Area, Boss
+        }
         public enum ProcSelection
         {
             None, Damage, DeTaunt
         }
+        #endregion
+
+        #region MP Selections
+        public enum CostBuffSelection
+        {
+            None, Self, Team
+        }
+        #endregion
+
+        #region Enfo Selections
+        public enum MongoSelection
+        {
+            None, Adds, Spam
+        }
+        public enum SingleTauntsSelection
+        {
+            None, Target, Adds
+        }
+        public enum EnfDmgShield
+        {
+            None, Self, Team
+        }
+        #endregion
+
+        #region Adv Selections
+        public enum MorphSelection
+        {
+            None, Dragon, Saber, Wolf, Leet, Bird
+        }
+        public enum AdvArmor
+        {
+            None, Self, Team
+        }
+        public enum AdvDmgShield
+        {
+            None, Self, Team
+        }
+        #endregion
+
+        #region Doc Selections
+        public enum TeamHealSelection
+        {
+            Teamheal, TeamImprovedLifeChanneler
+        }
+        public enum ShortHpSelection
+        {
+            None, Self, Team
+        }
+        public enum NanoResistSelection
+        {
+            None, Self, Team
+        }
+        public enum InitBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum HealDeltaBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum StrengthBuffSelection
+        {
+            None, Self, Team
+        }
+        public enum InitDebuffSelection
+        {
+            None, Target, Area, Boss
+        }
+        #endregion
+
+        #region Trader Selections
         public enum RansackSelection
         {
             None, Target, Area, Boss
@@ -2589,18 +2994,43 @@ namespace CombatHandler.Agent
         {
             None, Target, Area, Boss
         }
-        public enum CostBuffSelection
+        public enum TdrEvades
         {
             None, Self, Team
         }
-        public enum MongoSelection
+        #endregion
+
+        #region NT Selections
+        public enum NFRangeBuff
         {
-            None, Adds, Spam
+            None, Self, Team
         }
-        public enum SingleTauntsSelection
+        public enum NanoHOTTeam
         {
-            None, Target, Adds
+            None, Self, Team
         }
+        public enum NTCost
+        {
+            None, Self, Team
+        }
+        public enum NTEvades
+        {
+            None, Self, Team
+        }
+        public enum AOESelection
+        {
+            None, RK, VE
+        }
+        public enum BlindSelection
+        {
+            None, Target, AOE
+        }
+        private static class RelevantIgnoreNanos
+        {
+            public static int[] CompNanoSkills = new[] { 220331, 220333, 220335, 220337, 292299, 220339, 220341, 220343 };
+
+        }
+        #endregion
 
         #endregion
     }

@@ -1232,21 +1232,29 @@ namespace CombatHandler.Bureaucrat
         {
             if (!_settings["Exoneration"].AsBool()) { return false; }
 
-            var target = DynelManager.Players
-            .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-            && c.DistanceFrom(DynelManager.LocalPlayer) < 40f
-            && c.Buffs.Contains(NanoLine.Root)
-            || c.Buffs.Contains(NanoLine.Snare)
-            || c.Buffs.Contains(305244) //Pause for Reflection
-            || c.Buffs.Contains(268174) //Cunning of The Voracious Horror
-            || c.Buffs.Contains(82166) //Greater Fear of Attention
-            && SpellChecksOther(spell, spell.Nanoline, c))
-            .FirstOrDefault();
+            var rootedTeamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+               spell.IsInRange(t.Character) && (t.Character.Buffs.Contains(NanoLine.Root)
+                                        || t.Character.Buffs.Contains(NanoLine.Snare)
+                                        || t.Character.Buffs.Contains(305244) //Pause for Reflection
+                                        || t.Character.Buffs.Contains(268174) //Cunning of The Voracious Horror
+                                        || t.Character.Buffs.Contains(82166)))//Greater Fear of Attention
+                                        .FirstOrDefault();
 
-            if (target != null)
+
+
+            //var target = DynelManager.Players
+            //.Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+            //&& c.DistanceFrom(DynelManager.LocalPlayer) < 40f
+            //&& c.Buffs.Contains(NanoLine.Root)
+            //|| c.Buffs.Contains(NanoLine.Snare)
+            //|| c.Buffs.Contains(305244) //Pause for Reflection
+            //|| c.Buffs.Contains(268174) //Cunning of The Voracious Horror
+            //|| c.Buffs.Contains(82166) //Greater Fear of Attention
+            //&& SpellChecksOther(spell, spell.Nanoline, c))
+            //.FirstOrDefault();
+
+            if (rootedTeamMember != null)
             {
-                actionTarget.ShouldSetTarget = false;
-                actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 

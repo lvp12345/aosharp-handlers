@@ -6,9 +6,6 @@
 			<OptionRadioButtonGroup label="Martial Art Special Attacks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__MASelection">
 				<RadioButton label="None" value="0"/>
 				<RadioButton label="Sappo" value="267525"/>
-				<RadioButton label="Sting of the Viper" value="305542"/>
-				<RadioButton label="Ape Fist of Khalum" value="204605"/>
-				<RadioButton label="Karmic Fist" value="206191"/>
 				<RadioButton label="Shen" value="201281"/>
 				<RadioButton label="Flower of Life" value="204326"/>
 				<RadioButton label="Bright, Blue, Cloudless Sky" value="204328"/>
@@ -17,37 +14,11 @@
 				<RadioButton label="Attack of the Snake" value="204330"/>
 				<RadioButton label="Angel of Night" value="204331"/>
 			</OptionRadioButtonGroup>
-			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
-			<OptionRadioButtonGroup label="Dimach Special Attacks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DimachSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Touch Of Sai Fung" value="275018"/>
-				<RadioButton label="The Wizdom of Huzzum" value="303056"/>
-				<RadioButton label="Tree of Enlightenment" value="204607"/>
-			</OptionRadioButtonGroup>
 		</View>
-		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
-		<View v_alignment="left" h_alignment="left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-			<OptionRadioButtonGroup label="Riposte Special Attacks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RiposteSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Upon a Wave of Summer" value="205406"/>
-				<RadioButton label="Stampede of the Boar" value="305554"/>
-			</OptionRadioButtonGroup>
-			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
-			<OptionRadioButtonGroup label="Strength Special Attacks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__StrengthSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Delirium" value="267922"/>
-			</OptionRadioButtonGroup>
-		</View>
-		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<View v_alignment="left" h_alignment="left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 			<OptionRadioButtonGroup label="Intelligence Special Attacks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__IntelligenceSelection">
 				<RadioButton label="None" value="0"/>
 				<RadioButton label="Enigma" value="267522"/>
-			</OptionRadioButtonGroup>
-			<TextView value="" layout_borders="Rect(0,0,0,2)"/>
-			<OptionRadioButtonGroup label="Stamina Special Attacks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__StaminaSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Inner Balance" value="267523"/>
 			</OptionRadioButtonGroup>
 		</View>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>

@@ -5,7 +5,6 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace CombatHandler.MartialArtist
@@ -36,6 +35,7 @@ namespace CombatHandler.MartialArtist
 
         private static double _ncuUpdateTime;
 
+        [Obsolete]
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
             try
@@ -128,11 +128,6 @@ namespace CombatHandler.MartialArtist
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), Healing.TeamHealing, 
                     CombatActionPriority.High);
 
-                //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
-                //            (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                //            GenericTeamHealing(spell, fightingTarget, ref actionTarget, "HealSelection"),
-                //            CombatActionPriority.High);
-
                 //Taunts
                 RegisterSpellProcessor(RelevantNanos.Taunts, SingleTargetTaunt, CombatActionPriority.High);
 
@@ -221,13 +216,11 @@ namespace CombatHandler.MartialArtist
                 int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
                 int staminaItem = _settings["StaminaSelection"].AsInt32();
                 
-                
                 RegisterItemProcessor(dimachItem, dimachItem, DimachItem);
                 RegisterItemProcessor(riposteItem, riposteItem, RiposteItem);
                 RegisterItemProcessor(strengthItem, strengthItem, StrengthItem);
                 RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
                 RegisterItemProcessor(staminaItem, staminaItem, StaminaItem);
-
 
                 //LE Procs
                 RegisterPerkProcessor(PerkHash.LEProcMartialArtistAbsoluteFist, LEProc1, CombatActionPriority.Low);
@@ -612,8 +605,6 @@ namespace CombatHandler.MartialArtist
             {
                 if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 0.7) { return; }
 
-                base.OnUpdate(deltaTime);
-
                 if (Time.NormalTime > _ncuUpdateTime + 1.0f)
                 {
                     RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -866,91 +857,93 @@ namespace CombatHandler.MartialArtist
                     {
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
-                    }
-
-                    #endregion
-
-                    #region GlobalBuffing
-
-                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleBuffing = false;
-                        _settings["Buffing"] = false;
-                        _settings["GlobalBuffing"] = false;
-                    }
-
-                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleBuffing = true;
-                        _settings["Buffing"] = true;
-                        _settings["GlobalBuffing"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Composites
-
-                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleComposites = false;
-                        _settings["Composites"] = false;
-                        _settings["GlobalComposites"] = false;
-                    }
-                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleComposites = true;
-                        _settings["Composites"] = true;
-                        _settings["GlobalComposites"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Resurrection
-
-                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-
-                            Switch = false
-                        });
-
-                        ToggleRez = false;
-                        _settings["GlobalRez"] = false;
-                    }
-                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleRez = true;
-                        _settings["GlobalRez"] = true;
-                    }
-
-                    #endregion
+                    } 
                 }
+
+                #endregion
+
+                #region GlobalBuffing
+
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
+
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
+
+                #endregion
+
+                #region Global Composites
+
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
+
+                #endregion
+
+                #region Global Resurrection
+
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+
+                        Switch = false
+                    });
+
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
+
+                #endregion
+
+                base.OnUpdate(deltaTime);
             }
             catch (Exception ex)
             {
@@ -1206,7 +1199,6 @@ namespace CombatHandler.MartialArtist
 
         private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-
             if (!_settings["CritBuff"].AsBool()) { return false; }
 
             if (!Team.IsInTeam)

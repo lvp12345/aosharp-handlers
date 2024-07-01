@@ -17,6 +17,7 @@ namespace CombatHandler.Agent
         private static bool ToggleRez = false;
 
         public static int[] FPSwitchSetting;
+        public static int[] MorhpSpellArray;
         public static bool _syncPets;
         private double _lastHealPetHealTime = 0.0;
 
@@ -935,8 +936,6 @@ namespace CombatHandler.Agent
                     return;
                 }
 
-                base.OnUpdate(deltaTime);
-
                 if (Time.NormalTime > _ncuUpdateTime + 1.0f)
                 {
                     RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -1195,11 +1194,7 @@ namespace CombatHandler.Agent
                                     => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "AdvArmor"));
 
                                 //Morphs
-                                RegisterSpellProcessor(RelevantNanos.DragonMorph, DragonMorph);
-                                RegisterSpellProcessor(RelevantNanos.LeetMorph, LeetMorph);
-                                RegisterSpellProcessor(RelevantNanos.WolfMorph, WolfMorph);
-                                RegisterSpellProcessor(RelevantNanos.SaberMorph, SaberMorph);
-                                RegisterSpellProcessor(RelevantNanos.BirdMorph, BirdMorph);
+                                Morphs();
 
                                 //Morph Buffs
                                 RegisterSpellProcessor(RelevantNanos.DragonScales, DragonScales);
@@ -1628,101 +1623,103 @@ namespace CombatHandler.Agent
                     if (MorphSelection.Bird != (MorphSelection)_settings["MorphSelection"].AsInt32())
                     {
                         CancelBuffs(RelevantNanos.BirdMorph);
-                    }
-
-                    #endregion
-
-                    #region GlobalBuffing
-
-                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleBuffing = false;
-                        _settings["Buffing"] = false;
-                        _settings["GlobalBuffing"] = false;
-                    }
-
-                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleBuffing = true;
-                        _settings["Buffing"] = true;
-                        _settings["GlobalBuffing"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Composites
-
-                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleComposites = false;
-                        _settings["Composites"] = false;
-                        _settings["GlobalComposites"] = false;
-                    }
-                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleComposites = true;
-                        _settings["Composites"] = true;
-                        _settings["GlobalComposites"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Resurrection
-
-                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-
-                            Switch = false
-                        });
-
-                        ToggleRez = false;
-                        _settings["GlobalRez"] = false;
-                    }
-                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleRez = true;
-                        _settings["GlobalRez"] = true;
-                    }
-
-                    #endregion
-
-
-                    if (ProcSelection.Damage == (ProcSelection)_settings["ProcSelection"].AsInt32())
-                    {
-                        CancelBuffs(RelevantNanos.DetauntProcs);
-                    }
-                    if (ProcSelection.DeTaunt == (ProcSelection)_settings["ProcSelection"].AsInt32())
-                    {
-                        CancelBuffs(RelevantNanos.DOTProcs);
-                    }
+                    }  
                 }
+
+                #endregion
+
+                #region GlobalBuffing
+
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
+
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
+
+                #endregion
+
+                #region Global Composites
+
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
+
+                #endregion
+
+                #region Global Resurrection
+
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+
+                        Switch = false
+                    });
+
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
+
+                #endregion
+
+
+                if (ProcSelection.Damage == (ProcSelection)_settings["ProcSelection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.DetauntProcs);
+                }
+                if (ProcSelection.DeTaunt == (ProcSelection)_settings["ProcSelection"].AsInt32())
+                {
+                    CancelBuffs(RelevantNanos.DOTProcs);
+                }
+
+                base.OnUpdate(deltaTime);
             }
             catch (Exception ex)
             {
@@ -1766,45 +1763,54 @@ namespace CombatHandler.Agent
 
         #region Morphs
 
-        private bool DragonMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private void MorphSwitch()
         {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
-
-            if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            switch (_settings["MorphSelection"].AsInt32())
+            {
+                case 0://None
+                    MorhpSpellArray = new int[0];
+                    if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Polymorph))
+                    {
+                        CancelBuffs(RelevantNanos.Morphs);
+                    }
+                    break;
+                case 1://Dragon
+                    MorhpSpellArray = RelevantNanos.DragonMorph;
+                    break;
+                case 2://Saber
+                    MorhpSpellArray = RelevantNanos.SaberMorph;
+                    break;
+                case 3://Wolf
+                    MorhpSpellArray = RelevantNanos.WolfMorph;
+                    break;
+                case 4://Leet
+                    MorhpSpellArray = RelevantNanos.LeetMorph;
+                    break;
+                case 5://Tree
+                    MorhpSpellArray = RelevantNanos.TreeMorph;
+                    break;
+            }
         }
-        private bool LeetMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+
+        private void Morphs()
         {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+            var localPlayer = DynelManager.LocalPlayer;
 
-            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+            if (localPlayer.GetStat(Stat.VisualProfession) != 6) { return; }
+            if (localPlayer.Buffs.Contains(RelevantNanos.BirdMorph)) { return; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-        private bool WolfMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+            MorphSwitch();
 
-            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+            if (MorhpSpellArray.Length == 0) { return; }
+            if (localPlayer.Buffs.Contains(MorhpSpellArray)) { return; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-        private bool SaberMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
+            var MorphSpell = Spell.List.FirstOrDefault(h => MorhpSpellArray.Contains(h.Id));
+            if (MorphSpell == null) { return; }
 
-            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-        private bool BirdMorph(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfAdv)) { return false; }
-
-            if (MorphSelection.Bird != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            if (!Spell.HasPendingCast && MorphSpell.MeetsUseReqs() && localPlayer.MovementStatePermitsCasting)
+            {
+                MorphSpell.Cast(localPlayer, true);
+            }
         }
 
         #endregion
@@ -1875,8 +1881,6 @@ namespace CombatHandler.Agent
 
             return ToggledTargetDebuff("CatDamage", spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-            //return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-
         }
         #endregion
 
@@ -1905,10 +1909,9 @@ namespace CombatHandler.Agent
 
         protected bool TheShot(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable || fightingTarget == null) { return false; }
-
             if (!_settings["TheShot"].AsBool()) { return false; }
-
+            if (fightingTarget == null) { return false; }
+            if (!perk.IsAvailable) { return false; }
             if (fightingTarget?.Buffs.Where(c => c.Name.ToLower().Contains(perk.Name.ToLower()) && c.RemainingTime > 3).Any() == true) { return false; }
 
             return PerkCondtionProcessors.DamagePerk(perk, fightingTarget, ref actionTarget);
@@ -1936,7 +1939,6 @@ namespace CombatHandler.Agent
         {
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Rifle);
         }
-
 
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -2603,8 +2605,6 @@ namespace CombatHandler.Agent
         }
         private bool MatCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (RelevantIgnoreNanos.CompNanoSkills.Contains(spell.Id)) { return false; }
-
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantIgnoreNanos.CompNanoSkills)) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
@@ -2710,7 +2710,6 @@ namespace CombatHandler.Agent
                 {
                     if (Time.AONormalTime > _lastHealPetHealTime)
                     {
-                        //Chat.WriteLine($"{healPet.Character.Name} healing {dyingTarget.Name}", ChatColor.Green);
                         healPet.Heal(dyingTarget.Identity);
                         _lastHealPetHealTime = Time.AONormalTime + 3;
                     }
@@ -2779,14 +2778,7 @@ namespace CombatHandler.Agent
 
             public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder().Where(spell => spell.Id != TiredLimbs).ToArray();
 
-            //public static int[] Heals = new[] { 223299, 223297, 223295, 223293, 223291, 223289, 223287, 223285, 223281,
-            //    43878, 43881, 43886, 43885,
-            //    43887, 43890, 43884, 43808, 43888, 43889, 43883, 43811, 43809, 43810, 28645, 43816, 43817, 43825, 43815,
-            //    43814, 43821, 43820, 28648, 43812, 43824, 43822, 43819, 43818, 43823, 28677, 43813, 43826, 43838, 43835,
-            //    28672, 43836, 28676, 43827, 43834, 28681, 43837, 43833, 43830, 43828, 28654, 43831, 43829, 43832, 28665,
-            //    223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677, 136678, 136679,
-            //    136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
-            //    82064, 26695 };
+            
 
             //Adv
             public static int[] AdvyTargetHeals = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
@@ -2795,11 +2787,15 @@ namespace CombatHandler.Agent
             public static int[] AdvyTeamHeals = new[] { 273285, 270770, 82051, 82052, 82053, 82054, 82055, 82056, 82057, 82057, 82058, 26696 };
             public const int AdvyCompleteHeal = 136672;
             public static readonly int[] ArmorBuffs = { 74173, 74174, 74175, 74176, 74177, 74178 };
+
             public static readonly int[] DragonMorph = { 217670, 25994 };
             public static readonly int[] LeetMorph = { 263278, 82834 };
             public static readonly int[] WolfMorph = { 275005, 85062 };
             public static readonly int[] SaberMorph = { 217680, 85070 };
-            public static readonly int[] BirdMorph = { 82835 };
+            public static readonly int[] TreeMorph = { 229666, 229884, 229887, 229889 };
+            public static readonly int[] Morphs = { 217670, 25994, 263278, 82834, 275005, 85062, 217680, 85070, 229666, 229884, 229887, 229889 };
+            public static readonly int[] BirdMorph = { 25997, 85066, 82835 };
+
             public static readonly int[] DragonScales = { 302217, 302214 };
             public static readonly int[] WolfAgility = { 302235, 302232 };
             public static readonly int[] LeetCrit = { 302229, 302226 };

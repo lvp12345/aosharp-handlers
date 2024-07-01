@@ -63,7 +63,7 @@ namespace HelpManager
 
         public void UseKit()
         {
-            Item kit = Inventory.Items.FirstOrDefault(x => RelevantItems.Kits.Contains(x.Id));
+            Item kit = Inventory.Items.FirstOrDefault(x => KitItems.Kits.Contains(x.Id));
 
             if (kit != null && !Item.HasPendingUse)
             {
@@ -120,7 +120,7 @@ namespace HelpManager
             return !Spell.List.Any(spell => spell.IsReady) && Spell.HasPendingCast;
         }
     }
-    public static class RelevantItems
+    public static class KitItems
     {
         public static readonly int[] Kits = { 297274, 293296, 291084, 291083, 291082 };
     }

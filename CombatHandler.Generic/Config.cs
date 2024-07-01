@@ -415,7 +415,24 @@ namespace CombatHandler.Generic
                 }
             }
         }
+        public event EventHandler<int> DragonHealingPercentageChangedEvent;
 
+        private int _dragonHealingPercentage = 60;
+        public int DragonHealingPercentage
+        {
+            get
+            {
+                return _dragonHealingPercentage;
+            }
+            set
+            {
+                if (_dragonHealingPercentage != value)
+                {
+                    _dragonHealingPercentage = value;
+                    DragonHealingPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> CompleteTeamHealPercentageChangedEvent;
 
         private int _completeTeamHealPercentage = 35;

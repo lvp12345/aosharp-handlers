@@ -742,15 +742,6 @@ namespace HelpManager
                 CancelBuffs(RelevantNanos.Yalms);
         }
 
-        private void AutoSitSwitch(string command, string[] param, ChatWindow chatWindow)
-        {
-            if (param.Length == 0)
-            {
-                _settings["AutoSit"] = !_settings["AutoSit"].AsBool();
-                Chat.WriteLine($"Auto sit : {_settings["AutoSit"].AsBool()}");
-            }
-        }
-
         private void YalmCommand(string command, string[] param, ChatWindow chatWindow)
         {
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.Yalms))
@@ -799,11 +790,20 @@ namespace HelpManager
             }
         }
 
+        private void AutoSitSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["AutoSit"] = !_settings["AutoSit"].AsBool();
+                Chat.WriteLine($"Auto sit : {_settings["AutoSit"].AsBool()}");
+            }
+        }
+
         private void PetSitKit()
         {
             Kits kits = new Kits();
             var healpet = DynelManager.LocalPlayer.Pets.Where(x => x.Type == PetType.Heal).FirstOrDefault();
-            var kit = Inventory.Items.Where(x => RelevantItems.Kits.Contains(x.Id)).FirstOrDefault();
+            var kit = Inventory.Items.Where(x => KitItems.Kits.Contains(x.Id)).FirstOrDefault();
 
             if (healpet == null || kit == null) { return; }
 
@@ -851,10 +851,18 @@ namespace HelpManager
             public static readonly int[] ZixMorph = { 288532, 302212 };
 
             public static readonly int[] Yalms = {
-                290473, 281569, 301672, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982,
+                82835, 290473, 281569, 301672, 270984, 270991, 273468, 288795, 270993, 270995, 270986, 270982,
                 296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
                 270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 293619,
-                294781, 301669, 301700, 301670, 120499,
+                294781, 301669, 301700, 301670, 120499, 
+            };
+        }
+
+        private static class HelpManagerItems
+        {
+            public static readonly int[] GraftSparrowFlight =
+            {
+                128345, 128346, 128344, 128343, 94577, 94799, 94049, 93648, 94798, 94048
             };
         }
 

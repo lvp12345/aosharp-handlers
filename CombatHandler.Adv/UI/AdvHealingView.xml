@@ -17,6 +17,9 @@
 		<TextView value="Team Healing %" layout_borders="Rect(5,5,5,5)"/>
 		<TextInputView name="TeamHealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
 
+		<TextView value="Dragon Healing %" layout_borders="Rect(5,5,5,5)"/>
+		<TextInputView name="DragonHealingPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
+		
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value=" 0 = off" layout_borders="Rect(10,5,5,5)"/>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>

@@ -39,12 +39,12 @@ namespace CombatHandler.Generic
         public static int CycleChallengerDelay = 0;
         public static int CycleRageDelay = 0;
         public static int CycleAbsorbsDelay = 0;
-
+        public static int ShadesCaressPercentage = 0;
         public static int HealthDrainPercentage = 0;
         public static int NanoAegisPercentage = 0;
         public static int NullitySpherePercentage = 0;
         public static int IzgimmersWealthPercentage = 0;
-
+        public static int ShadeTattooPercentage = 0;
         public static int SelfHealPerkPercentage = 0;
         public static int SelfNanoPerkPercentage = 0;
         public static int TeamHealPerkPercentage = 0;
@@ -364,12 +364,6 @@ namespace CombatHandler.Generic
 
                 UseItems();
                 Ammo.CrateOfAmmo();
-
-                if (_settings["ShouldMoveBehindTarget"] != null && _settings["ShouldMoveBehindTarget"].AsBool())
-                {
-                    var moveBehind = new GetBehind();
-                    moveBehind.MoveBehindFightingtarget();
-                }
 
                 #region UI
 
@@ -1016,6 +1010,19 @@ namespace CombatHandler.Generic
             return false;
         }
 
+        public void GetBehindAndPoke(int settingValue)
+        {
+            bool GoodToStabyStaby = !NeedsReload() && DynelManager.LocalPlayer.FightingTarget != null
+                && (settingValue == 1 || (settingValue == 2 && DynelManager.LocalPlayer.FightingTarget.MaxHealth > 1000000));
+
+            var moveBehind = new GetBehind();
+
+            if (GoodToStabyStaby)
+            {
+                moveBehind.MoveBehindFightingtarget();
+            }
+        }
+
         protected bool TargetDebuff(Spell spell, NanoLine nanoline, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (NeedsReload()) { return false; }
@@ -1586,7 +1593,7 @@ namespace CombatHandler.Generic
 
         protected void SynchronizePetCombatStateWithOwner(PetType Attack, PetType Support)
         {
-            if (CanLookupPetsAfterZone()&& Time.AONormalTime > _lastPetSyncTime)
+            if (CanLookupPetsAfterZone() && Time.AONormalTime > _lastPetSyncTime)
             {
                 foreach (var pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == Attack || c.Type == Support))
                 {
@@ -2591,7 +2598,18 @@ namespace CombatHandler.Generic
             StrengthAbsorbsItemPercentage = e;
             Config.Save();
         }
-
+        public static void ShadesCaressPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].ShadesCaressPercentage = e;
+            ShadesCaressPercentage = e;
+            Config.Save();
+        }
+        public static void ShadeTattooPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].ShadeTattooPercentage = e;
+            ShadeTattooPercentage = e;
+            Config.Save();
+        }
         public static void StaminaAbsorbsItemPercentage_Changed(object s, int e)
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentage = e;

@@ -10,11 +10,16 @@
 		<OptionCheckBox label="(Team) Runspeed" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__RunspeedTeam" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="(Team) Insight into the Shadowlands" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SLMap" layout_borders="Rect(10,1,5,1)"/>
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<TextView value="Proc Auras" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Init Debuff Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__InitDebuffProc" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Damage Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DamageProc" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="DOT Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__DOTProc" layout_borders="Rect(10,1,5,1)"/>
-		<OptionCheckBox label="Stun Proc" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__StunProc" layout_borders="Rect(10,1,5,1)"/>
+		<OptionRadioButtonGroup label="Shade Proc Selection" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ShadeProcSelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="Damage" value="1"/>
+			<RadioButton label="Stun" value="2"/>
+			<RadioButton label="InitDebuff" value="3"/>
+			<RadioButton label="DOT" value="4"/>
+		</OptionRadioButtonGroup>
+		<TextView value="Shades Caress %" layout_borders="Rect(5,5,5,5)"/>
+		<TextInputView name="ShadesCaressPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>
 </root>

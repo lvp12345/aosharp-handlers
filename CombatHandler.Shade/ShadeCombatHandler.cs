@@ -7,15 +7,12 @@ using CombatHandler.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOSharp.Core.Movement;
 
 namespace CombatHandler.Shade
 {
     public class ShadeCombatHandler : GenericCombatHandler
     {
         private static string PluginDirectory;
-
-        private const int MissingHealthAbortCombatPercentage = 30;
 
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
@@ -66,6 +63,8 @@ namespace CombatHandler.Shade
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].ShadesCaressPercentageChangedEvent += ShadesCaressPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].ShadeTattooPercentageChangedEvent += ShadeTattooPercentage_Changed;
 
                 _settings.AddVariable("AllPlayers", false);
                 _settings["AllPlayers"] = false;
@@ -76,6 +75,7 @@ namespace CombatHandler.Shade
                 _settings.AddVariable("GlobalBuffing", true);
                 _settings.AddVariable("GlobalComposites", true);
                 _settings.AddVariable("GlobalRez", true);
+                _settings.AddVariable("SpamHealthDrain", false);
 
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
@@ -90,16 +90,16 @@ namespace CombatHandler.Shade
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.Blackheart);
 
                 _settings.AddVariable("Runspeed", false);
-                _settings.AddVariable("AAD", false);
                 _settings.AddVariable("RunspeedTeam", false);
+
+                _settings.AddVariable("AAD", false);
+
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("MASelection", (int)MASelection.StingoftheViper);
-                _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);
-                _settings.AddVariable("RiposteSelection", (int)RiposteSelection.None);
-                _settings.AddVariable("StrengthSelection", (int)StrengthSelection.None);
+                _settings.AddVariable("MASelection", (int)MASelection.Sappo);
                 _settings.AddVariable("IntelligenceSelection", (int)IntelligenceSelection.None);
-                _settings.AddVariable("StaminaSelection", (int)StaminaSelection.None);
+
+                _settings.AddVariable("ShadeProcSelection", 0);
 
                 _settings.AddVariable("InitDebuffProc", false);
                 _settings.AddVariable("DamageProc", false);
@@ -109,7 +109,7 @@ namespace CombatHandler.Shade
                 _settings.AddVariable("HealthDrain", false);
                 _settings.AddVariable("SpiritSiphon", false);
 
-                _settings.AddVariable("ShouldMoveBehindTarget", false);
+                _settings.AddVariable("ShouldMoveBehindTarget", 0);
 
                 RegisterSettingsWindow("Shade Handler", "ShadeSettingsView.xml");
 
@@ -155,14 +155,18 @@ namespace CombatHandler.Shade
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, "AAD"));
 
-                RegisterSpellProcessor(RelevantNanos.ShadeDmgProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DamageProc"));
-                RegisterSpellProcessor(RelevantNanos.ShadeStunProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "StunProc"));
-                RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "InitDebuffProc"));
-                RegisterSpellProcessor(RelevantNanos.ShadeDOTProc, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, "DOTProc"));
+                RegisterSpellProcessor(RelevantNanos.ShadeDmgProc,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    GenericShadeProc(spell, fightingTarget, ref actionTarget, ShadeProcSelection.Damage));
+                RegisterSpellProcessor(RelevantNanos.ShadeStunProc,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    GenericShadeProc(spell, fightingTarget, ref actionTarget, ShadeProcSelection.Stun));
+                RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    GenericShadeProc(spell, fightingTarget, ref actionTarget, ShadeProcSelection.InitDebuff));
+                RegisterSpellProcessor(RelevantNanos.ShadeDOTProc,
+                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    GenericShadeProc(spell, fightingTarget, ref actionTarget, ShadeProcSelection.DOT));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
 
@@ -170,17 +174,9 @@ namespace CombatHandler.Shade
                 RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
 
                 int maItem = _settings["MASelection"].AsInt32();
-                int dimachItem = _settings["DimachSelection"].AsInt32();
-                int riposteItem = _settings["RiposteSelection"].AsInt32();
-                int strengthItem = _settings["StrengthSelection"].AsInt32();
                 int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
-                int staminaItem = _settings["StaminaSelection"].AsInt32();
                 RegisterItemProcessor(maItem, maItem, MAItem);
-                RegisterItemProcessor(dimachItem, dimachItem, DimachItem);
-                RegisterItemProcessor(riposteItem, riposteItem, RiposteItem);
-                RegisterItemProcessor(strengthItem, strengthItem, StrengthItem);
                 RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
-                RegisterItemProcessor(staminaItem, staminaItem, StaminaItem);
 
                 //LE Proc
                 RegisterPerkProcessor(PerkHash.LEProcShadeBlackenedLegacy, LEProc1, CombatActionPriority.Low);
@@ -214,7 +210,8 @@ namespace CombatHandler.Shade
                 TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
                 BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
-
+                ShadesCaressPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].ShadesCaressPercentage;
+                ShadeTattooPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].ShadeTattooPercentage;
             }
             catch (Exception ex)
             {
@@ -269,7 +266,6 @@ namespace CombatHandler.Shade
         #endregion
 
         #region Handles
-
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
@@ -277,11 +273,24 @@ namespace CombatHandler.Shade
             {
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\ShadeBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "ShadeBuffsView" }, _buffView);
+                window.FindView("ShadesCaressPercentageBox", out TextInputView shadesCaressInput);
+
+                if (shadesCaressInput != null)
+                {
+                    shadesCaressInput.Text = $"{ShadesCaressPercentage}";
+                }
+
             }
             else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "ShadeBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+                container.FindView("ShadesCaressPercentageBox", out TextInputView shadesCaressInput);
+
+                if (shadesCaressInput != null)
+                {
+                    shadesCaressInput.Text = $"{ShadesCaressPercentage}";
+                }
             }
         }
         private void HandleHealingViewClick(object s, ButtonBase button)
@@ -444,6 +453,7 @@ namespace CombatHandler.Shade
                 window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                window.FindView("ShadeTattooPercentageBox", out TextInputView shadeTattooInput);
 
                 if (stimTargetInput != null)
                 {
@@ -472,6 +482,10 @@ namespace CombatHandler.Shade
                 if (strengthInput != null)
                 {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
+                if (shadeTattooInput != null)
+                {
+                    shadeTattooInput.Text = $"{ShadeTattooPercentage}";
                 }
             }
             else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
@@ -486,6 +500,7 @@ namespace CombatHandler.Shade
                 container.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
                 container.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                container.FindView("ShadeTattooPercentageBox", out TextInputView shadeTattooInput);
 
                 if (stimTargetInput != null)
                 {
@@ -514,6 +529,10 @@ namespace CombatHandler.Shade
                 if (strengthInput != null)
                 {
                     strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+                }
+                if (shadeTattooInput != null)
+                {
+                    shadeTattooInput.Text = $"{ShadeTattooPercentage}";
                 }
             }
         }
@@ -533,15 +552,12 @@ namespace CombatHandler.Shade
                 _procWindow = container;
             }
         }
-
         #endregion
 
         protected override void OnUpdate(float deltaTime)
         {
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.3)
                 return;
-
-            base.OnUpdate(deltaTime);
 
             if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
@@ -553,6 +569,9 @@ namespace CombatHandler.Shade
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+            CancelBuffs();
+
+            GetBehindAndPoke(_settings["ShouldMoveBehindTarget"].AsInt32());
 
             #region UI
 
@@ -576,6 +595,8 @@ namespace CombatHandler.Shade
 
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+                window.FindView("ShadesCaressPercentageBox", out TextInputView shadesCaressInput);
+                window.FindView("ShadeTattooPercentageBox", out TextInputView shadeTattooInput);
 
                 if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
                 {
@@ -603,6 +624,28 @@ namespace CombatHandler.Shade
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage != stimHealthValue)
                         {
                             Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage = stimHealthValue;
+                        }
+                    }
+                }
+
+                if (shadesCaressInput != null && !string.IsNullOrEmpty(shadesCaressInput.Text))
+                {
+                    if (int.TryParse(shadesCaressInput.Text, out int shadesCaressValue))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].ShadesCaressPercentage != shadesCaressValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].ShadesCaressPercentage = shadesCaressValue;
+                        }
+                    }
+                }
+
+                if (shadeTattooInput != null && !string.IsNullOrEmpty(shadeTattooInput.Text))
+                {
+                    if (int.TryParse(shadeTattooInput.Text, out int shadeTattooValue))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].ShadeTattooPercentage != shadeTattooValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].ShadeTattooPercentage = shadeTattooValue;
                         }
                     }
                 }
@@ -772,158 +815,95 @@ namespace CombatHandler.Shade
                     perkView.Tag = SettingsController.settingsWindow;
                     perkView.Clicked = HandlePerkViewClick;
                 }
+            }
 
-                #endregion
+            #endregion
 
-                #region GlobalBuffing
+            #region GlobalBuffing
 
-                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+            if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+            {
+                IPCChannel.Broadcast(new GlobalBuffingMessage()
                 {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = false
-                    });
+                    Switch = false
+                });
 
-                    ToggleBuffing = false;
-                    _settings["Buffing"] = false;
-                    _settings["GlobalBuffing"] = false;
-                }
+                ToggleBuffing = false;
+                _settings["Buffing"] = false;
+                _settings["GlobalBuffing"] = false;
+            }
 
-                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+            if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+            {
+                IPCChannel.Broadcast(new GlobalBuffingMessage()
                 {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = true
-                    });
+                    Switch = true
+                });
 
-                    ToggleBuffing = true;
-                    _settings["Buffing"] = true;
-                    _settings["GlobalBuffing"] = true;
-                }
+                ToggleBuffing = true;
+                _settings["Buffing"] = true;
+                _settings["GlobalBuffing"] = true;
+            }
 
-                #endregion
+            #endregion
 
-                #region Global Composites
+            #region Global Composites
 
-                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+            if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+            {
+                IPCChannel.Broadcast(new GlobalCompositesMessage()
                 {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = false
-                    });
+                    Switch = false
+                });
 
-                    ToggleComposites = false;
-                    _settings["Composites"] = false;
-                    _settings["GlobalComposites"] = false;
-                }
-                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                ToggleComposites = false;
+                _settings["Composites"] = false;
+                _settings["GlobalComposites"] = false;
+            }
+            if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+            {
+                IPCChannel.Broadcast(new GlobalCompositesMessage()
                 {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = true
-                    });
+                    Switch = true
+                });
 
-                    ToggleComposites = true;
-                    _settings["Composites"] = true;
-                    _settings["GlobalComposites"] = true;
-                }
+                ToggleComposites = true;
+                _settings["Composites"] = true;
+                _settings["GlobalComposites"] = true;
+            }
 
-                #endregion
+            #endregion
 
-                #region Global Resurrection
+            #region Global Resurrection
 
-                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+            if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+            {
+                IPCChannel.Broadcast(new GlobalRezMessage()
                 {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
 
-                        Switch = false
-                    });
+                    Switch = false
+                });
 
-                    ToggleRez = false;
-                    _settings["GlobalRez"] = false;
-                }
-                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                ToggleRez = false;
+                _settings["GlobalRez"] = false;
+            }
+            if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+            {
+                IPCChannel.Broadcast(new GlobalRezMessage()
                 {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-                        Switch = true
-                    });
+                    Switch = true
+                });
 
-                    ToggleRez = true;
-                    _settings["GlobalRez"] = true;
-                }
-
-                #endregion
+                ToggleRez = true;
+                _settings["GlobalRez"] = true;
             }
 
-            if (_settings["InitDebuffProc"].AsBool() && _settings["DamageProc"].AsBool())
-            {
-                _settings["InitDebuffProc"] = false;
-                _settings["DamageProc"] = false;
+            #endregion
 
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (_settings["InitDebuffProc"].AsBool() && _settings["DOTProc"].AsBool())
-            {
-                _settings["InitDebuffProc"] = false;
-                _settings["DOTProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (_settings["InitDebuffProc"].AsBool() && _settings["StunProc"].AsBool())
-            {
-                _settings["InitDebuffProc"] = false;
-                _settings["StunProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (_settings["DamageProc"].AsBool() && _settings["StunProc"].AsBool())
-            {
-                _settings["DamageProc"] = false;
-                _settings["StunProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (_settings["DamageProc"].AsBool() && _settings["DOTProc"].AsBool())
-            {
-                _settings["DamageProc"] = false;
-                _settings["DOTProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-            if (_settings["StunProc"].AsBool() && _settings["DOTProc"].AsBool())
-            {
-                _settings["StunProc"] = false;
-                _settings["DOTProc"] = false;
-
-                Chat.WriteLine("Only activate one Proc option.");
-            }
-
-            if (!_settings["Runspeed"].AsBool() && !_settings["RunspeedTeam"].AsBool())
-            {
-                CancelBuffs(RelevantNanos.FasterThanYourShadow);
-            }
-            if (!_settings["InitDebuffProc"].AsBool())
-            {
-                CancelBuffs(RelevantNanos.ShadeInitDebuffProc);
-            }
-            if (!_settings["DamageProc"].AsBool())
-            {
-                CancelBuffs(RelevantNanos.ShadeDmgProc);
-            }
-            if (!_settings["DOTProc"].AsBool())
-            {
-                CancelBuffs(RelevantNanos.ShadeDOTProc);
-            }
-            if (!_settings["StunProc"].AsBool())
-            {
-                CancelBuffs(RelevantNanos.ShadeStunProc);
-            }
+            base.OnUpdate(deltaTime);
         }
 
         #region Items
-
         private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             item.Id = _settings["MASelection"].AsInt32();
@@ -932,39 +912,6 @@ namespace CombatHandler.Shade
             if (fightingtarget == null) { return false; }
             if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
-
-            return true;
-        }
-        private bool DimachItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            item.Id = _settings["DimachSelection"].AsInt32();
-
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Dimach)) { return false; }
-
-            return true;
-        }
-        private bool RiposteItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            item.Id = _settings["RiposteSelection"].AsInt32();
-
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Riposte)) { return false; }
-
-            return true;
-        }
-        private bool StrengthItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            item.Id = _settings["StrengthSelection"].AsInt32();
-
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Strength)) { return false; }
 
             return true;
         }
@@ -979,37 +926,17 @@ namespace CombatHandler.Shade
 
             return true;
         }
-        private bool StaminaItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            item.Id = _settings["StaminaSelection"].AsInt32();
-
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Stamina)) { return false; }
-
-            return true;
-        }
-
         private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            // don't use if BM is locked (we will add this dynamically later)
+            if (fightingtarget == null) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.BiologicalMetamorphosis)) { return false; }
 
-            // don't use if we're above 40%
-            if (DynelManager.LocalPlayer.HealthPercent > 40) { return false; }
-
-            // don't use if nothing is fighting us
-            if (DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
-
-            // don't use if we have another major absorb (example: nanomage booster) running
-            // we could check remaining absorb stat to be slightly more effective
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.BioCocoon)) { return false; }
-
-            // don't use if our fighting target has caress running
-            if (fightingtarget.Buffs.Contains(275242)) { return false; }
-
-            return true;
+            if (DynelManager.LocalPlayer.HealthPercent <= ShadeTattooPercentage && fightingtarget?.HealthPercent > 5)
+            {
+                return true;
+            }
+            return false;
         }
 
         #endregion
@@ -1046,7 +973,6 @@ namespace CombatHandler.Shade
         {
             if (fightingTarget == null) { return false; }
 
-            //Don't SP if there are TR/PM chains in progress
             if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.TotemicRites.Contains(action.Hash)
             || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
 
@@ -1059,8 +985,6 @@ namespace CombatHandler.Shade
 
             if (PerkAction.List.Any(a => a.IsExecuting)) { return false; }
 
-            //actionTarget.ShouldSetTarget = true;
-
             return true;
         }
 
@@ -1068,7 +992,6 @@ namespace CombatHandler.Shade
         {
             if (fightingTarget == null) { return false; }
 
-            //Don't TR if there are SP/PM chains in progress
             if (_actionQueue.Any(x => x.CombatAction is PerkAction action && (RelevantPerks.SpiritPhylactery.Contains(action.Hash)
             || RelevantPerks.PiercingMastery.Contains(action.Hash)))) { return false; }
 
@@ -1082,7 +1005,6 @@ namespace CombatHandler.Shade
         #endregion
 
         #region Buffs
-
         private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (IsInsideInnerSanctum()) { return false; }
@@ -1132,18 +1054,16 @@ namespace CombatHandler.Shade
 
             return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
-
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["Buffing"].AsBool()) { return false; }
 
             actionTarget.ShouldSetTarget = false;
 
-            if (DynelManager.LocalPlayer.HealthPercent <= MissingHealthAbortCombatPercentage) { return true; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return true; }
 
             return false;
         }
-
         private bool SpiritSiphon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["SpiritSiphon"].AsBool()) { return false; }
@@ -1169,11 +1089,9 @@ namespace CombatHandler.Shade
 
             return false;
         }
-
         #endregion
 
         #region Debuffs
-
         private bool ShadesCaress(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["Buffing"].AsBool()) { return false; }
@@ -1198,36 +1116,67 @@ namespace CombatHandler.Shade
                 }
             }
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 80 && fightingTarget.HealthPercent > 5) { return true; }
+            if (DynelManager.LocalPlayer.HealthPercent <= ShadesCaressPercentage && fightingTarget.HealthPercent > 5) { return true; }
 
             return false;
         }
         private bool HealthDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+
+            if (_settings["SpamHealthDrain"].AsBool())
+            {
+                if (!CanCast(spell)) { return false; }
+                if (!spell.IsReady) { return false; }
+                if (Spell.HasPendingCast) { return false; }
+                if (fightingTarget == null) { return false; }
+
+                return true;
+            }
+
             if (!_settings["HealthDrain"].AsBool()) { return false; }
 
             if (fightingTarget == null) { return false; }
 
-            if (fightingTarget.Buffs.Contains(273390)) { return false; }
-
-            if (DynelManager.LocalPlayer.NanoPercent > 80) { return true; }
-
-            if (DynelManager.LocalPlayer.HealthPercent >= 85) { return false; }
-
             return ToggledTargetDebuff("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
+        private bool GenericShadeProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, ShadeProcSelection procType)
+        {
+            ShadeProcSelection currentSetting = (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32();
 
+            if (currentSetting != procType)
+            {
+                return false;
+            }
 
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
         #endregion
 
         #region Misc
-
+        private void CancelBuffs()
+        {
+            if (ShadeProcSelection.Damage != (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ShadeDmgProc);
+            }
+            if (ShadeProcSelection.InitDebuff != (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ShadeInitDebuffProc);
+            }
+            if (ShadeProcSelection.DOT != (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ShadeDOTProc);
+            }
+            if (ShadeProcSelection.Stun != (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.ShadeStunProc);
+            }
+        }
         private class RelevantItems
         {
             public const int Sappo = 267525;
             public const int Tattoo = 269511;
         }
-
         private class RelevantNanos
         {
             public const int ShadesCaress = 266300;
@@ -1241,12 +1190,12 @@ namespace CombatHandler.Shade
             218064, 218062, 218060, 272371, 270808, 30745, 302188, 29272, 270802, 28603, 223125, 223131, 223129, 215718,
             223127, 272416, 272415, 272414, 272413, 272412};
             public static readonly int[] RK_RUN_BUFFS = { 93132, 93126, 93127, 93128, 93129, 93130, 93131, 93125 };
-            public static readonly int[] ShadeDmgProc = { 224167, 224165, 224163, 210371, 210369, 210367, 210365, 210363, 210361, 210359, 210357, 210355, 210353 };
-            public static readonly int[] ShadeStunProc = { 224171, 224169, 210380, 210378, 210376 };
-            public static readonly int[] ShadeInitDebuffProc = { 224177, 210407, 210401 };
-            public static readonly int[] ShadeDOTProc = { 224161, 224159, 210395, 210393, 210391, 210389, 210387 };
-        }
 
+            public static readonly int[] ShadeDmgProc = { 224167, 224165, 224163, 210371, 210369, 210367, 210365, 210363, 210351, 210359, 210357, 210533, 210353, };
+            public static readonly int[] ShadeStunProc = { 224171, 224169, 210380, 210378, 210376, };
+            public static readonly int[] ShadeInitDebuffProc = { 224177, 210407, 210401, };
+            public static readonly int[] ShadeDOTProc = { 224161, 224159, 210395, 210393, 210391, 210389, 210387, };
+        }
         private class RelevantPerks
         {
             public static readonly List<PerkHash> TotemicRites = new List<PerkHash>
@@ -1259,7 +1208,6 @@ namespace CombatHandler.Shade
                 PerkHash.DevourVitality,
                 PerkHash.RitualOfBlood
             };
-
             public static readonly List<PerkHash> PiercingMastery = new List<PerkHash>
             {
                 PerkHash.Stab,
@@ -1270,7 +1218,6 @@ namespace CombatHandler.Shade
                 PerkHash.Gore,
                 PerkHash.Hecatomb
             };
-
             public static readonly List<PerkHash> SpiritPhylactery = new List<PerkHash>
             {
                 PerkHash.CaptureVigor,
@@ -1282,34 +1229,19 @@ namespace CombatHandler.Shade
                 PerkHash.CaptureVitality
             };
         }
-
         public enum MASelection
         {
-            None, Sappo = 267525, StingoftheViper = 305542, ApeFistofKhalum = 204605, KarmicFist = 206191, Shen = 201281,
-            FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
+            None, Sappo = 267525, Shen = 201281, FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
             AttackoftheSnake = 204330, AngelofNight = 204331
-        }
-        public enum DimachSelection
-        {
-            None, TouchOfSaiFung = 275018, TheWizdomofHuzzum = 303056, TreeofEnlightenment = 204607
-        }
-        public enum RiposteSelection
-        {
-            None, UponAWaveOfSummer = 205406, StampedeOfTheBoar = 305554
-        }
-        public enum StrengthSelection
-        {
-            None, Delirium = 267922
         }
         public enum IntelligenceSelection
         {
             None, Enigma = 267522
         }
-        public enum StaminaSelection
+        public enum ShadeProcSelection
         {
-            None, InnerBalance = 267523
+            None, Damage, Stun, InitDebuff, DOT
         }
-
         public enum ProcType1Selection
         {
             BlackenedLegacy = 1111706695,
@@ -1320,7 +1252,6 @@ namespace CombatHandler.Shade
             ToxicConfusion = 1330529877,
             SapLife = 1397771337
         }
-
         public enum ProcType2Selection
         {
             Blackheart = 1129007173,
@@ -1329,7 +1260,6 @@ namespace CombatHandler.Shade
             Misdirection = 1396984146,
             DeviousSpirit = 1146508112
         }
-
         #endregion
     }
 }

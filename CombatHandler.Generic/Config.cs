@@ -759,6 +759,40 @@ namespace CombatHandler.Generic
                 }
             }
         }
+        public event EventHandler<int> ShadesCaressPercentageChangedEvent;
+        private int _shadesCaressPercentage = 40;
+        public int ShadesCaressPercentage
+        {
+            get
+            {
+                return _shadesCaressPercentage;
+            }
+            set
+            {
+                if (_shadesCaressPercentage != value)
+                {
+                    _shadesCaressPercentage = value;
+                    ShadesCaressPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> ShadeTattooPercentageChangedEvent;
+        private int _shadeTattooPercentage = 40;
+        public int ShadeTattooPercentage
+        {
+            get
+            {
+                return _shadeTattooPercentage;
+            }
+            set
+            {
+                if (_shadeTattooPercentage != value)
+                {
+                    _shadeTattooPercentage = value;
+                    ShadeTattooPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> IzgimmersWealthPercentageChangedEvent;
         private int _izgimmersWealthPercentage = 35;
         public int IzgimmersWealthPercentage

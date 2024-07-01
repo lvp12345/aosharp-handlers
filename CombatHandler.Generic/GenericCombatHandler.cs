@@ -1697,7 +1697,7 @@ namespace CombatHandler.Generic
 
                     if (special == SpecialAttack.Backstab)
                     {
-                        if (special.IsAvailable() && target.FightingTarget.Identity != DynelManager.LocalPlayer.Identity)
+                        if (special.IsAvailable() && target.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity)
                         {
                             continue;
                         }

@@ -15,8 +15,6 @@ using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Policy;
 
 namespace CombatHandler.Generic
 {
@@ -2437,7 +2435,12 @@ namespace CombatHandler.Generic
             Healing.TargetHealPercentage = e;
             Config.Save();
         }
-
+        public static void DragonHealingPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].DragonHealingPercentage = e;
+            Healing.DragonHealingPercentage = e;
+            Config.Save();
+        }
         public static void CompleteHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage = e;

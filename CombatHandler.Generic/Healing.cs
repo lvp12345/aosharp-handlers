@@ -1,5 +1,4 @@
 ﻿using AOSharp.Core;
-using AOSharp.Core.Inventory;
 using System.Linq;
 
 namespace CombatHandler.Generic
@@ -11,7 +10,7 @@ namespace CombatHandler.Generic
         public static int FountainOfLifeHealPercentage = 0;
         public static int TeamHealPercentage = 0;
         public static int CompleteTeamHealPercentage = 0;
-
+        public static int DragonHealingPercentage = 0;
         #region Healing
 
         #region target
@@ -109,12 +108,6 @@ namespace CombatHandler.Generic
                             && m.Character.Health > 0
                             && m.Character.HealthPercent <= TeamHealPercentage);
 
-            //var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
-
-            //var count = DynelManager.Characters.Count(c =>
-            //    Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-            //    && c.HealthPercent <= TeamHealPercentage && c.Health > 0);
-
             if (dyingTeamMembersCount >= 2)
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
@@ -135,12 +128,6 @@ namespace CombatHandler.Generic
                    .Count(m => m.Character != null
                             && m.Character.Health > 0
                             && m.Character.HealthPercent <= CompleteTeamHealPercentage);
-
-            //var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
-
-            //var count = DynelManager.Characters.Count(c =>
-            //    Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-            //    && c.HealthPercent <= CompleteTeamHealPercentage && c.Health > 0);
 
             if (dyingTeamMembersCount >= 2)
             {

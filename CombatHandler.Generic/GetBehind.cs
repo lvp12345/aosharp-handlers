@@ -9,7 +9,7 @@ namespace CombatHandler.Generic
         public const float BehindDistOffset = 1.25f;
         public const float RaycastYOffset = 0.1f;
 
-       
+
         public void MoveBehindFightingtarget()
         {
             // Do nothing if we aren't attacking or our target is missing
@@ -39,5 +39,5 @@ namespace CombatHandler.Generic
 
             return Playfield.Raycast(target.Position + Vector3.Up * RaycastYOffset, posBehind + Vector3.Up * RaycastYOffset, out Vector3 hitPos, out _) ? hitPos : posBehind;
         }
-    }
+    }    
 }

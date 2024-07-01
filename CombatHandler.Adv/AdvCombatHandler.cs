@@ -118,7 +118,7 @@ namespace CombatHandler.Adventurer
 
                 _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.None);
 
-                _settings.AddVariable("ShouldMoveBehindTarget", false);
+                _settings.AddVariable("ShouldMoveBehindTarget", 0);
 
                 RegisterSettingsWindow("Adventurer Handler", "AdvSettingsView.xml");
 
@@ -976,7 +976,7 @@ namespace CombatHandler.Adventurer
 
                 #endregion
 
-                #region GlobalBuffing
+                    #region GlobalBuffing
 
                 if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
                 {

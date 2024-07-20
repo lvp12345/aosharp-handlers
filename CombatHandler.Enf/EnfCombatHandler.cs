@@ -90,15 +90,15 @@ namespace CombatHandler.Enf
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 1);
 
                 _settings.AddVariable("Kits", true);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.RagingBlow);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.ViolationBuffer);
 
-                _settings.AddVariable("MongoSelection", (int)MongoSelection.Spam);
-                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.Adds);
+                _settings.AddVariable("MongoSelection", 1);
+                _settings.AddVariable("SingleTauntsSelection", 2);
 
                 _settings.AddVariable("CycleChallenger", false);
                 _settings.AddVariable("CycleRage", false);
@@ -111,10 +111,10 @@ namespace CombatHandler.Enf
                 _settings.AddVariable("SLMap", false);
                 _settings.AddVariable("OSTMongo", false);
 
-                _settings.AddVariable("AbsorbSelection", (int)AbsorbSelection.Normal);
+                _settings.AddVariable("AbsorbSelection", 1);
 
-                _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.Self);
-                _settings.AddVariable("DamageChangeBuffSelection", (int)DamageChangeBuffSelection.None);
+                _settings.AddVariable("StrengthBuffSelection", 1);
+                _settings.AddVariable("DamageChangeBuffSelection", 0);
 
                 _settings.AddVariable("TrollForm", false);
                 _settings.AddVariable("EncaseInStone", false);
@@ -390,7 +390,6 @@ namespace CombatHandler.Enf
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_itemView)) { return; }
 
                 _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerItemsView.xml");
@@ -491,7 +490,6 @@ namespace CombatHandler.Enf
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
             if (window != null)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
                 if (window.Views.Contains(_procView)) { return; }
 
                 _procView = View.CreateFromXml(PluginDirectory + "\\UI\\EnforcerProcsView.xml");
@@ -626,8 +624,6 @@ namespace CombatHandler.Enf
             {
                 if (Game.IsZoning || Time.AONormalTime < _lastZonedTime + 0.5)
                     return;
-
-                base.OnUpdate(deltaTime);
 
                 if (Time.AONormalTime > _ncuUpdateTime + 1.0f)
                 {
@@ -959,91 +955,93 @@ namespace CombatHandler.Enf
                     {
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
-                    }
-
-                    #endregion
-
-                    #region GlobalBuffing
-
-                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleBuffing = false;
-                        _settings["Buffing"] = false;
-                        _settings["GlobalBuffing"] = false;
-                    }
-
-                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleBuffing = true;
-                        _settings["Buffing"] = true;
-                        _settings["GlobalBuffing"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Composites
-
-                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleComposites = false;
-                        _settings["Composites"] = false;
-                        _settings["GlobalComposites"] = false;
-                    }
-                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleComposites = true;
-                        _settings["Composites"] = true;
-                        _settings["GlobalComposites"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Resurrection
-
-                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-
-                            Switch = false
-                        });
-
-                        ToggleRez = false;
-                        _settings["GlobalRez"] = false;
-                    }
-                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleRez = true;
-                        _settings["GlobalRez"] = true;
-                    }
-
-                    #endregion
+                    }  
                 }
+
+                #endregion
+
+                #region GlobalBuffing
+
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
+
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
+
+                #endregion
+
+                #region Global Composites
+
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
+
+                #endregion
+
+                #region Global Resurrection
+
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+
+                        Switch = false
+                    });
+
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
+
+                #endregion
+
+                base.OnUpdate(deltaTime);
             }
             catch (Exception ex)
             {
@@ -1062,93 +1060,80 @@ namespace CombatHandler.Enf
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var selection = _settings["SingleTauntsSelection"].AsInt32();
+
+            if (selection == 0) { return false; }
             if (!CanCast(spell)) { return false; }
+            if (Time.AONormalTime < _singleTaunt + SingleTauntDelay) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
+            if (debuffAreaTargetsToIgnore.Contains(fightingTarget?.Name)) { return false; }
 
-            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
+            switch (selection)
             {
-                var mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.IsInLineOfSight
-                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && spell.IsInRange(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.MaxHealth)
-                    .FirstOrDefault();
+                case 1:
+                    if (fightingTarget == null) { return false; }
 
-                if (DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
-                    if (mob != null)
-                    {
-                        _singleTaunt = Time.AONormalTime;
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = mob;
-                        return true;
-                    }
-                }
-            }
-
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
-                    && DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
                     _singleTaunt = Time.AONormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;
-                }
-            }
+                case 2:
+                    var mob = DynelManager.NPCs
+                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
+                   .OrderBy(c => c.MaxHealth).FirstOrDefault();
 
-            return false;
+                    if (mob == null) { return false; }
+
+                    _singleTaunt = Time.AONormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!CanCast(spell)) { return false; }
 
-            var mob = DynelManager.NPCs
-                   .Where(attackingMob => attackingMob.IsAttacking && attackingMob.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                   && attackingMob.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f && !debuffAreaTargetsToIgnore.Contains(attackingMob.Name)
-                       && AttackingTeam(attackingMob))
-                   .FirstOrDefault();
-
             if (_settings["OSTMongo"].AsBool())
             {
                 if (!spell.IsReady) { return false; }
                 if (Spell.HasPendingCast) { return false; }
-
                 return true;
             }
-
-            if (DynelManager.LocalPlayer.HealthPercent >= 30)
+            else
             {
-                if(_settings["MongoSelection"].AsInt32() == 0) { return false; }
+                var selection = _settings["MongoSelection"].AsInt32();
 
-                if (Time.AONormalTime > _mongo + MongoDelay)
+                if (selection == 0) { return false; }
+                if (DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
+                if (Time.AONormalTime < _mongo + MongoDelay) { return false; }
+
+                switch (selection)
                 {
-                    if (_settings["MongoSelection"].AsInt32() == 1)
-                    {
-                        if (mob != null)
-                        {
-                            _mongo = Time.AONormalTime;
-                            return true;
-                        }
-                    }
-                    if (_settings["MongoSelection"].AsInt32() == 2)
-                    {
-                        if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f
-                            && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name))
-                        {
-                            _mongo = Time.AONormalTime;
-                            return true;
-                        }
-                    }
+                    case 1:
+                        var mob = DynelManager.NPCs
+                       .Where(attackingMob => attackingMob.IsAttacking && attackingMob.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                       && attackingMob?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f && !debuffAreaTargetsToIgnore.Contains(attackingMob?.Name)
+                       && AttackingTeam(attackingMob))
+                       .FirstOrDefault();
+
+                        if (mob == null) { return false; }
+
+                        _mongo = Time.AONormalTime;
+                        return true;
+                    case 2:
+                        if (fightingTarget == null) { return false; }
+                        if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) >= 20f
+                        || debuffAreaTargetsToIgnore.Contains(fightingTarget?.Name)) { return false; }
+                        _mongo = Time.AONormalTime;
+                        return true;
+                    default:
+                        return false;
                 }
             }
-
-            return false;
         }
 
         #endregion
@@ -1169,28 +1154,23 @@ namespace CombatHandler.Enf
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
-
-            if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.None) { return false; }
-
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
 
-            if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.Normal)
+            switch (_settings["AbsorbSelection"].AsInt32())
             {
-                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-            }
+                case 0:
+                    return false;
+                case 1:
+                    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+                case 2:
+                    var attackingMob = DynelManager.NPCs.Where(c => c.IsAttacking && c.FightingTarget?.Identity == DynelManager.LocalPlayer?.Identity).FirstOrDefault();
 
-            if ((AbsorbSelection)_settings["AbsorbSelection"].AsInt32() == AbsorbSelection.Cycle)
-            {
-                var attackingMob = DynelManager.NPCs.Where(c => c.IsAttacking && 
-                c.FightingTarget?.Identity == DynelManager.LocalPlayer?.Identity).FirstOrDefault();
+                    if (attackingMob == null) { return false; }
 
-                if (attackingMob == null) { return false; }
+                    if (Time.AONormalTime < _absorbs + CycleAbsorbsDelay) { return false; }
 
-                if (Time.AONormalTime > _absorbs + CycleAbsorbsDelay)
-                {
                     _absorbs = Time.AONormalTime;
                     return true;
-                }
             }
 
             return false;
@@ -1198,32 +1178,25 @@ namespace CombatHandler.Enf
 
         private bool CycleRage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["CycleRage"].AsBool() && Time.AONormalTime > _rage + CycleRageDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            {
-                if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
-
-                _rage = Time.AONormalTime;
-                return true;
-            }
-
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (!_settings["CycleRage"].AsBool()) { return false; }
+            if (fightingTarget == null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
             if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Root) || !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.Snare)) { return false; }
+            if (Time.AONormalTime < _rage + CycleRageDelay) { return false; }
 
+            _rage = Time.AONormalTime;
             return true;
         }
 
         private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["CycleChallenger"].AsBool() && Time.AONormalTime > _challenger + CycleChallengerDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            {
-                if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (!_settings["CycleChallenger"].AsBool()) { return false; }
+            if (fightingTarget == null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+            if (Time.AONormalTime < _challenger + CycleChallengerDelay) { return false; }
 
-                _challenger = Time.AONormalTime;
-                return true;
-            }
-
-            return false;
+            _challenger = Time.AONormalTime;
+            return true;
         }
 
         #region Weapon Buffs
@@ -1260,21 +1233,17 @@ namespace CombatHandler.Enf
 
         private bool DamageChange(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (DynelManager.LocalPlayer.FightingTarget != null) { return false; }
             spell.Id = _settings["DamageChangeBuffSelection"].AsInt32();
 
             if (spell.Id == 0) { return false; }
-            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
-            if (DynelManager.LocalPlayer.FightingTarget != null) { return false; }
 
-            if (DynelManager.LocalPlayer.RemainingNCU >= Math.Abs(spell.NCU))
-            {
-                if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DamageChangeBuffs))
-                {
-                    return true;
-                }
-            }
+            if (DynelManager.LocalPlayer.RemainingNCU <= Math.Abs(spell.NCU)) { return false; }
 
-            return false;
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DamageChangeBuffs)) { return false; }
+
+            return true;
         }
 
 
@@ -1286,7 +1255,7 @@ namespace CombatHandler.Enf
 
         private bool InitiativeBuffs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["InitiativeBuffs"].AsBool())
+            if (!_settings["InitiativeBuffs"].AsBool())
             {
                 return TeamBuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
             }
@@ -1300,19 +1269,14 @@ namespace CombatHandler.Enf
 
             if (Team.IsInTeam)
             {
-                var target = DynelManager.Players
-                               .Where(c => c.IsInLineOfSight
-                               && c.Identity != DynelManager.LocalPlayer.Identity
-                                   && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                                   && spell.IsInRange(c)
-                                   && c.Health > 0
-                                   && SpellChecksOther(spell, spell.Nanoline, c))
-                               .FirstOrDefault();
+                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+                spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && t.Identity != DynelManager.LocalPlayer.Identity)
+               .FirstOrDefault();
 
-                if (target != null)
+                if (teamMember != null)
                 {
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
+                    actionTarget.Target = teamMember.Character;
                     return true;
                 }
             }
@@ -1367,31 +1331,6 @@ namespace CombatHandler.Enf
             ShrugOffHits = 1447973709,
             BustKneecaps = 1480807238,
             IgnorePain = 1229410377
-        }
-
-        public enum SingleTauntsSelection
-        {
-            None, Target, Adds
-        }
-
-        public enum AbsorbSelection
-        {
-            None, Normal, Cycle
-        }
-
-        public enum StrengthBuffSelection
-        {
-            None, Self, Team
-        }
-
-        public enum MongoSelection
-        {
-            None, Adds, Spam
-        }
-
-        public enum DamageChangeBuffSelection
-        {
-            None = 0, Melee = 301853, Radiation = 222919, Poison = 222917, Chemical = 222915, Cold = 222706, Fire = 222693
         }
 
         #endregion

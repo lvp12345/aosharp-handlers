@@ -49,8 +49,6 @@ namespace GMIManager
         public static string PluginDir;
         private static ulong _queuedCash = 0;
 
-        private static ulong _queuedItem = 0;
-
         private static ulong _maxCredits = 999999999;
         private static ulong _maxMarketCredits = 3999999999;
         private static bool _initStart = true;
@@ -61,8 +59,6 @@ namespace GMIManager
         private static long _modifyAmount = 3600000000;
         private static bool _modifyingAmount = false;
         private static bool _lastDeposit = false;
-
-        //private static long _modifyAmount = 20000;
 
         public static string previousErrorMessage = string.Empty;
 

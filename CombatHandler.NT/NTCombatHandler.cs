@@ -90,42 +90,47 @@ namespace CombatHandler.NanoTechnician
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 1);
 
                 _settings.AddVariable("Kits", true);
 
                 _settings.AddVariable("CycleAbsorbs", false);
 
-                _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.None);
+                _settings.AddVariable("DOTA", 0);
 
                 _settings.AddVariable("Pierce", false);
                 _settings.AddVariable("FlimFocus", false);
 
                 _settings.AddVariable("NanoHOTTeam", false);
                 _settings.AddVariable("CostTeam", false);
-                _settings.AddVariable("AbsorbACBuff", false);
-                _settings.AddVariable("Evades", false);
+                _settings.AddVariable("TeamAbsorbACBuff", false);
+
                 _settings.AddVariable("NFRangeBuff", false);
                 _settings.AddVariable("SLMap", false);
+
+                _settings.AddVariable("EvadeSelection", 0);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ThermalReprieve);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.OptimizedLibrary);
 
-                _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
-                _settings.AddVariable("HaloSelection", (int)HaloSelection.None);
-                _settings.AddVariable("LickOfThePestSelection", (int)LickOfThePestSelection.None);
-                _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
-                _settings.AddVariable("HackedBlindSelection", (int)HackedBlindSelection.None);
+                _settings.AddVariable("BlindSelection", 0);
+                _settings.AddVariable("HaloSelection", 0);
+                _settings.AddVariable("LickOfThePestSelection", 0);
+                _settings.AddVariable("NanoResistSelection", 0);
+                _settings.AddVariable("HackedBlindSelection", 0);
 
-                _settings.AddVariable("CalmingSelection", (int)CalmingSelection.Calm);
-                _settings.AddVariable("ModeSelection", (int)ModeSelection.None);
+                _settings.AddVariable("CalmingSelection", 1);
+                _settings.AddVariable("ModeSelection", 0);
 
-                _settings.AddVariable("AOESelection", (int)AOESelection.None);
+                _settings.AddVariable("AOESelection", 0);
 
                 RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
 
                 //DeTaunt
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt, CombatActionPriority.High);
+
+                //absorbs
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), CycleAbsorbs, CombatActionPriority.High);
 
                 //Calms
                 RegisterSpellProcessor(RelevantNanos.Stun, Stun, CombatActionPriority.High);
@@ -160,15 +165,15 @@ namespace CombatHandler.NanoTechnician
 
                 RegisterSpellProcessor(RelevantNanos.RKAOENukes,
                     (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.RK));
+                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, 1));
 
                 RegisterSpellProcessor(RelevantNanos.SLAOENukes,
                      (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.SL));
+                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, 2));
 
                 RegisterSpellProcessor(new[] { RelevantNanos.VolcanicEruption },
                      (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.VE));
+                   => AOENuke(aoeNuke, fightingTarget, ref actionTarget, 3));
 
                 //Perks
                 RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
@@ -177,7 +182,7 @@ namespace CombatHandler.NanoTechnician
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
                 RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth, CombatActionPriority.High);
-
+                RegisterSpellProcessor(RelevantNanos.SelfDarkMovement, SelfEvade);
 
                 RegisterSpellProcessor(RelevantNanos.NanobotShelter,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -191,11 +196,7 @@ namespace CombatHandler.NanoTechnician
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), NFRangeBuff);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), MatCreaBuff);
 
-                //RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(),
-                //    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                //                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvade);
+                
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -204,14 +205,12 @@ namespace CombatHandler.NanoTechnician
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHOT);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AbsorbACBuff).OrderByStackingOrder(), CycleAbsorbs);
+                
 
                 //Team Buffs
-                RegisterSpellProcessor(RelevantNanos.AbsorbACBuff,
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "AbsorbACBuff"));
+                RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, TeamAbsorbs);
 
-                RegisterSpellProcessor(RelevantNanos.DarkMovement, Evades);
+                RegisterSpellProcessor(RelevantNanos.TeamDarkMovement, TeamEvades);
 
                 //Items
                 RegisterItemProcessor(new int[] { RelevantItems.NotumGraft, RelevantItems.NotumSplice }, NotumItem);
@@ -649,8 +648,6 @@ namespace CombatHandler.NanoTechnician
             {
                 if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 3.0) { return; }
 
-                base.OnUpdate(deltaTime);
-
                 if (Time.NormalTime > _ncuUpdateTime + 1.0f)
                 {
                     RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -938,90 +935,92 @@ namespace CombatHandler.NanoTechnician
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
                     }
-
-                    #endregion
-
-                    #region GlobalBuffing
-
-                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleBuffing = false;
-                        _settings["Buffing"] = false;
-                        _settings["GlobalBuffing"] = false;
-                    }
-
-                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleBuffing = true;
-                        _settings["Buffing"] = true;
-                        _settings["GlobalBuffing"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Composites
-
-                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleComposites = false;
-                        _settings["Composites"] = false;
-                        _settings["GlobalComposites"] = false;
-                    }
-                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleComposites = true;
-                        _settings["Composites"] = true;
-                        _settings["GlobalComposites"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Resurrection
-
-                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-
-                            Switch = false
-                        });
-
-                        ToggleRez = false;
-                        _settings["GlobalRez"] = false;
-                    }
-                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleRez = true;
-                        _settings["GlobalRez"] = true;
-                    }
-
-                    #endregion
                 }
+
+                #endregion
+
+                #region GlobalBuffing
+
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
+
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
+
+                #endregion
+
+                #region Global Composites
+
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
+
+                #endregion
+
+                #region Global Resurrection
+
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+
+                        Switch = false
+                    });
+
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
+
+                #endregion
+
+                base.OnUpdate(deltaTime);
             }
             catch (Exception ex)
             {
@@ -1038,12 +1037,9 @@ namespace CombatHandler.NanoTechnician
 
         #region Nukes
 
-        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, AOESelection aoeType)
+        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int aoeType)
         {
-            var aoeSelection = (AOESelection)_settings["AOESelection"].AsInt32();
-
-            if (fightingTarget == null || !CanCast(spell) || aoeSelection != aoeType)
-                return false;
+            if (fightingTarget == null || !CanCast(spell) || _settings["AOESelection"].AsInt32() != aoeType) { return false; }
 
             return true;
         }
@@ -1057,39 +1053,32 @@ namespace CombatHandler.NanoTechnician
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-
-            if (AOESelection.None != (AOESelection)_settings["AOESelection"].AsInt32()
-                    || fightingTarget == null) { return false; }
+            if (_settings["AOESelection"].AsInt32() != 0 || fightingTarget == null) { return false; }
 
             return true;
         }
 
         private bool DOTADebuffTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var setting = _settings["DOTA"].AsInt32();
+
+            if (setting == 0) { return false; }
+            if (fightingTarget == null) { return false; }
             if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
+            if (debuffAreaTargetsToIgnore.Contains(fightingTarget?.Name)) { return false; }
 
-            if (DOTADebuffTargetSelection.None == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()) { return false; }
-
-            if (DOTADebuffTargetSelection.Target == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
-                && fightingTarget != null)
+            switch (_settings["DOTA"].AsInt32())
             {
-                if (debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+                case 1:
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case 2:
+                    if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                default:
+                    return false;
+
             }
-
-            if (DOTADebuffTargetSelection.Boss == (DOTADebuffTargetSelection)_settings["DOTA"].AsInt32()
-                 && fightingTarget != null)
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                if (debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
-
         }
 
         #endregion
@@ -1098,110 +1087,85 @@ namespace CombatHandler.NanoTechnician
 
         private bool Stun(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (_settings["CalmingSelection"].AsInt32() != 0) { return false; }
+            var setting = _settings["ModeSelection"].AsInt32();
+            if (setting == 0) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            if (CalmingSelection.Stun != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
+            var target = DynelManager.NPCs
+                   .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                       && c.Health > 0
+                       && c.IsInLineOfSight
+                       && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                       && spell.IsInRange(c)
+                       && c.MaxHealth < 1000000)
+                   .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                   .ThenBy(c => c.Health)
+                   .FirstOrDefault();
 
-            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            switch (setting)
             {
-                var target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && spell.IsInRange(c)
-                        && c.MaxHealth < 1000000)
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
+                case 1:
+                    if (target == null) { return false; }
 
-                if (target != null)
-                {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = target;
                     return true;
-                }
-            }
+                case 2:
+                    var adds = target?.FightingTarget != null
+                       && !AttackingMob(target)
+                       && AttackingTeam(target);
 
-            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
-            {
-                var target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && spell.IsInRange(c)
-                        && c.MaxHealth < 1000000
-                        && c.FightingTarget != null
-                        && !AttackingMob(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
+                    if (!adds) { return false; }
 
-                if (target != null)
-                {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = target;
                     return true;
-                }
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         private bool Calm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (_settings["CalmingSelection"].AsInt32() != 1) { return false; }
 
-            if (CalmingSelection.Calm != (CalmingSelection)_settings["CalmingSelection"].AsInt32()) { return false; }
+            var setting = _settings["ModeSelection"].AsInt32();
+            if (setting == 0) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            if (ModeSelection.All == (ModeSelection)_settings["ModeSelection"].AsInt32())
+            var target = DynelManager.NPCs
+                   .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                       && c.Health > 0
+                       && c.IsInLineOfSight
+                       && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                       && spell.IsInRange(c)
+                       && c.MaxHealth < 1000000)
+                   .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                   .ThenBy(c => c.Health)
+                   .FirstOrDefault();
+
+            switch (setting)
             {
-                var target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && spell.IsInRange(c)
-                        && c.MaxHealth < 1000000)
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
+                case 1:
+                    if (target == null) { return false; }
 
-                if (target != null)
-                {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = target;
                     return true;
-                }
-            }
+                case 2:
+                    var adds = target?.FightingTarget != null
+                       && !AttackingMob(target)
+                       && AttackingTeam(target);
 
-            if (ModeSelection.Adds == (ModeSelection)_settings["ModeSelection"].AsInt32())
-            {
-                var target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && c.Health > 0
-                        && c.IsInLineOfSight
-                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                        && spell.IsInRange(c)
-                        && c.MaxHealth < 1000000
-                        && c.FightingTarget != null
-                        && !AttackingMob(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .ThenBy(c => c.Health)
-                    .FirstOrDefault();
+                    if (!adds) { return false; }
 
-                if (target != null)
-                {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = target;
                     return true;
-                }
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         #endregion
@@ -1210,16 +1174,14 @@ namespace CombatHandler.NanoTechnician
 
         private bool AOEBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BlindSelection.AOE != (BlindSelection)_settings["BlindSelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (_settings["BlindSelection"].AsInt32() != 2 || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
 
         private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BlindSelection.Target != (BlindSelection)_settings["BlindSelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (_settings["BlindSelection"].AsInt32() != 1 || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
@@ -1230,21 +1192,23 @@ namespace CombatHandler.NanoTechnician
 
         private bool HaloNanoDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (HaloSelection.None == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return false; }
+            if (_settings["HaloSelection"].AsInt32() == 0) { return false; }
 
-            if (fightingTarget == null || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
+            if (fightingTarget == null) { return false; }
 
             if (fightingTarget != null && fightingTarget.Buffs.Contains(NanoLine.HaloNanoDebuff)) { return false; }
 
-            if (HaloSelection.Target == (HaloSelection)_settings["HaloSelection"].AsInt32()) { return true; }
-
-            if (HaloSelection.Boss == (HaloSelection)_settings["HaloSelection"].AsInt32()
-                && fightingTarget?.MaxHealth > 1000000)
+            switch (_settings["HaloSelection"].AsInt32())
             {
-                return true;
+                case 1:
+                    return true;
+                case 3:
+                    if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                    return true;
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         #endregion
@@ -1264,12 +1228,14 @@ namespace CombatHandler.NanoTechnician
 
         private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell) || !_settings["DeTaunt"].AsBool()) { return false; }
+            if (!_settings["DeTaunt"].AsBool()) { return false; }
             if (!Team.IsInTeam) { return false; }
+            if (!CanCast(spell)) { return false; }
+            if (fightingTarget == null) { return false; }
 
             var target = DynelManager.NPCs
                 .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                    && c.FightingTarget != null
+                    && c.FightingTarget != null && c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity
                     && c.Health > 0
                     && c.IsInLineOfSight
                     && spell.IsInRange(c)
@@ -1277,14 +1243,11 @@ namespace CombatHandler.NanoTechnician
                 .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                 .FirstOrDefault();
 
-            if (target != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = target;
-                return true;
-            }
+            if (target == null) { return false; }
 
-            return false;
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = target;
+            return true;
         }
 
         #endregion
@@ -1293,15 +1256,27 @@ namespace CombatHandler.NanoTechnician
 
         private bool SelfEvade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var selection = _settings["EvadeSelection"].AsInt32();
+
+            if (selection == 0)
+            {
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SelfDarkMovement)) { CancelBuffs(RelevantNanos.SelfDarkMovement); }
+                return false;
+            }
             if (IsInsideInnerSanctum()) { return false; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget, null);
+            switch (selection)
+            {
+                case 1:
+                case 2:
+                    return NonCombatBuff(spell, ref actionTarget, fightingTarget, null);
+                default:
+                    return false;
+            }
         }
 
         private bool MatCreaBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            //if (RelevantIgnoreNanos.CompNanoSkills.Contains(spell.Id)) { return false; }
-
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantIgnoreNanos.CompNanoSkills)) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
@@ -1343,18 +1318,20 @@ namespace CombatHandler.NanoTechnician
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["CycleAbsorbs"].AsBool()) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Any(Buff => Buff.Id == RelevantNanos.BioCocoon)) { return false; }
+            if (!CanCast(spell)) { return false; }
+            if (fightingTarget == null) { return false; }
+            if (Time.NormalTime < _absorbs + CycleAbsorbsDelay) { return false; }
 
-            if (_settings["CycleAbsorbs"].AsBool() && Time.NormalTime > _absorbs + CycleAbsorbsDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            {
-                if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            var mob = DynelManager.NPCs.FirstOrDefault(a => a.IsAttacking
+            && a.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity);
 
-                _absorbs = Time.NormalTime;
-                return true;
-            }
+            if (mob == null) { return false; }
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+            actionTarget.ShouldSetTarget = false;
+            _absorbs = Time.NormalTime;
+            return true;
         }
 
         private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1368,18 +1345,31 @@ namespace CombatHandler.NanoTechnician
 
         #region Team Buffs
 
-        private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var selection = _settings["EvadeSelection"].AsInt32();
+
+            if (selection == 0 || selection == 1) { return false; }
+
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (_settings["Evades"].AsBool())
+            switch (selection)
             {
-                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+                case 2:
+                    return NTNonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+                default:
+                    return false;
             }
-
-            return false;
         }
 
+        private bool TeamAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["TeamAbsorbACBuff"].AsBool()) { return false; }
+
+            if (IsInsideInnerSanctum()) { return false; }
+
+            return NTNonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+        }
         private bool NFRangeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (_settings["NFRangeBuff"].AsBool())
@@ -1418,6 +1408,24 @@ namespace CombatHandler.NanoTechnician
 
         #region Misc
 
+        protected bool NTNonComabtTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id) || DynelManager.LocalPlayer.FightingTarget != null) { return false; }
+
+            if (!Team.IsInTeam) { return false; }
+
+            var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+             && spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) 
+             && t.Character.Identity != DynelManager.LocalPlayer.Identity)
+            .FirstOrDefault();
+
+            if (teamMember == null) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = teamMember.Character;
+            return true;
+        }
+
         public enum ProcType1Selection
         {
             ThermalReprieve = 1347900245,
@@ -1437,46 +1445,6 @@ namespace CombatHandler.NanoTechnician
             UnstableLibrary = 1146311237
         }
 
-        public enum BlindSelection
-        {
-            None, Target, AOE
-        }
-        public enum HaloSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum LickOfThePestSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum NanoResistSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum HackedBlindSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum AOESelection
-        {
-            None, RK, SL, VE
-        }
-
-        public enum DOTADebuffTargetSelection
-        {
-            None, Target, Boss
-        }
-
-        public enum CalmingSelection
-        {
-            Stun, Calm
-        }
-
-        public enum ModeSelection
-        {
-            None, All, Adds
-        }
-
         private static class RelevantNanos
         {
             public const int NanobotAegis = 302074;
@@ -1485,7 +1453,8 @@ namespace CombatHandler.NanoTechnician
             public const int Garuk = 275692;
             public const int PierceReflect = 266287;
 
-            public const int DarkMovement = 28603;
+            public static readonly int[] SelfDarkMovement = { 270802, 28603 };
+            public const int TeamDarkMovement = 28603;
             public const int BioCocoon = 209802;
 
             public static readonly int[] RKAOENukes = { 28620, 28638, 28637, 28594, 45922, 45906, 45884, 28635, 28593, 45925, 45940,
@@ -1496,7 +1465,7 @@ namespace CombatHandler.NanoTechnician
             public static readonly int[] HackedBlind = { 253384, 253382, 253380 };
             public static readonly int[] HaloNanoDebuff = { 45239, 45238, 45224 };
             public const int Stun = 28625;
-            public static readonly int[] Calm = { 259364, 259365, 259362, 259363, 259366, 259367, 100443, 100441, 259335, 259336, 100442, 100440 };
+            public static readonly int[] Calm = { 259365, 259364, 259362, 259363, 259366, 259367, 100443, 100441, 259335, 259336, 100442, 100440 };
             public static int LickofthePest = 201937;
 
 

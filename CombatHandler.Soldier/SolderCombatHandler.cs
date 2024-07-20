@@ -84,7 +84,7 @@ namespace CombatHandler.Soldier
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 1);
 
                 _settings.AddVariable("Kits", true);
 
@@ -103,10 +103,10 @@ namespace CombatHandler.Soldier
                 _settings.AddVariable("RiotControl", false);
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.Adds);
-                _settings.AddVariable("TimedTauntsSelection", (int)TimedTauntsSelection.Adds);
+                _settings.AddVariable("SingleTauntsSelection", 2);
+                _settings.AddVariable("TimedTauntsSelection", 2);
 
-                _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.None);
+                _settings.AddVariable("RKReflectSelection", 0);
 
                 _settings.AddVariable("NotumGrenades", false);
                 _settings.AddVariable("MajorEvasionBuffs", false);
@@ -557,8 +557,6 @@ namespace CombatHandler.Soldier
                 return;
             }
 
-            base.OnUpdate(deltaTime);
-
             if (Time.AONormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -818,90 +816,91 @@ namespace CombatHandler.Soldier
                     procView.Tag = SettingsController.settingsWindow;
                     procView.Clicked = HandleProcViewClick;
                 }
-
-                #endregion
-
-                #region GlobalBuffing
-
-                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleBuffing = false;
-                    _settings["Buffing"] = false;
-                    _settings["GlobalBuffing"] = false;
-                }
-
-                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleBuffing = true;
-                    _settings["Buffing"] = true;
-                    _settings["GlobalBuffing"] = true;
-                }
-
-                #endregion
-
-                #region Global Composites
-
-                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleComposites = false;
-                    _settings["Composites"] = false;
-                    _settings["GlobalComposites"] = false;
-                }
-                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleComposites = true;
-                    _settings["Composites"] = true;
-                    _settings["GlobalComposites"] = true;
-                }
-
-                #endregion
-
-                #region Global Resurrection
-
-                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-
-                        Switch = false
-                    });
-
-                    ToggleRez = false;
-                    _settings["GlobalRez"] = false;
-                }
-                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleRez = true;
-                    _settings["GlobalRez"] = true;
-                }
-
-                #endregion
             }
+            #endregion
+
+            #region GlobalBuffing
+
+            if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+            {
+                IPCChannel.Broadcast(new GlobalBuffingMessage()
+                {
+                    Switch = false
+                });
+
+                ToggleBuffing = false;
+                _settings["Buffing"] = false;
+                _settings["GlobalBuffing"] = false;
+            }
+
+            if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+            {
+                IPCChannel.Broadcast(new GlobalBuffingMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleBuffing = true;
+                _settings["Buffing"] = true;
+                _settings["GlobalBuffing"] = true;
+            }
+
+            #endregion
+
+            #region Global Composites
+
+            if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+            {
+                IPCChannel.Broadcast(new GlobalCompositesMessage()
+                {
+                    Switch = false
+                });
+
+                ToggleComposites = false;
+                _settings["Composites"] = false;
+                _settings["GlobalComposites"] = false;
+            }
+            if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+            {
+                IPCChannel.Broadcast(new GlobalCompositesMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleComposites = true;
+                _settings["Composites"] = true;
+                _settings["GlobalComposites"] = true;
+            }
+
+            #endregion
+
+            #region Global Resurrection
+
+            if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+            {
+                IPCChannel.Broadcast(new GlobalRezMessage()
+                {
+
+                    Switch = false
+                });
+
+                ToggleRez = false;
+                _settings["GlobalRez"] = false;
+            }
+            if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+            {
+                IPCChannel.Broadcast(new GlobalRezMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleRez = true;
+                _settings["GlobalRez"] = true;
+            }
+
+            #endregion
+
+            base.OnUpdate(deltaTime);
         }
 
         #region Perks
@@ -912,10 +911,10 @@ namespace CombatHandler.Soldier
 
         private bool DeTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
-
-            if (!CanCast(spell) || !_settings["DeTaunt"].AsBool()) { return false; }
+            if (!_settings["DeTaunt"].AsBool()) { return false; }
             if (!Team.IsInTeam) { return false; }
+            if (DynelManager.LocalPlayer.NanoPercent < 30) { return false; }
+            if (!CanCast(spell)) { return false; }
 
             var target = DynelManager.NPCs
                     .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
@@ -927,14 +926,11 @@ namespace CombatHandler.Soldier
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
-            if (target != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = target;
-                return true;
-            }
+            if (target == null) { return false; }
 
-            return false;
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = target;
+            return true;
         }
 
         #endregion
@@ -943,56 +939,66 @@ namespace CombatHandler.Soldier
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var setting = _settings["SingleTauntsSelection"].AsInt32();
+            if (setting == 0) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
             if (!CanCast(spell)) { return false; }
+            if (debuffAreaTargetsToIgnore.Contains(fightingTarget?.Name)) { return false; }
+            if (Time.AONormalTime < _singleTaunt + SingleTauntDelay) { return false; }
 
-            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
+            switch (setting)
             {
-                var mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.IsInLineOfSight
-                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && spell.IsInRange(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.MaxHealth)
-                    .FirstOrDefault();
+                case 1:
+                    if (fightingTarget == null) { return false; }
 
-                if (DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
-                    if (mob != null)
-                    {
-                        _singleTaunt = Time.AONormalTime;
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = mob;
-                        return true;
-                    }
-                }
-            }
-
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
-                    && DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
                     _singleTaunt = Time.AONormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;
-                }
-            }
 
-            return false;
+                case 2:
+                    var mob = DynelManager.NPCs
+                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                       && c.IsInLineOfSight
+                       && !debuffAreaTargetsToIgnore.Contains(c.Name)
+                       && spell.IsInRange(c)
+                       && AttackingTeam(c))
+                   .OrderBy(c => c.MaxHealth)
+                   .FirstOrDefault();
+
+                    if (mob == null) { return false; }
+
+                    _singleTaunt = Time.AONormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
+                    return true;
+
+                default:
+                    return false;
+
+            }
         }
 
         private bool TimedTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!CanCast(spell)) { return false; }
+            var selection = _settings["TimedTauntsSelection"].AsInt32();
 
-            if (TimedTauntsSelection.Adds == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _timedTaunt + TimedTauntDelay)
+            if (selection == 0) { return false; }
+            if (fightingTarget == null) { return false; }
+            if (debuffAreaTargetsToIgnore.Contains(fightingTarget?.Name)) { return false; }
+            if (!CanCast(spell)) { return false; }
+            if ( DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
+            if (Time.AONormalTime < _timedTaunt + TimedTauntDelay) { return false; }
+
+            switch (selection)
             {
-                var mob = DynelManager.NPCs
+                case 1:
+                    _timedTaunt = Time.AONormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                case 2:
+                    var mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
@@ -1001,32 +1007,15 @@ namespace CombatHandler.Soldier
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
 
-                if (DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
-                    if (mob != null)
-                    {
-                        _timedTaunt = Time.AONormalTime;
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = mob;
-                        return true;
-                    }
-                }
-            }
+                    if (mob == null) { return false; }
 
-            if (TimedTauntsSelection.Target == (TimedTauntsSelection)_settings["TimedTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _timedTaunt + TimedTauntDelay)
-            {
-                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
-                    && DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
                     _timedTaunt = Time.AONormalTime;
                     actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
+                    actionTarget.Target = mob;
                     return true;
-                }
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         #endregion
@@ -1048,55 +1037,26 @@ namespace CombatHandler.Soldier
 
         #region Buffs
 
-        //private bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (IsSettingEnabled("AAO"))
-        //    {
-        //        if (Team.IsInTeam)
-        //        {
-        //            var target = DynelManager.Players
-        //                .Where(c => c.IsInLineOfSight
-        //                    && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-        //                    && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-        //                    && c.Health > 0
-        //                    && !(c.Buffs.Contains(NanoLine.AAOBuffs) || c.Buffs.Contains(NanoLine.AdventurerMorphBuff))
-        //                    && SpellChecksOther(spell, spell.Nanoline, c))
-        //                .FirstOrDefault();
-
-        //            if (target != null)
-        //            {
-        //                actionTarget.ShouldSetTarget = true;
-        //                actionTarget.Target = target;
-        //                return true;
-        //            }
-        //        }
-        //    }
-
-        //    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        //}
-
         private bool RiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (_settings["RiotControl"].AsBool())
             {
-                if (Team.IsInTeam)
-                {
-                    var target = DynelManager.Players
-                        .Where(c => c.IsInLineOfSight
-                            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && c.Health > 0
-                            && c.SpecialAttacks.Contains(SpecialAttack.Burst)
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
+                if (!Team.IsInTeam) { return false; }
 
-                    if (target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = target;
-                        return true;
-                    }
-                }
+                var target = DynelManager.Players
+                    .Where(c => c.IsInLineOfSight
+                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0
+                        && c.SpecialAttacks.Contains(SpecialAttack.Burst)
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .FirstOrDefault();
+
+                if (target == null) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
             }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
@@ -1106,28 +1066,26 @@ namespace CombatHandler.Soldier
         {
             if (_settings["CompHeavyArt"].AsBool())
             {
-                if (Team.IsInTeam)
-                {
-                    var target = DynelManager.Players
-                        .Where(c => c.IsInLineOfSight
-                            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && c.Health > 0
-                            && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs)
-                            && HeavyCompWeaponChecks(c)
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
+                if (!Team.IsInTeam) { return false; }
 
-                    if (target != null)
-                    {
-                        if (target.Identity == DynelManager.LocalPlayer.Identity
-                            && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
+                var target = DynelManager.Players
+                    .Where(c => c.IsInLineOfSight
+                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
+                        && c.Health > 0
+                        && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs)
+                        && HeavyCompWeaponChecks(c)
+                        && SpellChecksOther(spell, spell.Nanoline, c))
+                    .FirstOrDefault();
 
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = target;
-                        return true;
-                    }
-                }
+                if (target == null) { return false; }
+
+                if (target.Identity == DynelManager.LocalPlayer.Identity
+                    && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
             }
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
@@ -1152,17 +1110,15 @@ namespace CombatHandler.Soldier
 
         private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (RKReflectSelection.RubiKa == (RKReflectSelection)_settings["RKReflectSelection"].AsInt32())
+            switch (_settings["RKReflectSelection"].AsInt32())
             {
-                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+                case 1:
+                    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+                case 2:
+                    return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+                default:
+                    return false;
             }
-
-            if (RKReflectSelection.RubiKaTeam == (RKReflectSelection)_settings["RKReflectSelection"].AsInt32())
-            {
-                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
-            }
-
-            return false;
         }
 
         private bool Phalanx(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1191,14 +1147,10 @@ namespace CombatHandler.Soldier
         #region Team Buffs
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["Evades"].AsBool()) { return false; }
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (_settings["Evades"].AsBool())
-            {
-                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
-            }
-
-            return false;
+            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
         }
 
         #endregion
@@ -1211,21 +1163,6 @@ namespace CombatHandler.Soldier
                                 || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Smg)
                                 || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Shotgun)
                                 || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Grenade) && _target.Profession != Profession.Engineer);
-        }
-
-        public enum RKReflectSelection
-        {
-            None, RubiKa, RubiKaTeam
-        }
-
-        public enum SingleTauntsSelection
-        {
-            None, Target, Adds
-        }
-
-        public enum TimedTauntsSelection
-        {
-            None, Target, Adds
         }
 
         public enum ProcType1Selection

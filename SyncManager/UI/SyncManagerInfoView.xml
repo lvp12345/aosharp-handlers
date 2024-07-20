@@ -4,6 +4,8 @@
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Broadcast settings - broadcasts the settings below" layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Attack - Turn off if using another attack bot!" layout_borders="Rect(0,0,0,2)"/>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Movement - sync each characters movements." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Bags - sync opening bags. (!DO NOT USE WITH LOOTMANAGER!)" layout_borders="Rect(0,0,0,2)"/>
@@ -20,6 +22,7 @@
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/sync - Enable/disable." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/syncattack - Enables sync attack." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/syncmove - Enables sync movement." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/syncbags - Enables sync bags." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/syncuse - Enables sync use." layout_borders="Rect(0,0,0,2)"/>

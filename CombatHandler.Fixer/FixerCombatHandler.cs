@@ -81,19 +81,19 @@ namespace CombatHandler.Fixer
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("BulletsSelection", (int)BulletsSelection.None);
+                _settings.AddVariable("BulletsSelection", 0);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 1);
 
                 _settings.AddVariable("Kits", true);
 
                 _settings.AddVariable("ShortHOT", false);
-                _settings.AddVariable("LongHOTSelection", (int)LongHOTSelection.None);
+                _settings.AddVariable("LongHOTSelection", 0);
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("DamageSelection", (int)DamageSelection.None);
-                _settings.AddVariable("RunspeedSelection", (int)RunspeedSelection.None);
-                _settings.AddVariable("ArmorSelection", (int)ArmorSelection.None);
+                _settings.AddVariable("DamageSelection", 0);
+                _settings.AddVariable("RunspeedSelection", 0);
+                _settings.AddVariable("ArmorSelection", 0);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.LucksCalamity);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.BootlegRemedies);
@@ -495,10 +495,8 @@ namespace CombatHandler.Fixer
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.4)
-                return;
+            if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 2.4) { return; }
 
-            base.OnUpdate(deltaTime);
             EquipBackArmor();
             Bullets();
 
@@ -725,111 +723,107 @@ namespace CombatHandler.Fixer
                     perkView.Tag = SettingsController.settingsWindow;
                     perkView.Clicked = HandlePerkViewClick;
                 }
-
-                #endregion
-
-                #region GlobalBuffing
-
-                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleBuffing = false;
-                    _settings["Buffing"] = false;
-                    _settings["GlobalBuffing"] = false;
-                }
-
-                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleBuffing = true;
-                    _settings["Buffing"] = true;
-                    _settings["GlobalBuffing"] = true;
-                }
-
-                #endregion
-
-                #region Global Composites
-
-                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleComposites = false;
-                    _settings["Composites"] = false;
-                    _settings["GlobalComposites"] = false;
-                }
-                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleComposites = true;
-                    _settings["Composites"] = true;
-                    _settings["GlobalComposites"] = true;
-                }
-
-                #endregion
-
-                #region Global Resurrection
-
-                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-
-                        Switch = false
-                    });
-
-                    ToggleRez = false;
-                    _settings["GlobalRez"] = false;
-                }
-                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleRez = true;
-                    _settings["GlobalRez"] = true;
-                }
-
-                #endregion
             }
+
+            #endregion
+
+            #region GlobalBuffing
+
+            if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+            {
+                IPCChannel.Broadcast(new GlobalBuffingMessage()
+                {
+                    Switch = false
+                });
+
+                ToggleBuffing = false;
+                _settings["Buffing"] = false;
+                _settings["GlobalBuffing"] = false;
+            }
+
+            if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+            {
+                IPCChannel.Broadcast(new GlobalBuffingMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleBuffing = true;
+                _settings["Buffing"] = true;
+                _settings["GlobalBuffing"] = true;
+            }
+
+            #endregion
+
+            #region Global Composites
+
+            if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+            {
+                IPCChannel.Broadcast(new GlobalCompositesMessage()
+                {
+                    Switch = false
+                });
+
+                ToggleComposites = false;
+                _settings["Composites"] = false;
+                _settings["GlobalComposites"] = false;
+            }
+            if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+            {
+                IPCChannel.Broadcast(new GlobalCompositesMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleComposites = true;
+                _settings["Composites"] = true;
+                _settings["GlobalComposites"] = true;
+            }
+
+            #endregion
+
+            #region Global Resurrection
+
+            if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+            {
+                IPCChannel.Broadcast(new GlobalRezMessage()
+                {
+
+                    Switch = false
+                });
+
+                ToggleRez = false;
+                _settings["GlobalRez"] = false;
+            }
+            if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+            {
+                IPCChannel.Broadcast(new GlobalRezMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleRez = true;
+                _settings["GlobalRez"] = true;
+            }
+
+            #endregion
+
+            base.OnUpdate(deltaTime);
         }
 
         #region Buffs
 
         private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return Buff(spell, NanoLine.FixerNCUBuff, ref actionTarget);
-        }
-        protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
             if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
 
-            if (SpellChecksPlayer(spell, nanoline))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
+            if (!SpellChecksPlayer(spell, NanoLine.FixerNCUBuff)) { return false; }
 
-            return false;
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
         }
+
 
         protected bool WakeUpCall(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -849,14 +843,11 @@ namespace CombatHandler.Fixer
                 || c.Buffs.Contains(NanoLine.UnremovableSnare)
                 || c.Buffs.Contains((NanoLine)960));
 
-            if (target != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = target;
-                return true;
-            }
+            if (target == null) { return false; }
 
-            return false;
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = target;
+            return true;
         }
 
         protected bool RefactorNCUMatrix(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -876,7 +867,6 @@ namespace CombatHandler.Fixer
                 DynelManager.LocalPlayer.Buffs.Contains(NanoLine.UnremovableSnare))
             {
                 actionTarget.ShouldSetTarget = false;
-                actionTarget.Target = DynelManager.LocalPlayer;
                 return true;
             }
 
@@ -898,16 +888,14 @@ namespace CombatHandler.Fixer
 
         private bool Grid(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool() || !CanCast(spell)
-                || ArmorSelection.Grid != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)|| _settings["ArmorSelection"].AsInt32() != 2) { return false; }
 
             return !Inventory.Items.Any(x => RelevantItems.Grid.Contains(x.HighId));
         }
 
         private bool ShadowwebSpinner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool() || !CanCast(spell)
-                || ArmorSelection.ShadowwebSpinner != (ArmorSelection)_settings["ArmorSelection"].AsInt32()) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)|| _settings["ArmorSelection"].AsInt32() != 1) { return false; }
 
             return !Inventory.Items.Any(x => RelevantItems.ShadowwebSpinner.Contains(x.HighId));
         }
@@ -929,7 +917,7 @@ namespace CombatHandler.Fixer
 
         private bool RKTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || RunspeedSelection.Rk != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
+            if (IsInsideInnerSanctum() || _settings["RunspeedSelection"].AsInt32() != 1) { return false; }
 
             if (AdvyMorphs.Any(buffId => DynelManager.LocalPlayer.Buffs.Contains(buffId))) { return false; }
 
@@ -949,12 +937,11 @@ namespace CombatHandler.Fixer
                    .FirstOrDefault();
 
 
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
+                if (target == null) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = target;
+                return true;
             }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)
@@ -964,12 +951,11 @@ namespace CombatHandler.Fixer
             }
 
             return false;
-
         }
 
         private bool RKTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || RunspeedSelection.RKTeam != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
+            if (IsInsideInnerSanctum() || _settings["RunspeedSelection"].AsInt32() != 2) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
@@ -983,7 +969,7 @@ namespace CombatHandler.Fixer
 
         private bool SLRunspeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (IsInsideInnerSanctum() || RunspeedSelection.Shadowlands != (RunspeedSelection)_settings["RunspeedSelection"].AsInt32()) { return false; }
+            if (IsInsideInnerSanctum() || _settings["RunspeedSelection"].AsInt32() != 3) { return false; }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.MajorEvasionBuffs)) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.RunspeedBuffs)) { return false; }
@@ -997,8 +983,7 @@ namespace CombatHandler.Fixer
 
         private bool AOESnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool()
-                || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
 
             var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
@@ -1010,20 +995,16 @@ namespace CombatHandler.Fixer
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
-            if (target != null)
-            {
-                actionTarget.Target = target;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+            if (target == null) { return false; }
 
-            return false;
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool()
-                || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool()  || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
 
             var target = DynelManager.Characters
                     .Where(c => c.IsInLineOfSight
@@ -1033,14 +1014,11 @@ namespace CombatHandler.Fixer
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
-            if (target != null)
-            {
-                actionTarget.Target = target;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+            if (target == null) { return false; }
 
-            return false;
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         #endregion
@@ -1049,25 +1027,23 @@ namespace CombatHandler.Fixer
 
         private bool Cluster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BulletsSelection.Cluster != (BulletsSelection)_settings["BulletsSelection"].AsInt32()) { return false; }
+            if (_settings["BulletsSelection"].AsInt32() != 1) { return false; }
 
             if (fightingtarget == null) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
 
-            actionTarget.ShouldSetTarget = true;
             return true;
         }
 
         private bool Permorpha(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BulletsSelection.Permorpha != (BulletsSelection)_settings["BulletsSelection"].AsInt32()) { return false; }
+            if (_settings["BulletsSelection"].AsInt32() != 2) { return false; }
 
             if (fightingtarget == null) { return false; }
 
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
 
-            actionTarget.ShouldSetTarget = true;
             return true;
         }
 
@@ -1077,24 +1053,24 @@ namespace CombatHandler.Fixer
 
         private static void Bullets()
         {
-            if (BulletsSelection.None == (BulletsSelection)_settings["BulletsSelection"].AsInt32()) { return; }
+            if (_settings["BulletsSelection"].AsInt32() == 0) { return; }
 
             Item bullets = null;
             Item bulletsToCombine = null;
 
             var RestockSpecialAmmo = Spell.List.FirstOrDefault(h => h.Id == 297632 && h.IsReady);
 
-            switch ((BulletsSelection)_settings["BulletsSelection"].AsInt32())
+            switch (_settings["BulletsSelection"].AsInt32())
             {
-                case BulletsSelection.Cluster:
+                case 1:
                     bullets = Inventory.Items.FirstOrDefault(item => RelevantItems.ClusterBullets.Contains(item.Id));
                     bulletsToCombine = Inventory.Items.FirstOrDefault(item => RelevantItems.HomingPermorphaBullets.Contains(item.Id));
                     break;
-                case BulletsSelection.Permorpha:
+                case 2:
                     bullets = Inventory.Items.FirstOrDefault(item => RelevantItems.HomingPermorphaBullets.Contains(item.Id));
                     bulletsToCombine = Inventory.Items.FirstOrDefault(item => RelevantItems.ClusterBullets.Contains(item.Id));
                     break;
-                case BulletsSelection.Any:
+                case 3:
                     bullets = Inventory.Items.FirstOrDefault(item => RelevantItems.HomingPermorphaBullets.Contains(item.Id)
                     || RelevantItems.ClusterBullets.Contains(item.Id));
                     break;
@@ -1137,26 +1113,31 @@ namespace CombatHandler.Fixer
 
         private void EquipBackArmor()
         {
-            if (ArmorSelection.Grid == (ArmorSelection)_settings["ArmorSelection"].AsInt32() && !HasBackItemEquipped() && Time.NormalTime - _lastBackArmorCheckTime > 6)
+            var setting = _settings["ArmorSelection"].AsInt32();
+            if (setting == 0) { return; }
+            if (Inventory.Items.Any(itemCandidate => itemCandidate.Slot.Instance == (int)EquipSlot.Cloth_Back)) { return; }
+
+            switch (setting)
             {
-                _lastBackArmorCheckTime = Time.NormalTime;
-                Item backArmor = Inventory.Items.FirstOrDefault(x => RelevantItems.Grid.Contains(x.HighId));
+                case 1:
+                    if (Time.NormalTime - _lastBackArmorCheckTime > 6)
+                    {
+                        _lastBackArmorCheckTime = Time.NormalTime;
+                        Item backArmor = Inventory.Items.FirstOrDefault(x => RelevantItems.ShadowwebSpinner.Contains(x.HighId));
 
-                backArmor?.Equip(EquipSlot.Cloth_Back);
+                        backArmor?.Equip(EquipSlot.Cloth_Back);
+                    }
+                    break;
+                case 2:
+                    if (Time.NormalTime - _lastBackArmorCheckTime > 6)
+                    {
+                        _lastBackArmorCheckTime = Time.NormalTime;
+                        Item backArmor = Inventory.Items.FirstOrDefault(x => RelevantItems.Grid.Contains(x.HighId));
+
+                        backArmor?.Equip(EquipSlot.Cloth_Back);
+                    }
+                    break;
             }
-
-            if (ArmorSelection.ShadowwebSpinner == (ArmorSelection)_settings["ArmorSelection"].AsInt32() && !HasBackItemEquipped() && Time.NormalTime - _lastBackArmorCheckTime > 6)
-            {
-                _lastBackArmorCheckTime = Time.NormalTime;
-                Item backArmor = Inventory.Items.FirstOrDefault(x => RelevantItems.ShadowwebSpinner.Contains(x.HighId));
-
-                backArmor?.Equip(EquipSlot.Cloth_Back);
-            }
-        }
-
-        private bool HasBackItemEquipped()
-        {
-            return Inventory.Items.Any(itemCandidate => itemCandidate.Slot.Instance == (int)EquipSlot.Cloth_Back);
         }
 
         private static class RelevantNanos
@@ -1203,31 +1184,6 @@ namespace CombatHandler.Fixer
             FightingChance = 1112429640,
             ContaminatedBullets = 1145394241,
             UndergroundSutures = 1095259201
-        }
-
-        public enum BulletsSelection
-        {
-            None, Cluster, Permorpha, Any
-        }
-
-        public enum ArmorSelection
-        {
-            None, ShadowwebSpinner, Grid
-        }
-
-        public enum DamageSelection
-        {
-            None, Self, Team
-        }
-
-        public enum RunspeedSelection
-        {
-            None, Rk, RKTeam, Shadowlands
-        }
-
-        public enum LongHOTSelection
-        {
-            None, Self, Team
         }
 
         #endregion

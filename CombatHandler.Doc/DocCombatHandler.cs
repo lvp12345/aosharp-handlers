@@ -5,10 +5,8 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using static CombatHandler.Generic.PerkCondtionProcessors;
-using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Doctor
 {
@@ -88,38 +86,38 @@ namespace CombatHandler.Doctor
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
+                _settings.AddVariable("StimTargetSelection", 0);
 
                 _settings.AddVariable("Kits", true);
 
-                _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.Self);
-                _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.Self);
+                _settings.AddVariable("TreatmentBuffSelection", 1);
+                _settings.AddVariable("StrengthBuffSelection", 1);
 
-                _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
+                _settings.AddVariable("InitDebuffSelection", 0);
 
                 _settings.AddVariable("NanoTransmission", false);
 
-                _settings.AddVariable("TeamHealSelection", (int)TeamHealSelection.TeamImprovedLifeChanneler);
+                _settings.AddVariable("TeamHealSelection", 1);
 
-                _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
+                _settings.AddVariable("InitBuffSelection", 2);
 
                 _settings.AddVariable("EpsilonPurge", false);
 
-                _settings.AddVariable("NukingSelection", (int)NukingSelection.Boss);
+                _settings.AddVariable("NukingSelection", 2);
 
-                _settings.AddVariable("DOTA", (int)DOTADebuffTargetSelection.Boss);
-                _settings.AddVariable("DOTB", (int)DOTBDebuffTargetSelection.Boss);
-                _settings.AddVariable("DOTC", (int)DOTCDebuffTargetSelection.Boss);
+                _settings.AddVariable("DOTA", 3);
+                _settings.AddVariable("DOTB", 3);
+                _settings.AddVariable("DOTC", 3);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.DangerousCulture);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.MassiveVitaePlan);
 
                 _settings.AddVariable("PistolTeam", true);
 
-                _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
-                _settings.AddVariable("HealDeltaBuffSelection", (int)HealDeltaBuffSelection.None);
+                _settings.AddVariable("NanoResistSelection", 0);
+                _settings.AddVariable("HealDeltaBuffSelection", 0);
 
-                _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
+                _settings.AddVariable("ShortHpSelection", 0);
                 _settings.AddVariable("ShortHOT", false);
 
                 _settings.AddVariable("SLMap", false);
@@ -136,15 +134,9 @@ namespace CombatHandler.Doctor
                 RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.CompleteTargetHealing, Healing.CompleteHealing, CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.TeamHeals,
-                           (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                           TeamHealing(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
-                           CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.TeamHeals ,TeamHealing, CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler,
-                          (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                          TeamImprovedLifeChannelerAsTeamHeal(spell, fightingTarget, ref actionTarget, "TeamHealSelection"),
-                          CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler, TeamImprovedLifeChannelerAsTeamHeal, CombatActionPriority.High);
 
                 RegisterSpellProcessor(RelevantNanos.AlphaAndOmega, Healing.CompleteTeamHealing, CombatActionPriority.High);
 
@@ -706,8 +698,6 @@ namespace CombatHandler.Doctor
                     return;
                 }
 
-                base.OnUpdate(deltaTime);
-
                 if (Time.NormalTime > _ncuUpdateTime + 1.0f)
                 {
                     RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -1043,90 +1033,92 @@ namespace CombatHandler.Doctor
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
                     }
-
-                    #endregion
-
-                    #region GlobalBuffing
-
-                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleBuffing = false;
-                        _settings["Buffing"] = false;
-                        _settings["GlobalBuffing"] = false;
-                    }
-
-                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleBuffing = true;
-                        _settings["Buffing"] = true;
-                        _settings["GlobalBuffing"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Composites
-
-                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleComposites = false;
-                        _settings["Composites"] = false;
-                        _settings["GlobalComposites"] = false;
-                    }
-                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleComposites = true;
-                        _settings["Composites"] = true;
-                        _settings["GlobalComposites"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Resurrection
-
-                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-
-                            Switch = false
-                        });
-
-                        ToggleRez = false;
-                        _settings["GlobalRez"] = false;
-                    }
-                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleRez = true;
-                        _settings["GlobalRez"] = true;
-                    }
-
-                    #endregion
                 }
+
+                #endregion
+
+                #region GlobalBuffing
+
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
+
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
+
+                #endregion
+
+                #region Global Composites
+
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
+
+                #endregion
+
+                #region Global Resurrection
+
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+
+                        Switch = false
+                    });
+
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
+
+                #endregion
+
+                base.OnUpdate(deltaTime);
             }
             catch (Exception ex)
             {
@@ -1143,11 +1135,9 @@ namespace CombatHandler.Doctor
 
         #region Healing
 
-        public static bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        public static bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            int healSelection = _settings[selectionSetting].AsInt32();
-
-            if (healSelection == 1) { return false; }
+            if (_settings["TeamHealSelection"].AsInt32() != 0) { return false; }
 
             if (Healing.TeamHealPercentage == 0) { return false; }
 
@@ -1158,19 +1148,14 @@ namespace CombatHandler.Doctor
                             && m.Character.Health > 0
                             && m.Character.HealthPercent <= Healing.TeamHealPercentage);
 
-            if (dyingTeamMembersCount >= 2)
-            {
-                return true;
-            }
+            if (dyingTeamMembersCount < 2) { return false; }
 
-            return false;
+            return true;
         }
 
-        private bool TeamImprovedLifeChannelerAsTeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string selectionSetting)
+        private bool TeamImprovedLifeChannelerAsTeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            int healSelection = _settings[selectionSetting].AsInt32();
-
-            if (healSelection == 0) { return false; }
+            if (_settings["TeamHealSelection"].AsInt32() != 1) { return false; }
 
             if (Healing.TeamHealPercentage == 0) { return false; }
 
@@ -1181,18 +1166,9 @@ namespace CombatHandler.Doctor
                              && m.Character.Health > 0
                              && m.Character.HealthPercent <= Healing.TeamHealPercentage);
 
-            //var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+            if (dyingTeamMembersCount < 2) { return false; }
 
-            //var count = DynelManager.Characters.Count(c =>
-            //    Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-            //    && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
-
-            if (dyingTeamMembersCount >= 2)
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1210,7 +1186,8 @@ namespace CombatHandler.Doctor
                 default:
                     return false;
             }
-
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
             return true;
         }
 
@@ -1241,40 +1218,12 @@ namespace CombatHandler.Doctor
                                       || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
                                       || c.Buffs.Contains(NanoLine.DOTStrainC)));
 
-            if (target != null)
-            {
-                actionTarget.Target = target;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
-            return false;
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
-
-        //private bool EpsilonPurge(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        //{
-        //    if (!_settings["EpsilonPurge"].AsBool()) { return false; }
-
-        //    var target = DynelManager.Players
-        //    .Where(c => c.IsInLineOfSight
-        //    && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-        //    && spell.IsInRange(c)
-        //    && c.Buffs.Contains(NanoLine.DOT_LineA)
-        //    || c.Buffs.Contains(NanoLine.DOT_LineB)
-        //    || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
-        //    || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
-        //    || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
-        //    || c.Buffs.Contains(NanoLine.DOTStrainC))
-        //    .FirstOrDefault();
-
-        //    if (target != null)
-        //    {
-        //        actionTarget.Target = target;
-        //        actionTarget.ShouldSetTarget = true;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
 
         #endregion
 
@@ -1282,30 +1231,26 @@ namespace CombatHandler.Doctor
 
         private bool TeamImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ShortHpSelection.TILC == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
-            {
-                if (DynelManager.LocalPlayer.Buffs.Contains(275130)) { return false; }
+            if (_settings["ShortHpSelection"].AsInt32() != 3) { return false; }
 
-                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+            if (DynelManager.LocalPlayer.Buffs.Contains(275130)) { return false; }
 
-            return false;
+            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+
         }
         private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
-
-            if (ShortHpSelection.Self == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
+            switch (_settings["ShortHpSelection"].AsInt32())
             {
-                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case 0://None
+                    return false;
+                case 1://Self
+                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case 2://Team
+                    return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                default:
+                    return false;
             }
-
-            if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32() && Team.IsInTeam)
-            {
-                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
         }
 
         #endregion
@@ -1314,22 +1259,22 @@ namespace CombatHandler.Doctor
 
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var setting = _settings["NukingSelection"].AsInt32();
+
+            if (setting == 0) { return false; }
             if (DynelManager.LocalPlayer.NanoPercent < 40) { return false; }
 
-            if (NukingSelection.None == (NukingSelection)_settings["NukingSelection"].AsInt32()) { return false; }
-
-            if (NukingSelection.Target == (NukingSelection)_settings["NukingSelection"].AsInt32())
+            switch (setting)
             {
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
+                case 1:
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case 2:
+                    if (fightingTarget?.MaxHealth < 1000000) { return false; }
 
-            if (NukingSelection.Boss == (NukingSelection)_settings["NukingSelection"].AsInt32())
-            {
-                if (fightingTarget?.MaxHealth < 1000000) { return false; }
-
-                return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                    return TargetDebuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                default:
+                    return false;
             }
-            return false;
         }
 
         #endregion
@@ -1340,26 +1285,20 @@ namespace CombatHandler.Doctor
         {
             if (!perk.IsAvailable) { return false; }
 
-            var target = Team.Members .Select(m => m.Character) .FirstOrDefault(HaleandHeartyDebuffs);
+            var target = Team.Members.Select(m => m.Character).FirstOrDefault(HaleandHeartyDebuffs);
 
-            if (target != null)
-            {
-                actionTarget.Target = target;
-                actionTarget.ShouldSetTarget = true;
-                
-                return true;
-            }
-            return false;
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         public static bool TeamHaleandHearty(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!perk.IsAvailable) { return false; }
 
-            if (PerkAction.Find("Hale and Hearty", out PerkAction _HaleandHearty) && _HaleandHearty.IsAvailable)
-            {
-                return false;
-            }
+            if (PerkAction.Find("Hale and Hearty", out PerkAction _HaleandHearty) && _HaleandHearty.IsAvailable) { return false; }
 
             return Team.Members.Any(m => m.Character != null && HaleandHeartyDebuffs(m.Character));
         }
@@ -1392,10 +1331,7 @@ namespace CombatHandler.Doctor
 
         private bool CloseCall(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!perk.IsAvailable || Spell.List.Any(spell => spell.IsReady) || !InCombat())
-            {
-                return false;
-            }
+            if (!perk.IsAvailable || Spell.List.Any(spell => spell.IsReady) || !InCombat()) { return false; }
 
             if (Team.IsInTeam)
             {
@@ -1403,12 +1339,12 @@ namespace CombatHandler.Doctor
                 t.Character.HealthPercent < 50 && perk.IsInRange(t.Character)).OrderBy(t => t.Character.HealthPercent)
                 .FirstOrDefault();
 
-                if (teamMember != null)
-                {
-                    actionTarget.Target = teamMember.Character;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+                if (teamMember == null) { return false; }
+
+                actionTarget.Target = teamMember.Character;
+                actionTarget.ShouldSetTarget = true;
+                return true;
+
             }
             else if (DynelManager.LocalPlayer.HealthPercent < 50)
             {
@@ -1418,48 +1354,11 @@ namespace CombatHandler.Doctor
             }
 
             return false;
-
-            //if (Team.IsInTeam)
-            //{
-            //    SimpleChar teamMember = null;
-            //    foreach (SimpleChar c in DynelManager.Players)
-            //    {
-            //        if (Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-            //            && c.HealthPercent < 50
-            //            && c.IsInLineOfSight
-            //            && c.DistanceFrom(DynelManager.LocalPlayer) < 20f
-            //            && c.Health > 0)
-            //        {
-            //            if (teamMember == null
-            //                || c.HealthPercent < teamMember.HealthPercent
-            //                || (c.Profession == Profession.Doctor && teamMember.Profession != Profession.Doctor)
-            //                || (c.Profession == Profession.Enforcer && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer)
-            //                || (c.Profession == Profession.Soldier && teamMember.Profession != Profession.Doctor && teamMember.Profession != Profession.Enforcer && teamMember.Profession != Profession.Soldier))
-            //            {
-            //                teamMember = c;
-            //            }
-            //        }
-            //    }
-
-            //    if (teamMember != null)
-            //    {
-            //        actionTarget.ShouldSetTarget = true;
-            //        actionTarget.Target = teamMember;
-            //        return true;
-            //    }
-
-            //    return false;
-            //}
         }
 
         protected bool BattleGroupHeal(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int healthPercentage)
         {
-            //int[] restrictedBuffIds = new[] { 209796, 209797, 209799, 209800 };
-
-            if (!perk.IsAvailable || Spell.List.Any(spell => spell.IsReady) || !InCombat())
-            {
-                return false;
-            }
+            if (!perk.IsAvailable || Spell.List.Any(spell => spell.IsReady) || !InCombat()) { return false; }
 
             if ((perk.Hash == PerkHash.BattlegroupHeal2 && PerkAction.List.Any(p => p.Hash == PerkHash.BattlegroupHeal1 && p.IsAvailable)) ||
                 (perk.Hash == PerkHash.BattlegroupHeal3 && (PerkAction.List.Any(p => p.Hash == PerkHash.BattlegroupHeal1 && p.IsAvailable) || PerkAction.List.Any(p => p.Hash == PerkHash.BattlegroupHeal2 && p.IsAvailable))) ||
@@ -1475,12 +1374,11 @@ namespace CombatHandler.Doctor
                              && m.Character.Health > 0
                              && m.Character.HealthPercent <= healthPercentage);
 
-                if (dyingTeamMembersCount >= 2)
-                {
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
+                if (dyingTeamMembersCount < 2) { return false; }
+
+                actionTarget.Target = DynelManager.LocalPlayer;
+                actionTarget.ShouldSetTarget = true;
+                return true;
             }
             else if (DynelManager.LocalPlayer.HealthPercent <= healthPercentage)
             {
@@ -1490,24 +1388,6 @@ namespace CombatHandler.Doctor
 
             }
             return false;
-
-            //if (Team.IsInTeam)
-            //{
-            //    var dyingTeamMember = DynelManager.Players
-            //        .Where(c => c.Health > 0 && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-            //                    && c.HealthPercent <= healthPercentage)
-            //        .ToList();
-
-            //    if (dyingTeamMember.Count >= 2)
-            //    {
-            //        actionTarget.Target = DynelManager.LocalPlayer;
-            //        actionTarget.ShouldSetTarget = true;
-            //        return true;
-            //    }
-            //}
-
-
-
         }
 
         #endregion
@@ -1535,25 +1415,6 @@ namespace CombatHandler.Doctor
                     return true;
                 }
             }
-
-            //if (Team.IsInTeam)
-            //{
-            //    var teamMember = DynelManager.Players
-            //       .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-            //           && c.HealthPercent <= TOTWPercentage && c.IsInLineOfSight
-            //           && item.IsInRange(c)
-            //           && c.Health > 0)
-            //       .OrderBy(c => c.HealthPercent)
-            //       .FirstOrDefault();
-
-            //    if (teamMember != null)
-            //    {
-            //        actionTarget.Target = teamMember;
-            //        actionTarget.ShouldSetTarget = true;
-
-            //        return true;
-            //    }
-            //}
             else
             {
                 if (DynelManager.LocalPlayer.HealthPercent <= TOTWPercentage)
@@ -1571,57 +1432,6 @@ namespace CombatHandler.Doctor
 
         #region Misc
 
-        public enum TeamHealSelection
-        {
-            Teamheal, TeamImprovedLifeChanneler
-        }
-
-        public enum NukingSelection
-        {
-            None, Target, Boss
-        }
-        public enum DOTADebuffTargetSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum DOTBDebuffTargetSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum DOTCDebuffTargetSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum InitDebuffSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum ShortHpSelection
-        {
-            None, Self, Team, TILC
-        }
-
-        public enum InitBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum TreatmentBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum StrengthBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum NanoResistSelection
-        {
-            None, Self, Team
-        }
-        public enum HealDeltaBuffSelection
-        {
-            None, Self, Team
-        }
-
         public enum ProcType1Selection
         {
             DangerousCulture = 1111774273,
@@ -1630,7 +1440,6 @@ namespace CombatHandler.Doctor
             BloodTransfusion = 1145979733,
             RestrictiveBandaging = 1414547023
         }
-
         public enum ProcType2Selection
         {
             MassiveVitaePlan = 1229931077,

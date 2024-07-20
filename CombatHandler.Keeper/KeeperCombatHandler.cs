@@ -72,13 +72,14 @@ namespace CombatHandler.Keeper
                 _settings.AddVariable("EncaseInStone", false);
 
                 _settings.AddVariable("AAO", true);
+                _settings.AddVariable("KeeperStr_Stam_AgiBuff", false);
 
                 _settings.AddVariable("SharpObjects", false);
                 _settings.AddVariable("Grenades", false);
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.None);
+                _settings.AddVariable("StimTargetSelection", 0);
 
                 _settings.AddVariable("Kits", true);
 
@@ -90,10 +91,10 @@ namespace CombatHandler.Keeper
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.HonorRestored);
 
                 //Auras
-                _settings.AddVariable("AuraSet1Selection", (int)AuraSet1Selection.Heal);
-                _settings.AddVariable("AuraSet2Selection", (int)AuraSet2Selection.Damage);
-                _settings.AddVariable("AuraSet3Selection", (int)AuraSet3Selection.AAO);
-                _settings.AddVariable("AuraSet4Selection", (int)AuraSet4Selection.Sanc);
+                _settings.AddVariable("AuraSet1Selection", 0);
+                _settings.AddVariable("AuraSet2Selection", 0);
+                _settings.AddVariable("AuraSet3Selection", 0);
+                _settings.AddVariable("AuraSet4Selection", 0);
 
                 RegisterSettingsWindow("Keeper Handler", "KeeperSettingsView.xml");
 
@@ -123,7 +124,7 @@ namespace CombatHandler.Keeper
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperStr_Stam_AgiBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, "KeeperStr_Stam_AgiBuff"));
 
                 //Auras
                 RegisterSpellProcessor(RelevantNanos.HealAuras, HpAura);
@@ -134,11 +135,6 @@ namespace CombatHandler.Keeper
                 RegisterSpellProcessor(RelevantNanos.DamageAuras, VengeanceAura);
                 RegisterSpellProcessor(RelevantNanos.SancAuras, SanctifierAura);
                 RegisterSpellProcessor(RelevantNanos.ReaperAuras, ReaperAura);
-
-                //Team Buffs
-                //RegisterSpellProcessor(RelevantNanos.PunisherOfTheWicked,
-                //(Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                //    => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "AAOBuffs"));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
 
@@ -506,8 +502,6 @@ namespace CombatHandler.Keeper
             if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 1.7)
                 return;
 
-            base.OnUpdate(deltaTime);
-
             if (Time.NormalTime > _ncuUpdateTime + 1.0f)
             {
                 RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -762,91 +756,93 @@ namespace CombatHandler.Keeper
                     procView.Clicked = HandleProcViewClick;
                 }
 
-                #endregion
-
-                #region GlobalBuffing
-
-                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleBuffing = false;
-                    _settings["Buffing"] = false;
-                    _settings["GlobalBuffing"] = false;
-                }
-
-                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                {
-                    IPCChannel.Broadcast(new GlobalBuffingMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleBuffing = true;
-                    _settings["Buffing"] = true;
-                    _settings["GlobalBuffing"] = true;
-                }
-
-                #endregion
-
-                #region Global Composites
-
-                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = false
-                    });
-
-                    ToggleComposites = false;
-                    _settings["Composites"] = false;
-                    _settings["GlobalComposites"] = false;
-                }
-                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                {
-                    IPCChannel.Broadcast(new GlobalCompositesMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleComposites = true;
-                    _settings["Composites"] = true;
-                    _settings["GlobalComposites"] = true;
-                }
-
-                #endregion
-
-                #region Global Resurrection
-
-                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-
-                        Switch = false
-                    });
-
-                    ToggleRez = false;
-                    _settings["GlobalRez"] = false;
-                }
-                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                {
-                    IPCChannel.Broadcast(new GlobalRezMessage()
-                    {
-                        Switch = true
-                    });
-
-                    ToggleRez = true;
-                    _settings["GlobalRez"] = true;
-                }
-
-                #endregion
-
-                CancelAuras();
             }
+            #endregion
+
+            #region GlobalBuffing
+
+            if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+            {
+                IPCChannel.Broadcast(new GlobalBuffingMessage()
+                {
+                    Switch = false
+                });
+
+                ToggleBuffing = false;
+                _settings["Buffing"] = false;
+                _settings["GlobalBuffing"] = false;
+            }
+
+            if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+            {
+                IPCChannel.Broadcast(new GlobalBuffingMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleBuffing = true;
+                _settings["Buffing"] = true;
+                _settings["GlobalBuffing"] = true;
+            }
+
+            #endregion
+
+            #region Global Composites
+
+            if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+            {
+                IPCChannel.Broadcast(new GlobalCompositesMessage()
+                {
+                    Switch = false
+                });
+
+                ToggleComposites = false;
+                _settings["Composites"] = false;
+                _settings["GlobalComposites"] = false;
+            }
+            if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+            {
+                IPCChannel.Broadcast(new GlobalCompositesMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleComposites = true;
+                _settings["Composites"] = true;
+                _settings["GlobalComposites"] = true;
+            }
+
+            #endregion
+
+            #region Global Resurrection
+
+            if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+            {
+                IPCChannel.Broadcast(new GlobalRezMessage()
+                {
+
+                    Switch = false
+                });
+
+                ToggleRez = false;
+                _settings["GlobalRez"] = false;
+            }
+            if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+            {
+                IPCChannel.Broadcast(new GlobalRezMessage()
+                {
+                    Switch = true
+                });
+
+                ToggleRez = true;
+                _settings["GlobalRez"] = true;
+            }
+
+            #endregion
+
+            CancelAuras();
+
+            base.OnUpdate(deltaTime);
         }
 
         #region Anti-Fear
@@ -862,88 +858,65 @@ namespace CombatHandler.Keeper
             return true;
         }
 
-        protected bool Buff(Spell spell, NanoLine nanoline, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
-
-            if (SpellChecksPlayer(spell, nanoline))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        #region Buffs
-
         #endregion
 
         #region Auras
 
-
         private bool HpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32()) { return false; }
+            if (_settings["AuraSet1Selection"].AsInt32() != 0) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool NpAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AuraSet1Selection.Nano != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32()) { return false; }
+            if (_settings["AuraSet1Selection"].AsInt32() != 1) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool BarrierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AuraSet3Selection.Reflect != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32()) { return false; }
+            if (_settings["AuraSet3Selection"].AsInt32() != 1) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool ImminenceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AuraSet3Selection.AAO != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32()) { return false; }
+            if (_settings["AuraSet3Selection"].AsInt32() != 0) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool EnervateAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AuraSet2Selection.DeRoot != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32()) { return false; }
+            if (_settings["AuraSet2Selection"].AsInt32() != 1) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool VengeanceAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AuraSet2Selection.Damage != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32()) { return false; }
+            if (_settings["AuraSet2Selection"].AsInt32() != 0) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool SanctifierAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AuraSet4Selection.Sanc != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32()) { return false; }
+            if (_settings["AuraSet4Selection"].AsInt32() != 0) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool ReaperAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AuraSet4Selection.Reaper != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32()) { return false; }
+            if (_settings["AuraSet4Selection"].AsInt32() != 1) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
-
-        #endregion
-
-        #region Team Buffs
 
         #endregion
 
@@ -951,35 +924,35 @@ namespace CombatHandler.Keeper
 
         private void CancelAuras()
         {
-            if (AuraSet1Selection.Heal != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
+            if (_settings["AuraSet1Selection"].AsInt32() != 0)
             {
                 CancelBuffs(RelevantNanos.HealAuras);
             }
-            if (AuraSet1Selection.Nano != (AuraSet1Selection)_settings["AuraSet1Selection"].AsInt32())
+            if (_settings["AuraSet1Selection"].AsInt32() != 1)
             {
                 CancelBuffs(RelevantNanos.NanoAuras);
             }
-            if (AuraSet2Selection.Damage != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32())
+            if (_settings["AuraSet2Selection"].AsInt32() != 0)
             {
                 CancelBuffs(RelevantNanos.DamageAuras);
             }
-            if (AuraSet2Selection.DeRoot != (AuraSet2Selection)_settings["AuraSet2Selection"].AsInt32())
+            if (_settings["AuraSet2Selection"].AsInt32() != 1)
             {
                 CancelBuffs(RelevantNanos.DerootAuras);
             }
-            if (AuraSet3Selection.AAO != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32())
+            if (_settings["AuraSet3Selection"].AsInt32() != 0)
             {
                 CancelBuffs(RelevantNanos.AAOAuras);
             }
-            if (AuraSet3Selection.Reflect != (AuraSet3Selection)_settings["AuraSet3Selection"].AsInt32())
+            if (_settings["AuraSet3Selection"].AsInt32() != 1)
             {
                 CancelBuffs(RelevantNanos.ReflectAuras);
             }
-            if (AuraSet4Selection.Sanc != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32())
+            if (_settings["AuraSet4Selection"].AsInt32() != 0)
             {
                 CancelBuffs(RelevantNanos.SancAuras);
             }
-            if (AuraSet4Selection.Reaper != (AuraSet4Selection)_settings["AuraSet4Selection"].AsInt32())
+            if (_settings["AuraSet4Selection"].AsInt32() != 1)
             {
                 CancelBuffs(RelevantNanos.ReaperAuras);
             }
@@ -1011,22 +984,6 @@ namespace CombatHandler.Keeper
                 .Where(s => s.Name.Contains("Reaper")).OrderByStackingOrder().Select(s => s.Id).ToArray();
             public static readonly int[] SancAuras = Spell.GetSpellsForNanoline(NanoLine.KeeperProcBuff)
                 .Where(s => s.Name.Contains("Sanctifier")).OrderByStackingOrder().Select(s => s.Id).ToArray();
-        }
-        public enum AuraSet1Selection
-        {
-            Heal, Nano
-        }
-        public enum AuraSet2Selection
-        {
-            Damage, DeRoot
-        }
-        public enum AuraSet3Selection
-        {
-            AAO, Reflect
-        }
-        public enum AuraSet4Selection
-        {
-            Sanc, Reaper
         }
 
         public enum ProcType1Selection

@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Common.GameData.UI;
+using AOSharp.Common.Unmanaged.Imports;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
@@ -14,7 +15,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace SyncManager
 {
@@ -30,10 +30,8 @@ namespace SyncManager
         private static Identity useOnDynel;
         private static Identity useItem;
 
-        private static Item _bagItem;
-
         public static bool _openBags = false;
-        private static bool _init = false;
+        //private static bool _init = false;
         public static bool Enable = false;
         public static bool UISettings = false;
 
@@ -69,6 +67,9 @@ namespace SyncManager
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("Enable", true);
+            _settings["Enable"] = true;
+
+            _settings.AddVariable("SyncAttack", false);
             _settings.AddVariable("SyncMove", false);
             _settings.AddVariable("SyncBags", false);
             _settings.AddVariable("SyncUse", true);
@@ -76,7 +77,6 @@ namespace SyncManager
             _settings.AddVariable("NPCTrade", false);
             _settings.AddVariable("SyncTrade", false);
 
-            _settings["Enable"] = true;
 
             IPCChannel.RegisterCallback((int)IPCOpcode.StartStop, OnStartStopMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
@@ -90,7 +90,8 @@ namespace SyncManager
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
             Chat.RegisterCommand("sync", SyncManagerCommand);
-            Chat.RegisterCommand("syncmove", SyncSwitch);
+            Chat.RegisterCommand("syncattack", SyncAttackSwitch);
+            Chat.RegisterCommand("syncmove", SyncMoveSwitch);
             Chat.RegisterCommand("syncbags", SyncBagsSwitch);
             Chat.RegisterCommand("syncuse", SyncUseSwitch);
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
@@ -125,7 +126,7 @@ namespace SyncManager
 
             if (msg.instance == Playfield.ModelIdentity.Instance)
             {
-                if (player.Position.Distance2DFrom(randoPos) < 10 && player.Position.Distance2DFrom (randoPos) > 1)
+                if (player.Position.Distance2DFrom(randoPos) < 10 && player.Position.Distance2DFrom(randoPos) > 1)
                 {
                     MovementController.Instance.SetDestination(randoPos);
                 }
@@ -136,6 +137,7 @@ namespace SyncManager
         {
             if (message is UISettings uISettings)
             {
+                _settings["SyncAttack"] = uISettings.Attack;
                 _settings["SyncBags"] = uISettings.Bags;
                 _settings["SyncUse"] = uISettings.Use;
                 _settings["SyncChat"] = uISettings.Chat;
@@ -338,23 +340,25 @@ namespace SyncManager
                     });
                 }
 
-                //sync attack
-                if (n3Msg.N3MessageType == N3MessageType.Attack)
+                if (_settings["SyncAttack"].AsBool())
                 {
-                    AttackMessage attackMsg = (AttackMessage)n3Msg;
-                    IPCChannel.Broadcast(new AttackIPCMessage
+                    if (n3Msg.N3MessageType == N3MessageType.Attack)
                     {
-                        Target = attackMsg.Target,
-                        Start = true
-                    });
-                }
+                        AttackMessage attackMsg = (AttackMessage)n3Msg;
+                        IPCChannel.Broadcast(new AttackIPCMessage
+                        {
+                            Target = attackMsg.Target,
+                            Start = true
+                        });
+                    }
 
-                if (n3Msg.N3MessageType == N3MessageType.StopFight)
-                {
-                    IPCChannel.Broadcast(new AttackIPCMessage
+                    if (n3Msg.N3MessageType == N3MessageType.StopFight)
                     {
-                        Start = false
-                    });
+                        IPCChannel.Broadcast(new AttackIPCMessage
+                        {
+                            Start = false
+                        });
+                    }
                 }
 
                 if (_settings["SyncUse"].AsBool() && n3Msg.N3MessageType == N3MessageType.GenericCmd)
@@ -454,14 +458,10 @@ namespace SyncManager
                     if (n3Msg.N3MessageType == N3MessageType.KnubotTrade)
                     {
                         KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
-                        Dynel msgIdentityName = DynelManager.AllDynels.Where(x => x.Identity == tradeMsg.Identity).FirstOrDefault();
-                        Dynel msgTargetName = DynelManager.AllDynels.Where(x => x.Identity == tradeMsg.Target).FirstOrDefault();
-
 
                         int slotInstance = tradeMsg.Container.Instance;
-                        int itemId;
 
-                        if (invSlots.TryGetValue(slotInstance, out itemId))
+                        if (invSlots.TryGetValue(slotInstance, out int itemId))
                         {
                             IPCChannel.Broadcast(new NpcChatIPCMessage
                             {
@@ -591,6 +591,7 @@ namespace SyncManager
             if (IsActiveWindow || Game.IsZoning) { return; }
 
             if (!_settings["Enable"].AsBool()) { return; }
+            if (!_settings["SyncAttack"].AsBool()) { return; }
 
             var attackMsg = (AttackIPCMessage)msg;
 
@@ -699,7 +700,8 @@ namespace SyncManager
 
             if (chatMsg.IsStartTrade == true)
             {
-                NpcDialog.OpenTrade(chatMsg.Target);
+                NPCChatStartTrade(DynelManager.LocalPlayer.Identity, chatMsg.Target);
+                //NpcDialog.OpenTrade(chatMsg.Target);
             }
 
             if (chatMsg.Id != 0)
@@ -708,7 +710,7 @@ namespace SyncManager
                 {
                     if (item.Id == chatMsg.Id)
                     {
-                        Item itemToTrade = Inventory.Items.Where(i => i.Id == chatMsg.Id).FirstOrDefault();
+                        var itemToTrade = Inventory.Items.Where(i => i.Id == chatMsg.Id).FirstOrDefault();
 
                         if (itemToTrade != null)
                         {
@@ -718,13 +720,13 @@ namespace SyncManager
                                 var container = new Identity(IdentityType.KnuBotTradeWindow, 0);
 
                                 Chat.WriteLine($"{itemToTrade.Slot}");
-
-                                Network.Send(new KnuBotTradeMessage
-                                {
-                                    Unknown1 = 2,
-                                    Target = chatMsg.Target,
-                                    Container = itemToTrade.Slot,
-                                });
+                                NPCChatAddTradeItem(DynelManager.LocalPlayer.Identity, chatMsg.Target, itemToTrade.Slot);
+                                //Network.Send(new KnuBotTradeMessage
+                                //{
+                                //    Unknown1 = 2,
+                                //    Target = chatMsg.Target,
+                                //    Container = itemToTrade.Slot,
+                                //});
                             }
                         }
                     }
@@ -733,7 +735,8 @@ namespace SyncManager
 
             if (chatMsg.IsFinishTrade == true)
             {
-                NpcDialog.FinishTrade(chatMsg.Target, chatMsg.Amount);
+                NPCChatEndTrade(DynelManager.LocalPlayer.Identity, chatMsg.Target, chatMsg.Amount);
+                //NpcDialog.FinishTrade(chatMsg.Target, chatMsg.Amount);
             }
         }
 
@@ -767,6 +770,7 @@ namespace SyncManager
         {
             IPCChannel.Broadcast(new UISettings()
             {
+                Attack = _settings["SyncAttack"].AsBool(),
                 Bags = _settings["SyncBags"].AsBool(),
                 Use = _settings["SyncUse"].AsBool(),
                 Chat = _settings["SyncChat"].AsBool(),
@@ -855,6 +859,15 @@ namespace SyncManager
             }
         }
 
+        private void SyncAttackSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["SyncAttack"] = !_settings["SyncAttack"].AsBool();
+                Chat.WriteLine($"Sync attack : {_settings["SyncAttack"].AsBool()}");
+            }
+        }
+
         private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
@@ -891,7 +904,7 @@ namespace SyncManager
             }
         }
 
-        private void SyncSwitch(string command, string[] param, ChatWindow chatWindow)
+        private void SyncMoveSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -963,5 +976,41 @@ namespace SyncManager
         }
 
         #endregion
+
+        [DllImport("Gamecode.dll", EntryPoint = "?N3Msg_NPCChatStartTrade@n3EngineClientAnarchy_t@@QAEXABVIdentity_t@@0@Z", CallingConvention = CallingConvention.ThisCall)]
+        public static extern void eNPCChatStartTrade(IntPtr pEngine, ref Identity self, ref Identity npc);
+        public static void NPCChatStartTrade(Identity self, Identity npc)
+        {
+            IntPtr pEngine = N3Engine_t.GetInstance();
+
+            if (pEngine != IntPtr.Zero)
+            {
+                eNPCChatStartTrade(pEngine, ref self, ref npc);
+            }
+        }
+
+        [DllImport("Gamecode.dll", EntryPoint = "?N3Msg_NPCChatAddTradeItem@n3EngineClientAnarchy_t@@QAEXABVIdentity_t@@00@Z", CallingConvention = CallingConvention.ThisCall)]
+        public static extern void eNPCChatAddTradeItem(IntPtr pEngine, ref Identity self, ref Identity npc, ref Identity slot);
+        public static void NPCChatAddTradeItem(Identity self, Identity npc, Identity item)
+        {
+            IntPtr pEngine = N3Engine_t.GetInstance();
+
+            if (pEngine != IntPtr.Zero)
+            {
+                eNPCChatAddTradeItem(pEngine, ref self, ref npc, ref item);
+            }
+        }
+
+        [DllImport("Gamecode.dll", EntryPoint = "?N3Msg_NPCChatEndTrade@n3EngineClientAnarchy_t@@QAEXABVIdentity_t@@0H_N@Z", CallingConvention = CallingConvention.ThisCall)]
+        public static extern void eNPCChatEndTrade(IntPtr pEngine, ref Identity self, ref Identity npc, int credits, bool decline);
+        public static void NPCChatEndTrade(Identity self, Identity npc, int credits = 0, bool accept = true)
+        {
+            IntPtr pEngine = N3Engine_t.GetInstance();
+
+            if (pEngine != IntPtr.Zero)
+            {
+                eNPCChatEndTrade(pEngine, ref self, ref npc, credits, accept);
+            }
+        }
     }
 }

@@ -82,22 +82,21 @@ namespace CombatHandler.Shade
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 0);
 
                 _settings.AddVariable("Kits", true);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.BlackenedLegacy);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.Blackheart);
 
-                _settings.AddVariable("Runspeed", false);
-                _settings.AddVariable("RunspeedTeam", false);
+                _settings.AddVariable("Runspeed", 0);
 
                 _settings.AddVariable("AAD", false);
 
                 _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("MASelection", (int)MASelection.Sappo);
-                _settings.AddVariable("IntelligenceSelection", (int)IntelligenceSelection.None);
+                _settings.AddVariable("IntelligenceSelection", 0);
 
                 _settings.AddVariable("ShadeProcSelection", 0);
 
@@ -569,6 +568,7 @@ namespace CombatHandler.Shade
 
                 _ncuUpdateTime = Time.NormalTime;
             }
+
             CancelBuffs();
 
             GetBehindAndPoke(_settings["ShouldMoveBehindTarget"].AsInt32());
@@ -947,10 +947,8 @@ namespace CombatHandler.Shade
         {
             if (fightingTarget == null) { return false; }
 
-            // Don't PM if there are TR/SP chains in progress
             if (_actionQueue.Any(x => x.CombatAction is PerkAction action && RelevantPerks.TotemicRites.Contains(action.Hash))) { return false; }
-            //|| RelevantPerks.SpiritPhylactery.Contains(action.Hash))
-
+  
             if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))
                 return true;
 
@@ -1007,62 +1005,33 @@ namespace CombatHandler.Shade
         #region Buffs
         private bool FasterThanYourShadow(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var setting = _settings["Runspeed"].AsInt32();
+
+            if (setting == 0) { return false; }
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (_settings["RunspeedTeam"].AsBool())
+            if (setting != 0)
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
-                {
-                    CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
-                }
-
-                return FTYSTeamBuff(spell, fightingTarget, ref actionTarget);
+                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS)) { CancelBuffs(RelevantNanos.RK_RUN_BUFFS); }
             }
 
-            if (_settings["Runspeed"].AsBool())
+            switch (_settings["Runspeed"].AsInt32())
             {
-                if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.RK_RUN_BUFFS))
-                {
-                    CancelBuffs(RelevantNanos.RK_RUN_BUFFS);
-                }
-
-                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+                case 1://Self
+                    return NonCombatBuff(spell, ref actionTarget, fightingTarget, null);
+                case 2://Team
+                    return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+                default:
+                    return false;
             }
-
-            return false;
         }
-        private bool FTYSTeamBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Team.IsInTeam)
-            {
-                var target = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        & SpellChecksOther(spell, NanoLine.RunspeedBuffs, c))
-                    .FirstOrDefault();
-
-                if (target != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-            }
-
-            if (fightingTarget == null) { return false; }
-
-            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
-        }
+    
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["Buffing"].AsBool()) { return false; }
-
+            if (DynelManager.LocalPlayer.HealthPercent > 30) { return false; }
             actionTarget.ShouldSetTarget = false;
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return true; }
-
-            return false;
+            return true;
         }
         private bool SpiritSiphon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1234,10 +1203,7 @@ namespace CombatHandler.Shade
             None, Sappo = 267525, Shen = 201281, FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
             AttackoftheSnake = 204330, AngelofNight = 204331
         }
-        public enum IntelligenceSelection
-        {
-            None, Enigma = 267522
-        }
+        
         public enum ShadeProcSelection
         {
             None, Damage, Stun, InitDebuff, DOT

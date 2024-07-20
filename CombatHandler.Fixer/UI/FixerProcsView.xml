@@ -1,24 +1,24 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
-      <RadioButton label="Luck's Calamity (Evade Debuff -170 60s)" value="1196774482"/>
-      <RadioButton label="Dirty Tricks (Dodge Buff +100 60s)" value="1162630233"/>
-      <RadioButton label="Escape The System (Root reducer -45 sec [10% change for proc])" value="1179208014"/>
-      <RadioButton label="Intense Metabolism (Self Modify Nano init 250 60s)" value="1179538255"/>
-      <RadioButton label="Fish In A Barrel (Evade Debuff -85 60s)" value="1230195529"/>
-    </OptionRadioButtonGroup>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-    <OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
-      <RadioButton label="Bootleg Remedies (HOT 2436 - 2634 [6x406-439 every 10sec] 60s)" value="1195725889"/>
-      <RadioButton label="Slip Them A Mickey (Damage Boost +130 60s)" value="1179075400"/>
-      <RadioButton label="Bending The Rules (Damage Boost +85 60s)" value="1146246226"/>
-      <RadioButton label="Backyard Bandages (HOT 2172 - 2220 [6x362-370 every 10sec] 60s)" value="1397314637"/>
-      <RadioButton label="Fighting Chance (Damage Boost +50 60s)" value="1112429640"/>
-      <RadioButton label="Contaminated Bullets (Damage Boost +3 60s)" value="1145394241"/>
-      <RadioButton label="Underground Sutures (HOT 180 - 216 [12x 15-18 every 5 sec] 60s)" value="1095259201"/>
-    </OptionRadioButtonGroup>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-  </BorderView>
+	<BorderView v_alignment="TOP" h_alignment="Left" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="Type 1" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType1Selection">
+			<RadioButton label="Luck's Calamity (Evade Debuff -170 60s)" value="1196774482"/>
+			<RadioButton label="Dirty Tricks (Dodge Buff +100 60s)" value="1162630233"/>
+			<RadioButton label="Escape The System (Root reducer -45 sec [10% change for proc])" value="1179208014"/>
+			<RadioButton label="Intense Metabolism (Self Modify Nano init 250 60s)" value="1179538255"/>
+			<RadioButton label="Fish In A Barrel (Evade Debuff -85 60s)" value="1230195529"/>
+		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<OptionRadioButtonGroup label="Type 2" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ProcType2Selection">
+			<RadioButton label="Bootleg Remedies (HOT 2436 - 2634 [6x406-439 every 10sec] 60s)" value="1195725889"/>
+			<RadioButton label="Slip Them A Mickey (Damage Boost +130 60s)" value="1179075400"/>
+			<RadioButton label="Bending The Rules (Damage Boost +85 60s)" value="1146246226"/>
+			<RadioButton label="Backyard Bandages (HOT 2172 - 2220 [6x362-370 every 10sec] 60s)" value="1397314637"/>
+			<RadioButton label="Fighting Chance (Damage Boost +50 60s)" value="1112429640"/>
+			<RadioButton label="Contaminated Bullets (Damage Boost +3 60s)" value="1145394241"/>
+			<RadioButton label="Underground Sutures (HOT 180 - 216 [12x 15-18 every 5 sec] 60s)" value="1095259201"/>
+		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>
 </root>

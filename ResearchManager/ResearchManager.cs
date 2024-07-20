@@ -23,6 +23,7 @@ namespace ResearchManager
 
         static List<int> apotheosis = Enumerable.Range(10002, 10).ToList();
 
+        [Obsolete]
         public override void Run(string pluginDir)
         {
             _settings = new Settings("Research");

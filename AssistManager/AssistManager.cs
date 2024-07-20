@@ -24,6 +24,7 @@ namespace AssistManager
 
         public static string PluginDir;
 
+        [Obsolete]
         public override void Run(string pluginDir)
         {
             _settings = new Settings("AssistManager");

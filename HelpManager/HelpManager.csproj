@@ -99,7 +99,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="Meshes\8020.nav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

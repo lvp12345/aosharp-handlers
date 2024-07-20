@@ -80,27 +80,27 @@ namespace CombatHandler.MartialArtist
 
                 _settings.AddVariable("MASelection", (int)MASelection.StingoftheViper);
                 _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);
-                _settings.AddVariable("RiposteSelection", (int)RiposteSelection.None);
-                _settings.AddVariable("StrengthSelection", (int)StrengthSelection.None);
-                _settings.AddVariable("IntelligenceSelection", (int)IntelligenceSelection.None);
-                _settings.AddVariable("StaminaSelection", (int)StaminaSelection.None);
+                _settings.AddVariable("RiposteSelection", 0);
+                _settings.AddVariable("StrengthSelection", 0);
+                _settings.AddVariable("IntelligenceSelection", 0);
+                _settings.AddVariable("StaminaSelection", 0);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 1);
 
                 _settings.AddVariable("Kits", true);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AbsoluteFist);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DebilitatingStrike);
 
-                _settings.AddVariable("HealSelection", (int)HealSelection.None);
+                _settings.AddVariable("HealSelection", 0);
 
-                _settings.AddVariable("DamageTypeSelection", (int)DamageTypeSelection.Melee);
-                _settings.AddVariable("SelfEvadeSelection", (int)SelfEvadeSelection.Target);
+                _settings.AddVariable("DamageTypeSelection", 0);
+                _settings.AddVariable("SelfEvadeSelection", 1);
 
-                _settings.AddVariable("SingleTauntSelection", (int)SingleTauntSelection.None);
+                _settings.AddVariable("SingleTauntSelection", 0);
 
                 _settings.AddVariable("Evades", false);
-                _settings.AddVariable("ArmorBuffSelection", (int)ArmorBuffSelection.None);
+                _settings.AddVariable("ArmorBuffSelection", 0);
                 _settings.AddVariable("CritBuff", false);
                 _settings.AddVariable("TeamArmorBuffs", false);
                 _settings.AddVariable("SLMap", false);
@@ -964,7 +964,7 @@ namespace CombatHandler.MartialArtist
         {
             if (Healing.TargetHealPercentage == 0) { return false; }
 
-            if (HealSelection.SingleTeam != (HealSelection)_settings["HealSelection"].AsInt32()) { return false; }
+            if (_settings["HealSelection"].AsInt32() != 1) { return false; }
 
             if (!spell.IsReady)
             {
@@ -1012,7 +1012,6 @@ namespace CombatHandler.MartialArtist
             if (Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
-            
             return true;
         }
         private bool DimachItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1078,25 +1077,25 @@ namespace CombatHandler.MartialArtist
 
         private bool DamageTypeEnergy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DamageTypeSelection.Energy != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
+            if (_settings["DamageTypeSelection"].AsInt32() != 2) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool DamageTypeFire(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DamageTypeSelection.Fire != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
+            if (_settings["DamageTypeSelection"].AsInt32() != 1) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool DamageTypeMelee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DamageTypeSelection.Melee != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
+            if (_settings["DamageTypeSelection"].AsInt32() != 0) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
         private bool DamageTypeChemical(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DamageTypeSelection.Chemical != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32()) { return false; }
+            if (_settings["DamageTypeSelection"].AsInt32() != 3) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
@@ -1105,9 +1104,18 @@ namespace CombatHandler.MartialArtist
         {
             if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
 
-            if (SingleTauntSelection.Area == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
+            switch (_settings["SingleTauntSelection"].AsInt32())
             {
-                var mob = DynelManager.NPCs
+                case 0:
+                    return false;
+                case 1:
+                    if (fightingTarget == null) { return false; }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                case 2:
+                    var mob = DynelManager.NPCs
                     .Where(c => c.IsAttacking && c.FightingTarget != null
                         && c.FightingTarget?.Profession != Profession.Soldier
                         && c.FightingTarget?.Profession != Profession.Enforcer
@@ -1121,25 +1129,15 @@ namespace CombatHandler.MartialArtist
                     .OrderBy(c => c.MaxHealth)
                     .FirstOrDefault();
 
-                if (mob != null)
-                {
+                    if (mob == null) { return false; }
+
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = mob;
                     return true;
-                }
-            }
+                default:
+                    return false;
 
-            if (SingleTauntSelection.Target == (SingleTauntSelection)_settings["SingleTauntSelection"].AsInt32())
-            {
-                if (fightingTarget != null)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = fightingTarget;
-                    return true;
-                }
             }
-
-            return false;
         }
 
         private bool ControlledDestructionNoShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1152,7 +1150,7 @@ namespace CombatHandler.MartialArtist
 
         private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (fightingTarget == null || !_settings["ControlledDestructionWithShutdown"].AsBool()
+            if (!_settings["ControlledDestructionWithShutdown"].AsBool() || fightingTarget == null
                 || DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
@@ -1169,16 +1167,16 @@ namespace CombatHandler.MartialArtist
 
         private bool PercentEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (_settings["SelfEvadeSelection"].AsInt32() != 0) { return false; }
             if (IsInsideInnerSanctum()) { return false; }
-            if (SelfEvadeSelection.Percent != (SelfEvadeSelection)_settings["SelfEvadeSelection"].AsInt32()) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool TargetEvades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (_settings["SelfEvadeSelection"].AsInt32() != 1) { return false; }
             if (IsInsideInnerSanctum()) { return false; }
-            if (SelfEvadeSelection.Target != (SelfEvadeSelection)_settings["SelfEvadeSelection"].AsInt32()) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
@@ -1189,24 +1187,19 @@ namespace CombatHandler.MartialArtist
 
         private bool Evades(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["Evades"].AsBool()) { return false; }
             if (IsInsideInnerSanctum()) { return false; }
 
-            if (!_settings["Evades"].AsBool()) { return false; }
-
             return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "Evades");
-
         }
 
         private bool TeamCrit(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["CritBuff"].AsBool()) { return false; }
 
-            if (!Team.IsInTeam)
+            if (Team.IsInTeam)
             {
-                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-            }
-
-            var target = DynelManager.Players
+                var target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
                         && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && !(c.Profession == Profession.NanoTechnician || c.Profession == Profession.Trader)
@@ -1214,8 +1207,8 @@ namespace CombatHandler.MartialArtist
                         && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
                     .FirstOrDefault();
 
-            if (target != null)
-            {
+                if (target == null) { return false; }
+
                 if (target.Buffs.Any(c => RelevantGenericNanos.AAOTransfer.Contains(c.Id))) { return false; }
 
                 actionTarget.ShouldSetTarget = true;
@@ -1223,7 +1216,7 @@ namespace CombatHandler.MartialArtist
                 return true;
             }
 
-            return false;
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -1253,15 +1246,6 @@ namespace CombatHandler.MartialArtist
             public static int[] DamageTypeChemical = { 81822, 81830 };
         }
 
-        public enum HealSelection
-        {
-            None, SingleTeam, SingleArea, Team
-        }
-        public enum SingleTauntSelection
-        {
-            None, Target, Area
-        }
-
         public enum MASelection
         {
             None, Sappo = 267525, StingoftheViper = 305542, ApeFistofKhalum = 204605, KarmicFist = 206191, Shen = 201281,
@@ -1271,22 +1255,6 @@ namespace CombatHandler.MartialArtist
         public enum DimachSelection
         {
             None, TouchOfSaiFung = 275018, TheWizdomofHuzzum = 303056, TreeofEnlightenment = 204607
-        }
-        public enum RiposteSelection
-        {
-            None, UponAWaveOfSummer = 205406, StampedeOfTheBoar = 305554
-        }
-        public enum StrengthSelection
-        {
-            None, Delirium = 267922
-        }
-        public enum IntelligenceSelection
-        {
-            None, Enigma = 267522
-        }
-        public enum StaminaSelection
-        {
-            None, InnerBalance = 267523
         }
         public enum ProcType1Selection
         {
@@ -1305,20 +1273,6 @@ namespace CombatHandler.MartialArtist
             HealingMeditation = 1212960068,
             AttackLigaments = 1096043593,
             MedicinalRemedy = 1296388685
-        }
-
-        public enum DamageTypeSelection
-        {
-            Melee, Fire, Energy, Chemical
-        }
-        public enum SelfEvadeSelection
-        {
-            Percent, Target
-        }
-
-        public enum ArmorBuffSelection
-        {
-            None, FormofTessai, FormofRisan
         }
 
         #endregion

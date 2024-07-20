@@ -28,6 +28,7 @@ namespace BagManager
         private CancellationTokenSource _cancellationToken1 = new CancellationTokenSource();
         private CancellationTokenSource _cancellationToken2 = new CancellationTokenSource();
 
+        [System.Obsolete]
         public override void Run(string pluginDir)
         {
             _settings = new Settings("BagManager");

@@ -91,7 +91,7 @@ namespace CombatHandler.Adventurer
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 1);
 
                 _settings.AddVariable("Kits", true);
 
@@ -105,7 +105,7 @@ namespace CombatHandler.Adventurer
                 _settings.AddVariable("SharpScales", false);
                 _settings.AddVariable("DragonAOE", false);
                 _settings.AddVariable("DragonTaunt", false);
-                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.Adds);
+                _settings.AddVariable("SingleTauntsSelection", 2);
                 _settings.AddVariable("CatDamage", false);
                 _settings.AddVariable("LeetOwz", false);
                 _settings.AddVariable("PoisonousBite", false);
@@ -116,7 +116,7 @@ namespace CombatHandler.Adventurer
                 _settings.AddVariable("RunspeedBuffs", false);
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("TreatmentBuffSelection", (int)TreatmentBuffSelection.None);
+                _settings.AddVariable("TreatmentBuffSelection", 0);
 
                 _settings.AddVariable("ShouldMoveBehindTarget", 0);
 
@@ -971,12 +971,12 @@ namespace CombatHandler.Adventurer
                     {
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
-                    } 
+                    }
                 }
 
                 #endregion
 
-                    #region GlobalBuffing
+                #region GlobalBuffing
 
                 if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
                 {
@@ -1258,48 +1258,38 @@ namespace CombatHandler.Adventurer
         }
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var selection = _settings["SingleTauntsSelection"].AsInt32();
+
+            if (selection == 0) { return false; }
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
-
             if (!CanCast(spell)) { return false; }
+            if (Time.AONormalTime < _singleTaunt + SingleTauntDelay) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
+            if (debuffAreaTargetsToIgnore.Contains(fightingTarget?.Name)) { return false; }
 
-            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
+            switch (selection)
             {
-                var mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.IsInLineOfSight
-                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && spell.IsInRange(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.MaxHealth)
-                    .FirstOrDefault();
+                case 1:
+                    if (fightingTarget == null) { return false; }
 
-                if (DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
-                    if (mob != null)
-                    {
-                        _singleTaunt = Time.AONormalTime;
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = mob;
-                        return true;
-                    }
-                }
-            }
-
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
-                    && DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
                     _singleTaunt = Time.AONormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;
-                }
-            }
+                case 2:
+                    var mob = DynelManager.NPCs
+                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
+                   .OrderBy(c => c.MaxHealth).FirstOrDefault();
 
-            return false;
+                    if (mob == null) { return false; }
+
+                    _singleTaunt = Time.AONormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
+                    return true;
+                default:
+                    return false;
+            }
         }
         #endregion
 
@@ -1362,14 +1352,6 @@ namespace CombatHandler.Adventurer
             public static readonly int[] TeamRunSpeedBuffs = { 26705, 26237 };
         }
 
-        public enum TreatmentBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum SingleTauntsSelection
-        {
-            None, Target, Adds
-        }
         public enum ProcType1Selection
         {
             AesirAbsorption = 1397705028,

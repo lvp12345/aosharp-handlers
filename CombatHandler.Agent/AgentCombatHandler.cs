@@ -123,37 +123,37 @@ namespace CombatHandler.Agent
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 1);
                 _settings.AddVariable("Kits", true);
 
                 _settings.AddVariable("AAO", false); //used for CritTeam
 
-                _settings.AddVariable("DOTASelection", (int)DOTASelection.None);
+                _settings.AddVariable("DOTASelection", 0);
 
-                _settings.AddVariable("EvasionDebuffSelection", (int)EvasionDebuffSelection.None);
+                _settings.AddVariable("EvasionDebuffSelection", 0);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.GrimReaper);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.LaserAim);
 
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("ProcSelection", (int)ProcSelection.Damage);
+                _settings.AddVariable("ProcSelection", 1);
 
                 _settings.AddVariable("Concentration", false);
 
                 _settings.AddVariable("TheShot", false);
 
-                _settings.AddVariable("FalseProfSelection", (int)FalseProfSelection.None);
+                _settings.AddVariable("FalseProfSelection", 0);
 
                 //trader
-                _settings.AddVariable("RKNanoDrainSelection", (int)RKNanoDrainSelection.None);
-                _settings.AddVariable("ACDrainSelection", (int)ACDrainSelection.None);
-                _settings.AddVariable("DepriveSelection", (int)DepriveSelection.Target);
-                _settings.AddVariable("RansackSelection", (int)RansackSelection.Target);
-                _settings.AddVariable("TdrEvades", (int)TdrEvades.None);
+                _settings.AddVariable("RKNanoDrainSelection", 0);
+                _settings.AddVariable("ACDrainSelection", 0);
+                _settings.AddVariable("DepriveSelection", 1);
+                _settings.AddVariable("RansackSelection", 1);
+                _settings.AddVariable("TdrEvades", 0);
 
                 //mp
-                _settings.AddVariable("CostBuffSelection", (int)CostBuffSelection.Self);
+                _settings.AddVariable("CostBuffSelection", 1);
                 _settings.AddVariable("SpawnPets", true);
                 _settings.AddVariable("BuffPets", true);
                 _settings.AddVariable("WarpPets", false);
@@ -164,38 +164,38 @@ namespace CombatHandler.Agent
 
                 //doc
                 _settings.AddVariable("LockCH", false);
-                _settings.AddVariable("TeamHealSelection", (int)TeamHealSelection.TeamImprovedLifeChanneler);
+                _settings.AddVariable("TeamHealSelection", 1);
                 _settings.AddVariable("PistolTeam", true);
-                _settings.AddVariable("NanoResistSelection", (int)NanoResistSelection.None);
-                _settings.AddVariable("HealDeltaBuffSelection", (int)HealDeltaBuffSelection.None);
-                _settings.AddVariable("ShortHpSelection", (int)ShortHpSelection.None);
+                _settings.AddVariable("NanoResistSelection", 0);
+                _settings.AddVariable("HealDeltaBuffSelection", 0);
+                _settings.AddVariable("ShortHpSelection", 0);
                 _settings.AddVariable("ShortHOT", false);
                 _settings.AddVariable("EpsilonPurge", false);
-                _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Team);
-                _settings.AddVariable("StrengthBuffSelection", (int)StrengthBuffSelection.Self);
-                _settings.AddVariable("InitDebuffSelection", (int)InitDebuffSelection.None);
+                _settings.AddVariable("InitBuffSelection", 2);
+                _settings.AddVariable("StrengthBuffSelection", 1);
+                _settings.AddVariable("InitDebuffSelection", 0);
 
                 //Adv
-                _settings.AddVariable("MorphSelection", (int)MorphSelection.None);
+                _settings.AddVariable("MorphSelection", 0);
                 _settings.AddVariable("CatDamage", false);
-                _settings.AddVariable("AdvArmor", (int)AdvArmor.None);
-                _settings.AddVariable("AdvDmgShield", (int)AdvDmgShield.None);
+                _settings.AddVariable("AdvArmor", 0);
+                _settings.AddVariable("AdvDmgShield", 0);
 
                 //enf
-                _settings.AddVariable("MongoSelection", (int)MongoSelection.Spam);
+                _settings.AddVariable("MongoSelection", 2);
                 _settings.AddVariable("CycleChallenger", false);
-                _settings.AddVariable("SingleTauntsSelection", (int)SingleTauntsSelection.Adds);
+                _settings.AddVariable("SingleTauntsSelection", 2);
                 _settings.AddVariable("TargetedHpBuff", true);
                 _settings.AddVariable("OSTMongo", false);
-                _settings.AddVariable("EnfDmgShield", (int)EnfDmgShield.None);
+                _settings.AddVariable("EnfDmgShield", 0);
 
                 //nt
-                _settings.AddVariable("AOESelection", (int)AOESelection.None);
-                _settings.AddVariable("NTCost", (int)NTCost.None);
-                _settings.AddVariable("NFRangeBuff", (int)NFRangeBuff.None);
-                _settings.AddVariable("NanoHOTTeam", (int)NanoHOTTeam.None);
-                _settings.AddVariable("BlindSelection", (int)BlindSelection.None);
-                _settings.AddVariable("NTEvades", (int)NTEvades.None);
+                _settings.AddVariable("AOESelection", 0);
+                _settings.AddVariable("NTCost", 0);
+                _settings.AddVariable("NFRangeBuff", 0);
+                _settings.AddVariable("NanoHOTTeam", 0);
+                _settings.AddVariable("BlindSelection", 0);
+                _settings.AddVariable("NTEvades", 0);
 
                 RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
@@ -949,6 +949,9 @@ namespace CombatHandler.Agent
                     _ncuUpdateTime = Time.NormalTime;
 
                 }
+
+                Morphs();
+
                 if (_settings["SyncPets"].AsBool())
                 {
                     SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
@@ -1116,10 +1119,10 @@ namespace CombatHandler.Agent
                             RegisterSpellProcessor(RelevantNanos.SingleTargetNukes, SingleTargetNuke, CombatActionPriority.Low);
                             RegisterSpellProcessor(RelevantNanos.RKAOENukes,
                                 (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.RK), CombatActionPriority.Low);
+                                => AOENuke(aoeNuke, fightingTarget, ref actionTarget, 1), CombatActionPriority.Low);
                             RegisterSpellProcessor(new[] { RelevantNanos.VolcanicEruption },
-                                (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => AOENuke(aoeNuke, fightingTarget, ref actionTarget, AOESelection.VE), CombatActionPriority.Low);
+                            (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                            => AOENuke(aoeNuke, fightingTarget, ref actionTarget, 2));
                             //buffs
                             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
                                  (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1201,7 +1204,7 @@ namespace CombatHandler.Agent
                                 RegisterSpellProcessor(RelevantNanos.LeetCrit, LeetCrit);
                                 RegisterSpellProcessor(RelevantNanos.WolfAgility, WolfAgility);
                                 RegisterSpellProcessor(RelevantNanos.SaberDamage, SaberDamage);
-
+                                RegisterSpellProcessor(RelevantNanos.TreeBuff, TreeBuff);
                                 //Morph Cooldowns
                                 RegisterSpellProcessor(RelevantNanos.CatDamage, CatDamage);
 
@@ -1211,6 +1214,15 @@ namespace CombatHandler.Agent
                             check = uiSetting;
                         }
                         break;
+                }
+
+                if (_settings["ProcSelection"].AsInt32() == 1)
+                {
+                    CancelBuffs(RelevantNanos.DetauntProcs);
+                }
+                if (_settings["ProcSelection"].AsInt32() == 2)
+                {
+                    CancelBuffs(RelevantNanos.DOTProcs);
                 }
 
                 #region UI
@@ -1604,26 +1616,26 @@ namespace CombatHandler.Agent
                         morphView.Clicked = HandleMorphViewClick;
                     }
 
-                    if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    if (_settings["MorphSelection"].AsInt32() != 1)
                     {
                         CancelBuffs(RelevantNanos.DragonMorph);
                     }
-                    if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    if (_settings["MorphSelection"].AsInt32() != 4)
                     {
                         CancelBuffs(RelevantNanos.LeetMorph);
                     }
-                    if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    if (_settings["MorphSelection"].AsInt32() != 2)
                     {
                         CancelBuffs(RelevantNanos.SaberMorph);
                     }
-                    if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    if (_settings["MorphSelection"].AsInt32() != 3)
                     {
                         CancelBuffs(RelevantNanos.WolfMorph);
                     }
-                    if (MorphSelection.Bird != (MorphSelection)_settings["MorphSelection"].AsInt32())
+                    if (_settings["MorphSelection"].AsInt32() != 5)
                     {
-                        CancelBuffs(RelevantNanos.BirdMorph);
-                    }  
+                        CancelBuffs(RelevantNanos.TreeMorph);
+                    }
                 }
 
                 #endregion
@@ -1708,16 +1720,6 @@ namespace CombatHandler.Agent
                 }
 
                 #endregion
-
-
-                if (ProcSelection.Damage == (ProcSelection)_settings["ProcSelection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.DetauntProcs);
-                }
-                if (ProcSelection.DeTaunt == (ProcSelection)_settings["ProcSelection"].AsInt32())
-                {
-                    CancelBuffs(RelevantNanos.DOTProcs);
-                }
 
                 base.OnUpdate(deltaTime);
             }
@@ -1821,7 +1823,7 @@ namespace CombatHandler.Agent
         {
             var localPlayer = DynelManager.LocalPlayer;
 
-            if (MorphSelection.Wolf != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+            if (_settings["MorphSelection"].AsInt32() != 3) { return false; }
 
             if (!localPlayer.Buffs.Contains(RelevantNanos.WolfMorph)) { return false; }
 
@@ -1835,7 +1837,7 @@ namespace CombatHandler.Agent
         {
             var localPlayer = DynelManager.LocalPlayer;
 
-            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+            if (_settings["MorphSelection"].AsInt32() != 2) { return false; }
 
             if (!localPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
 
@@ -1849,7 +1851,7 @@ namespace CombatHandler.Agent
         {
             var localPlayer = DynelManager.LocalPlayer;
 
-            if (MorphSelection.Leet != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+            if (_settings["MorphSelection"].AsInt32() != 4) { return false; }
 
             if (!localPlayer.Buffs.Contains(RelevantNanos.LeetMorph)) { return false; }
 
@@ -1863,7 +1865,7 @@ namespace CombatHandler.Agent
         {
             var localPlayer = DynelManager.LocalPlayer;
 
-            if (MorphSelection.Dragon != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+            if (_settings["MorphSelection"].AsInt32() != 1) { return false; }
 
             if (!localPlayer.Buffs.Contains(RelevantNanos.DragonMorph)) { return false; }
 
@@ -1873,15 +1875,29 @@ namespace CombatHandler.Agent
             actionTarget.Target = DynelManager.LocalPlayer;
             return true;
         }
+        private bool TreeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+
+            if (_settings["MorphSelection"].AsInt32() != 5) { return false; }
+
+            if (!localPlayer.Buffs.Contains(RelevantNanos.TreeMorph)) { return false; }
+
+            if (localPlayer.Buffs.Contains(RelevantNanos.TreeBuff)) { return false; }
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+        }
         private bool CatDamage(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (MorphSelection.Saber != (MorphSelection)_settings["MorphSelection"].AsInt32()) { return false; }
+            if (_settings["MorphSelection"].AsInt32() != 2) { return false; }
 
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.SaberMorph)) { return false; }
 
             return ToggledTargetDebuff("CatDamage", spell, spell.Nanoline, fightingTarget, ref actionTarget);
 
         }
+
         #endregion
 
         #region Buffs
@@ -1942,14 +1958,14 @@ namespace CombatHandler.Agent
 
         private bool DetauntProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcSelection.DeTaunt != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
+            if (_settings["ProcSelection"].AsInt32() != 2) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool DamageProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ProcSelection.Damage != (ProcSelection)_settings["ProcSelection"].AsInt32()) { return false; }
+            if (_settings["ProcSelection"].AsInt32() != 1) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
@@ -1984,26 +2000,20 @@ namespace CombatHandler.Agent
         {
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfDoc)) { return false; }
 
-            int healSelection = _settings[selectionSetting].AsInt32();
-
-            if (healSelection == 1) { return false; }
+            if (_settings["TeamHealSelection"].AsInt32() != 0) { return false; }
 
             if (Healing.TeamHealPercentage == 0) { return false; }
 
             if (!Team.IsInTeam) { return false; }
 
-            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+            var dyingTeamMembersCount = Team.Members
+                   .Count(m => m.Character != null
+                            && m.Character.Health > 0
+                            && m.Character.HealthPercent <= Healing.TeamHealPercentage);
 
-            var count = DynelManager.Characters.Count(c =>
-                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
+            if (dyingTeamMembersCount < 2) { return false; }
 
-            if (count >= 2)
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         private bool DocCompleteTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -2017,26 +2027,20 @@ namespace CombatHandler.Agent
         {
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfDoc)) { return false; }
 
-            int healSelection = _settings[selectionSetting].AsInt32();
-
-            if (healSelection == 0) { return false; }
+            if (_settings["TeamHealSelection"].AsInt32() != 1) { return false; }
 
             if (Healing.TeamHealPercentage == 0) { return false; }
 
             if (!Team.IsInTeam) { return false; }
 
-            var teamIndex = Team.Members.FirstOrDefault(n => n.Identity == DynelManager.LocalPlayer.Identity).TeamIndex;
+            var dyingTeamMembersCount = Team.Members
+                    .Count(m => m.Character != null
+                             && m.Character.Health > 0
+                             && m.Character.HealthPercent <= Healing.TeamHealPercentage);
 
-            var count = DynelManager.Characters.Count(c =>
-                Team.Members.Any(m => m.TeamIndex == teamIndex && m.Identity.Instance == c.Identity.Instance)
-                && c.HealthPercent <= Healing.TeamHealPercentage && c.Health > 0);
+            if (dyingTeamMembersCount < 2) { return false; }
 
-            if (count >= 2)
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         private bool LockCH(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -2069,19 +2073,17 @@ namespace CombatHandler.Agent
         #region Buffs
         private bool ShortMaxHealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (ShortHpSelection.None == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32()) { return false; }
-
-            if (ShortHpSelection.Self == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32())
+            switch (_settings["ShortHpSelection"].AsInt32())
             {
-                return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case 0://None
+                    return false;
+                case 1://Self
+                    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                case 2://Team
+                    return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+                default:
+                    return false;
             }
-
-            if (ShortHpSelection.Team == (ShortHpSelection)_settings["ShortHpSelection"].AsInt32() && Team.IsInTeam)
-            {
-                return CombatTeamBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-            }
-
-            return false;
         }
         #endregion
 
@@ -2090,28 +2092,24 @@ namespace CombatHandler.Agent
         {
             if (!_settings["EpsilonPurge"].AsBool()) { return false; }
 
-            var target = DynelManager.Players
-            .Where(c => c.IsInLineOfSight
-            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-            && spell.IsInRange(c)
-            && c.Buffs.Contains(NanoLine.DOT_LineA)
-            || c.Buffs.Contains(NanoLine.DOT_LineB)
-            || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
-            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
-            || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
-            || c.Buffs.Contains(NanoLine.DOTStrainC))
-            .FirstOrDefault();
+            var target = Team.Members
+                .Select(m => m.Character)
+                .FirstOrDefault(c => c != null
+                                  && c.IsInLineOfSight
+                                  && spell.IsInRange(c)
+                                  && (c.Buffs.Contains(NanoLine.DOT_LineA)
+                                      || c.Buffs.Contains(NanoLine.DOT_LineB)
+                                      || c.Buffs.Contains(NanoLine.DOTAgentStrainA)
+                                      || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainA)
+                                      || c.Buffs.Contains(NanoLine.DOTNanotechnicianStrainB)
+                                      || c.Buffs.Contains(NanoLine.DOTStrainC)));
 
-            if (target != null)
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = target;
-                return true;
-            }
+            if (target == null) { return false; }
 
-            return false;
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
-
 
         #endregion
 
@@ -2121,6 +2119,7 @@ namespace CombatHandler.Agent
 
         private bool Mongo(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfEnf)) { return false; }
             if (!CanCast(spell)) { return false; }
 
             var mob = DynelManager.NPCs
@@ -2133,93 +2132,79 @@ namespace CombatHandler.Agent
             {
                 if (!spell.IsReady) { return false; }
                 if (Spell.HasPendingCast) { return false; }
-
                 return true;
             }
-
-            if (DynelManager.LocalPlayer.HealthPercent >= 30)
+            else
             {
-                if (_settings["MongoSelection"].AsInt32() == 0) { return false; }
+                var selection = _settings["MongoSelection"].AsInt32();
 
-                if (Time.AONormalTime > _mongo + MongoDelay)
+                if (selection == 0) { return false; }
+                if (DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
+                if (Time.AONormalTime < _mongo + MongoDelay) { return false; }
+
+                switch (selection)
                 {
-                    if (_settings["MongoSelection"].AsInt32() == 1)
-                    {
-                        if (mob != null)
-                        {
-                            _mongo = Time.AONormalTime;
-                            return true;
-                        }
-                    }
-                    if (_settings["MongoSelection"].AsInt32() == 2)
-                    {
-                        if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) <= 20f
-                            && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name))
-                        {
-                            _mongo = Time.AONormalTime;
-                            return true;
-                        }
-                    }
+                    case 1:
+                        if (mob == null) { return false; }
+                        _mongo = Time.AONormalTime;
+                        return true;
+                    case 2:
+
+                        if (fightingTarget?.Position.DistanceFrom(DynelManager.LocalPlayer.Position) >= 20f
+                        || debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)) { return false; }
+                        _mongo = Time.AONormalTime;
+                        return true;
+                    default:
+                        return false;
                 }
             }
-
-            return false;
         }
+
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            var selection = _settings["SingleTauntsSelection"].AsInt32();
+
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfEnf)) { return false; }
+            if (selection == 0) { return false; }
             if (!CanCast(spell)) { return false; }
+            if (Time.AONormalTime < _singleTaunt + SingleTauntDelay) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
+            if (debuffAreaTargetsToIgnore.Contains(fightingTarget?.Name)) { return false; }
 
-            if (SingleTauntsSelection.Adds == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
+            switch (selection)
             {
-                var mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
-                        && c.IsInLineOfSight
-                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
-                        && spell.IsInRange(c)
-                        && AttackingTeam(c))
-                    .OrderBy(c => c.MaxHealth)
-                    .FirstOrDefault();
+                case 1:
+                    if (fightingTarget == null) { return false; }
 
-                if (DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
-                    if (mob != null)
-                    {
-                        _singleTaunt = Time.AONormalTime;
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = mob;
-                        return true;
-                    }
-                }
-            }
-
-            if (SingleTauntsSelection.Target == (SingleTauntsSelection)_settings["SingleTauntsSelection"].AsInt32()
-                && Time.AONormalTime > _singleTaunt + SingleTauntDelay)
-            {
-                if (fightingTarget != null && !debuffAreaTargetsToIgnore.Contains(fightingTarget.Name)
-                    && DynelManager.LocalPlayer.HealthPercent >= 30)
-                {
                     _singleTaunt = Time.AONormalTime;
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = fightingTarget;
                     return true;
-                }
-            }
+                case 2:
+                    var mob = DynelManager.NPCs
+                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
+                   .OrderBy(c => c.MaxHealth).FirstOrDefault();
 
-            return false;
+                    if (mob == null) { return false; }
+
+                    _singleTaunt = Time.AONormalTime;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = mob;
+                    return true;
+                default:
+                    return false;
+            }
         }
         private bool CycleChallenger(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["CycleChallenger"].AsBool() && Time.AONormalTime > _challenger + CycleChallengerDelay
-                && (fightingTarget != null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0))
-            {
-                if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfEnf)) { return false; }
+            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (!_settings["CycleChallenger"].AsBool()) { return false; }
+            if (fightingTarget == null || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) == 0) { return false; }
+            if (Time.AONormalTime < _challenger + CycleChallengerDelay) { return false; }
 
-                _challenger = Time.AONormalTime;
-                return true;
-            }
-
-            return false;
+            _challenger = Time.AONormalTime;
+            return true;
         }
 
         #endregion
@@ -2230,10 +2215,15 @@ namespace CombatHandler.Agent
         {
             if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
 
-            if (CostBuffSelection.Team == (CostBuffSelection)_settings["CostBuffSelection"].AsInt32())
+            switch (_settings["CostBuffSelection"].AsInt32())
             {
-                if (Team.IsInTeam)
-                {
+                case 0:
+                    return false;
+                case 1:
+                    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+                case 2:
+                    if (!Team.IsInTeam) { return false; }
+
                     var target = DynelManager.Players
                         .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && spell.IsInRange(c)
@@ -2241,15 +2231,14 @@ namespace CombatHandler.Agent
                             && SpellChecksOther(spell, spell.Nanoline, c))
                         .FirstOrDefault();
 
-                    if (target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = target;
-                        return true;
-                    }
-                }
+                    if (target == null) { return false; }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                default:
+                    return false;
             }
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool Chant(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -2335,7 +2324,9 @@ namespace CombatHandler.Agent
 
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Any(c => RelevantNanos.FalseProfSol.Contains(c.Id)) || !_settings["Buffing"].AsBool()) { return false; }
+            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfSol)) { return false; }
+
+            if (!_settings["Buffing"].AsBool()) { return false; }
 
             if (fightingtarget == null || !CanCast(spell)) { return false; }
 
@@ -2588,12 +2579,9 @@ namespace CombatHandler.Agent
         #endregion
 
         #region NT
-        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, AOESelection aoeType)
+        private bool AOENuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int aoeType)
         {
-            var aoeSelection = (AOESelection)_settings["AOESelection"].AsInt32();
-
-            if (fightingTarget == null || !CanCast(spell) || aoeSelection != aoeType)
-                return false;
+            if (fightingTarget == null || !CanCast(spell) || _settings["AOESelection"].AsInt32() != aoeType) { return false; }
 
             return true;
         }
@@ -2611,23 +2599,19 @@ namespace CombatHandler.Agent
         }
         private bool SingleTargetNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (AOESelection.None != (AOESelection)_settings["AOESelection"].AsInt32()
-                    || fightingTarget == null) { return false; }
+            if (_settings["AOESelection"].AsInt32() != 0 || fightingTarget == null) { return false; }
 
             return true;
         }
         private bool AOEBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BlindSelection.AOE != (BlindSelection)_settings["BlindSelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (_settings["BlindSelection"].AsInt32() != 2 || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
-
         private bool SingleBlind(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (BlindSelection.Target != (BlindSelection)_settings["BlindSelection"].AsInt32()
-                || fightingTarget == null || !CanCast(spell)) { return false; }
+            if (_settings["BlindSelection"].AsInt32() != 1 || fightingTarget == null || !CanCast(spell)) { return false; }
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
@@ -2778,8 +2762,6 @@ namespace CombatHandler.Agent
 
             public static readonly Spell[] InitDebuffs = Spell.GetSpellsForNanoline(NanoLine.InitiativeDebuffs).OrderByStackingOrder().Where(spell => spell.Id != TiredLimbs).ToArray();
 
-            
-
             //Adv
             public static int[] AdvyTargetHeals = new[] { 223167, 252008, 252006, 136674, 136673, 143908, 82059, 136675, 136676, 82060, 136677,
                 136678, 136679, 136682, 82061, 136681, 136680, 136683, 136684, 136685, 82062, 136686, 136689, 82063, 136688, 136687,
@@ -2795,14 +2777,13 @@ namespace CombatHandler.Agent
             public static readonly int[] TreeMorph = { 229666, 229884, 229887, 229889 };
             public static readonly int[] Morphs = { 217670, 25994, 263278, 82834, 275005, 85062, 217680, 85070, 229666, 229884, 229887, 229889 };
             public static readonly int[] BirdMorph = { 25997, 85066, 82835 };
-
+            public static readonly int[] TreeBuff = { 302223, 302220 };
             public static readonly int[] DragonScales = { 302217, 302214 };
             public static readonly int[] WolfAgility = { 302235, 302232 };
             public static readonly int[] LeetCrit = { 302229, 302226 };
             public static readonly int[] SaberDamage = { 302243, 302240 };
             public static readonly int[] SaberBuff = { 162313, 162315, 162317, 162319, 162321 };
             public static readonly int[] CatDamage = { 162321, 162319, 162317, 162315, 162313, };
-
 
             //Doc
             public const int AlphaAndOmega = 42409;
@@ -2886,94 +2867,8 @@ namespace CombatHandler.Agent
         }
         #endregion
 
-        #region Agent Selections
-        public enum FalseProfSelection
-        {
-            None, Metaphysicist, Soldier, Enforcer, Engineer, Doctor, Fixer, Beauracrat, MartialArtist, NanoTechnician, Trader, Adventurer
-        }
-        public enum DOTASelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum EvasionDebuffSelection
-        {
-            None, Target, Area, Boss
-        }
-        public enum ProcSelection
-        {
-            None, Damage, DeTaunt
-        }
-        #endregion
-
-        #region MP Selections
-        public enum CostBuffSelection
-        {
-            None, Self, Team
-        }
-        #endregion
-
-        #region Enfo Selections
-        public enum MongoSelection
-        {
-            None, Adds, Spam
-        }
-        public enum SingleTauntsSelection
-        {
-            None, Target, Adds
-        }
-        public enum EnfDmgShield
-        {
-            None, Self, Team
-        }
-        #endregion
-
-        #region Adv Selections
-        public enum MorphSelection
-        {
-            None, Dragon, Saber, Wolf, Leet, Bird
-        }
-        public enum AdvArmor
-        {
-            None, Self, Team
-        }
-        public enum AdvDmgShield
-        {
-            None, Self, Team
-        }
-        #endregion
-
-        #region Doc Selections
-        public enum TeamHealSelection
-        {
-            Teamheal, TeamImprovedLifeChanneler
-        }
-        public enum ShortHpSelection
-        {
-            None, Self, Team
-        }
-        public enum NanoResistSelection
-        {
-            None, Self, Team
-        }
-        public enum InitBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum HealDeltaBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum StrengthBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum InitDebuffSelection
-        {
-            None, Target, Area, Boss
-        }
-        #endregion
-
         #region Trader Selections
+
         public enum RansackSelection
         {
             None, Target, Area, Boss
@@ -2990,43 +2885,15 @@ namespace CombatHandler.Agent
         {
             None, Target, Area, Boss
         }
-        public enum TdrEvades
-        {
-            None, Self, Team
-        }
+
         #endregion
 
-        #region NT Selections
-        public enum NFRangeBuff
-        {
-            None, Self, Team
-        }
-        public enum NanoHOTTeam
-        {
-            None, Self, Team
-        }
-        public enum NTCost
-        {
-            None, Self, Team
-        }
-        public enum NTEvades
-        {
-            None, Self, Team
-        }
-        public enum AOESelection
-        {
-            None, RK, VE
-        }
-        public enum BlindSelection
-        {
-            None, Target, AOE
-        }
+
         private static class RelevantIgnoreNanos
         {
             public static int[] CompNanoSkills = new[] { 220331, 220333, 220335, 220337, 292299, 220339, 220341, 220343 };
 
         }
-        #endregion
 
         #endregion
     }

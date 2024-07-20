@@ -2,85 +2,114 @@
 <root>
 	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-			<OptionRadioButtonGroup label="Grand Theft Humidity" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__GrandTheftHumiditySelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Boss" value="2"/>
-			</OptionRadioButtonGroup>
-			<OptionRadioButtonGroup label="My Enemy" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__MyEnemySelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Boss" value="2"/>
-			</OptionRadioButtonGroup>
-		</View>
-		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-			<OptionRadioButtonGroup label="AAO Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AAODrainSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Area" value="2"/>
-				<RadioButton label="Boss" value="3"/>
-			</OptionRadioButtonGroup>
-			<OptionRadioButtonGroup label="AAD Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AADDrainSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Area" value="2"/>
-				<RadioButton label="Boss" value="3"/>
-			</OptionRadioButtonGroup>
-			<OptionRadioButtonGroup label="MPDamageDebuffLineA" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__MPDamageDebuffLineASelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Area" value="2"/>
-				<RadioButton label="Boss" value="3"/>
-			</OptionRadioButtonGroup>
-			<OptionRadioButtonGroup label="TraderShutdownSkillDebuff" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__TraderShutdownSkillDebuffSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Area" value="2"/>
-				<RadioButton label="Boss" value="3"/>
-			</OptionRadioButtonGroup>
-		</View>
-		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-			<OptionRadioButtonGroup label="AC Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__ACDrainSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Area" value="2"/>
-				<RadioButton label="Boss" value="3"/>
-			</OptionRadioButtonGroup>
-			<OptionRadioButtonGroup label="Nano Resist" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoResistSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Boss" value="2"/>
-			</OptionRadioButtonGroup>
-			<OptionRadioButtonGroup label="RK Nano Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RKNanoDrainSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Boss" value="2"/>
-			</OptionRadioButtonGroup>
-			<OptionRadioButtonGroup label="SL Nano Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SLNanoDrainSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Boss" value="2"/>
-			</OptionRadioButtonGroup>
-			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		</View>
-		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
-		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
-			<OptionRadioButtonGroup label="Drains (Ransack)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RansackSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Area" value="2"/>
-				<RadioButton label="Boss" value="3"/>
-			</OptionRadioButtonGroup>
-			<OptionRadioButtonGroup label="Drains (Deprive)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DepriveSelection">
-				<RadioButton label="None" value="0"/>
-				<RadioButton label="Target" value="1"/>
-				<RadioButton label="Area" value="2"/>
-				<RadioButton label="Boss" value="3"/>
-			</OptionRadioButtonGroup>
-		</View>
+		<BorderView v_alignment="center" h_alignment="center" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+				<OptionRadioButtonGroup label="Grand Theft Humidity" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__GrandTheftHumiditySelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="My Enemy" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__MyEnemySelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Keep Running" value="4"/>
+				</OptionRadioButtonGroup>
+			</View>
+		</BorderView>
+		<BorderView v_alignment="center" h_alignment="center" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+				<OptionRadioButtonGroup label="AAO Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AAODrainSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+					<RadioButton label="Keep Running" value="4"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="AAD Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__AADDrainSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+					<RadioButton label="Keep Running" value="4"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="MPDamageDebuffLineA" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__MPDamageDebuffLineASelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+					<RadioButton label="Keep Running" value="4"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="TraderShutdownSkillDebuff" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__TraderShutdownSkillDebuffSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+				</OptionRadioButtonGroup>
+			</View>
+		</BorderView>
+		<BorderView v_alignment="center" h_alignment="center" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+				<OptionRadioButtonGroup label="Draw AC" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DrawACSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+					<RadioButton label="Keep Running" value="4"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="Siphon AC" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SiphonACSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+					<RadioButton label="Keep Running" value="4"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="Trader badass AC debuffs" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__TraderBadassACDebuffsSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+				</OptionRadioButtonGroup>
+			</View>
+		</BorderView>
+		<BorderView v_alignment="center" h_alignment="center" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+				<OptionRadioButtonGroup label="Nano Resist" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__NanoResistSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="RK Nano Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RKNanoDrainSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="SL Nano Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__SLNanoDrainSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+				</OptionRadioButtonGroup>
+				<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+			</View>
+		</BorderView>
+		<BorderView v_alignment="center" h_alignment="center" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+				<OptionRadioButtonGroup label="Drains (Ransack)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RansackSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+					<RadioButton label="Keep Running" value="4"/>
+				</OptionRadioButtonGroup>
+				<OptionRadioButtonGroup label="Drains (Deprive)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__DepriveSelection">
+					<RadioButton label="None" value="0"/>
+					<RadioButton label="Target" value="1"/>
+					<RadioButton label="Boss" value="2"/>
+					<RadioButton label="Area" value="3"/>
+					<RadioButton label="Keep Running" value="4"/>
+				</OptionRadioButtonGroup>
+			</View>
+		</BorderView>
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>
 </root>

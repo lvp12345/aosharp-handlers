@@ -25,8 +25,6 @@ namespace FollowManager
 
         private static double _followTimer;
 
-        private static bool _init = false;
-
         public static Window _infoWindow;
 
         public static View _infoView;
@@ -40,6 +38,7 @@ namespace FollowManager
 
         public static string PluginDir;
 
+        [Obsolete]
         public override void Run(string pluginDir)
         {
             try

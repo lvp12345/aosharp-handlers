@@ -6,6 +6,7 @@ namespace CombatHandler.Agent
 {
     public class Main : AOPluginEntry
     {
+        [Obsolete]
         public override void Run(string pluginDir)
         {
             try

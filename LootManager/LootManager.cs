@@ -13,8 +13,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using AOSharp.Core.Misc;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Reflection;
 
 namespace LootManager
 {
@@ -48,6 +46,7 @@ namespace LootManager
 
         private double _inventorySpaceReminder;
 
+        [Obsolete]
         public override void Run(string pluginDir)
         {
             try
@@ -179,23 +178,20 @@ namespace LootManager
         {
             if (isBackpackInfoInitialized)
             {
-                return; // Already initialized, no need to do it again
+                return; 
             }
 
-            // Open all backpacks to set the item count and names
-            List<Item> bags = Inventory.Items.Where(c => c.UniqueIdentity.Type == IdentityType.Container).ToList();
-
-            foreach (Item bag in bags)
+            foreach (var bag in Inventory.Items.Where(bags => bags.UniqueIdentity.Type == IdentityType.Container).ToList())
             {
-                bag.Use();
-                bag.Use();
+                bag?.Use();
+                bag?.Use();
             }
-            //// Loop through all backpacks to update backpackDictionary
+           
             //foreach (Backpack backpack in Inventory.Backpacks)
             //{
             //    UpdateBackpackDictionary();
             //}
-            // Set the flag to indicate that initialization is done
+            
             isBackpackInfoInitialized = true;
         }
 

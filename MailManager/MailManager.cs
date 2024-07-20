@@ -35,6 +35,7 @@ namespace MailManager
         public static string PluginDir;
         private static int _currentMailAmount = 0;
 
+        [Obsolete]
         public override void Run(string pluginDir)
         {
             _settings = new Settings("MailManager");

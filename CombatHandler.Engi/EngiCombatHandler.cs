@@ -90,7 +90,7 @@ namespace CombatHandler.Engineer
 
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("StimTargetSelection", (int)StimTargetSelection.Self);
+                _settings.AddVariable("StimTargetSelection", 1);
 
                 _settings.AddVariable("Kits", true);
 
@@ -104,35 +104,35 @@ namespace CombatHandler.Engineer
                 _settings.AddVariable("PetArmorBuff", false);
                 _settings.AddVariable("PetDamageBuffBuff", false);
 
-                _settings.AddVariable("MechEngiSelection", (int)MechEngiSelection.None);
-                _settings.AddVariable("ElecEngiSelection", (int)ElecEngiSelection.None);
-                _settings.AddVariable("AggressiveDefensiveSelection", (int)AggressiveDefensiveSelection.None);
+                _settings.AddVariable("MechEngiSelection", 0);
+                _settings.AddVariable("ElecEngiSelection", 0);
+                _settings.AddVariable("AggressiveDefensiveSelection", 0);
 
-                _settings.AddVariable("SupportMechEngiSelection", (int)SupportMechEngiSelection.None);
-                _settings.AddVariable("SupportElecEngiSelection", (int)SupportElecEngiSelection.None);
-                _settings.AddVariable("SupportAggressiveDefensiveSelection", (int)SupportAggressiveDefensiveSelection.None);
+                _settings.AddVariable("SupportMechEngiSelection", 0);
+                _settings.AddVariable("SupportElecEngiSelection", 0);
+                _settings.AddVariable("SupportAggressiveDefensiveSelection", 0);
 
                 _settings.AddVariable("IncreaseAggressivenessTrimmer", true);
                 _settings.AddVariable("SupportIncreaseAggressivenessTrimmer", true);
 
-                _settings.AddVariable("DamageSelection", (int)DamageSelection.Self);
-                _settings.AddVariable("InitBuffSelection", (int)InitBuffSelection.Self);
+                _settings.AddVariable("DamageSelection", 1);
+                _settings.AddVariable("InitBuffSelection", 1);
                 _settings.AddVariable("TeamArmorBuff", true);
                 _settings.AddVariable("PistolTeam", true);
                 _settings.AddVariable("GrenadeTeam", true);
                 _settings.AddVariable("ShadowlandReflectBase", true);
-                _settings.AddVariable("RKReflectSelection", (int)RKReflectSelection.None);
+                _settings.AddVariable("RKReflectSelection", 0);
                 _settings.AddVariable("DamageShields", false);
                 _settings.AddVariable("SLMap", false);
                 _settings.AddVariable("MEBuff", false);
                 _settings.AddVariable("SelfBlockers", false);
                 _settings.AddVariable("TeamBlockers", false);
 
-                _settings.AddVariable("BuffingAuraSelection", (int)BuffingAuraSelection.None);
-                _settings.AddVariable("DebuffingAuraSelection", (int)DebuffingAuraSelection.None);
+                _settings.AddVariable("BuffingAuraSelection", 0);
+                _settings.AddVariable("DebuffingAuraSelection", 0);
 
-                _settings.AddVariable("PetPerkSelection", (int)PetPerkSelection.None);
-                _settings.AddVariable("PetProcSelection", (int)PetProcSelection.None);
+                _settings.AddVariable("PetPerkSelection", 0);
+                _settings.AddVariable("PetProcSelection", 0);
 
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.ReactiveArmor);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.AssaultForceRelief);
@@ -147,29 +147,33 @@ namespace CombatHandler.Engineer
                 RegisterSpellProcessor(RelevantNanos.PetPercentHealing, PetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.PetTargetHealing, PetHealing, CombatActionPriority.High);
 
+                //Pet spawners
+                RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Attack).Select(c => c.Key).ToArray(), CastPets, CombatActionPriority.High);
+                RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Support).Select(c => c.Key).ToArray(), CastPets, CombatActionPriority.High);
+
                 //Pet Aura 
                 //buffing
                 RegisterSpellProcessor(RelevantNanos.ArmorAura, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericAuraBuff(spell, fightingTarget, ref actionTarget, BuffingAuraSelection.Armor));
+                    GenericAuraBuff(spell, fightingTarget, ref actionTarget, 1));
 
                 RegisterSpellProcessor(RelevantNanos.ReflectAura, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericAuraBuff(spell, fightingTarget, ref actionTarget, BuffingAuraSelection.Reflect));
+                    GenericAuraBuff(spell, fightingTarget, ref actionTarget, 2));
 
                 RegisterSpellProcessor(RelevantNanos.DamageAura, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericAuraBuff(spell, fightingTarget, ref actionTarget, BuffingAuraSelection.Damage));
+                    GenericAuraBuff(spell, fightingTarget, ref actionTarget, 3));
 
                 RegisterSpellProcessor(RelevantNanos.ShieldAura, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericAuraBuff(spell, fightingTarget, ref actionTarget, BuffingAuraSelection.Shield));
+                    GenericAuraBuff(spell, fightingTarget, ref actionTarget, 4));
 
                 //debuffing
                 RegisterSpellProcessor(RelevantNanos.Blinds, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericDebuffingAura(spell, fightingTarget, ref actionTarget, DebuffingAuraSelection.Blind));
+                    GenericDebuffingAura(spell, fightingTarget, ref actionTarget, 1));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerPetAOESnareBuff).OrderByStackingOrder(), (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericDebuffingAura(spell, fightingTarget, ref actionTarget, DebuffingAuraSelection.PetSnare));
+                    GenericDebuffingAura(spell, fightingTarget, ref actionTarget, 2));
 
                 RegisterSpellProcessor(RelevantNanos.ShieldRippers, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericDebuffingAura(spell, fightingTarget, ref actionTarget, DebuffingAuraSelection.ShieldRipper));
+                    GenericDebuffingAura(spell, fightingTarget, ref actionTarget, 3));
 
                 RegisterSpellProcessor(RelevantNanos.IntrusiveAuraCancellation, AuraCancellation);
 
@@ -214,10 +218,7 @@ namespace CombatHandler.Engineer
                     => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
                 //Pets
-                //pet spawners
-                RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Attack).Select(c => c.Key).ToArray(), CastPets, CombatActionPriority.High);
-                RegisterSpellProcessor(PetsList.Pets.Where(c => c.Value.PetType == PetType.Support).Select(c => c.Key).ToArray(), CastPets, CombatActionPriority.High);
-
+               
                 //pet buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EngineerMiniaturization).OrderByStackingOrder(),
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -252,24 +253,24 @@ namespace CombatHandler.Engineer
                 //pet procs
                 RegisterSpellProcessor(RelevantNanos.MastersBidding,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => GenericPetProc(spell, fightingTarget, ref actionTarget, PetProcSelection.MastersBidding));
+                    => GenericPetProc(spell, fightingTarget, ref actionTarget, 1));
 
                 RegisterSpellProcessor(RelevantNanos.SedativeInjectors,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => GenericPetProc(spell, fightingTarget, ref actionTarget, PetProcSelection.SedativeInjectors));
+                    => GenericPetProc(spell, fightingTarget, ref actionTarget, 2));
 
                 //pet perks
                 RegisterPerkProcessor(PerkHash.TauntBox,
                     (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.TauntBox));
+                    => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, 1));
 
                 RegisterPerkProcessor(PerkHash.ChaoticEnergy,
                     (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.ChaoticBox));
+                    => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, 2));
 
                 RegisterPerkProcessor(PerkHash.SiphonBox,
                     (PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                    => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, PetPerkSelection.SiphonBox));
+                    => GenericPetPerk(perkAction, fightingTarget, ref actionTarget, 3));
 
                 //pet trimmers
                 RegisterItemProcessor(RelevantTrimmers.IncreaseAggressiveness, Trimmers.IncreaseAggressivenessTrimmer);
@@ -793,8 +794,6 @@ namespace CombatHandler.Engineer
             {
                 if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 1.6) { return; }
 
-                base.OnUpdate(deltaTime);
-
                 if (Time.NormalTime > _ncuUpdateTime + 1.0f)
                 {
                     RemainingNCUMessage ncuMessage = RemainingNCUMessage.ForLocalPlayer();
@@ -1118,90 +1117,92 @@ namespace CombatHandler.Engineer
                         Chat.WriteLine("SyncPets enabled.");
                         syncPetsOnEnabled();
                     }
-
-                    #endregion
-
-                    #region GlobalBuffing
-
-                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleBuffing = false;
-                        _settings["Buffing"] = false;
-                        _settings["GlobalBuffing"] = false;
-                    }
-
-                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
-                    {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleBuffing = true;
-                        _settings["Buffing"] = true;
-                        _settings["GlobalBuffing"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Composites
-
-                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = false
-                        });
-
-                        ToggleComposites = false;
-                        _settings["Composites"] = false;
-                        _settings["GlobalComposites"] = false;
-                    }
-                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
-                    {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleComposites = true;
-                        _settings["Composites"] = true;
-                        _settings["GlobalComposites"] = true;
-                    }
-
-                    #endregion
-
-                    #region Global Resurrection
-
-                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-
-                            Switch = false
-                        });
-
-                        ToggleRez = false;
-                        _settings["GlobalRez"] = false;
-                    }
-                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
-                    {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-                            Switch = true
-                        });
-
-                        ToggleRez = true;
-                        _settings["GlobalRez"] = true;
-                    }
-
-                    #endregion
                 }
+                #endregion
+
+                #region GlobalBuffing
+
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
+
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
+
+                #endregion
+
+                #region Global Composites
+
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = false
+                    });
+
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
+
+                #endregion
+
+                #region Global Resurrection
+
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+
+                        Switch = false
+                    });
+
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
+                    {
+                        Switch = true
+                    });
+
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
+
+                #endregion
+
+
+                base.OnUpdate(deltaTime);
             }
             catch (Exception ex)
             {
@@ -1220,25 +1221,16 @@ namespace CombatHandler.Engineer
 
         private bool SelfDamageBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            DamageSelection selection = (DamageSelection)_settings["DamageSelection"].AsInt32();
+            if (_settings["DamageSelection"].AsInt32() != 1) { return false; }
 
-            if (selection == DamageSelection.Self)
-            {
-                return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-            }
-            return false;
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool TeamDamageBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            DamageSelection selection = (DamageSelection)_settings["DamageSelection"].AsInt32();
+            if (_settings["DamageSelection"].AsInt32() != 2) { return false; }
 
-            if (selection == DamageSelection.Team)
-            {
-                return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, null);
-            }
-
-            return false;
+            return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, null);
         }
 
         private bool Grenade(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1256,33 +1248,29 @@ namespace CombatHandler.Engineer
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (InitBuffSelection.None == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32()
-                || !GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)) { return false; }
+            var setting = _settings["InitBuffSelection"].AsInt32();
 
-            if (InitBuffSelection.Team == (InitBuffSelection)_settings["InitBuffSelection"].AsInt32())
+            switch (setting)
             {
-                if (Team.IsInTeam)
-                {
-                    var target = DynelManager.Players
-                        .Where(c => c.IsInLineOfSight
-                            && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                            && c.Health > 0
-                            && c.Profession != Profession.Doctor && c.Profession != Profession.NanoTechnician
-                            && GetWieldedWeapons(c).HasFlag(CharacterWieldedWeapon.Ranged)
-                            && SpellChecksOther(spell, spell.Nanoline, c))
-                        .FirstOrDefault();
+                case 0:
+                    return false;
+                case 1:
+                    if (!GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)) { return false; }
+                    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+                case 2:
+                    var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+                       && t.Profession != Profession.Doctor && t.Profession != Profession.NanoTechnician && spell.IsInRange(t.Character)
+                       && GetWieldedWeapons(t.Character).HasFlag(CharacterWieldedWeapon.Ranged) && SpellChecksOther(spell, spell.Nanoline, t.Character))
+                       .FirstOrDefault();
 
-                    if (target != null)
-                    {
-                        actionTarget.ShouldSetTarget = true;
-                        actionTarget.Target = target;
-                        return true;
-                    }
-                }
+                    if (teamMember == null) return false;
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = teamMember.Character;
+                    return true;
+                default:
+                    return false;
             }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         #endregion
@@ -1297,43 +1285,35 @@ namespace CombatHandler.Engineer
 
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
 
-            if (PetSpawner(PetsList.Pets, spell, fightingTarget, ref actionTarget))
-            {
-                Trimmers.LastTrimTime = Time.AONormalTime;
-                Trimmers.ResetTrimmers();
+           return PetSpawner2(PetsList.Pets, spell, fightingTarget, ref actionTarget);
 
-                return true;
-            }
-            return false;
         }
 
-        protected bool PetSpawner(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool PetSpawner2(Dictionary<int, PetSpellData> petData, Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (Game.IsZoning) { return false; }
 
             if (!petData.ContainsKey(spell.Id)) { return false; }
 
+            if (Inventory.NumFreeSlots < 2) { return false; }
+
             if (Inventory.Find(petData[spell.Id].ShellId, out Item shell))
             {
+                if (Item.HasPendingUse) { return false; }
                 if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
-
-                shell.Use();
+                
+                shell?.Use();
             }
-
-            if (Inventory.NumFreeSlots == 0) { return false; }
-
-            if (DynelManager.LocalPlayer.Pets.Where(c => c.Type == petData[spell.Id].PetType || c.Type == PetType.Unknown).Count() >= 1)
+            else
             {
-                return false;
+                return true;
             }
-
-            return NoShellPetSpawner(petData[spell.Id].PetType, spell, fightingTarget, ref actionTarget);
+            return false;
         }
 
         #endregion
 
         #region Buffs
-
 
         private bool MechanicalEngineering(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1341,22 +1321,17 @@ namespace CombatHandler.Engineer
 
             if (fightingTarget != null) { return false; }
 
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.EngineeringBuff))
-            {
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
-            }
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.EngineeringBuff)) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            return false;
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
         }
 
         private bool SettingPetBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string settingName)
         {
-            if (settingName != null && !_settings[settingName].AsBool())
-            {
-                return false;
-            }
+            if (settingName != null && !_settings[settingName].AsBool()) { return false; }
 
             return PetTargetBuff(spell.Nanoline, PetType.Attack, spell, fightingTarget, ref actionTarget)
                 || PetTargetBuff(spell.Nanoline, PetType.Support, spell, fightingTarget, ref actionTarget);
@@ -1428,35 +1403,26 @@ namespace CombatHandler.Engineer
 
         #region Auras
 
-        private bool GenericAuraBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, BuffingAuraSelection auraType)
+        private bool GenericAuraBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int auraType)
         {
-            BuffingAuraSelection currentSetting = (BuffingAuraSelection)_settings["BuffingAuraSelection"].AsInt32();
-
-            if (currentSetting != auraType)
-            {
-                return false;
-            }
+            if (_settings["BuffingAuraSelection"].AsInt32() != auraType) { return false; }
 
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool GenericDebuffingAura(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget)
-            actionTarget, DebuffingAuraSelection debuffType)
+            actionTarget, int debuffType)
         {
-            DebuffingAuraSelection currentSetting = (DebuffingAuraSelection)_settings["DebuffingAuraSelection"].AsInt32();
-
-            if (currentSetting != debuffType || fightingTarget == null)
-            {
-                return false;
-            }
+            if (_settings["DebuffingAuraSelection"].AsInt32() != debuffType || fightingTarget == null) {return false;}
 
             switch (debuffType)
             {
-                case DebuffingAuraSelection.Blind:
-                case DebuffingAuraSelection.ShieldRipper:
+                case 1:
+                    return true;
+                case 3:
                     return CheckDebuffCondition();
 
-                case DebuffingAuraSelection.PetSnare:
+                case 2:
                     return SpamSnare(spell.Nanoline, spell, fightingTarget, ref actionTarget);
 
                 default:
@@ -1472,18 +1438,13 @@ namespace CombatHandler.Engineer
 
             if (!spell.IsReady) { return false; }
 
-            Pet target = DynelManager.LocalPlayer.Pets
-                    .Where(c => c.Type == PetType.Attack)
-                    .FirstOrDefault();
+            var target = DynelManager.LocalPlayer.Pets.Where(c => c.Type == PetType.Attack).FirstOrDefault();
 
-            if (target != null && target.Character != null)
-            {
-                actionTarget.Target = target.Character;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+            if (target == null) { return false; }
 
-            return false;
+            actionTarget.Target = target.Character;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         private bool CheckDebuffCondition()
@@ -1504,30 +1465,24 @@ namespace CombatHandler.Engineer
             var pet = DynelManager.LocalPlayer.Pets
                 .FirstOrDefault(c => c != null && c.Character != null && c.Character.Buffs.Contains(NanoLine.EngineerPetAOESnareBuff));
 
-            if (pet != null && pet.Character != null)
-            {
-                actionTarget.Target = pet.Character;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+            if (pet == null) { return false; }
 
-            return false;
+            actionTarget.Target = pet.Character;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
 
         #endregion
 
         #region Proc
-        private bool GenericPetProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, PetProcSelection petProcSelection)
+
+        private bool GenericPetProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int petProcSelection)
         {
+            if (!_settings["BuffPets"].AsBool()) { return false; }
+            if (_settings["PetProcSelection"].AsInt32() != petProcSelection ) { return false; }
             if (!CanCast(spell)) { return false; }
-
-            PetProcSelection currentSetting = (PetProcSelection)_settings["PetProcSelection"].AsInt32();
-
-            if (currentSetting != petProcSelection || !CanLookupPetsAfterZone() || !_settings["BuffPets"].AsBool())
-            {
-                return false;
-            }
+            if (!CanLookupPetsAfterZone()) { return false; }
 
             foreach (Pet pet in DynelManager.LocalPlayer.Pets)
             {
@@ -1539,10 +1494,6 @@ namespace CombatHandler.Engineer
                 if (!pet.Character.Buffs.Contains(NanoLine.SiphonBox683)
                     && (pet.Type == PetType.Attack || pet.Type == PetType.Support))
                 {
-                    if (spell.IsReady)
-                    {
-                        spell.Cast(pet.Character, true);
-                    }
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = pet.Character;
                     return true;
@@ -1554,27 +1505,27 @@ namespace CombatHandler.Engineer
 
         #region Perks
 
-        private bool GenericPetPerk(PerkAction perkAction, SimpleChar fightingTarget,
-                     ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, PetPerkSelection petPerkSelection)
+        private bool GenericPetPerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int petPerkSelection)
         {
-            PetPerkSelection currentSetting = (PetPerkSelection)_settings["PetPerkSelection"].AsInt32();
+            var setting = _settings["PetPerkSelection"].AsInt32();
 
-            if (currentSetting == PetPerkSelection.None || currentSetting != petPerkSelection
-                || !CanLookupPetsAfterZone() || !_settings["BuffPets"].AsBool())
+            if (setting != petPerkSelection || !CanLookupPetsAfterZone() || !_settings["BuffPets"].AsBool())
             {
                 return false;
             }
 
             int[] relevantNano;
-            switch (currentSetting)
+            switch (setting)
             {
-                case PetPerkSelection.TauntBox:
+                case 0:
+                    return false;
+                case 1:
                     relevantNano = RelevantNanos.PerkTauntBox;
                     break;
-                case PetPerkSelection.ChaoticBox:
+                case 2:
                     relevantNano = RelevantNanos.PerkChaoticBox;
                     break;
-                case PetPerkSelection.SiphonBox:
+                case 3:
                     relevantNano = RelevantNanos.PerkSiphonBox;
                     break;
                 default:
@@ -1713,14 +1664,7 @@ namespace CombatHandler.Engineer
             public static readonly int[] ImproveActuators = { 253189, 253188 };// Lock skill Mech. Engi for 60m.
 
         }
-        public enum PetPerkSelection
-        {
-            None, TauntBox, ChaoticBox, SiphonBox
-        }
-        public enum PetProcSelection
-        {
-            None, MastersBidding, SedativeInjectors
-        }
+        
         public enum BuffingAuraSelection
         {
             None, Armor, Reflect, Damage, Shield
@@ -1728,18 +1672,6 @@ namespace CombatHandler.Engineer
         public enum DebuffingAuraSelection
         {
             None, Blind, PetSnare, ShieldRipper
-        }
-        public enum InitBuffSelection
-        {
-            None, Self, Team
-        }
-        public enum RKReflectSelection
-        {
-            None, Self, Team
-        }
-        public enum DamageSelection
-        {
-            None, Self, Team
         }
         public enum MechEngiSelection
         {

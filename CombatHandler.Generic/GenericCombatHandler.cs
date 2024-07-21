@@ -277,6 +277,8 @@ namespace CombatHandler.Generic
                 RegisterItemProcessor(new int[] { RelevantGenericItems.FreeStim1, RelevantGenericItems.FreeStim50, RelevantGenericItems.FreeStim100,
                 RelevantGenericItems.FreeStim200, RelevantGenericItems.FreeStim300 }, FreeStim);
 
+                RegisterItemProcessor(RelevantGenericItems.BootsOfGridspaceDistortion, RelevantGenericItems.BootsOfGridspaceDistortion, BootsofGridspaceDistortion);
+
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeNano, CompositeBuff);
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeAttribute, CompositeBuff);
                 RegisterSpellProcessor(RelevantGenericNanos.CompositeUtility, CompositeBuff);
@@ -930,6 +932,17 @@ namespace CombatHandler.Generic
         #endregion
 
         #region Items
+
+        bool BootsofGridspaceDistortion(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var player = DynelManager.LocalPlayer;
+            if (Inventory.Items.Where(c => c.Name == "Boots of Gridspace Distortion" && c.IsEquipped) == null) { return false; }
+            if (player.Cooldowns.ContainsKey(Stat.RunSpeed)) { return false; }
+            if (player.Buffs.Contains(305996)) { return false; }
+            if (Item.HasPendingUse) { return false; }
+
+            return true;
+        }
 
         protected virtual bool SharpObjects(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1919,6 +1932,7 @@ namespace CombatHandler.Generic
             public const int DaTaunterHigh = 158046;
 
             public const int GnuffsEternalRiftCrystal = 303179;
+            public const int BootsOfGridspaceDistortion = 305995;
 
             public static int[] RezCanIds = new[] { 301070, 303390 };
 

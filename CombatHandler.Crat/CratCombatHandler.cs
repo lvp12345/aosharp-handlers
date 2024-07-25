@@ -164,9 +164,9 @@ namespace CombatHandler.Bureaucrat
                 RegisterSpellProcessor(RelevantNanos.CorporateLeadership, RootReducer);
 
                 //Calms
-                RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, Calm, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.AOECalms, Calm, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.RkCalms, Calm, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, ShadowlandsCalms, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.AOECalms, AOECalms, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.RkCalms, RkCalms, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.LastMinNegotiations, Calm12Man, CombatActionPriority.High);
 
                 //Root/Snare
@@ -1369,42 +1369,67 @@ namespace CombatHandler.Bureaucrat
 
         #region Calms
 
-        private bool Calm(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        bool ShadowlandsCalms(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            var modeSelection = _settings["ModeSelection"].AsInt32();
-
-            if (modeSelection == 0) { return false; }
+            if (_settings["CalmingSelection"].AsInt32() != 0) { return false; }
             if (!CanCast(spell)) { return false; }
 
-            var calmingSelection = _settings["CalmingSelection"].AsInt32();
-            if (calmingSelection != 0 && calmingSelection != 2 && calmingSelection != 1 ){ return false; }
+            return CalmTarget(spell, fightingTarget, ref actionTarget);
+        }
 
-            var targets = DynelManager.NPCs
-                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
-                    && c.Health > 0
-                    && c.IsInLineOfSight
-                    && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
-                    && spell.IsInRange(c)
-                    && c.MaxHealth < 1000000);
+        bool RkCalms(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (_settings["CalmingSelection"].AsInt32() != 1) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            if (modeSelection == 2)
+            return CalmTarget(spell, fightingTarget, ref actionTarget);
+        }
+
+        bool AOECalms(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (_settings["CalmingSelection"].AsInt32() != 2) { return false; }
+            if (!CanCast(spell)) { return false; }
+
+            return CalmTarget(spell, fightingTarget, ref actionTarget);
+        }
+
+        bool CalmTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var modeSelection = _settings["ModeSelection"].AsInt32();
+            if (modeSelection == 0) { return false; }
+
+            var target = DynelManager.NPCs
+                  .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                      && c.Health > 0
+                      && c.IsInLineOfSight
+                      && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                      && spell.IsInRange(c)
+                      && c.MaxHealth < 1000000)
+                  .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                  .ThenBy(c => c.Health)
+                  .FirstOrDefault();
+
+            switch (modeSelection)
             {
-                targets = targets
-                    .Where(c => c.FightingTarget != null
-                        && !AttackingMob(c)
-                        && AttackingTeam(c));
+                case 1:
+                    if (target == null) { return false; }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                case 2:
+                    var adds = target?.FightingTarget != null
+                       && !AttackingMob(target)
+                       && AttackingTeam(target);
+
+                    if (!adds) { return false; }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                default:
+                    return false;
             }
-
-            var target = targets
-                .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                .ThenBy(c => c.Health)
-                .FirstOrDefault();
-
-            if (target == null) { return false; }
-
-            actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = target;
-            return true;
         }
 
         private bool Calm12Man(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

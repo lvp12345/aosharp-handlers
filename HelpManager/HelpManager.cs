@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using static HelpManager.IPCMessages.HoverboardMessage;
 using Debug = AOSharp.Core.Debug;
 
 
@@ -137,9 +138,9 @@ namespace HelpManager
                 KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
                 KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
 
-                IPCChannel.RegisterCallback((int)IPCOpcode.YalmOn, OnYalmCast);
-                IPCChannel.RegisterCallback((int)IPCOpcode.YalmUse, OnYalmUse);
-                IPCChannel.RegisterCallback((int)IPCOpcode.YalmOff, OnYalmCancel);
+                IPCChannel.RegisterCallback((int)IPCOpcode.YalmAction, OnYalmAction);
+                IPCChannel.RegisterCallback((int)IPCOpcode.Hoverboard, OnHoverboardAction);
+
                 IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
                 IPCChannel.RegisterCallback((int)IPCOpcode.POHPathing, POHPathingReceived);
                 IPCChannel.RegisterCallback((int)IPCOpcode.POHBool, POHBoolReceived);
@@ -166,6 +167,8 @@ namespace HelpManager
                 Chat.RegisterCommand("autosit", AutoSitSwitch);
 
                 Chat.RegisterCommand("yalm", YalmCommand);
+
+                Chat.RegisterCommand("hoverboard", HoverboardCommand);
 
                 if (Game.IsNewEngine)
                 {
@@ -682,12 +685,27 @@ namespace HelpManager
             }
         }
 
-        private void OnYalmCast(int sender, IPCMessage msg)
+        private void OnYalmAction(int sender, IPCMessage msg)
         {
-            YalmOnMessage yalmMsg = (YalmOnMessage)msg;
+            YalmActionMessage yalmMsg = (YalmActionMessage)msg;
 
-            Spell yalm = Spell.List.FirstOrDefault(x => x.Id == yalmMsg.Spell);
+            switch (yalmMsg.Action)
+            {
+                case YalmActionMessage.ActionType.On:
+                    OnYalmCast(yalmMsg.Spell);
+                    break;
+                case YalmActionMessage.ActionType.Use:
+                    OnYalmUse(yalmMsg.Item);
+                    break;
+                case YalmActionMessage.ActionType.Off:
+                    OnYalmCancel();
+                    break;
+            }
+        }
 
+        private void OnYalmCast(int spellId)
+        {
+            Spell yalm = Spell.List.FirstOrDefault(x => x.Id == spellId);
             Spell yalm2 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
 
             if (yalm != null)
@@ -701,17 +719,13 @@ namespace HelpManager
             else
             {
                 Item yalm3 = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
-
                 yalm3?.Equip(EquipSlot.Weap_Hud1);
             }
         }
 
-        private void OnYalmUse(int sender, IPCMessage msg)
+        private void OnYalmUse(int itemId)
         {
-            YalmUseMessage yalmMsg = (YalmUseMessage)msg;
-
-            Item yalm = Inventory.Items.FirstOrDefault(x => x.HighId == yalmMsg.Item);
-
+            Item yalm = Inventory.Items.FirstOrDefault(x => x.HighId == itemId);
             Item yalm2 = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
 
             if (yalm != null)
@@ -725,21 +739,21 @@ namespace HelpManager
             else
             {
                 Spell yalm3 = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
-
                 yalm3?.Cast(false);
             }
         }
 
-        private void OnYalmCancel(int sender, IPCMessage msg)
+        private void OnYalmCancel()
         {
             if (Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).Any())
             {
                 Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
-
                 yalm?.MoveToInventory();
             }
             else
+            {
                 CancelBuffs(RelevantNanos.Yalms);
+            }
         }
 
         private void YalmCommand(string command, string[] param, ChatWindow chatWindow)
@@ -747,44 +761,75 @@ namespace HelpManager
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.Yalms))
             {
                 CancelBuffs(RelevantNanos.Yalms);
-                IPCChannel.Broadcast(new YalmOffMessage());
+                IPCChannel.Broadcast(new YalmActionMessage { Action = YalmActionMessage.ActionType.Off });
             }
             else if (Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.WeaponPage).Any())
             {
                 Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.WeaponPage).FirstOrDefault();
-
                 if (yalm != null)
                 {
                     yalm.MoveToInventory();
-
-                    IPCChannel.Broadcast(new YalmOffMessage());
+                    IPCChannel.Broadcast(new YalmActionMessage { Action = YalmActionMessage.ActionType.Off });
                 }
             }
             else if (Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).Any())
             {
                 Item yalm = Inventory.Items.Where(x => x.Name.Contains("Yalm") || x.Name.Contains("Ganimedes")).Where(x => x.Slot.Type == IdentityType.Inventory).FirstOrDefault();
-
                 if (yalm != null)
                 {
                     yalm.Equip(EquipSlot.Weap_Hud1);
-
-                    IPCChannel.Broadcast(new YalmUseMessage()
-                    {
-                        Item = yalm.HighId
-                    });
+                    IPCChannel.Broadcast(new YalmActionMessage { Action = YalmActionMessage.ActionType.Use, Item = yalm.HighId });
                 }
             }
             else
             {
                 Spell yalmbuff = Spell.List.FirstOrDefault(x => RelevantNanos.Yalms.Contains(x.Id));
-
                 if (yalmbuff != null)
                 {
                     yalmbuff.Cast(false);
+                    IPCChannel.Broadcast(new YalmActionMessage { Action = YalmActionMessage.ActionType.On, Spell = yalmbuff.Id });
+                }
+            }
+        }
 
-                    IPCChannel.Broadcast(new YalmOnMessage()
+        private void OnHoverboardAction(int sender, IPCMessage msg)
+        {
+            HoverboardMessage hoverboardMsg = (HoverboardMessage)msg;
+
+            switch (hoverboardMsg.Action)
+            {
+                case HoverboardAction.On:
+                    Spell hoverboardOn = Spell.List.FirstOrDefault(x => RelevantNanos.Hoverboards.Contains(x.Id));
+                    hoverboardOn?.Cast(false);
+                    break;
+                case HoverboardAction.Off:
+                    CancelBuffs(RelevantNanos.Hoverboards);
+                    break;
+            }
+        }
+
+        private void HoverboardCommand(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.Hoverboards))
+            {
+                CancelBuffs(RelevantNanos.Hoverboards);
+                IPCChannel.Broadcast(new HoverboardMessage()
+                {
+                    Action = HoverboardAction.Off
+                });
+            }
+            else
+            {
+                Spell hoverboardbuff = Spell.List.FirstOrDefault(x => RelevantNanos.Hoverboards.Contains(x.Id));
+
+                if (hoverboardbuff != null)
+                {
+                    hoverboardbuff.Cast(false);
+
+                    IPCChannel.Broadcast(new HoverboardMessage()
                     {
-                        Spell = yalmbuff.Id
+                        Action = HoverboardAction.On,
+                        Spell = hoverboardbuff.Id
                     });
                 }
             }
@@ -855,6 +900,11 @@ namespace HelpManager
                 296034, 296669, 304437, 270884, 270941, 270836, 287285, 288816, 270943, 270939, 270945,
                 270711, 270731, 270645, 284061, 288802, 270764, 277426, 288799, 270738, 270779, 293619,
                 294781, 301669, 301700, 301670, 120499, 
+            };
+
+            public static readonly int[] Hoverboards = {
+                270634, 270632, 270636, 270327, 277712, 288804, 270643, 270641, 270431, 270540, 270542, 274272,
+                288808, 281684, 288814, 270538, 281668, 288812, 270544, 270546, 
             };
         }
 

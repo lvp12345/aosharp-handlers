@@ -3,7 +3,8 @@
 	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Info" layout_borders="Rect(2,2,2,2)" max_size="Point(16000,-1)">
 		<TextView value=" " layout_borders="Rect(2,2,2,2)"/>
 		<TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="/yalm - Toggles yalm (if you cancel the ncu, will need to type twice)." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/yalm - Toggles yalm." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/hoverboard - Toggles hoverboard - Can be used in SL." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/autosit - Toggles auto sitting." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="(POH) Path to Portal Mobs/Return;" layout_borders="Rect(0,0,0,2)"/>

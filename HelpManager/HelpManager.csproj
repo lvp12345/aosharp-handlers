@@ -70,14 +70,13 @@
       <Link>CommonParameters.cs</Link>
     </Compile>
     <Compile Include="Config.cs" />
+    <Compile Include="IPCMessages\HoverboardMessage.cs" />
     <Compile Include="IPCMessages\POHBool.cs" />
     <Compile Include="IPCMessages\POHPathing.cs" />
+    <Compile Include="IPCMessages\YalmActionMessage.cs" />
     <Compile Include="POH.cs" />
     <Compile Include="Eumenides.cs" />
     <Compile Include="IPCMessages\UISettings.cs" />
-    <Compile Include="IPCMessages\YalmUseMessage.cs" />
-    <Compile Include="IPCMessages\YalmOnMessage.cs" />
-    <Compile Include="IPCMessages\YalmOffMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="HelpManager.cs" />
     <Compile Include="Kits.cs" />

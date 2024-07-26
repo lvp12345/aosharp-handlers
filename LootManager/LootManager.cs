@@ -11,40 +11,33 @@ using Newtonsoft.Json;
 using System.Data;
 using System.IO;
 using System.Text.RegularExpressions;
-using AOSharp.Core.Misc;
+using SmokeLounge.AOtomation.Messaging.Messages;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System.Diagnostics;
 
 namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
-        public static string previousErrorMessage = string.Empty;
-
-        double _lootingTimer;
-
-        AutoResetInterval openCorpseInterval = new AutoResetInterval(4000); // 5000 milliseconds = 5 seconds
-        private Stopwatch closeCorpseStopwatch = new Stopwatch();
+        protected Settings _settings;
+        public static Settings _settingsItems;
+        private Window _infoWindow;
 
         public static Config Config { get; private set; }
+        public static string PluginDir;
 
         public static List<Rule> Rules;
 
-        private Dictionary<Vector3, Identity> openedCorpses = new Dictionary<Vector3, Identity>();
-
         private Dictionary<Identity, BackpackInfo> backpackDictionary = new Dictionary<Identity, BackpackInfo>();
 
-        Corpse corpseToClose = null;
-
-        protected Settings _settings;
-        public static Settings _settingsItems;
-
-        private Window _infoWindow;
-
-        public static string PluginDir;
-
+        List<int> ourMobs = new List<int>();
+        Dictionary<Identity, int> ourCorpses = new Dictionary<Identity, int>();
+        bool CorpseIsOpen = false;
+        int corpseInstance;
+        public static string previousErrorMessage = string.Empty;
         bool isBackpackInfoInitialized = false;
-
-        private double _inventorySpaceReminder;
+        double openDelay;
+        double moveDelay;
 
         [Obsolete]
         public override void Run(string pluginDir)
@@ -58,6 +51,7 @@ namespace LootManager
                 Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                 Game.OnUpdate += OnUpdate;
+                Network.N3MessageReceived += N3MessageReceived;
                 Inventory.ContainerOpened += ProcessItemsInCorpseContainer;
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
@@ -74,17 +68,37 @@ namespace LootManager
                     _settings["Enabled"] = !_settings["Enabled"].AsBool();
                 });
 
-                if (Game.IsNewEngine)
+                Chat.RegisterCommand("print", (string command, string[] param, ChatWindow chatWindow) =>
                 {
-                    Chat.WriteLine("Does not work on this engine!");
-                }
-                else
+                    if (ourMobs.Count > 1)
+                    {
+                        foreach (var mob in ourMobs)
+                        {
+                            Chat.WriteLine($"{mob}");
+                        }
+                    }
+                    if (ourCorpses.Count > 1)
+                    {
+                        foreach (var corpse in ourCorpses)
+                        {
+                            Chat.WriteLine($"{corpse.Key}, {corpse.Value}");
+                        }
+                    }
+                });
+
+                if (!Game.IsNewEngine)
                 {
                     Chat.WriteLine("Loot Manager loaded!");
                     Chat.WriteLine("/lootmanager for settings. /lm to enable/disable");
+
+                }
+                else
+                {
+                    Chat.WriteLine("Does not work on this engine!");
                 }
 
                 string _lootManagerEnabled = _settings["Enabled"].AsBool() ? "Enabled" : "Disabled";
+
                 Chat.WriteLine($"Loot Manager is currently {_lootManagerEnabled}");
 
             }
@@ -100,18 +114,40 @@ namespace LootManager
                 }
             }
         }
+
+        private void N3MessageReceived(object sender, N3Message e)
+        {
+            switch (e.N3MessageType)
+            {
+                case N3MessageType.CorpseFullUpdate:
+                    var corpsemsg = (CorpseFullUpdateMessage)e;
+                    if (!ourMobs.Contains(corpsemsg.UnknownIdentity.Instance)) { return; }
+                    //Chat.WriteLine($"Adding {corpsemsg.Identity}, {corpsemsg.UnknownIdentity.Instance} to ourCorpses dictionary");
+                    ourCorpses.Add(corpsemsg.Identity, corpsemsg.UnknownIdentity.Instance);
+                    break;
+                case N3MessageType.Despawn:
+                    var despawnMsg = (DespawnMessage)e;
+                    if (!ourCorpses.ContainsKey(despawnMsg.Identity)) { return; }
+                    //Chat.WriteLine($"Removing {despawnMsg.Identity} from ourCorpses dictionary and {corpseInstance} from ourMobs, Despawn");
+                    ourCorpses.Remove(despawnMsg.Identity);
+                    ourMobs.Remove(corpseInstance);
+                    CorpseIsOpen = false;
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public override void Teardown()
         {
             Config.Save();
             SaveRules();
             SettingsController.CleanUp();
         }
+
         private void MoveItemsToBag()
         {
-            if (!backpackDictionary.Any())
-            {
-                return;
-            }
+            if (!backpackDictionary.Any()) { return; }
 
             var availableBackpack = backpackDictionary.FirstOrDefault(backpack =>
                  backpack.Value.FreeSlots > 0 &&
@@ -119,10 +155,12 @@ namespace LootManager
 
             if (!availableBackpack.Equals(default(KeyValuePair<Identity, BackpackInfo>)))
             {
-                foreach (Item itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                if (Time.AONormalTime < moveDelay) { return; }
+                foreach (var itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
                     if (CheckRules(itemtomove))
                     {
+                        //Chat.WriteLine($"Moving {itemtomove.Name} to {availableBackpack.Value.Name}");
                         itemtomove.MoveToContainer(availableBackpack.Key);
                         availableBackpack.Value.FreeSlots--;
                         break;
@@ -132,6 +170,7 @@ namespace LootManager
                         break;
                     }
                 }
+                moveDelay = Time.AONormalTime + 1.0;
             }
         }
 
@@ -145,29 +184,25 @@ namespace LootManager
 
                 if (backpackDictionary.ContainsKey(backpack.Identity))
                 {
-                    // Check if there's a change in free slots
                     if (backpackDictionary[backpack.Identity].FreeSlots != freeSlots)
                     {
-                        // Update the existing entry with new information
                         backpackDictionary[backpack.Identity].FreeSlots = freeSlots;
-                        dictionaryChanged = true; // Mark dictionary as changed
+                        dictionaryChanged = true;
                         SaveBackpackDictionaryToJson();
                     }
                 }
                 else
                 {
-                    // Add a new entry for the backpack
                     backpackDictionary.Add(backpack.Identity, new BackpackInfo
                     {
                         Name = backpack.Name,
                         FreeSlots = freeSlots
                     });
-                    dictionaryChanged = true; // Mark dictionary as changed
+                    dictionaryChanged = true;
                     SaveBackpackDictionaryToJson();
                 }
             }
 
-            // Only set the flag to indicate that initialization is done if there was a change
             if (dictionaryChanged)
             {
                 isBackpackInfoInitialized = true;
@@ -176,104 +211,107 @@ namespace LootManager
 
         private void InitializeBackpackInfo()
         {
-            if (isBackpackInfoInitialized)
-            {
-                return; 
-            }
+            if (isBackpackInfoInitialized) { return; }
 
             foreach (var bag in Inventory.Items.Where(bags => bags.UniqueIdentity.Type == IdentityType.Container).ToList())
             {
                 bag?.Use();
                 bag?.Use();
             }
-           
-            //foreach (Backpack backpack in Inventory.Backpacks)
-            //{
-            //    UpdateBackpackDictionary();
-            //}
-            
+
             isBackpackInfoInitialized = true;
         }
 
         private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
-
-            if (!_settings["Enabled"].AsBool()) return;
-
-            if (container.Identity.Type != IdentityType.Corpse) return;
-
-            foreach (Item item in container.Items)
+            try
             {
-                if (Inventory.NumFreeSlots <= 1)
-                    return;
+                if (!_settings["Enabled"].AsBool()) { return; }
+                if (container.Identity.Type != IdentityType.Corpse) { return; }
+                if (!ourCorpses.ContainsKey(container.Identity)) { return; }
 
-                if (CheckRules(item, true))
+                CorpseIsOpen = true;
+                corpseInstance = ourCorpses[container.Identity];
+                var corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity == container.Identity);
+
+                //Chat.WriteLine($"{corpse.Name}, {corpse.Identity}, {container.Identity} opened.");
+
+                foreach (var item in container.Items)
                 {
-                    item.MoveToInventory();
+                    if (Inventory.NumFreeSlots <= 1) { return; }
+
+                    if (CheckRules(item, true))
+                    {
+                        //Chat.WriteLine($"Moving {item.Name} to Inventory");
+                        item.MoveToInventory();
+                    }
+                    else
+                    {
+                        if (_settings["Delete"].AsBool())
+                        {
+                            //Chat.WriteLine($"Deleting {item?.Name}");
+                            item?.Delete();
+                        }
+                    }
                 }
-                else if (_settings["Delete"].AsBool())
-                    item.Delete();
+
+                if (container.Items.Any(item => !CheckRules(item)))
+                {
+                    if (!_settings["Delete"].AsBool())
+                    {
+                        corpse.Open();//closes corpse
+                        CorpseIsOpen = false;
+                        //Chat.WriteLine($"Removing {container.Identity}, {corpseInstance} from corpses and linked mob");
+                        ourMobs.Remove(corpseInstance);
+                        ourCorpses.Remove(container.Identity);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
         }
 
         public void ProcessCorpses()
         {
-            // If there's a corpse to close and 3 seconds have passed, attempt to close it
-            if (corpseToClose != null && closeCorpseStopwatch.ElapsedMilliseconds >= 3000)
-            {
-                corpseToClose.Open();
-                closeCorpseStopwatch.Stop();
-                corpseToClose = null;
-                return; // Don't process any other corpses this tick
-            }
+            var corpse = DynelManager.Corpses.FirstOrDefault(c => DynelManager.LocalPlayer.Position.DistanceFrom(c.Position) < +6
+            && ourCorpses.ContainsKey(c.Identity));
 
-            // If there's no corpse to close, try to find a new corpse to open
-            if (corpseToClose == null)
-            {
-                Corpse corpseToOpen = DynelManager.Corpses.FirstOrDefault(c =>
-                    c.DistanceFrom(DynelManager.LocalPlayer) < 7 &&
-                    !openedCorpses.ContainsKey(c.Position));
-
-                if (corpseToOpen != null)
-                {
-                    var itemsInCorpse = corpseToOpen.Container.Items;
-
-                    // Opening the corpse
-                    if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast)
-                    //&& !DynelManager.LocalPlayer.IsAttacking && DynelManager.LocalPlayer.FightingTarget == null
-                    //&& !DynelManager.LocalPlayer.IsAttackPending)
-                    {
-                        if (openCorpseInterval.Elapsed)
-                        {
-                            corpseToOpen.Open();
-                            closeCorpseStopwatch.Restart();
-                        }
-                    }
-
-                    // Check if the corpse has items not matching rules and hasn't been added to the dictionary
-                    if (corpseToOpen.IsOpen && itemsInCorpse.Any(item => !CheckRules(item)) && !openedCorpses.ContainsKey(corpseToOpen.Position))
-                    {
-                        corpseToClose = corpseToOpen;
-                        openedCorpses[corpseToOpen.Position] = corpseToOpen.Identity;
-                    }
-                }
-            }
+            if (corpse == null) { return; }
+            if (CorpseIsOpen) { return; }
+            if (!Spell.List.Any(c => c.IsReady)) { return; }
+            if (Spell.HasPendingCast) { return; }
+            if (Time.AONormalTime < openDelay) { return; }
+            //Chat.WriteLine($"Opening {corpse.Name}");
+            corpse.Open();
+            openDelay = Time.AONormalTime + 1.0;
         }
 
         private void OnUpdate(object sender, float deltaTime)
         {
             try
             {
-                if (Game.IsZoning)
-                {
-                    isBackpackInfoInitialized = false;
+                var player = DynelManager.LocalPlayer;
 
-                    return;
-                }
+                if (Game.IsZoning) { isBackpackInfoInitialized = false; return; }
 
                 if (_settings["Enabled"].AsBool())
                 {
                     InitializeBackpackInfo();
+
+                    if (player.FightingTarget != null && !ourMobs.Contains(player.FightingTarget.Identity.Instance))
+                    {
+                        //Chat.WriteLine($"Adding {player.FightingTarget.Name}, {player.FightingTarget.Identity.Instance} to ourMobs list.");
+                        ourMobs.Add(player.FightingTarget.Identity.Instance);
+                    }
 
                     if (_settings["Disable"].AsBool())
                     {
@@ -286,45 +324,29 @@ namespace LootManager
                         }
                     }
 
-                    if (!_settings["Delete"].AsBool())
-                    {
-                        ProcessCorpses();
-                    }
-
-                    if (_settings["Delete"].AsBool())
-                    {
-                        Corpse corpse = DynelManager.Corpses.Where(c => c.DistanceFrom(DynelManager.LocalPlayer) < 6).FirstOrDefault();
-
-                        if (corpse != null)
-                        {
-                            if (Spell.List.Any(c => c.IsReady) && !Spell.HasPendingCast
-                                && Time.NormalTime > _lootingTimer + 1)
-                            {
-                                corpse.Open();
-                                _lootingTimer = Time.NormalTime;
-                            }
-                        }
-                    }
-
+                    ProcessCorpses();
                     UpdateBackpackDictionary();
                     MoveItemsToBag();
-                    _inventorySpaceReminder = Time.AONormalTime;
                 }
 
                 #region UI
+
                 if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
                 {
-
                     if (SettingsController.settingsWindow.FindView("buttonAdd", out Button addbut))
                     {
                         if (addbut.Clicked == null)
-                            addbut.Clicked += addButtonClicked;
+                        {
+                            addbut.Clicked += AddButtonClicked;
+                        }
                     }
 
                     if (SettingsController.settingsWindow.FindView("buttonDel", out Button rembut))
                     {
                         if (rembut.Clicked == null)
-                            rembut.Clicked += remButtonClicked;
+                        {
+                            rembut.Clicked += RemButtonClicked;
+                        }
                     }
 
                     if (SettingsController.settingsWindow.FindView("LootManagerInfoView", out Button infoView))
@@ -333,6 +355,7 @@ namespace LootManager
                         infoView.Clicked = InfoView;
                     }
                 }
+
                 #endregion
             }
             catch (Exception ex)
@@ -358,16 +381,15 @@ namespace LootManager
             _infoWindow.Show(true);
         }
 
-        private void addButtonClicked(object sender, ButtonBase e)
+        private void AddButtonClicked(object sender, ButtonBase e)
         {
+            //Chat.WriteLine("AddButtonClicked");
             //SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
-
             SettingsController.settingsWindow.FindView("tivName", out TextInputView _itemName);
             SettingsController.settingsWindow.FindView("_itemMinQL", out TextInputView _itemMinQL);
             SettingsController.settingsWindow.FindView("_itemMaxQL", out TextInputView _itemMaxQL);
             SettingsController.settingsWindow.FindView("_itemQuantity", out TextInputView _itemQuantity);
             //SettingsController.settingsWindow.FindView("_itemBagName", out TextInputView _itemBagName);
-
             SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
 
             if (_itemName.Text.Trim() == "")
@@ -379,6 +401,7 @@ namespace LootManager
             int minql = 0;
             int maxql = 0;
             int quantity = 0;
+
             try
             {
                 minql = Convert.ToInt32(_itemMinQL.Text);
@@ -438,79 +461,87 @@ namespace LootManager
 
         private static void RefreshList()
         {
-            SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
-
-            _multiListView.DeleteAllChildren();
-
-            Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
-
-            int iEntry = 0;
-            foreach (Rule r in Rules)
-            {
-                View entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
-                entry.FindChild("ItemName", out TextView _textView);
-                string globalscope = r.Global ? "G" : "L";
-
-                _textView.Text = $"{(iEntry + 1).ToString()} - {globalscope} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
-
-                _multiListView.AddChild(entry, false);
-                iEntry++;
-            }
-            Chat.WriteLine($"Refreshed {Rules.Count} rules");
-        }
-
-        private void remButtonClicked(object sender, ButtonBase e)
-        {
             try
             {
+                //Chat.WriteLine("RefreshList()");
 
-                SettingsController.settingsWindow.FindView("tivindex", out TextInputView txIndex);
-                SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
+                if (SettingsController.settingsWindow == null || !SettingsController.settingsWindow.IsValid) { return; }
 
-                if (txIndex.Text.Trim() == "")
+                SettingsController.settingsWindow.FindView("ScrollListRoot", out MultiListView _multiListView);
+
+                _multiListView.DeleteAllChildren();
+
+                Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
+                int iEntry = 0;
+
+                foreach (Rule r in Rules)
                 {
-                    txErr.Text = "Cant remove an empty entry";
-                    return;
+                    var entry = View.CreateFromXml(PluginDir + "\\UI\\ItemEntry.xml");
+
+                    entry.FindChild("ItemName", out TextView _textView);
+                    string globalscope = r.Global ? "G" : "L";
+                    _textView.Text = $"{iEntry + 1} - {globalscope} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
+                    _multiListView.AddChild(entry, false);
+                    iEntry++;
                 }
 
-                int index = 0;
-
-                try
-                {
-                    index = Convert.ToInt32(txIndex.Text) - 1;
-                }
-                catch
-                {
-                    txErr.Text = "Entry must be a number!";
-                    return;
-                }
-
-                if (index < 0 || index >= Rules.Count)
-                {
-                    txErr.Text = "Invalid entry!";
-                    return;
-                }
-
-                Rules.RemoveAt(index);
-
-                //_multiListView.DeleteAllChildren();
-                //viewitems.Clear();
-
-                txErr.Text = "";
-                SaveRules();
-                RefreshList();
+                //Chat.WriteLine($"Refreshed {Rules.Count} rules");
             }
             catch (Exception ex)
             {
-                var errorMessage = "An error occurred on line " + LootManager.GetLineNumber(ex) + ": " + ex.Message;
-
-                if (errorMessage != LootManager.previousErrorMessage)
+                var stackTrace = new StackTrace(ex, true);
+                var frame = stackTrace.GetFrame(0);
+                var lineNumber = frame.GetFileLineNumber();
+                var errorMessage = $"An error occurred on line {lineNumber}: {ex.Message}";
+                if (errorMessage != previousErrorMessage)
                 {
                     Chat.WriteLine(errorMessage);
                     Chat.WriteLine("Stack Trace: " + ex.StackTrace);
-                    LootManager.previousErrorMessage = errorMessage;
+                    previousErrorMessage = errorMessage;
                 }
             }
+        }
+
+        private void RemButtonClicked(object sender, ButtonBase e)
+        {
+            //Chat.WriteLine("RemButtonClicked");
+
+            SettingsController.settingsWindow.FindView("tivindex", out TextInputView txIndex);
+            SettingsController.settingsWindow.FindView("tvErr", out TextView txErr);
+
+            if (txIndex.Text.Trim() == "")
+            {
+                txErr.Text = "Cant remove an empty entry";
+                return;
+            }
+
+            int index = 0;
+
+            try
+            {
+                index = Convert.ToInt32(txIndex.Text) - 1;
+            }
+            catch
+            {
+                txErr.Text = "Entry must be a number!";
+                return;
+            }
+
+            if (index < 0 || index >= Rules.Count)
+            {
+                txErr.Text = "Invalid entry!";
+                return;
+            }
+
+            Rules.RemoveAt(index);
+
+            //_multiListView.DeleteAllChildren();
+            //viewitems.Clear();
+
+            txErr.Text = "";
+            SaveRules();
+            RefreshList();
+
         }
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
@@ -522,10 +553,8 @@ namespace LootManager
         {
             try
             {
-                // Create a list to store the serialized BackpackInfoData objects
                 List<BackpackInfo> backpackInfoList = new List<BackpackInfo>();
 
-                // Convert each BackpackInfo object in backpackDictionary to BackpackInfoData and add to the list
                 foreach (var backpackInfo in backpackDictionary.Values)
                 {
                     backpackInfoList.Add(new BackpackInfo
@@ -536,82 +565,124 @@ namespace LootManager
                     });
                 }
 
-                // Serialize the list to JSON
                 string json = JsonConvert.SerializeObject(backpackInfoList, Formatting.Indented);
 
-                // Define the path for the JSON file
                 string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\" +
                     $"{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\BackpackInfo.json";
 
-                // Write the JSON data to the file
                 File.WriteAllText(filename, json);
 
             }
             catch (Exception ex)
             {
-                // Handle any exceptions that may occur during the save process
                 Chat.WriteLine("Error while saving backpackDictionary to JSON: " + ex.Message);
             }
         }
 
         private void LoadRules()
         {
-            Rules = new List<Rule>();
-
-            string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\Global.json";
-            if (File.Exists(filename))
+            try
             {
-                string rulesJson = File.ReadAllText(filename);
-                Rules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
-                foreach (Rule rule in Rules)
+                Rules = new List<Rule>();
+
+                string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\Global.json";
+                
+                if (File.Exists(filename))
                 {
-                    if (string.IsNullOrEmpty(rule.Quantity))
-                        rule.Quantity = "999";
-                    if (string.IsNullOrEmpty(rule.BagName))
-                        rule.BagName = "loot";
-                    rule.Global = true;
+                    string rulesJson = File.ReadAllText(filename);
+                    Rules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
+
+                    foreach (Rule rule in Rules)
+                    {
+                        if (string.IsNullOrEmpty(rule.Quantity))
+                        {
+                            rule.Quantity = "999";
+
+                        }
+                            
+                        if (string.IsNullOrEmpty(rule.BagName))
+                        {
+                            rule.BagName = "loot";
+                        }
+
+                        rule.Global = true;
+                    }
                 }
 
-            }
-
-            filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
-            if (File.Exists(filename))
-            {
-                List<Rule> scopedRules = new List<Rule>();
-                string rulesJson = File.ReadAllText(filename);
-                scopedRules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
-                foreach (Rule rule in scopedRules)
+                filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
+                
+                if (File.Exists(filename))
                 {
-                    rule.Global = false;
-                    if (string.IsNullOrEmpty(rule.Quantity))
-                        rule.Quantity = "999";
-                    if (string.IsNullOrEmpty(rule.BagName))
-                        rule.BagName = "loot";
-                    Rules.Add(rule);
-                }
-                Chat.WriteLine($"Loaded {scopedRules.Count.ToString()}");
-            }
-            Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
+                    List<Rule> scopedRules = new List<Rule>();
+                    string rulesJson = File.ReadAllText(filename);
+                    scopedRules = JsonConvert.DeserializeObject<List<Rule>>(rulesJson);
 
+                    foreach (Rule rule in scopedRules)
+                    {
+                        rule.Global = false;
+
+                        if (string.IsNullOrEmpty(rule.Quantity))
+                        {
+                            rule.Quantity = "999";
+                        }
+                            
+                        if (string.IsNullOrEmpty(rule.BagName))
+                        {
+                            rule.BagName = "loot";
+                        }
+                            
+                        Rules.Add(rule);
+                    }
+
+                    //Chat.WriteLine($"Loaded {scopedRules.Count.ToString()}");
+                }
+
+                Rules = Rules.OrderBy(o => o.Name.ToUpper()).ToList();
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
 
         private void SaveRules()
         {
-            List<Rule> GlobalRules = new List<Rule>();
-            List<Rule> ScopeRules = new List<Rule>();
+            try
+            {
+                List<Rule> GlobalRules = new List<Rule>();
+                List<Rule> ScopeRules = new List<Rule>();
 
-            string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\Global.json";
+                string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\Global.json";
 
-            GlobalRules = Rules.Where(o => o.Global == true).ToList();
-            ScopeRules = Rules.Where(o => o.Global == false).ToList();
+                GlobalRules = Rules.Where(o => o.Global == true).ToList();
+                ScopeRules = Rules.Where(o => o.Global == false).ToList();
 
-            string rulesJson = JsonConvert.SerializeObject(GlobalRules);
-            File.WriteAllText(filename, rulesJson);
+                string rulesJson = JsonConvert.SerializeObject(GlobalRules);
+                File.WriteAllText(filename, rulesJson);
 
-            filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
-            rulesJson = JsonConvert.SerializeObject(ScopeRules);
-            File.WriteAllText(filename, rulesJson);
-            Chat.WriteLine($"Saved {ScopeRules.Count.ToString()} Rules");
+                filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
+                rulesJson = JsonConvert.SerializeObject(ScopeRules);
+                File.WriteAllText(filename, rulesJson);
+                //Chat.WriteLine($"Saved {ScopeRules.Count} Rules");
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
 
         public bool CheckRules(Item item, bool updateRule = false)
@@ -620,7 +691,7 @@ namespace LootManager
             {
                 if (_settings["Exact"].AsBool())
                 {
-                    if (String.Equals(item.Name, rule.Name, StringComparison.OrdinalIgnoreCase) &&
+                    if (string.Equals(item.Name, rule.Name, StringComparison.OrdinalIgnoreCase) &&
                         item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
                         item.QualityLevel <= Convert.ToInt32(rule.Hql) &&
                         Convert.ToInt32(rule.Quantity) >= 1)
@@ -634,8 +705,7 @@ namespace LootManager
                     if (item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
                         item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
                         item.QualityLevel <= Convert.ToInt32(rule.Hql) &&
-                        Convert.ToInt32(rule.Quantity) >= 1
-                        )
+                        Convert.ToInt32(rule.Quantity) >= 1)
                     {
                         UpdateRule(rule, updateRule);
                         return true;
@@ -647,16 +717,36 @@ namespace LootManager
 
         private void UpdateRule(Rule rule, bool update)
         {
-            if (!update || Convert.ToInt32(rule.Quantity) == 999) return;
-            rule.Quantity = (Convert.ToInt32(rule.Quantity) - 1).ToString();
-            Chat.WriteLine($"Rule {rule.Name} - {rule.Quantity}");
-            if (Convert.ToInt32(rule.Quantity) == 0)
+            try
             {
-                Chat.WriteLine($"Removing Rule {rule.Name}");
-                Rules.Remove(rule);
+                //Chat.WriteLine("UpdateRule");
+
+                if (!update || Convert.ToInt32(rule.Quantity) == 999) { return; }
+
+                rule.Quantity = (Convert.ToInt32(rule.Quantity) - 1).ToString();
+
+                //Chat.WriteLine($"Rule {rule.Name} - {rule.Quantity}");
+
+                if (Convert.ToInt32(rule.Quantity) == 0)
+                {
+                    //Chat.WriteLine($"Removing Rule {rule.Name}");
+                    Rules.Remove(rule);
+                }
+
+                SaveRules();
+                RefreshList();
             }
-            SaveRules();
-            RefreshList();
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
+            }
         }
 
         public static int GetLineNumber(Exception ex)
@@ -666,7 +756,10 @@ namespace LootManager
             var lineMatch = Regex.Match(ex.StackTrace ?? "", @":line (\d+)$", RegexOptions.Multiline);
 
             if (lineMatch.Success)
+            {
                 lineNumber = int.Parse(lineMatch.Groups[1].Value);
+            }
+                
 
             return lineNumber;
         }

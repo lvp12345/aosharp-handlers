@@ -1537,7 +1537,7 @@ namespace CombatHandler.Generic
         {
             var localPlayer = DynelManager.LocalPlayer;
 
-            return localPlayer.MovementState == MovementState.Fly || localPlayer.IsFalling;
+            return localPlayer.MovementState == MovementState.Fly || localPlayer.IsFalling || DynelManager.LocalPlayer.Buffs.Contains(RelevantGenericNanos.Hoverboards);
         }
 
         public static void CancelAllBuffs()
@@ -2010,6 +2010,11 @@ namespace CombatHandler.Generic
             public static int[] ShrinkingGrowingflesh = new[] { 302535, 302534, 302544, 302542, 302540, 302538, 302532, 302530 };
             public static int[] AAOTransfer = new[] { 301524, 301520, 267263, 267265 };
             public static int[] KeeperStrStamAgiBuff = new[] { 211158, 211160, 211162, 273365 };
+
+            public static readonly int[] Hoverboards = {
+                270634, 270632, 270636, 270327, 277712, 288804, 270643, 270641, 270431, 270540, 270542, 274272,
+                288808, 281684, 288814, 270538, 281668, 288812, 270544, 270546,
+            };
 
         }
 

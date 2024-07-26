@@ -1028,9 +1028,7 @@ namespace CombatHandler.Fixer
         private bool Cluster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (_settings["BulletsSelection"].AsInt32() != 1) { return false; }
-
             if (fightingtarget == null) { return false; }
-
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
 
             return true;
@@ -1039,9 +1037,7 @@ namespace CombatHandler.Fixer
         private bool Permorpha(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (_settings["BulletsSelection"].AsInt32() != 2) { return false; }
-
             if (fightingtarget == null) { return false; }
-
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
 
             return true;
@@ -1054,6 +1050,7 @@ namespace CombatHandler.Fixer
         private static void Bullets()
         {
             if (_settings["BulletsSelection"].AsInt32() == 0) { return; }
+            if (DynelManager.LocalPlayer.GetStat(Stat.Cash) <= 501) { return; }
 
             Item bullets = null;
             Item bulletsToCombine = null;

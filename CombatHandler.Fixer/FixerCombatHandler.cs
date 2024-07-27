@@ -9,6 +9,8 @@ using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
+using System.Text;
 
 namespace CombatHandler.Fixer
 {
@@ -1027,19 +1029,25 @@ namespace CombatHandler.Fixer
 
         private bool Cluster(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["BulletsSelection"].AsInt32() != 1) { return false; }
+            if (_settings["BulletsSelection"].AsInt32() == 0 || _settings["BulletsSelection"].AsInt32() == 2) { return false; }
             if (fightingtarget == null) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
+            if (Item.HasPendingUse) { return false; }
 
+            actionTarget.Target = fightingtarget;
+            actionTarget.ShouldSetTarget = true;
             return true;
         }
 
         private bool Permorpha(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["BulletsSelection"].AsInt32() != 2) { return false; }
+            if (_settings["BulletsSelection"].AsInt32() == 0 || _settings["BulletsSelection"].AsInt32() == 1) { return false; }
             if (fightingtarget == null) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MGSMG)) { return false; }
+            if (Item.HasPendingUse) { return false; }
 
+            actionTarget.Target = fightingtarget;
+            actionTarget.ShouldSetTarget = true;
             return true;
         }
 
@@ -1049,8 +1057,9 @@ namespace CombatHandler.Fixer
 
         private static void Bullets()
         {
+            var player = DynelManager.LocalPlayer;
             if (_settings["BulletsSelection"].AsInt32() == 0) { return; }
-            if (DynelManager.LocalPlayer.GetStat(Stat.Cash) <= 501) { return; }
+            if (player.GetStat(Stat.Cash) <= 501) { return; }
 
             Item bullets = null;
             Item bulletsToCombine = null;
@@ -1091,7 +1100,7 @@ namespace CombatHandler.Fixer
             }
             else
             {
-                if (bullets == null && Inventory.NumFreeSlots > 2 && !Spell.HasPendingCast)
+                if (bullets == null && Inventory.NumFreeSlots > 2 && !Spell.HasPendingCast && player.MovementStatePermitsCasting)
                 {
                     RestockSpecialAmmo?.Cast();
                 }

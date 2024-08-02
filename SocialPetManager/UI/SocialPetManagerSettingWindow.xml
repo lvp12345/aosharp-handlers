@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" standalone="yes"?>
+<root>
+	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="SocialPetManagerSettingWindow" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value="Select a social pet from the list below" layout_borders="Rect(0,0,0,2)"/>
+    <TextView value="The selected pet will autospawn at zone" layout_borders="Rect(0,0,0,2)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+    <OptionRadioButtonGroup label="Social pets:" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="SocialPetManager__SelectedSocialPet">
+      <RadioButton value="0" label="None" />
+      <RadioButton name="300453" value="300453" label="Adopted Pet" />
+      <RadioButton name="253168" value="253168" label="ARK Leet Pet" />
+      <RadioButton name="287160" value="287160" label="Balloons" />
+      <RadioButton name="295322" value="295322" label="Boom Ball Pet" />
+      <RadioButton name="303127" value="303127" label="Calling Dr. Drill" />
+      <RadioButton name="294060" value="294060" label="Elfleet Helper" />
+      <RadioButton name="300803" value="300803" label="Enigma Glade Guardian" />
+      <RadioButton name="300850" value="300850" label="Gingerleet" />
+      <RadioButton name="290645" value="290645" label="Heckler of Celebration" />
+      <RadioButton name="300806" value="300806" label="Junior Pumpkin-Head" />
+      <RadioButton name="301663" value="301663" label="Kizzermole Gumbaba" />
+      <RadioButton name="248386" value="248386" label="Leet Pet" />
+      <RadioButton name="296513" value="296513" label="Lil Spider Pet" />
+      <RadioButton name="302548" value="302548" label="Mantis Hatchling" />
+      <RadioButton name="295315" value="295315" label="Mechpuppy Pet" />
+      <RadioButton name="290122" value="290122" label="Mr. Wheelie - Series 1" />
+      <RadioButton name="293828" value="293828" label="NipponTech M3H-Rho Mizuni Life-Like Robotic Catgirl Companion" />
+      <RadioButton name="290062" value="290062" label="Robotoy Pet Series 1" />
+      <RadioButton name="295327" value="295327" label="Sabrekitty Pet" />
+      <RadioButton name="300571" value="300571" label="Silvertail" />
+      <RadioButton name="277450" value="277450" label="Spooky Leet Pet" />
+      <RadioButton name="300439" value="300439" label="Summon Buckethead Technodealer" />
+      <RadioButton name="304789" value="304789" label="Summon Chillyrat" />
+      <RadioButton name="303649" value="303649" label="Summon Hardhead" />
+      <RadioButton name="289971" value="289971" label="Termileetz00r" />
+      <RadioButton name="288561" value="288561" label="Terrifying Leet Pet" />
+      <RadioButton name="285678" value="285678" label="Trained Enigma Dog" />
+      <RadioButton name="285056" value="285056" label="Winter Leet Pet" />
+      <RadioButton name="294056" value="294056" label="Zix-in-a-Box" />
+    </OptionRadioButtonGroup>
+    <TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
+	</BorderView>
+</root>

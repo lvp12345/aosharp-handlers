@@ -366,7 +366,18 @@ namespace LootManager
                 {
                     InitializeBackpackInfo();
 
-                    if (player.FightingTarget != null && !ourMobs.Contains(player.FightingTarget.Identity.Instance))
+                    if (Team.IsInTeam)
+                    {
+                        var teamCharacter = Team.Members.FirstOrDefault(t => t.Character != null && t.Character.IsAttacking 
+                        && !ourMobs.Contains(t.Character.FightingTarget.Identity.Instance))?.Character;
+
+                        if (teamCharacter != null)
+                        {
+                            ourMobs.Add(teamCharacter.FightingTarget.Identity.Instance);
+                        }
+
+                    }
+                    else if (player.FightingTarget != null && !ourMobs.Contains(player.FightingTarget.Identity.Instance))
                     {
                         ourMobs.Add(player.FightingTarget.Identity.Instance); //add ourMob
                     }

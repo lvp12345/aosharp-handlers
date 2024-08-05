@@ -30,10 +30,10 @@ namespace LootManager
 
         private Dictionary<Identity, BackpackInfo> backpackDictionary = new Dictionary<Identity, BackpackInfo>();
 
-        List<int> ourMobs = new List<int>();
-        Dictionary<Identity, int> ourCorpses = new Dictionary<Identity, int>();
-        bool CorpseIsOpen = false;
-        int corpseInstance;
+        List<int> ourMobs = new List<int>();//mob instance
+        Dictionary<int, int> ourCorpses = new Dictionary<int, int>(); // corpse instance and mob instance
+        List<int> openedCorpses = new List<int>();//corpse instance
+        //int corpseInstance;
         public static string previousErrorMessage = string.Empty;
         bool isBackpackInfoInitialized = false;
         double openDelay;
@@ -68,7 +68,7 @@ namespace LootManager
                     _settings["Enabled"] = !_settings["Enabled"].AsBool();
                 });
 
-                Chat.RegisterCommand("print", (string command, string[] param, ChatWindow chatWindow) =>
+                Chat.RegisterCommand("printlm", (string command, string[] param, ChatWindow chatWindow) =>
                 {
                     if (ourMobs.Count > 1)
                     {
@@ -77,6 +77,8 @@ namespace LootManager
                             Chat.WriteLine($"{mob}");
                         }
                     }
+                    else { Chat.WriteLine("ourMobs.Count = 0"); }
+
                     if (ourCorpses.Count > 1)
                     {
                         foreach (var corpse in ourCorpses)
@@ -84,6 +86,16 @@ namespace LootManager
                             Chat.WriteLine($"{corpse.Key}, {corpse.Value}");
                         }
                     }
+                    else { Chat.WriteLine("ourCorpses.Count = 0"); }
+
+                    if (openedCorpses.Count > 1)
+                    {
+                        foreach (var corpse in openedCorpses)
+                        {
+                            Chat.WriteLine($"{corpse}");
+                        }
+                    }
+                    else { Chat.WriteLine("openedCorpses.Count = 0"); }
                 });
 
                 if (!Game.IsNewEngine)
@@ -122,16 +134,16 @@ namespace LootManager
                 case N3MessageType.CorpseFullUpdate:
                     var corpsemsg = (CorpseFullUpdateMessage)e;
                     if (!ourMobs.Contains(corpsemsg.UnknownIdentity.Instance)) { return; }
-                    //Chat.WriteLine($"Adding {corpsemsg.Identity}, {corpsemsg.UnknownIdentity.Instance} to ourCorpses dictionary");
-                    ourCorpses.Add(corpsemsg.Identity, corpsemsg.UnknownIdentity.Instance);
+                    ourCorpses.Add(corpsemsg.Identity.Instance, corpsemsg.UnknownIdentity.Instance);
                     break;
                 case N3MessageType.Despawn:
                     var despawnMsg = (DespawnMessage)e;
-                    if (!ourCorpses.ContainsKey(despawnMsg.Identity)) { return; }
-                    //Chat.WriteLine($"Removing {despawnMsg.Identity} from ourCorpses dictionary and {corpseInstance} from ourMobs, Despawn");
-                    ourCorpses.Remove(despawnMsg.Identity);
-                    ourMobs.Remove(corpseInstance);
-                    CorpseIsOpen = false;
+                    if (!ourCorpses.ContainsKey(despawnMsg.Identity.Instance)) { return; }
+                    var mobToRemove = ourCorpses[despawnMsg.Identity.Instance];//get value from ourcorpse key
+                    ourMobs.Remove(mobToRemove);
+                    ourCorpses.Remove(despawnMsg.Identity.Instance);
+                    openedCorpses.Remove(despawnMsg.Identity.Instance);
+                    Chat.WriteLine("Corpse despawned");
                     break;
                 default:
                     break;
@@ -156,11 +168,11 @@ namespace LootManager
             if (!availableBackpack.Equals(default(KeyValuePair<Identity, BackpackInfo>)))
             {
                 if (Time.AONormalTime < moveDelay) { return; }
+
                 foreach (var itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
                 {
                     if (CheckRules(itemtomove))
                     {
-                        //Chat.WriteLine($"Moving {itemtomove.Name} to {availableBackpack.Value.Name}");
                         itemtomove.MoveToContainer(availableBackpack.Key);
                         availableBackpack.Value.FreeSlots--;
                         break;
@@ -170,6 +182,7 @@ namespace LootManager
                         break;
                     }
                 }
+
                 moveDelay = Time.AONormalTime + 1.0;
             }
         }
@@ -213,14 +226,20 @@ namespace LootManager
         {
             if (isBackpackInfoInitialized) { return; }
 
-            foreach (var bag in Inventory.Items.Where(bags => bags.UniqueIdentity.Type == IdentityType.Container).ToList())
+            var lootBags = Inventory.Backpacks.Where(bag => bag.Name.Contains("loot")).ToList();
+
+            foreach (var item in Inventory.Items)
             {
-                bag?.Use();
-                bag?.Use();
+                if (lootBags.Any(bag => bag.Identity.Instance == item.UniqueIdentity.Instance))
+                {
+                    item?.Use(); // Open
+                    item?.Use(); // Close
+                }
             }
 
             isBackpackInfoInitialized = true;
         }
+
 
         private void ProcessItemsInCorpseContainer(object sender, Container container)
         {
@@ -228,13 +247,10 @@ namespace LootManager
             {
                 if (!_settings["Enabled"].AsBool()) { return; }
                 if (container.Identity.Type != IdentityType.Corpse) { return; }
-                if (!ourCorpses.ContainsKey(container.Identity)) { return; }
 
-                CorpseIsOpen = true;
-                corpseInstance = ourCorpses[container.Identity];
-                var corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity == container.Identity);
-
-                //Chat.WriteLine($"{corpse.Name}, {corpse.Identity}, {container.Identity} opened.");
+                if (!ourCorpses.ContainsKey(container.Identity.Instance)) { return; }
+                Chat.WriteLine("Corpse open");
+                openedCorpses.Add(container.Identity.Instance);
 
                 foreach (var item in container.Items)
                 {
@@ -242,28 +258,36 @@ namespace LootManager
 
                     if (CheckRules(item, true))
                     {
-                        //Chat.WriteLine($"Moving {item.Name} to Inventory");
                         item.MoveToInventory();
                     }
                     else
                     {
                         if (_settings["Delete"].AsBool())
                         {
-                            //Chat.WriteLine($"Deleting {item?.Name}");
                             item?.Delete();
                         }
                     }
                 }
 
-                if (container.Items.Any(item => !CheckRules(item)))
+                if (!_settings["Delete"].AsBool())
                 {
-                    if (!_settings["Delete"].AsBool())
+                    if (container.Items.Any(item => !CheckRules(item)))
                     {
-                        corpse.Open();//closes corpse
-                        CorpseIsOpen = false;
-                        //Chat.WriteLine($"Removing {container.Identity}, {corpseInstance} from corpses and linked mob");
-                        ourMobs.Remove(corpseInstance);
-                        ourCorpses.Remove(container.Identity);
+                        var corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity.Instance == container.Identity.Instance);
+
+                        if (openedCorpses.Contains(container.Identity.Instance))
+                        {
+                            if (ourCorpses.ContainsKey(container.Identity.Instance))
+                            {
+                                var mobToRemove = ourCorpses[container.Identity.Instance]; //get value from ourcorpse key
+                                ourMobs.Remove(mobToRemove);
+                                ourCorpses.Remove(container.Identity.Instance);
+                                openedCorpses.Remove(container.Identity.Instance);
+                                openDelay = 0;
+                                Chat.WriteLine($"Closing {corpse.Name}");
+                                corpse.Open();//close corpse
+                            }
+                        }
                     }
                 }
             }
@@ -282,16 +306,22 @@ namespace LootManager
 
         public void ProcessCorpses()
         {
-            var corpse = DynelManager.Corpses.FirstOrDefault(c => DynelManager.LocalPlayer.Position.DistanceFrom(c.Position) < +6
-            && ourCorpses.ContainsKey(c.Identity));
+            var corpses = DynelManager.Corpses.Where(c => ourCorpses.ContainsKey(c.Identity.Instance) && !openedCorpses.Contains(c.Identity.Instance)
+            && DynelManager.LocalPlayer.Position.DistanceFrom(c.Position) < 5).ToList();
 
-            if (corpse == null) { return; }
-            if (CorpseIsOpen) { return; }
-            if (!Spell.List.Any(c => c.IsReady)) { return; }
-            if (Spell.HasPendingCast) { return; }
+            if (corpses.Count == 0) { return; }
             if (Time.AONormalTime < openDelay) { return; }
-            //Chat.WriteLine($"Opening {corpse.Name}");
-            corpse.Open();
+            if (Spell.HasPendingCast) { return; }
+            if (Item.HasPendingUse) { return; }
+            if (Spell.List.Any(nano => !nano.IsReady)) { return; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.NanoStrain)) { Chat.WriteLine($"Cooldowns NanoStrain {DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.NanoStrain)}"); return; }
+
+            foreach (var corpse in corpses)
+            {
+                Chat.WriteLine($"Opening {corpse.Name}");
+                corpse.Open();//open corpse
+            }
+
             openDelay = Time.AONormalTime + 1.0;
         }
 
@@ -302,32 +332,6 @@ namespace LootManager
                 var player = DynelManager.LocalPlayer;
 
                 if (Game.IsZoning) { isBackpackInfoInitialized = false; return; }
-
-                if (_settings["Enabled"].AsBool())
-                {
-                    InitializeBackpackInfo();
-
-                    if (player.FightingTarget != null && !ourMobs.Contains(player.FightingTarget.Identity.Instance))
-                    {
-                        //Chat.WriteLine($"Adding {player.FightingTarget.Name}, {player.FightingTarget.Identity.Instance} to ourMobs list.");
-                        ourMobs.Add(player.FightingTarget.Identity.Instance);
-                    }
-
-                    if (_settings["Disable"].AsBool())
-                    {
-                        if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
-                        {
-                            if (Inventory.NumFreeSlots == 0)
-                            {
-                                _settings["Enabled"] = false;
-                            }
-                        }
-                    }
-
-                    ProcessCorpses();
-                    UpdateBackpackDictionary();
-                    MoveItemsToBag();
-                }
 
                 #region UI
 
@@ -357,6 +361,31 @@ namespace LootManager
                 }
 
                 #endregion
+
+                if (_settings["Enabled"].AsBool())
+                {
+                    InitializeBackpackInfo();
+
+                    if (player.FightingTarget != null && !ourMobs.Contains(player.FightingTarget.Identity.Instance))
+                    {
+                        ourMobs.Add(player.FightingTarget.Identity.Instance); //add ourMob
+                    }
+
+                    if (_settings["Disable"].AsBool())
+                    {
+                        if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
+                        {
+                            if (Inventory.NumFreeSlots == 0)
+                            {
+                                _settings["Enabled"] = false;
+                            }
+                        }
+                    }
+
+                    ProcessCorpses();
+                    MoveItemsToBag();
+                    UpdateBackpackDictionary();
+                }
             }
             catch (Exception ex)
             {
@@ -586,7 +615,7 @@ namespace LootManager
                 Rules = new List<Rule>();
 
                 string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\Global.json";
-                
+
                 if (File.Exists(filename))
                 {
                     string rulesJson = File.ReadAllText(filename);
@@ -599,7 +628,7 @@ namespace LootManager
                             rule.Quantity = "999";
 
                         }
-                            
+
                         if (string.IsNullOrEmpty(rule.BagName))
                         {
                             rule.BagName = "loot";
@@ -610,7 +639,7 @@ namespace LootManager
                 }
 
                 filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
-                
+
                 if (File.Exists(filename))
                 {
                     List<Rule> scopedRules = new List<Rule>();
@@ -625,12 +654,12 @@ namespace LootManager
                         {
                             rule.Quantity = "999";
                         }
-                            
+
                         if (string.IsNullOrEmpty(rule.BagName))
                         {
                             rule.BagName = "loot";
                         }
-                            
+
                         Rules.Add(rule);
                     }
 
@@ -759,7 +788,7 @@ namespace LootManager
             {
                 lineNumber = int.Parse(lineMatch.Groups[1].Value);
             }
-                
+
 
             return lineNumber;
         }

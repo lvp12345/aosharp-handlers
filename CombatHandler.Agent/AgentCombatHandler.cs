@@ -5,6 +5,7 @@ using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace CombatHandler.Agent
 {
@@ -196,6 +197,14 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("NanoHOTTeam", 0);
                 _settings.AddVariable("BlindSelection", 0);
                 _settings.AddVariable("NTEvades", 0);
+
+                //crat
+                _settings.AddVariable("CalmingSelection", 0);
+                _settings.AddVariable("ModeSelection", 0);
+                _settings.AddVariable("Root", false);
+
+                //fixer
+                _settings.AddVariable("AOESnare", false);
 
                 RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
@@ -1092,6 +1101,11 @@ namespace CombatHandler.Agent
                     case 6://fix
                         if (uiSetting != check)
                         {
+                            #region Fixer
+                            //Root/Snare
+                            RegisterSpellProcessor(RelevantNanos.SpinNanoweb, AOESnare, CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.GravityBindings, FixerSnare, CombatActionPriority.High);
+                            #endregion
                             Chat.WriteLine("Setting FP to Fixer");
                             check = uiSetting;
                         }
@@ -1099,6 +1113,16 @@ namespace CombatHandler.Agent
                     case 7://crat
                         if (uiSetting != check)
                         {
+                            #region Crat
+                            //Calms
+                            RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, ShadowlandsCalms, CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.AOECalms, AOECalms, CombatActionPriority.High);
+                            RegisterSpellProcessor(RelevantNanos.RkCalms, RkCalms, CombatActionPriority.High);
+
+                            //snare
+                            RegisterSpellProcessor(RelevantNanos.ShacklesofObedience, Snare, CombatActionPriority.High);
+
+                            #endregion
                             Chat.WriteLine("Setting FP to Bureaucrat");
                             check = uiSetting;
                         }
@@ -2618,6 +2642,143 @@ namespace CombatHandler.Agent
 
         #endregion
 
+        #region Crat
+        //calms
+        bool ShadowlandsCalms(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (_settings["CalmingSelection"].AsInt32() != 0) { return false; }
+            if (!CanCast(spell)) { return false; }
+
+            return CalmTarget(spell, fightingTarget, ref actionTarget);
+        }
+
+        bool RkCalms(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (_settings["CalmingSelection"].AsInt32() != 1) { return false; }
+            if (!CanCast(spell)) { return false; }
+
+            return CalmTarget(spell, fightingTarget, ref actionTarget);
+        }
+
+        bool AOECalms(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (_settings["CalmingSelection"].AsInt32() != 2) { return false; }
+            if (!CanCast(spell)) { return false; }
+
+            return CalmTarget(spell, fightingTarget, ref actionTarget);
+        }
+
+        bool CalmTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var modeSelection = _settings["ModeSelection"].AsInt32();
+            if (modeSelection == 0) { return false; }
+
+            var target = DynelManager.NPCs
+                  .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                      && c.Health > 0
+                      && c.IsInLineOfSight
+                      && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                      && spell.IsInRange(c)
+                      && c.MaxHealth < 1000000)
+                  .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                  .ThenBy(c => c.Health)
+                  .FirstOrDefault();
+
+            switch (modeSelection)
+            {
+                case 1:
+                    if (target == null) { return false; }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                case 2:
+                    var adds = target?.FightingTarget != null
+                       && !AttackingMob(target)
+                       && AttackingTeam(target);
+
+                    if (!adds) { return false; }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        //snare
+        private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Buffing"].AsBool()
+                || !_settings["Root"].AsBool() || !CanCast(spell)) { return false; }
+
+            var target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && c.IsMoving
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && c.Name == "Alien Heavy Patroller")
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+        #endregion
+
+        #region Fixer
+        //snares
+        private bool AOESnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Buffing"].AsBool() || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
+
+            var target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && IsMoving(c)
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && (c.Name == "Flaming Vengeance"
+                            || c.Name == "Hand of the Colonel"
+                            || c.Name == "Alien Seeker"))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+
+        private bool FixerSnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Buffing"].AsBool()  || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
+
+            var target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && c.IsMoving
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && c.Name == "Alien Heavy Patroller")
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+        private static bool IsMoving(SimpleChar target)
+        {
+            if (Playfield.Identity.Instance == 4021)
+            {
+                return true;
+            }
+
+            return target.IsMoving;
+        }
+        #endregion
         #region Misc
 
         private void FPSwitch()
@@ -2843,6 +3004,17 @@ namespace CombatHandler.Agent
                 45918, 42539, 45892, 45930, 45879, 45896, 28612 };
             public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
 
+            //crat
+            public const int ShacklesofObedience = 82463;
+            public static readonly int[] ShadowlandsCalms = { 224147, 224145,
+            224137, 224135, 224133, 224131, 219020 };
+            public static readonly int[] RkCalms = { 155577, 100428, 100429, 100430, 100431, 100432,
+            30093, 30056, 30065 };
+            public static readonly int[] AOECalms = { 100422, 100424, 100426 };
+
+            //fixer
+            public const int SpinNanoweb = 85216;
+            public const int GravityBindings = 82502;
         }
 
         #region Agent LE procs

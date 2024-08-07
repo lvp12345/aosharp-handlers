@@ -8,9 +8,9 @@
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Movement - sync each characters movements." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-		<TextView value="Bags - sync opening bags. (!DO NOT USE WITH LOOTMANAGER!)" layout_borders="Rect(0,0,0,2)"/>
-		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Use - sync using items, use with sync bags to use items from bags." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Bags - sync opening bags named syncbag for item usage." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Trade - auto accepts player trading (from anyone)." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>

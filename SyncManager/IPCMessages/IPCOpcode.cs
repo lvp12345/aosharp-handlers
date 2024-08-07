@@ -10,5 +10,8 @@
         StartStop = 205,
         UISettings = 206,
         Spread = 207,
+        NPCStartTrade = 208,
+        NPCTrade = 209,
+        NPCFinishTrade = 210,
     }
 }

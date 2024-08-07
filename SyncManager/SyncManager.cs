@@ -20,35 +20,37 @@ namespace SyncManager
 {
     public class SyncManager : AOPluginEntry
     {
-        private static IPCChannel IPCChannel;
+        static IPCChannel IPCChannel;
 
-        public static Config Config { get; private set; }
+        public static Config Config { get; set; }
 
         protected Settings _settings;
 
-        private static Identity useDynel;
-        private static Identity useOnDynel;
-        private static Identity useItem;
+        Identity useDynel;
+        Identity useOnDynel;
+        Identity useItem;
 
-        public static bool _openBags = false;
-        //private static bool _init = false;
-        public static bool Enable = false;
-        public static bool UISettings = false;
+        bool _openBags;
+        bool Enable = false;
 
-        private static double _useTimer;
+        double _useTimer;
 
-        public static Window _infoWindow;
+        static Window _infoWindow;
 
-        public static string PluginDir;
+        string PluginDir;
 
-        private Dictionary<RingName, string> _ringNameToItemNameMap;
-        private Dictionary<string, RingName> _itemNameToRingNameMap;
-        private Dictionary<int, int> invSlots = new Dictionary<int, int>();
-
+        Dictionary<RingName, string> _ringNameToItemNameMap;
+        Dictionary<string, RingName> _itemNameToRingNameMap;
+        Dictionary<int, int> invSlots = new Dictionary<int, int>();
 
         [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-        private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
+        static extern IntPtr GetForegroundWindow();
+        bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
+
+        Item UseItemID;
+        Identity UseItemTarget;
+
+        List<int> NPCReceivedItem = new List<int>();
 
         [Obsolete]
         public override void Run(string pluginDir)
@@ -60,10 +62,10 @@ namespace SyncManager
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
             Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
+
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;
             Network.N3MessageReceived += SyncTrade;
-
             Game.TeleportEnded += OnZoned;
 
             _settings.AddVariable("Enable", true);
@@ -77,15 +79,18 @@ namespace SyncManager
             _settings.AddVariable("NPCTrade", false);
             _settings.AddVariable("SyncTrade", false);
 
-
             IPCChannel.RegisterCallback((int)IPCOpcode.StartStop, OnStartStopMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Target, Lookat);
-            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Target, LookAt);
             IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
             IPCChannel.RegisterCallback((int)IPCOpcode.Spread, ReceivedSpreadOutCommand);
+
+            IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NPCStartTrade, OnNPCStartTrade);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NPCTrade, OnNPCTrade);
+            IPCChannel.RegisterCallback((int)IPCOpcode.NPCFinishTrade, OnNPCFinishTrade);
 
             RegisterSettingsWindow("Sync Manager", "SyncManagerSettingWindow.xml");
 
@@ -106,21 +111,26 @@ namespace SyncManager
                 });
             });
 
-            if (Game.IsNewEngine)
-            {
-                Chat.WriteLine("Does not work on this engine!");
-            }
-            else
+            if (!Game.IsNewEngine)
             {
                 Chat.WriteLine("SyncManager Loaded!");
                 Chat.WriteLine("/syncmanager for settings.");
             }
+            else
+            {
+                Chat.WriteLine("Does not work on this engine!");
+            }
         }
 
-        private void ReceivedSpreadOutCommand(int arg1, IPCMessage message)
+        public override void Teardown()
         {
-            SpreadCommand msg = message as SpreadCommand;
-            Vector3 randoPos = msg.Position;
+            SettingsController.CleanUp();
+        }
+
+        void ReceivedSpreadOutCommand(int arg1, IPCMessage message)
+        {
+            var msg = message as SpreadCommand;
+            var randoPos = msg.Position;
             randoPos.AddRandomness((int)3.0f);
             var player = DynelManager.LocalPlayer;
 
@@ -133,7 +143,7 @@ namespace SyncManager
             }
         }
 
-        private void BroadcastSettingsReceived(int arg1, IPCMessage message)
+        void BroadcastSettingsReceived(int arg1, IPCMessage message)
         {
             if (message is UISettings uISettings)
             {
@@ -146,58 +156,8 @@ namespace SyncManager
             }
         }
 
-        private void OnUpdate(object s, float deltaTime)
+        void OnUpdate(object s, float deltaTime)
         {
-            if (_settings["Enable"].AsBool())
-            {
-                foreach (Item item in Inventory.Items)
-                {
-                    if (item.Slot.Type == IdentityType.Inventory)
-                    {
-                        if (!invSlots.ContainsKey(item.Slot.Instance))
-                        {
-                            invSlots.Add(item.Slot.Instance, item.Id);
-                        }
-                    }
-                }
-
-                if (!_openBags && _settings["SyncBags"].AsBool())
-                {
-                    Inventory.Backpacks.ForEach(b =>
-                    {
-                        if (!b.IsOpen)
-                        {
-                            Item.Use(b.Slot);
-                            Item.Use(b.Slot);
-                        }
-                    });
-                    if (Inventory.Backpacks.All(b => b.IsOpen))
-                    {
-                        _openBags = true;
-                    }
-                }
-
-                if (Time.NormalTime > _useTimer + 0.1)
-                {
-                    if (!IsActiveWindow)
-                    {
-                        ListenerUseSync();
-                    }
-                    _useTimer = Time.NormalTime;
-                }
-
-                _ringNameToItemNameMap = new Dictionary<RingName, string>
-                {
-                    { RingName.PureNovictumRing, "Pure Novictum Ring" },
-                    { RingName.RimyRing, "Rimy Ring" },
-                    { RingName.AchromicRing, "Achromic Ring" },
-                    { RingName.SanguineRing, "Sanguine Ring" },
-                    { RingName.CaliginousRing, "Caliginous Ring" }
-                };
-
-                _itemNameToRingNameMap = _ringNameToItemNameMap.ToDictionary(pair => pair.Value, pair => pair.Key);
-            }
-
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
@@ -240,9 +200,82 @@ namespace SyncManager
                 IPCChannel.Broadcast(new StartStopIPCMessage() { IsStarting = true });
                 Start();
             }
+
+            if (_settings["Enable"].AsBool())
+            {
+                foreach (Item item in Inventory.Items)
+                {
+                    if (item.Slot.Type != IdentityType.Inventory) { continue; }
+                    if (invSlots.ContainsKey(item.Slot.Instance)) { continue; }
+
+                    invSlots.Add(item.Slot.Instance, item.Id);
+                }
+
+                if (_settings["SyncBags"].AsBool())
+                {
+                    if (_openBags) { return; }
+
+                    var syncBags = Inventory.Backpacks.Where(bag => bag.Name.Contains("syncbag")).ToList();
+
+                    foreach (var item in Inventory.Items)
+                    {
+                        if (syncBags.Any(bag => bag.Identity.Instance == item.UniqueIdentity.Instance))
+                        {
+                            item?.Use(); // Open
+                            item?.Use(); // Close
+                        }
+                    }
+
+                    _openBags = true;
+                }
+
+                if (Time.NormalTime > _useTimer + 0.1)
+                {
+                    if (IsActiveWindow) { return; }
+
+                    ListenerUseSync();
+
+                    _useTimer = Time.NormalTime;
+                }
+
+                _ringNameToItemNameMap = new Dictionary<RingName, string>
+                {
+                    { RingName.PureNovictumRing, "Pure Novictum Ring" },
+                    { RingName.RimyRing, "Rimy Ring" },
+                    { RingName.AchromicRing, "Achromic Ring" },
+                    { RingName.SanguineRing, "Sanguine Ring" },
+                    { RingName.CaliginousRing, "Caliginous Ring" }
+                };
+
+                _itemNameToRingNameMap = _ringNameToItemNameMap.ToDictionary(pair => pair.Value, pair => pair.Key);
+
+                if (_settings["SyncUse"].AsBool())
+                {
+                    if (UseItemID != null)
+                    {
+                        if (Item.HasPendingUse) { return; }
+                        if (PerkAction.List.Any(perk => perk.IsExecuting)) { return; }
+                        if (Spell.HasPendingCast) { return; }
+                        if (Spell.List.Any(spell => !spell.IsReady)) { return; }
+
+                        if (UseItemTarget == Identity.None)
+                        {
+                            UseItemID.Use();
+                            UseItemID = null;
+                        }
+                        else
+                        {
+                            useItem = UseItemID.Slot;
+                            useOnDynel = UseItemTarget;
+                            UseItemID = null;
+                            UseItemTarget = Identity.None;
+                        }
+                    }
+                }
+            }
         }
 
-        private void HandleSpreadButtonClicked(object sender, ButtonBase e)
+        void HandleSpreadButtonClicked(object sender, ButtonBase e)
         {
             IPCChannel.Broadcast(new SpreadCommand
             {
@@ -251,9 +284,7 @@ namespace SyncManager
             });
         }
 
-        #region Callbacks
-
-        private void OnStartStopMessage(int sender, IPCMessage msg)
+        void OnStartStopMessage(int sender, IPCMessage msg)
         {
             if (msg is StartStopIPCMessage startStopMessage)
             {
@@ -270,290 +301,28 @@ namespace SyncManager
             }
         }
 
-        private void Start()
+        void Start()
         {
             Enable = true;
             Chat.WriteLine("Sync enabled");
         }
 
-        private void Stop()
+        void Stop()
         {
             Enable = false;
             Chat.WriteLine("Sync disabled");
         }
 
-        private void OnZoned(object s, EventArgs e)
+        void OnZoned(object s, EventArgs e)
         {
             if (!_settings["Enable"].AsBool()) { return; }
 
             if (_settings["SyncBags"].AsBool()) { _openBags = false; }
         }
 
-        #region OutgoingCommunication
-
-        private void Network_N3MessageSent(object s, N3Message n3Msg)
-        {
-            if (!IsActiveCharacter() || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
-
-            if (_settings["Enable"].AsBool())
-            {
-                if (_settings["SyncMove"].AsBool())
-                {
-                    if (n3Msg.N3MessageType == N3MessageType.CharDCMove)
-                    {
-                        CharDCMoveMessage charDCMoveMsg = (CharDCMoveMessage)n3Msg;
-
-                        IPCChannel.Broadcast(new MoveMessage()
-                        {
-                            MoveType = charDCMoveMsg.MoveType,
-                            PlayfieldId = Playfield.Identity.Instance,
-                            Position = charDCMoveMsg.Position,
-                            Rotation = charDCMoveMsg.Heading
-                        });
-                    }
-
-                    else if (n3Msg.N3MessageType == N3MessageType.CharacterAction)
-                    {
-                        CharacterActionMessage charActionMsg = (CharacterActionMessage)n3Msg;
-
-                        if (charActionMsg.Action != CharacterActionType.StandUp) { return; }
-
-                        IPCChannel.Broadcast(new MoveMessage()
-                        {
-                            MoveType = MovementAction.LeaveSit,
-                            PlayfieldId = Playfield.Identity.Instance,
-                            Position = DynelManager.LocalPlayer.Position,
-                            Rotation = DynelManager.LocalPlayer.Rotation
-                        });
-                    }
-                }
-
-                if (n3Msg.N3MessageType == N3MessageType.LookAt)
-                {
-                    LookAtMessage lookAtMsg = (LookAtMessage)n3Msg;
-
-                    IPCChannel.Broadcast(new TargetMessage()
-                    {
-                        Target = lookAtMsg.Target
-
-
-                    });
-                }
-
-                if (_settings["SyncAttack"].AsBool())
-                {
-                    if (n3Msg.N3MessageType == N3MessageType.Attack)
-                    {
-                        AttackMessage attackMsg = (AttackMessage)n3Msg;
-                        IPCChannel.Broadcast(new AttackIPCMessage
-                        {
-                            Target = attackMsg.Target,
-                            Start = true
-                        });
-                    }
-
-                    if (n3Msg.N3MessageType == N3MessageType.StopFight)
-                    {
-                        IPCChannel.Broadcast(new AttackIPCMessage
-                        {
-                            Start = false
-                        });
-                    }
-                }
-
-                if (_settings["SyncUse"].AsBool() && n3Msg.N3MessageType == N3MessageType.GenericCmd)
-                {
-                    GenericCmdMessage genericCmdMsg = (GenericCmdMessage)n3Msg;
-
-                    if (genericCmdMsg.Action == GenericCmdAction.Use)
-                    {
-                        if (genericCmdMsg.Target.Type == IdentityType.Terminal)
-                        {
-                            UseMessage useMsg = new UseMessage()
-                            {
-                                Target = genericCmdMsg.Target,
-                                PfId = Playfield.ModelIdentity.Instance
-                            };
-
-                            IPCChannel.Broadcast(useMsg);
-                        }
-                        else
-                        {
-                            BroadcastUsableMessage(FindItem(genericCmdMsg.Target), Identity.None);
-                        }
-                    }
-                    else if (genericCmdMsg.Action == GenericCmdAction.UseItemOnItem)
-                    {
-                        Item item = FindItem(genericCmdMsg.Source.Value);
-
-                        RingName ringName = GetRingNameFromItemName(item?.Name);
-
-                        if (ringName != RingName.Unknown)
-                        {
-                            UseMessage useMsg = new UseMessage()
-                            {
-                                Target = genericCmdMsg.Target,
-                                RingName = ringName
-                            };
-
-                            IPCChannel.Broadcast(useMsg);
-                        }
-                        else
-                        {
-                            BroadcastUsableMessage(FindItem(genericCmdMsg.Source.Value), genericCmdMsg.Target);
-                        }
-                    }
-                }
-
-                if (_settings["SyncChat"].AsBool())
-                {
-                    if (n3Msg.N3MessageType == N3MessageType.KnubotOpenChatWindow)
-                    {
-                        KnuBotOpenChatWindowMessage n3OpenChatMessage = (KnuBotOpenChatWindowMessage)n3Msg;
-                        IPCChannel.Broadcast(new NpcChatIPCMessage
-                        {
-                            Target = n3OpenChatMessage.Target,
-                            OpenClose = true,
-                            Answer = -1
-                        });
-                    }
-                    if (n3Msg.N3MessageType == N3MessageType.KnubotAnswer)
-                    {
-                        KnuBotAnswerMessage n3AnswerMsg = (KnuBotAnswerMessage)n3Msg;
-                        IPCChannel.Broadcast(new NpcChatIPCMessage
-                        {
-                            Target = n3AnswerMsg.Target,
-                            OpenClose = true,
-                            Answer = n3AnswerMsg.Answer
-                        });
-                    }
-                    if (n3Msg.N3MessageType == N3MessageType.KnubotCloseChatWindow)
-                    {
-                        KnuBotCloseChatWindowMessage n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
-                        IPCChannel.Broadcast(new NpcChatIPCMessage
-                        {
-                            Target = n3CloseChatMessage.Target,
-                            OpenClose = false,
-                            Answer = -1
-                        });
-                    }
-                }
-
-                if (_settings["NPCTrade"].AsBool())
-                {
-                    if (n3Msg.N3MessageType == N3MessageType.KnubotStartTrade)
-                    {
-                        KnuBotStartTradeMessage startTradeMsg = (KnuBotStartTradeMessage)n3Msg;
-
-                        IPCChannel.Broadcast(new NpcChatIPCMessage
-                        {
-                            Target = startTradeMsg.Target,
-                            OpenClose = true,
-                            IsStartTrade = true,
-                            Answer = -1,
-                        });
-
-                    }
-
-                    if (n3Msg.N3MessageType == N3MessageType.KnubotTrade)
-                    {
-                        KnuBotTradeMessage tradeMsg = (KnuBotTradeMessage)n3Msg;
-
-                        int slotInstance = tradeMsg.Container.Instance;
-
-                        if (invSlots.TryGetValue(slotInstance, out int itemId))
-                        {
-                            IPCChannel.Broadcast(new NpcChatIPCMessage
-                            {
-                                Id = itemId,
-                                Target = tradeMsg.Target,
-                                OpenClose = true,
-                                IsTrade = true,
-                                Answer = -1,
-                            });
-                        };
-                    }
-
-                    if (n3Msg.N3MessageType == N3MessageType.KnubotFinishTrade)
-                    {
-                        KnuBotFinishTradeMessage finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
-
-                        IPCChannel.Broadcast(new NpcChatIPCMessage
-                        {
-                            Id = 0,
-                            Target = finishTradeMsg.Target,
-                            OpenClose = true,
-                            IsFinishTrade = true,
-                            Decline = finishTradeMsg.Decline,
-                            Amount = finishTradeMsg.Amount,
-                            Answer = -1,
-                        });
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        private Item FindItem(Identity target)
-        {
-            return Inventory.Find(target, out Item item) ? item :
-                   Inventory.Backpacks
-                            .SelectMany(b => b.Items)
-                            .FirstOrDefault(i => i.Slot.Instance == target.Instance);
-        }
-
-        private void BroadcastUsableMessage(Item item, Identity target)
-        {
-            if (item == null) { return; }
-
-            if (!IsOther(item))
-            {
-                UseMessage usableMsg = new UseMessage()
-                {
-                    ItemId = item.Id,
-                    ItemHighId = item.HighId,
-                    Target = target,
-                };
-                IPCChannel.Broadcast(usableMsg);
-            }
-        }
-
-        private void SyncTrade(object s, N3Message n3Msg)
-        {
-            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) { return; }
-
-            if (n3Msg.N3MessageType == N3MessageType.Trade)
-            {
-                TradeMessage tradeMsg = (TradeMessage)n3Msg;
-
-                if (DynelManager.LocalPlayer.Identity == tradeMsg.Identity)
-                {
-                    if (tradeMsg.Action == TradeAction.Accept)
-                    {
-                        if (Inventory.NumFreeSlots >= 1)
-                        {
-                            Trade.Accept(tradeMsg.Identity);
-                        }
-                        else
-                        {
-                            Trade.Decline();
-                        }
-                    }
-                }
-                else
-                {
-                    if (tradeMsg.Action == TradeAction.Confirm)
-                    {
-                        Trade.Confirm(tradeMsg.Identity);
-                    }
-                }
-            }
-        }
-
         #region IncomingCommunication
 
-        private void OnMoveMessage(int sender, IPCMessage msg)
+        void OnMoveMessage(int sender, IPCMessage msg)
         {
             if (IsActiveWindow) { return; }
 
@@ -561,7 +330,7 @@ namespace SyncManager
 
             if (!_settings["Enable"].AsBool()) { return; }
 
-            MoveMessage moveMsg = (MoveMessage)msg;
+            var moveMsg = (MoveMessage)msg;
 
             if (Playfield.Identity.Instance != moveMsg.PlayfieldId) { return; }
 
@@ -570,26 +339,25 @@ namespace SyncManager
             MovementController.Instance.SetMovement(moveMsg.MoveType);
         }
 
-        private void Lookat(int sender, IPCMessage look)
+        void LookAt(int sender, IPCMessage look)
         {
             if (!_settings["Enable"].AsBool()) { return; }
 
-            TargetMessage targetMsg = (TargetMessage)look;
+            var targetMsg = (TargetMessage)look;
 
             var localPlayer = DynelManager.LocalPlayer;
 
             if (!localPlayer.IsAttacking && !localPlayer.IsAttackPending
                 && localPlayer.FightingTarget == null
-                && Spell.List.Any(spell => spell.IsReady) && !Spell.HasPendingCast)
+                && Spell.List.Any(spell => spell.IsReady) && !Spell.HasPendingCast && PerkAction.List.Any(p => !p.IsExecuting))
             {
                 Targeting.SetTarget(targetMsg.Target);
             }
         }
 
-        private void OnAttackMessage(int sender, IPCMessage msg)
+        void OnAttackMessage(int sender, IPCMessage msg)
         {
             if (IsActiveWindow || Game.IsZoning) { return; }
-
             if (!_settings["Enable"].AsBool()) { return; }
             if (!_settings["SyncAttack"].AsBool()) { return; }
 
@@ -597,29 +365,27 @@ namespace SyncManager
 
             if (attackMsg.Start)
             {
-                Dynel targetDynel = DynelManager.GetDynel(attackMsg.Target);
+                var targetDynel = DynelManager.GetDynel(attackMsg.Target);
                 DynelManager.LocalPlayer.Attack(targetDynel, true);
             }
-            else
-            { DynelManager.LocalPlayer.StopAttack(); }
+            else { DynelManager.LocalPlayer.StopAttack(); }
         }
 
-        private void OnUseMessage(int sender, IPCMessage msg)
+        void OnUseMessage(int sender, IPCMessage msg)
         {
             if (IsActiveWindow || Game.IsZoning) { return; }
 
             if (!_settings["Enable"].AsBool()) { return; }
 
-            UseMessage useMsg = (UseMessage)msg;
+            var useMsg = (UseMessage)msg;
 
             if (useMsg.RingName != RingName.Unknown)
             {
                 string ringName = GetItemNameFromRingName(useMsg.RingName);
 
-                if (ringName != null)
-                {
-                    FindUseRing(ringName, useMsg.Target);
-                }
+                if (ringName == null) { return; }
+
+                FindUseRing(ringName, useMsg.Target);
             }
             else
             {
@@ -634,50 +400,62 @@ namespace SyncManager
             }
         }
 
-        private void FindUseRing(string itemName, Identity target)
+        void FindUseRing(string itemName, Identity target)
         {
-            Item ring = Inventory.Items.FirstOrDefault(c => c.Name.Contains(itemName)) ??
+            var ring = Inventory.Items.FirstOrDefault(c => c.Name.Contains(itemName)) ??
                             Inventory.Backpacks.SelectMany(b => b.Items).FirstOrDefault(c => c.Name.Contains(itemName));
 
-            if (ring != null)
-            {
-                useItem = ring.Slot;
-                useOnDynel = target;
-            }
+            if (ring == null) { return; }
+
+            useItem = ring.Slot;
+            useOnDynel = target;
         }
 
-        private void ProcessIDItem(UseMessage usableMsg)
+        void ProcessIDItem(UseMessage usableMsg)
         {
             int[] ignoredItemIds = { 301679, 85907, 85908, 267167, 305478, 206013, 204653, 245990, 204698, 206015, 305476, 156576,
                 164780, 164781, 244204, 245323, 244214, 244216, 204593, 305493, 204595, 305491, 204598, 305495, 157296, 303179,
                 267168, 244655, 152028, 253187, 151693, 83919, 152029, 151692,253186, 83920, 291043, 204103, 204104, 204105, 204106, 204107,
                 303138, 303141, 303137, 204698, 204653, 206013, 267168, 267167, 305476, 305478, 303179 };
 
+            int[] ICCModifiedHackingTool = { 273512, 273513, 273514, 273515, 273516, 273517, 273230 };
+            int[] ZeroPointTransmissionRelayScoop = { 275035, 375038, 275039, 275040, 275042 };
 
-            Item itemID = Inventory.Items.FirstOrDefault(i => i.Id == usableMsg.ItemId || i.HighId == usableMsg.ItemHighId) ??
-                             Inventory.Backpacks.SelectMany(b => b.Items)
-                                                .FirstOrDefault(i => i.Id == usableMsg.ItemId || i.HighId == usableMsg.ItemHighId);
+            if (ignoredItemIds.Contains(usableMsg.ItemId)) { return; }
 
-            if (itemID != null && ignoredItemIds.Contains(itemID.Id)) { return; }
-
-            if (itemID != null)
+            if (usableMsg.Target != Identity.None)
             {
-                if (usableMsg.Target == Identity.None)
+                UseItemTarget = usableMsg.Target;
+            }
+            else
+            {
+                UseItemTarget = Identity.None;
+            }
+
+            if (ICCModifiedHackingTool.Contains(usableMsg.ItemId))
+            {
+                if (Inventory.Find("ICC Modified Hacking Tool", out Item tool, false))
                 {
-                    itemID.Use();
-                }
-                else
-                {
-                    useItem = itemID.Slot;
-                    useOnDynel = usableMsg.Target;
+                    UseItemID = tool;
                 }
             }
+
+            if (ZeroPointTransmissionRelayScoop.Contains(usableMsg.ItemId))
+            {
+                if (Inventory.Find("Zero-Point Transmission Relay Scoop", out Item tool, false))
+                {
+                    UseItemID = tool;
+                }
+            }
+
+            UseItemID = Inventory.Items.FirstOrDefault(i => i.Id == usableMsg.ItemId && i.UniqueIdentity.Type != IdentityType.Container) ??
+                Inventory.Backpacks.SelectMany(b => b.Items).FirstOrDefault(i => i.Id == usableMsg.ItemId);
         }
-        private void OnNpcChatMessage(int sender, IPCMessage msg)
+        void OnNpcChatMessage(int sender, IPCMessage msg)
         {
             if (!_settings["Enable"].AsBool()) { return; }
 
-            NpcChatIPCMessage chatMsg = (NpcChatIPCMessage)msg;
+            var chatMsg = (NpcChatIPCMessage)msg;
 
             if (chatMsg.OpenClose == true)
             {
@@ -697,55 +475,319 @@ namespace SyncManager
                     Target = chatMsg.Target
                 });
             }
+        }
 
-            if (chatMsg.IsStartTrade == true)
+        void OnNPCStartTrade(int sender, IPCMessage msg)
+        {
+            if (!_settings["Enable"].AsBool()) { return; }
+
+            var NPCStartTrade = (NPCStartTradeIPCMessage)msg;
+
+            NPCChatStartTrade(DynelManager.LocalPlayer.Identity, NPCStartTrade.Target);
+        }
+
+        void OnNPCTrade(int sender, IPCMessage msg)
+        {
+            if (!_settings["Enable"].AsBool()) { return; }
+
+            var NpcTrade = (NpcTradeIPCMessage)msg;
+
+            if (!NPCReceivedItem.Contains(NpcTrade.Id))
             {
-                NPCChatStartTrade(DynelManager.LocalPlayer.Identity, chatMsg.Target);
-                //NpcDialog.OpenTrade(chatMsg.Target);
+                NPCReceivedItem.Add(NpcTrade.Id);
             }
 
-            if (chatMsg.Id != 0)
+            foreach (var NpcItemID in NPCReceivedItem)
             {
-                foreach (Item item in Inventory.Items)
-                {
-                    if (item.Id == chatMsg.Id)
-                    {
-                        var itemToTrade = Inventory.Items.Where(i => i.Id == chatMsg.Id).FirstOrDefault();
-
-                        if (itemToTrade != null)
-                        {
-                            if (itemToTrade.Slot.Type != IdentityType.KnuBotTradeWindow
-                                && itemToTrade.Slot.Type == IdentityType.Inventory)
-                            {
-                                var container = new Identity(IdentityType.KnuBotTradeWindow, 0);
-
-                                Chat.WriteLine($"{itemToTrade.Slot}");
-                                NPCChatAddTradeItem(DynelManager.LocalPlayer.Identity, chatMsg.Target, itemToTrade.Slot);
-                                //Network.Send(new KnuBotTradeMessage
-                                //{
-                                //    Unknown1 = 2,
-                                //    Target = chatMsg.Target,
-                                //    Container = itemToTrade.Slot,
-                                //});
-                            }
-                        }
-                    }
-                }
+                var item = Inventory.Items.FirstOrDefault(i => i.Id == NpcItemID);
+                if (item == null) { continue; }
+                NPCChatAddTradeItem(DynelManager.LocalPlayer.Identity, NpcTrade.Target, item.Slot);
+                NPCReceivedItem.Remove(NpcItemID);
             }
+        }
 
-            if (chatMsg.IsFinishTrade == true)
+        void OnNPCFinishTrade(int sender, IPCMessage msg)
+        {
+            if (!_settings["Enable"].AsBool()) { return; }
+
+            var NpcFinishTrade = (NpcFinishTradeMessage)msg;
+
+            switch (NpcFinishTrade.Decline)
             {
-                NPCChatEndTrade(DynelManager.LocalPlayer.Identity, chatMsg.Target, chatMsg.Amount);
-                //NpcDialog.FinishTrade(chatMsg.Target, chatMsg.Amount);
+                case 0:
+                    NPCChatEndTrade(DynelManager.LocalPlayer.Identity, NpcFinishTrade.Target, NpcFinishTrade.Amount);
+                    NPCReceivedItem.Clear();
+                    break;
+                case 1:
+                    NPCReceivedItem.Clear();
+                    break;
+                default:
+                    break;
             }
         }
 
         #endregion
 
+        #region OutgoingCommunication
+
+        void Network_N3MessageSent(object s, N3Message n3Msg)
+        {
+            if (!IsActiveCharacter() || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+            if (!_settings["Enable"].AsBool()) { return; }
+
+            if (_settings["SyncMove"].AsBool())
+            {
+                switch (n3Msg.N3MessageType)
+                {
+                    case N3MessageType.CharDCMove:
+                        var charDCMoveMsg = (CharDCMoveMessage)n3Msg;
+
+                        IPCChannel.Broadcast(new MoveMessage()
+                        {
+                            MoveType = charDCMoveMsg.MoveType,
+                            PlayfieldId = Playfield.Identity.Instance,
+                            Position = charDCMoveMsg.Position,
+                            Rotation = charDCMoveMsg.Heading
+                        });
+                        break;
+                    case N3MessageType.CharacterAction:
+                        var charActionMsg = (CharacterActionMessage)n3Msg;
+
+                        if (charActionMsg.Action != CharacterActionType.StandUp) { return; }
+
+                        IPCChannel.Broadcast(new MoveMessage()
+                        {
+                            MoveType = MovementAction.LeaveSit,
+                            PlayfieldId = Playfield.Identity.Instance,
+                            Position = DynelManager.LocalPlayer.Position,
+                            Rotation = DynelManager.LocalPlayer.Rotation
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (n3Msg.N3MessageType == N3MessageType.LookAt)
+            {
+                var lookAtMsg = (LookAtMessage)n3Msg;
+
+                IPCChannel.Broadcast(new TargetMessage()
+                {
+                    Target = lookAtMsg.Target
+                });
+            }
+
+            if (_settings["SyncAttack"].AsBool())
+            {
+                switch (n3Msg.N3MessageType)
+                {
+                    case N3MessageType.Attack:
+                        var attackMsg = (AttackMessage)n3Msg;
+
+                        IPCChannel.Broadcast(new AttackIPCMessage
+                        {
+                            Target = attackMsg.Target,
+                            Start = true
+                        });
+                        break;
+                    case N3MessageType.StopFight:
+                        IPCChannel.Broadcast(new AttackIPCMessage
+                        {
+                            Start = false
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (_settings["SyncUse"].AsBool() && n3Msg.N3MessageType == N3MessageType.GenericCmd)
+            {
+                var genericCmdMsg = (GenericCmdMessage)n3Msg;
+
+                switch (genericCmdMsg.Action)
+                {
+                    case GenericCmdAction.Use:
+                        if (genericCmdMsg.Target.Type == IdentityType.Terminal)
+                        {
+                            UseMessage useMsg = new UseMessage()
+                            {
+                                Target = genericCmdMsg.Target,
+                                PfId = Playfield.ModelIdentity.Instance
+                            };
+
+                            IPCChannel.Broadcast(useMsg);
+                        }
+                        else
+                        {
+                            BroadcastUsableMessage(FindItem(genericCmdMsg.Target), Identity.None);
+                        }
+                        break;
+                    case GenericCmdAction.UseItemOnItem:
+
+                        var item = FindItem(genericCmdMsg.Source.Value);
+
+                        RingName ringName = GetRingNameFromItemName(item?.Name);
+
+                        if (ringName != RingName.Unknown)
+                        {
+                            var useMsg = new UseMessage()
+                            {
+                                Target = genericCmdMsg.Target,
+                                RingName = ringName
+                            };
+
+                            IPCChannel.Broadcast(useMsg);
+                        }
+                        else
+                        {
+                            BroadcastUsableMessage(FindItem(genericCmdMsg.Source.Value), genericCmdMsg.Target);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (_settings["SyncChat"].AsBool())
+            {
+                switch (n3Msg.N3MessageType)
+                {
+                    case N3MessageType.KnubotOpenChatWindow:
+                        var n3OpenChatMessage = (KnuBotOpenChatWindowMessage)n3Msg;
+
+                        IPCChannel.Broadcast(new NpcChatIPCMessage
+                        {
+                            Target = n3OpenChatMessage.Target,
+                            OpenClose = true,
+                            Answer = -1
+                        });
+                        break;
+                    case N3MessageType.KnubotAnswer:
+                        var n3AnswerMsg = (KnuBotAnswerMessage)n3Msg;
+
+                        IPCChannel.Broadcast(new NpcChatIPCMessage
+                        {
+                            Target = n3AnswerMsg.Target,
+                            OpenClose = true,
+                            Answer = n3AnswerMsg.Answer
+                        });
+                        break;
+                    case N3MessageType.KnubotCloseChatWindow:
+                        var n3CloseChatMessage = (KnuBotCloseChatWindowMessage)n3Msg;
+
+                        IPCChannel.Broadcast(new NpcChatIPCMessage
+                        {
+                            Target = n3CloseChatMessage.Target,
+                            OpenClose = false,
+                            Answer = -1
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (_settings["NPCTrade"].AsBool())
+            {
+                switch (n3Msg.N3MessageType)
+                {
+                    case N3MessageType.KnubotStartTrade:
+                        var startTradeMsg = (KnuBotStartTradeMessage)n3Msg;
+                        IPCChannel.Broadcast(new NPCStartTradeIPCMessage
+                        {
+                            Target = startTradeMsg.Target,
+                        });
+                        break;
+                    case N3MessageType.KnubotTrade:
+                        var tradeMsg = (KnuBotTradeMessage)n3Msg;
+
+                        int slotInstance = tradeMsg.Container.Instance;
+
+                        if (invSlots.TryGetValue(slotInstance, out int itemId))
+                        {
+                            IPCChannel.Broadcast(new NpcTradeIPCMessage
+                            {
+                                Id = itemId,
+                                Target = tradeMsg.Target,
+                            });
+                        };
+                        break;
+                    case N3MessageType.KnubotFinishTrade:
+                        var finishTradeMsg = (KnuBotFinishTradeMessage)n3Msg;
+
+                        IPCChannel.Broadcast(new NpcFinishTradeMessage
+                        {
+                            Target = finishTradeMsg.Target,
+                            Decline = finishTradeMsg.Decline,
+                            Amount = finishTradeMsg.Amount,
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        Item FindItem(Identity target)
+        {
+            return Inventory.Find(target, out Item item) ? item :
+                   Inventory.Backpacks
+                            .SelectMany(b => b.Items)
+                            .FirstOrDefault(i => i.Slot.Instance == target.Instance);
+        }
+
+        void BroadcastUsableMessage(Item item, Identity target)
+        {
+            if (item == null) { return; }
+
+            if (!IsOther(item))
+            {
+                var usableMsg = new UseMessage()
+                {
+                    ItemId = item.Id,
+                    Target = target,
+                };
+                IPCChannel.Broadcast(usableMsg);
+            }
+        }
+
+        void SyncTrade(object s, N3Message n3Msg)
+        {
+            if (!_settings["Enable"].AsBool() && _settings["SyncTrade"].AsBool()) { return; }
+
+            if (n3Msg.N3MessageType == N3MessageType.Trade)
+            {
+                var tradeMsg = (TradeMessage)n3Msg;
+
+                if (DynelManager.LocalPlayer.Identity == tradeMsg.Identity)
+                {
+                    if (tradeMsg.Action != TradeAction.Accept) { return; }
+
+                    if (Inventory.NumFreeSlots >= 1)
+                    {
+                        Trade.Accept(tradeMsg.Identity);
+                    }
+                    else
+                    {
+                        Trade.Decline();
+                    }
+                }
+                else
+                {
+                    if (tradeMsg.Action != TradeAction.Confirm) { return; }
+
+                    Trade.Confirm(tradeMsg.Identity);
+                }
+            }
+        }
+
         #endregion
 
         #region Settings
-        public static void IPCChannel_Changed(object s, int e)
+        static void IPCChannel_Changed(object s, int e)
         {
             IPCChannel.SetChannelId(Convert.ToByte(e));
 
@@ -756,7 +798,7 @@ namespace SyncManager
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
         }
 
-        private void HandleInfoViewClick(object s, ButtonBase button)
+        void HandleInfoViewClick(object s, ButtonBase button)
         {
             _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\SyncManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 310, 510),
@@ -766,7 +808,7 @@ namespace SyncManager
             _infoWindow.Show(true);
         }
 
-        private void UISettingsButtonClicked(object s, ButtonBase button)
+        void UISettingsButtonClicked(object s, ButtonBase button)
         {
             IPCChannel.Broadcast(new UISettings()
             {
@@ -783,19 +825,6 @@ namespace SyncManager
 
         #region Misc
 
-        public static void MoveItemToKnuBotTradeWindow(Identity source, int slot = 108)
-        {
-            Network.Send(new ClientMoveItemToInventory
-            {
-                SourceContainer = source,
-                Slot = slot
-            });
-        }
-
-        public override void Teardown()
-        {
-            SettingsController.CleanUp();
-        }
 
         public enum RingName
         {
@@ -807,7 +836,7 @@ namespace SyncManager
             CaliginousRing
         }
 
-        public RingName GetRingNameFromItemName(string itemName)
+        RingName GetRingNameFromItemName(string itemName)
         {
             foreach (var pair in _itemNameToRingNameMap)
             {
@@ -820,7 +849,7 @@ namespace SyncManager
             return RingName.Unknown;
         }
 
-        public string GetItemNameFromRingName(RingName ringName)
+        string GetItemNameFromRingName(RingName ringName)
         {
             if (_ringNameToItemNameMap.TryGetValue(ringName, out var itemName))
             {
@@ -830,7 +859,7 @@ namespace SyncManager
             return null;
         }
 
-        private void SyncManagerCommand(string command, string[] param, ChatWindow chatWindow)
+        void SyncManagerCommand(string command, string[] param, ChatWindow chatWindow)
         {
             try
             {
@@ -850,8 +879,6 @@ namespace SyncManager
                     }
                     return;
                 }
-
-                Config.Save();
             }
             catch (Exception e)
             {
@@ -859,7 +886,7 @@ namespace SyncManager
             }
         }
 
-        private void SyncAttackSwitch(string command, string[] param, ChatWindow chatWindow)
+        void SyncAttackSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -868,7 +895,7 @@ namespace SyncManager
             }
         }
 
-        private void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
+        void SyncUseSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -877,7 +904,7 @@ namespace SyncManager
             }
         }
 
-        private void SyncChatSwitch(string command, string[] param, ChatWindow chatWindow)
+        void SyncChatSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -886,7 +913,7 @@ namespace SyncManager
             }
         }
 
-        private void SyncNpcTradeSwitch(string command, string[] param, ChatWindow chatWindow)
+        void SyncNpcTradeSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -895,7 +922,7 @@ namespace SyncManager
             }
         }
 
-        private void SyncTradeSwitch(string command, string[] param, ChatWindow chatWindow)
+        void SyncTradeSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -904,7 +931,7 @@ namespace SyncManager
             }
         }
 
-        private void SyncMoveSwitch(string command, string[] param, ChatWindow chatWindow)
+        void SyncMoveSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -912,7 +939,7 @@ namespace SyncManager
                 Chat.WriteLine($"Sync move : {_settings["SyncMove"].AsBool()}");
             }
         }
-        private void SyncBagsSwitch(string command, string[] param, ChatWindow chatWindow)
+        void SyncBagsSwitch(string command, string[] param, ChatWindow chatWindow)
         {
             if (param.Length == 0)
             {
@@ -921,14 +948,18 @@ namespace SyncManager
             }
         }
 
-        private void ListenerUseSync()
+        void ListenerUseSync()
         {
-            Vector3 playerPos = DynelManager.LocalPlayer.Position;
+            if (Item.HasPendingUse) { return; }
+            if (Spell.HasPendingCast) { return; }
+            if (Spell.List.Any(s => !s.IsReady)) { return; }
+            if (PerkAction.List.Any(p => p.IsExecuting)) { return; }
 
+            Vector3 playerPos = DynelManager.LocalPlayer.Position;
 
             if (useDynel != Identity.None)
             {
-                Dynel usedynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useDynel);
+                var usedynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useDynel);
 
                 if (usedynel != null && Vector3.Distance(playerPos, usedynel.Position) < 8 &&
                     usedynel.Name != "Rubi-Ka Banking Service Terminal" && usedynel.Name != "Mail Terminal")
@@ -940,7 +971,8 @@ namespace SyncManager
 
             if (useOnDynel != Identity.None)
             {
-                Dynel _useOnDynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useOnDynel);
+                var _useOnDynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useOnDynel);
+
                 if (_useOnDynel != null && Vector3.Distance(playerPos, _useOnDynel.Position) < 8)
                 {
                     Network.Send(new GenericCmdMessage()
@@ -955,18 +987,19 @@ namespace SyncManager
                         Source = useItem
 
                     });
+
                     useOnDynel = Identity.None;
                     useItem = Identity.None;
                 }
             }
         }
 
-        private bool IsActiveCharacter()
+        bool IsActiveCharacter()
         {
             return IsActiveWindow;
         }
 
-        public static bool IsOther(Item item)
+        static bool IsOther(Item item)
         {
             return item.Id == 305476 || item.Id == 204698 || item.Id == 156576 || item.Id == 267168 || item.Id == 267167
                 || item.Id == 204593 || item.Id == 305492 || item.Id == 204595 || item.Id == 305491 || item.Id == 305478
@@ -976,6 +1009,8 @@ namespace SyncManager
         }
 
         #endregion
+
+        #region Dll Imports
 
         [DllImport("Gamecode.dll", EntryPoint = "?N3Msg_NPCChatStartTrade@n3EngineClientAnarchy_t@@QAEXABVIdentity_t@@0@Z", CallingConvention = CallingConvention.ThisCall)]
         public static extern void eNPCChatStartTrade(IntPtr pEngine, ref Identity self, ref Identity npc);
@@ -1012,5 +1047,7 @@ namespace SyncManager
                 eNPCChatEndTrade(pEngine, ref self, ref npc, credits, accept);
             }
         }
+
+        #endregion
     }
 }

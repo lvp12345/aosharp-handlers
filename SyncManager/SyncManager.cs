@@ -825,7 +825,6 @@ namespace SyncManager
 
         #region Misc
 
-
         public enum RingName
         {
             Unknown = 0,
@@ -879,6 +878,7 @@ namespace SyncManager
                     }
                     return;
                 }
+                Config.Save();
             }
             catch (Exception e)
             {

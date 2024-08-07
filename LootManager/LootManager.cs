@@ -139,11 +139,11 @@ namespace LootManager
                 case N3MessageType.Despawn:
                     var despawnMsg = (DespawnMessage)e;
                     if (!ourCorpses.ContainsKey(despawnMsg.Identity.Instance)) { return; }
-                    var mobToRemove = ourCorpses[despawnMsg.Identity.Instance];//get value from ourcorpse key
+                    var mobToRemove = ourCorpses[despawnMsg.Identity.Instance];
                     ourMobs.Remove(mobToRemove);
                     ourCorpses.Remove(despawnMsg.Identity.Instance);
                     openedCorpses.Remove(despawnMsg.Identity.Instance);
-                    Chat.WriteLine("Corpse despawned");
+                    //Chat.WriteLine("Corpse despawned");
                     break;
                 default:
                     break;
@@ -249,7 +249,7 @@ namespace LootManager
                 if (container.Identity.Type != IdentityType.Corpse) { return; }
 
                 if (!ourCorpses.ContainsKey(container.Identity.Instance)) { return; }
-                Chat.WriteLine("Corpse open");
+                //Chat.WriteLine("Corpse open");
                 openedCorpses.Add(container.Identity.Instance);
 
                 foreach (var item in container.Items)
@@ -284,7 +284,7 @@ namespace LootManager
                                 ourCorpses.Remove(container.Identity.Instance);
                                 openedCorpses.Remove(container.Identity.Instance);
                                 openDelay = 0;
-                                Chat.WriteLine($"Closing {corpse.Name}");
+                                //Chat.WriteLine($"Closing {corpse.Name}");
                                 corpse.Open();//close corpse
                             }
                         }
@@ -314,11 +314,11 @@ namespace LootManager
             if (Spell.HasPendingCast) { return; }
             if (Item.HasPendingUse) { return; }
             if (Spell.List.Any(nano => !nano.IsReady)) { return; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.NanoStrain)) { Chat.WriteLine($"Cooldowns NanoStrain {DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.NanoStrain)}"); return; }
+            if (PerkAction.List.Any(perk => perk.IsExecuting)) { return; }
 
             foreach (var corpse in corpses)
             {
-                Chat.WriteLine($"Opening {corpse.Name}");
+                //Chat.WriteLine($"Opening {corpse.Name}");
                 corpse.Open();//open corpse
             }
 
@@ -368,7 +368,7 @@ namespace LootManager
 
                     if (Team.IsInTeam)
                     {
-                        var teamCharacter = Team.Members.FirstOrDefault(t => t.Character != null && t.Character.IsAttacking 
+                        var teamCharacter = Team.Members.FirstOrDefault(t => t.Character != null && t.Character.IsAttacking
                         && !ourMobs.Contains(t.Character.FightingTarget.Identity.Instance))?.Character;
 
                         if (teamCharacter != null)
@@ -379,7 +379,7 @@ namespace LootManager
                     }
                     else if (player.FightingTarget != null && !ourMobs.Contains(player.FightingTarget.Identity.Instance))
                     {
-                        ourMobs.Add(player.FightingTarget.Identity.Instance); //add ourMob
+                        ourMobs.Add(player.FightingTarget.Identity.Instance);
                     }
 
                     if (_settings["Disable"].AsBool())

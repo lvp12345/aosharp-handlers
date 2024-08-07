@@ -17,15 +17,15 @@ namespace SyncManager
     }
     public static class SettingsController
     {
-        private static List<Settings> settingsToSave = new List<Settings>();
+        static List<Settings> settingsToSave = new List<Settings>();
         public static Dictionary<string, string> settingsWindows = new Dictionary<string, string>();
-        private static bool IsCommandRegistered;
+        static bool IsCommandRegistered;
 
         public static Window settingsWindow;
         public static View settingsView;
 
         public static string _staticName = string.Empty;
-        public static Config Config { get; private set; }
+        public static Config Config { get; set; }
 
         public static void RegisterCharacters(Settings settings)
         {
@@ -51,7 +51,7 @@ namespace SyncManager
             settingsToSave.ForEach(settings => settings.Save());
         }
 
-        private static void RegisterChatCommandIfNotRegistered()
+        static void RegisterChatCommandIfNotRegistered()
         {
             if (!IsCommandRegistered)
             {

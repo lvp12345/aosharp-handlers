@@ -14,9 +14,6 @@ namespace SyncManager.IPCMessages
         [AoMember(0)]
         public int ItemId { get; set; }
 
-        [AoMember(1)]
-        public int ItemHighId { get; set; }
-
         [AoMember(2)]
         public Identity Target { get; set; }
 

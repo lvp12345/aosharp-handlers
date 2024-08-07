@@ -61,6 +61,9 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="IPCMessages\AttackIPCMessage.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
+    <Compile Include="IPCMessages\NpcTradeMessage.cs" />
+    <Compile Include="IPCMessages\NpcFinishTradeMessage.cs" />
+    <Compile Include="IPCMessages\NPCStartTrade.cs" />
     <Compile Include="IPCMessages\SpreadCommand.cs" />
     <Compile Include="IPCMessages\NpcChatMessage.cs" />
     <Compile Include="IPCMessages\StartStopIPCMessage.cs" />

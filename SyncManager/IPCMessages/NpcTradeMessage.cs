@@ -4,18 +4,17 @@ using SmokeLounge.AOtomation.Messaging.Serialization.MappingAttributes;
 
 namespace SyncManager.IPCMessages
 {
-    [AoContract((int)IPCOpcode.NpcChat)]
-    public class NpcChatIPCMessage : IPCMessage
+    [AoContract((int)IPCOpcode.NPCTrade)]
+    public class NpcTradeIPCMessage : IPCMessage
     {
-        public override short Opcode => (short)IPCOpcode.NpcChat;
+        public override short Opcode => (short)IPCOpcode.NPCTrade;
 
         [AoMember(0)]
         public Identity Target { get; set; }
 
         [AoMember(1)]
-        public bool OpenClose { get; set; }
+        
+        public int Id { get; set; }
 
-        [AoMember(2)]
-        public int Answer { get; set; }
     }
 }

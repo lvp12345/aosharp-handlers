@@ -1135,9 +1135,9 @@ namespace CombatHandler.Doctor
 
         #region Healing
 
-        public static bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool TeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["TeamHealSelection"].AsInt32() != 0) { return false; }
+            if (_settings["TeamHealSelection"].AsInt32() == 1) { return false; }
 
             if (Healing.TeamHealPercentage == 0) { return false; }
 
@@ -1153,9 +1153,9 @@ namespace CombatHandler.Doctor
             return true;
         }
 
-        private bool TeamImprovedLifeChannelerAsTeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool TeamImprovedLifeChannelerAsTeamHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["TeamHealSelection"].AsInt32() != 1) { return false; }
+            if (_settings["TeamHealSelection"].AsInt32() == 0) { return false; }
 
             if (Healing.TeamHealPercentage == 0) { return false; }
 

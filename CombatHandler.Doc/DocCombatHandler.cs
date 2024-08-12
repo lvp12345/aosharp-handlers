@@ -122,7 +122,6 @@ namespace CombatHandler.Doctor
 
                 _settings.AddVariable("SLMap", false);
 
-
                 _settings.AddVariable("CH", true);
                 _settings.AddVariable("LockCH", false);
 

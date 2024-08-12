@@ -1258,8 +1258,8 @@ namespace CombatHandler.Engineer
                     if (!GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged)) { return false; }
                     return NonCombatBuff(spell, ref actionTarget, fightingTarget);
                 case 2:
-                    var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-                       && t.Profession != Profession.Doctor && t.Profession != Profession.NanoTechnician && spell.IsInRange(t.Character)
+                    var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+                       && t.Profession != Profession.Doctor && t.Profession != Profession.NanoTechnician && spell.IsInRange(t?.Character)
                        && GetWieldedWeapons(t.Character).HasFlag(CharacterWieldedWeapon.Ranged) && SpellChecksOther(spell, spell.Nanoline, t.Character))
                        .FirstOrDefault();
 

@@ -1079,7 +1079,7 @@ namespace CombatHandler.Enf
                     return true;
                 case 2:
                     var mob = DynelManager.NPCs
-                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
+                   .Where(c => c != null && c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
                    .OrderBy(c => c.MaxHealth).FirstOrDefault();
 
                     if (mob == null) { return false; }
@@ -1269,8 +1269,8 @@ namespace CombatHandler.Enf
 
             if (Team.IsInTeam)
             {
-                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
-                spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && t.Identity != DynelManager.LocalPlayer.Identity)
+                var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+                spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && t.Identity != DynelManager.LocalPlayer.Identity)
                .FirstOrDefault();
 
                 if (teamMember != null)

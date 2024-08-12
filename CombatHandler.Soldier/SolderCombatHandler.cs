@@ -958,7 +958,7 @@ namespace CombatHandler.Soldier
 
                 case 2:
                     var mob = DynelManager.NPCs
-                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                   .Where(c => c != null && c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                        && c.IsInLineOfSight
                        && !debuffAreaTargetsToIgnore.Contains(c.Name)
                        && spell.IsInRange(c)
@@ -999,7 +999,7 @@ namespace CombatHandler.Soldier
                     return true;
                 case 2:
                     var mob = DynelManager.NPCs
-                    .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
+                    .Where(c => c != null && c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity
                         && c.IsInLineOfSight
                         && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && spell.IsInRange(c)

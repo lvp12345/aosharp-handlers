@@ -1323,7 +1323,7 @@ namespace CombatHandler.Trader
             {
                 case 1:
                     var allTarget = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                    .Where(c => c != null && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -1340,7 +1340,7 @@ namespace CombatHandler.Trader
                     return true;
                 case 2:
                     var adds = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                    .Where(c => c != null && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)

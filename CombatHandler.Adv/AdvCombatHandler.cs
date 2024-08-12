@@ -1278,7 +1278,7 @@ namespace CombatHandler.Adventurer
                     return true;
                 case 2:
                     var mob = DynelManager.NPCs
-                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
+                   .Where(c => c != null && c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
                    .OrderBy(c => c.MaxHealth).FirstOrDefault();
 
                     if (mob == null) { return false; }

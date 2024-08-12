@@ -1228,7 +1228,7 @@ namespace CombatHandler.Bureaucrat
             if (!_settings["Exoneration"].AsBool()) { return false; }
 
             var rootedTeamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
-               spell.IsInRange(t.Character) && (t.Character.Buffs.Contains(NanoLine.Root)
+               spell.IsInRange(t?.Character) && (t.Character.Buffs.Contains(NanoLine.Root)
                                         || t.Character.Buffs.Contains(NanoLine.Snare)
                                         || t.Character.Buffs.Contains(305244) //Pause for Reflection
                                         || t.Character.Buffs.Contains(268174) //Cunning of The Voracious Horror
@@ -1399,7 +1399,7 @@ namespace CombatHandler.Bureaucrat
             if (modeSelection == 0) { return false; }
 
             var target = DynelManager.NPCs
-                  .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                  .Where(c => c != null && !debuffAreaTargetsToIgnore.Contains(c.Name)
                       && c.Health > 0
                       && c.IsInLineOfSight
                       && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -1437,7 +1437,7 @@ namespace CombatHandler.Bureaucrat
             if (!_settings["Calm12Man"].AsBool() || !CanCast(spell)) { return false; }
 
             var targets = DynelManager.NPCs
-                .Where(c => c.IsAlive
+                .Where(c => c != null && c.IsAlive
                     && spell.IsInRange(c)
                     && (c.Name == "Right Hand of Madness" || c.Name == "Deranged Xan")
                     && (!c.Buffs.Contains(267535) || !c.Buffs.Contains(267536)))

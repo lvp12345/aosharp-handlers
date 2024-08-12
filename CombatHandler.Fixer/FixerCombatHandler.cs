@@ -829,7 +829,7 @@ namespace CombatHandler.Fixer
 
         protected bool WakeUpCall(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            var target = DynelManager.Players
+            var target = DynelManager.Players// fix this
             .FirstOrDefault(c => c.IsInLineOfSight
                 && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                 && spell.IsInRange(c)

@@ -2206,7 +2206,7 @@ namespace CombatHandler.Agent
                     return true;
                 case 2:
                     var mob = DynelManager.NPCs
-                   .Where(c => c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
+                   .Where(c => c != null && c.IsAttacking && c.FightingTarget?.Identity != DynelManager.LocalPlayer.Identity && c.IsInLineOfSight && spell.IsInRange(c) && AttackingTeam(c))
                    .OrderBy(c => c.MaxHealth).FirstOrDefault();
 
                     if (mob == null) { return false; }
@@ -2248,7 +2248,7 @@ namespace CombatHandler.Agent
                 case 2:
                     if (!Team.IsInTeam) { return false; }
 
-                    var target = DynelManager.Players
+                    var target = DynelManager.Players// fix this
                         .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && spell.IsInRange(c)
                             && c.Health > 0
@@ -2674,7 +2674,7 @@ namespace CombatHandler.Agent
             if (modeSelection == 0) { return false; }
 
             var target = DynelManager.NPCs
-                  .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                  .Where(c => c != null && !debuffAreaTargetsToIgnore.Contains(c.Name)
                       && c.Health > 0
                       && c.IsInLineOfSight
                       && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)

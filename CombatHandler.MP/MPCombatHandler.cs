@@ -234,9 +234,9 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
                 //Pets
-                RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner, CombatActionPriority.High);
+                RegisterSpellProcessor(GetAttackPetsWithSLPetsFirst(), AttackPetSpawner);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), SupportPetSpawner);
-                RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.HealPets, HealPetSpawner);
 
                 //Pet Buffs
                 RegisterSpellProcessor(RelevantNanos.PetCleanse, PetCleanse);
@@ -1425,8 +1425,8 @@ namespace CombatHandler.Metaphysicist
                 case 2:
                     if (!Team.IsInTeam) { return false; }
 
-                    var target = DynelManager.Players
-                        .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                    var target = DynelManager.Players // fix this
+                        .Where(c => Team.Members.Any(t => t != null && t.Identity.Instance == c.Identity.Instance)
                             && spell.IsInRange(c)
                             && c.Health > 0
                             && SpellChecksOther(spell, spell.Nanoline, c))
@@ -1499,7 +1499,7 @@ namespace CombatHandler.Metaphysicist
             {
                 var target = DynelManager.Players
                     .Where(c => c.IsInLineOfSight
-                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                        && Team.Members.Any(t => t != null && t.Identity.Instance == c.Identity.Instance)
                         && spell.IsInRange(c)
                         && c.Health > 0
                         && SpellChecksNanoSkillsOther(spell, c))
@@ -1571,9 +1571,9 @@ namespace CombatHandler.Metaphysicist
                 case 2:
                     if (!Team.IsInTeam) { return false; }
 
-                    var target = DynelManager.Players
+                    var target = DynelManager.Players//fix this
                    .Where(c => c.IsInLineOfSight
-                       && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
+                       && Team.Members.Any(t => t != null && t.Identity.Instance == c.Identity.Instance)
                        && c.Profession != Profession.NanoTechnician
                        && spell.IsInRange(c)
                        && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))

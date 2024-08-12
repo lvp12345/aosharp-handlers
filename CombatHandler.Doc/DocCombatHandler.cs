@@ -1207,7 +1207,7 @@ namespace CombatHandler.Doctor
             if (!_settings["EpsilonPurge"].AsBool()) { return false; }
 
             var target = Team.Members
-                .Select(m => m.Character)
+                .Select(m => m?.Character)
                 .FirstOrDefault(c => c != null
                                   && c.IsInLineOfSight
                                   && spell.IsInRange(c)
@@ -1335,7 +1335,7 @@ namespace CombatHandler.Doctor
 
             if (Team.IsInTeam)
             {
-                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+                var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
                 t.Character.HealthPercent < 50 && perk.IsInRange(t.Character)).OrderBy(t => t.Character.HealthPercent)
                 .FirstOrDefault();
 
@@ -1404,7 +1404,7 @@ namespace CombatHandler.Doctor
 
             if (Team.IsInTeam)
             {
-                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+                var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
                 t.Character.HealthPercent <= TOTWPercentage && item.IsInRange(t.Character)).OrderBy(t => t.Character.HealthPercent)
                 .FirstOrDefault();
 

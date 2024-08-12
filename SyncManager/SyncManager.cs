@@ -26,14 +26,14 @@ namespace SyncManager
 
         protected Settings _settings;
 
-        Identity useDynel;
-        Identity useOnDynel;
-        Identity useItem;
+        Item UseItem = null;
+        Identity UseTarget = Identity.None;
+        int UseType = 3;
 
         bool _openBags;
         bool Enable = false;
 
-        double _useTimer;
+        double UseDelay;
 
         static Window _infoWindow;
 
@@ -46,9 +46,6 @@ namespace SyncManager
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
         bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
-
-        Item UseItemID;
-        Identity UseItemTarget;
 
         List<int> NPCReceivedItem = new List<int>();
 
@@ -83,7 +80,7 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Use, OnUseMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Move, OnMoveMessage);
-            IPCChannel.RegisterCallback((int)IPCOpcode.Target, LookAt);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnLookAt);
             IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
             IPCChannel.RegisterCallback((int)IPCOpcode.Spread, ReceivedSpreadOutCommand);
 
@@ -120,6 +117,10 @@ namespace SyncManager
             {
                 Chat.WriteLine("Does not work on this engine!");
             }
+
+            UseItem = null;
+            UseTarget = Identity.None;
+            UseType = 3;
         }
 
         public override void Teardown()
@@ -158,6 +159,8 @@ namespace SyncManager
 
         void OnUpdate(object s, float deltaTime)
         {
+            if (Game.IsZoning) { return; }
+
             if (SettingsController.settingsWindow != null && SettingsController.settingsWindow.IsValid)
             {
                 SettingsController.settingsWindow.FindView("ChannelBox", out TextInputView channelInput);
@@ -213,65 +216,113 @@ namespace SyncManager
 
                 if (_settings["SyncBags"].AsBool())
                 {
-                    if (_openBags) { return; }
-
-                    var syncBags = Inventory.Backpacks.Where(bag => bag.Name.Contains("syncbag")).ToList();
-
-                    foreach (var item in Inventory.Items)
-                    {
-                        if (syncBags.Any(bag => bag.Identity.Instance == item.UniqueIdentity.Instance))
-                        {
-                            item?.Use(); // Open
-                            item?.Use(); // Close
-                        }
-                    }
-
-                    _openBags = true;
+                    HandleSyncBagsTick();
                 }
-
-                if (Time.NormalTime > _useTimer + 0.1)
-                {
-                    if (IsActiveWindow) { return; }
-
-                    ListenerUseSync();
-
-                    _useTimer = Time.NormalTime;
-                }
-
-                _ringNameToItemNameMap = new Dictionary<RingName, string>
-                {
-                    { RingName.PureNovictumRing, "Pure Novictum Ring" },
-                    { RingName.RimyRing, "Rimy Ring" },
-                    { RingName.AchromicRing, "Achromic Ring" },
-                    { RingName.SanguineRing, "Sanguine Ring" },
-                    { RingName.CaliginousRing, "Caliginous Ring" }
-                };
-
-                _itemNameToRingNameMap = _ringNameToItemNameMap.ToDictionary(pair => pair.Value, pair => pair.Key);
 
                 if (_settings["SyncUse"].AsBool())
                 {
-                    if (UseItemID != null)
-                    {
-                        if (Item.HasPendingUse) { return; }
-                        if (PerkAction.List.Any(perk => perk.IsExecuting)) { return; }
-                        if (Spell.HasPendingCast) { return; }
-                        if (Spell.List.Any(spell => !spell.IsReady)) { return; }
-
-                        if (UseItemTarget == Identity.None)
-                        {
-                            UseItemID.Use();
-                            UseItemID = null;
-                        }
-                        else
-                        {
-                            useItem = UseItemID.Slot;
-                            useOnDynel = UseItemTarget;
-                            UseItemID = null;
-                            UseItemTarget = Identity.None;
-                        }
-                    }
+                    HandleSyncUseTick();
                 }
+            }
+        }
+
+        void HandleSyncBagsTick()
+        {
+            if (_openBags) { return; }
+
+            var syncBags = Inventory.Backpacks.Where(bag => bag.Name.Contains("syncbag")).ToList();
+
+            foreach (var item in Inventory.Items)
+            {
+                if (syncBags.Any(bag => bag.Identity.Instance == item.UniqueIdentity.Instance))
+                {
+                    item?.Use(); // Open
+                    item?.Use(); // Close
+                }
+            }
+
+            _openBags = true;
+        }
+
+        void HandleSyncUseTick()
+        {
+            _ringNameToItemNameMap = new Dictionary<RingName, string>
+                        {
+                            { RingName.PureNovictumRing, "Pure Novictum Ring" },
+                            { RingName.RimyRing, "Rimy Ring" },
+                            { RingName.AchromicRing, "Achromic Ring" },
+                            { RingName.SanguineRing, "Sanguine Ring" },
+                            { RingName.CaliginousRing, "Caliginous Ring" }
+                        };
+
+            _itemNameToRingNameMap = _ringNameToItemNameMap.ToDictionary(pair => pair.Value, pair => pair.Key);
+
+            if (Item.HasPendingUse) { return; }
+            if (PerkAction.List.Any(perk => perk.IsExecuting)) { return; }
+            if (Spell.HasPendingCast) { return; }
+            if (Time.AONormalTime < UseDelay) { return; }
+            if (UseType == 3) { return; }
+            UseDelay = Time.AONormalTime + 1.0;
+            var playerPos = DynelManager.LocalPlayer.Position;
+
+            var item = Inventory.Items.FirstOrDefault(i => i == UseItem) ?? Inventory.Backpacks.SelectMany(b => b.Items).FirstOrDefault(i => i == UseItem);
+
+            var target = DynelManager.AllDynels.FirstOrDefault(x => x != null && x.Identity == UseTarget
+                    && playerPos.DistanceFrom(x.Position) < 8 && x.Name != "Rubi-Ka Banking Service Terminal" && x.Name != "Mail Terminal");
+
+            switch (UseType)
+            {
+                case 0:// UseItem
+                    //Chat.WriteLine("UseItem");
+                    if (item == null)
+                    {
+                        UseItem = null;
+                        UseType = 3; return;
+                    }
+                    item?.Use();
+                    UseItem = null;
+                    UseType = 3;
+                    break;
+                case 1:// UseItemOnTarget
+
+                    //Chat.WriteLine("UseItemOnTarget");
+
+                    if (target == null)
+                    {
+                        UseTarget = Identity.None;
+                        UseItem = null; return;
+                    }
+
+                    Network.Send(new GenericCmdMessage()
+                    {
+                        Unknown = 1,
+                        Action = GenericCmdAction.UseItemOnItem,
+                        Temp1 = 0,
+                        Temp4 = 0,
+                        Identity = DynelManager.LocalPlayer.Identity,
+                        User = DynelManager.LocalPlayer.Identity,
+                        Target = UseTarget,
+                        Source = item?.Slot,
+
+                    });
+
+                    UseTarget = Identity.None;
+                    UseItem = null;
+                    UseType = 3;
+                    break;
+                case 2:// UseTarget
+                    //Chat.WriteLine("UseTarget");
+
+                    if (target == null)
+                    {
+                        UseTarget = Identity.None;
+                        UseType = 3; return;
+                    }
+
+                    target?.Use();
+                    UseTarget = Identity.None;
+                    UseType = 3;
+                    break;
             }
         }
 
@@ -303,12 +354,14 @@ namespace SyncManager
 
         void Start()
         {
+            if (Enable) { return; }
             Enable = true;
             Chat.WriteLine("Sync enabled");
         }
 
         void Stop()
         {
+            if (!Enable) { return; }
             Enable = false;
             Chat.WriteLine("Sync disabled");
         }
@@ -318,6 +371,10 @@ namespace SyncManager
             if (!_settings["Enable"].AsBool()) { return; }
 
             if (_settings["SyncBags"].AsBool()) { _openBags = false; }
+            UseItem = null;
+            UseTarget = Identity.None;
+            UseType = 3;
+
         }
 
         #region IncomingCommunication
@@ -339,25 +396,27 @@ namespace SyncManager
             MovementController.Instance.SetMovement(moveMsg.MoveType);
         }
 
-        void LookAt(int sender, IPCMessage look)
+        void OnLookAt(int sender, IPCMessage look)
         {
             if (!_settings["Enable"].AsBool()) { return; }
+            if (IsActiveWindow) { return; }
 
             var targetMsg = (TargetMessage)look;
-
             var localPlayer = DynelManager.LocalPlayer;
 
-            if (!localPlayer.IsAttacking && !localPlayer.IsAttackPending
-                && localPlayer.FightingTarget == null
-                && Spell.List.Any(spell => spell.IsReady) && !Spell.HasPendingCast && PerkAction.List.Any(p => !p.IsExecuting))
-            {
-                Targeting.SetTarget(targetMsg.Target);
-            }
+            if (localPlayer.IsAttacking) { return; }
+            if (localPlayer.IsAttackPending) { return; }
+            if (localPlayer.FightingTarget != null) { return; }
+            if (Spell.HasPendingCast) { return; }
+            if (Item.HasPendingUse) { return; }
+            if (PerkAction.List.Any(p => p.IsExecuting)) { return; }
+
+            Targeting.SetTarget(targetMsg.Target);
         }
 
         void OnAttackMessage(int sender, IPCMessage msg)
         {
-            if (IsActiveWindow || Game.IsZoning) { return; }
+            if (IsActiveWindow) { return; }
             if (!_settings["Enable"].AsBool()) { return; }
             if (!_settings["SyncAttack"].AsBool()) { return; }
 
@@ -373,42 +432,63 @@ namespace SyncManager
 
         void OnUseMessage(int sender, IPCMessage msg)
         {
-            if (IsActiveWindow || Game.IsZoning) { return; }
-
+            if (IsActiveWindow) { return; }
             if (!_settings["Enable"].AsBool()) { return; }
+            if (!_settings["SyncUse"].AsBool()) { return; }
 
             var useMsg = (UseMessage)msg;
+            if (useMsg.Sender == DynelManager.LocalPlayer.Identity) { return; }
+            //Chat.WriteLine($"Action receved = {useMsg.Action}");
 
-            if (useMsg.RingName != RingName.Unknown)
+            switch (useMsg.Action)
             {
-                string ringName = GetItemNameFromRingName(useMsg.RingName);
-
-                if (ringName == null) { return; }
-
-                FindUseRing(ringName, useMsg.Target);
-            }
-            else
-            {
-                if (useMsg.Target.Type == IdentityType.Terminal && useMsg.ItemId == 0)
-                {
-                    useDynel = useMsg.Target;
-                }
-                else
-                {
+                case UseAction.UseItem:
                     ProcessIDItem(useMsg);
-                }
+                    if (UseItem == null) { return; }
+                    //Chat.WriteLine($"Found item {UseItem.Name}");
+                    UseType = 0;
+                    break;
+                case UseAction.UseItemOnTarget:
+                    if (useMsg.RingName != RingName.Unknown)
+                    {
+                        string ringName = GetItemNameFromRingName(useMsg.RingName);
+
+                        if (ringName == null) { return; }
+                        //Chat.WriteLine($"found ring {ringName}");
+                        UseTarget = useMsg.Target;
+                        FindUseRing(ringName);
+                    }
+                    else
+                    {
+                        UseTarget = useMsg.Target;
+                        ProcessIDItem(useMsg);
+                        //Chat.WriteLine($"Found item {UseItem.Name}");
+                    }
+
+                    if (UseItem == null) { return; }
+
+                    UseType = 1;
+                    break;
+                case UseAction.UseTarget:
+                    UseTarget = useMsg.Target;
+                    //Chat.WriteLine($"UseTarget {useMsg.Target}");
+                    UseType = 2;
+                    break;
+                default:
+                    UseType = 3;
+                    break;
             }
         }
 
-        void FindUseRing(string itemName, Identity target)
+        void FindUseRing(string itemName)
         {
+            if (itemName == null) { return; }
             var ring = Inventory.Items.FirstOrDefault(c => c.Name.Contains(itemName)) ??
                             Inventory.Backpacks.SelectMany(b => b.Items).FirstOrDefault(c => c.Name.Contains(itemName));
 
             if (ring == null) { return; }
 
-            useItem = ring.Slot;
-            useOnDynel = target;
+            UseItem = ring;
         }
 
         void ProcessIDItem(UseMessage usableMsg)
@@ -423,20 +503,11 @@ namespace SyncManager
 
             if (ignoredItemIds.Contains(usableMsg.ItemId)) { return; }
 
-            if (usableMsg.Target != Identity.None)
-            {
-                UseItemTarget = usableMsg.Target;
-            }
-            else
-            {
-                UseItemTarget = Identity.None;
-            }
-
             if (ICCModifiedHackingTool.Contains(usableMsg.ItemId))
             {
                 if (Inventory.Find("ICC Modified Hacking Tool", out Item tool, false))
                 {
-                    UseItemID = tool;
+                    UseItem = tool;
                 }
             }
 
@@ -444,16 +515,18 @@ namespace SyncManager
             {
                 if (Inventory.Find("Zero-Point Transmission Relay Scoop", out Item tool, false))
                 {
-                    UseItemID = tool;
+                    UseItem = tool;
                 }
             }
 
-            UseItemID = Inventory.Items.FirstOrDefault(i => i.Id == usableMsg.ItemId && i.UniqueIdentity.Type != IdentityType.Container) ??
+            UseItem = Inventory.Items.FirstOrDefault(i => i.Id == usableMsg.ItemId) ??
                 Inventory.Backpacks.SelectMany(b => b.Items).FirstOrDefault(i => i.Id == usableMsg.ItemId);
         }
         void OnNpcChatMessage(int sender, IPCMessage msg)
         {
             if (!_settings["Enable"].AsBool()) { return; }
+            if (!_settings["SyncChat"].AsBool()) { return; }
+            if (IsActiveWindow) { return; }
 
             var chatMsg = (NpcChatIPCMessage)msg;
 
@@ -480,7 +553,8 @@ namespace SyncManager
         void OnNPCStartTrade(int sender, IPCMessage msg)
         {
             if (!_settings["Enable"].AsBool()) { return; }
-
+            if (!_settings["NPCTrade"].AsBool()) { return; }
+            if (IsActiveWindow) { return; }
             var NPCStartTrade = (NPCStartTradeIPCMessage)msg;
 
             NPCChatStartTrade(DynelManager.LocalPlayer.Identity, NPCStartTrade.Target);
@@ -489,6 +563,8 @@ namespace SyncManager
         void OnNPCTrade(int sender, IPCMessage msg)
         {
             if (!_settings["Enable"].AsBool()) { return; }
+            if (!_settings["NPCTrade"].AsBool()) { return; }
+            if (IsActiveWindow) { return; }
 
             var NpcTrade = (NpcTradeIPCMessage)msg;
 
@@ -509,6 +585,8 @@ namespace SyncManager
         void OnNPCFinishTrade(int sender, IPCMessage msg)
         {
             if (!_settings["Enable"].AsBool()) { return; }
+            if (!_settings["NPCTrade"].AsBool()) { return; }
+            if (IsActiveWindow) { return; }
 
             var NpcFinishTrade = (NpcFinishTradeMessage)msg;
 
@@ -532,9 +610,19 @@ namespace SyncManager
 
         void Network_N3MessageSent(object s, N3Message n3Msg)
         {
-            if (!IsActiveCharacter() || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+            if (!IsActiveWindow || n3Msg.Identity != DynelManager.LocalPlayer.Identity) { return; }
 
             if (!_settings["Enable"].AsBool()) { return; }
+
+            if (n3Msg.N3MessageType == N3MessageType.LookAt)
+            {
+                var lookAtMsg = (LookAtMessage)n3Msg;
+
+                IPCChannel.Broadcast(new TargetMessage()
+                {
+                    Target = lookAtMsg.Target
+                });
+            }
 
             if (_settings["SyncMove"].AsBool())
             {
@@ -554,29 +642,20 @@ namespace SyncManager
                     case N3MessageType.CharacterAction:
                         var charActionMsg = (CharacterActionMessage)n3Msg;
 
-                        if (charActionMsg.Action != CharacterActionType.StandUp) { return; }
-
-                        IPCChannel.Broadcast(new MoveMessage()
+                        if (charActionMsg.Action == CharacterActionType.StandUp)
                         {
-                            MoveType = MovementAction.LeaveSit,
-                            PlayfieldId = Playfield.Identity.Instance,
-                            Position = DynelManager.LocalPlayer.Position,
-                            Rotation = DynelManager.LocalPlayer.Rotation
-                        });
+                            IPCChannel.Broadcast(new MoveMessage()
+                            {
+                                MoveType = MovementAction.LeaveSit,
+                                PlayfieldId = Playfield.Identity.Instance,
+                                Position = DynelManager.LocalPlayer.Position,
+                                Rotation = DynelManager.LocalPlayer.Rotation
+                            });
+                        }
                         break;
                     default:
                         break;
                 }
-            }
-
-            if (n3Msg.N3MessageType == N3MessageType.LookAt)
-            {
-                var lookAtMsg = (LookAtMessage)n3Msg;
-
-                IPCChannel.Broadcast(new TargetMessage()
-                {
-                    Target = lookAtMsg.Target
-                });
             }
 
             if (_settings["SyncAttack"].AsBool())
@@ -603,51 +682,58 @@ namespace SyncManager
                 }
             }
 
-            if (_settings["SyncUse"].AsBool() && n3Msg.N3MessageType == N3MessageType.GenericCmd)
+            if (_settings["SyncUse"].AsBool())
             {
-                var genericCmdMsg = (GenericCmdMessage)n3Msg;
-
-                switch (genericCmdMsg.Action)
+                if (n3Msg.N3MessageType == N3MessageType.GenericCmd)
                 {
-                    case GenericCmdAction.Use:
-                        if (genericCmdMsg.Target.Type == IdentityType.Terminal)
-                        {
-                            UseMessage useMsg = new UseMessage()
+                    var genericCmdMsg = (GenericCmdMessage)n3Msg;
+
+                    switch (genericCmdMsg.Action)
+                    {
+                        case GenericCmdAction.Use:
+                            if (genericCmdMsg.Target.Type == IdentityType.Terminal)
                             {
-                                Target = genericCmdMsg.Target,
-                                PfId = Playfield.ModelIdentity.Instance
-                            };
+                                UseMessage useMsg = new UseMessage()
+                                {
+                                    Action = UseAction.UseTarget,
+                                    Target = genericCmdMsg.Target,
+                                    Sender = DynelManager.LocalPlayer.Identity,
+                                };
 
-                            IPCChannel.Broadcast(useMsg);
-                        }
-                        else
-                        {
-                            BroadcastUsableMessage(FindItem(genericCmdMsg.Target), Identity.None);
-                        }
-                        break;
-                    case GenericCmdAction.UseItemOnItem:
-
-                        var item = FindItem(genericCmdMsg.Source.Value);
-
-                        RingName ringName = GetRingNameFromItemName(item?.Name);
-
-                        if (ringName != RingName.Unknown)
-                        {
-                            var useMsg = new UseMessage()
+                                IPCChannel.Broadcast(useMsg);
+                            }
+                            else
                             {
-                                Target = genericCmdMsg.Target,
-                                RingName = ringName
-                            };
 
-                            IPCChannel.Broadcast(useMsg);
-                        }
-                        else
-                        {
-                            BroadcastUsableMessage(FindItem(genericCmdMsg.Source.Value), genericCmdMsg.Target);
-                        }
-                        break;
-                    default:
-                        break;
+                                BroadcastUsableMessage(FindItem(genericCmdMsg.Target), Identity.None);
+                            }
+                            break;
+                        case GenericCmdAction.UseItemOnItem:
+
+                            var item = FindItem(genericCmdMsg.Source.Value);
+
+                            RingName ringName = GetRingNameFromItemName(item?.Name);
+
+                            if (ringName != RingName.Unknown)
+                            {
+                                var useMsg = new UseMessage()
+                                {
+                                    Action = UseAction.UseItemOnTarget,
+                                    Target = genericCmdMsg.Target,
+                                    RingName = ringName,
+                                    Sender = DynelManager.LocalPlayer.Identity,
+                                };
+
+                                IPCChannel.Broadcast(useMsg);
+                            }
+                            else
+                            {
+                                BroadcastUsableMessage(FindItem(genericCmdMsg.Source.Value), genericCmdMsg.Target);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 
@@ -656,6 +742,7 @@ namespace SyncManager
                 switch (n3Msg.N3MessageType)
                 {
                     case N3MessageType.KnubotOpenChatWindow:
+
                         var n3OpenChatMessage = (KnuBotOpenChatWindowMessage)n3Msg;
 
                         IPCChannel.Broadcast(new NpcChatIPCMessage
@@ -743,13 +830,24 @@ namespace SyncManager
         {
             if (item == null) { return; }
 
+            UseAction useAction = UseAction.UseItem;
+
+            if (target != Identity.None)
+            {
+                useAction = UseAction.UseItemOnTarget;
+            }
+
             if (!IsOther(item))
             {
                 var usableMsg = new UseMessage()
                 {
+                    Action = useAction,
                     ItemId = item.Id,
                     Target = target,
+                    Sender = DynelManager.LocalPlayer.Identity,
                 };
+
+                //Chat.WriteLine($"Sending {item.Name}");
                 IPCChannel.Broadcast(usableMsg);
             }
         }
@@ -824,6 +922,14 @@ namespace SyncManager
         #endregion
 
         #region Misc
+
+        public enum UseAction
+        {
+            UseItem,
+            UseItemOnTarget,
+            UseTarget,
+            Null,
+        }
 
         public enum RingName
         {
@@ -948,56 +1054,6 @@ namespace SyncManager
             }
         }
 
-        void ListenerUseSync()
-        {
-            if (Item.HasPendingUse) { return; }
-            if (Spell.HasPendingCast) { return; }
-            if (Spell.List.Any(s => !s.IsReady)) { return; }
-            if (PerkAction.List.Any(p => p.IsExecuting)) { return; }
-
-            Vector3 playerPos = DynelManager.LocalPlayer.Position;
-
-            if (useDynel != Identity.None)
-            {
-                var usedynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useDynel);
-
-                if (usedynel != null && Vector3.Distance(playerPos, usedynel.Position) < 8 &&
-                    usedynel.Name != "Rubi-Ka Banking Service Terminal" && usedynel.Name != "Mail Terminal")
-                {
-                    DynelManager.GetDynel<SimpleItem>(useDynel)?.Use();
-                    useDynel = Identity.None;
-                }
-            }
-
-            if (useOnDynel != Identity.None)
-            {
-                var _useOnDynel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity == useOnDynel);
-
-                if (_useOnDynel != null && Vector3.Distance(playerPos, _useOnDynel.Position) < 8)
-                {
-                    Network.Send(new GenericCmdMessage()
-                    {
-                        Unknown = 1,
-                        Action = GenericCmdAction.UseItemOnItem,
-                        Temp1 = 0,
-                        Temp4 = 0,
-                        Identity = DynelManager.LocalPlayer.Identity,
-                        User = DynelManager.LocalPlayer.Identity,
-                        Target = useOnDynel,
-                        Source = useItem
-
-                    });
-
-                    useOnDynel = Identity.None;
-                    useItem = Identity.None;
-                }
-            }
-        }
-
-        bool IsActiveCharacter()
-        {
-            return IsActiveWindow;
-        }
 
         static bool IsOther(Item item)
         {
@@ -1005,7 +1061,7 @@ namespace SyncManager
                 || item.Id == 204593 || item.Id == 305492 || item.Id == 204595 || item.Id == 305491 || item.Id == 305478
                 || item.Id == 206013 || item.Id == 204653 || item.Id == 204698 || item.Id == 206015 || item.Id == 305476
                 || item.Id == 267168 || item.Id == 267167 || item.Name.Contains("Health") || item.Name.Contains("Newcomer")
-                || item.Name.Contains("Backpack");
+                || item.Name.Contains("Stim") || item.Name.Contains("syncbag") || item.UniqueIdentity.Type == IdentityType.Container;
         }
 
         #endregion

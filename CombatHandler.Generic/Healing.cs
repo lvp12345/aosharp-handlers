@@ -149,8 +149,8 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
-                t.Character.HealthPercent <= healthPercentThreshold && spell.IsInRange(t.Character)) .OrderBy(t => t.Character.HealthPercent)
+                var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
+                t.Character.HealthPercent <= healthPercentThreshold && spell.IsInRange(t?.Character)) .OrderBy(t => t.Character.HealthPercent)
                 .FirstOrDefault();
 
                 if (teamMember != null)
@@ -168,7 +168,7 @@ namespace CombatHandler.Generic
             if (!GenericCombatHandler.CanCast(spell)) { return false; }
 
             var player = DynelManager.Players
-                .Where(c => c.Health > 0 && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight && spell.IsInRange(c))
+                .Where(c => c != null && c.Health > 0 && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight && spell.IsInRange(c))
                 .OrderBy(c => c.HealthPercent).FirstOrDefault();
 
             if (player != null)

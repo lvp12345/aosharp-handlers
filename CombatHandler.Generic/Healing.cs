@@ -30,15 +30,12 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (DynelManager.LocalPlayer.HealthPercent <= TargetHealPercentage)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    return true;
-                }
-            }
+                if (DynelManager.LocalPlayer.HealthPercent > TargetHealPercentage) { return false; }
 
-            return false;
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
         }
 
         public static bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -56,15 +53,12 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (DynelManager.LocalPlayer.HealthPercent <= CompleteHealPercentage)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    return true;
-                }
-            }
+                if (DynelManager.LocalPlayer.HealthPercent > CompleteHealPercentage) { return false; }
 
-            return false;
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
         }
 
         public static bool FountainOfLife(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -82,15 +76,13 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (DynelManager.LocalPlayer.HealthPercent <= FountainOfLifeHealPercentage)
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    return true;
-                }
-            }
+                if (DynelManager.LocalPlayer.HealthPercent > FountainOfLifeHealPercentage) { return false; }
 
-            return false;
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+
+            }
         }
 
         #endregion
@@ -108,14 +100,11 @@ namespace CombatHandler.Generic
                             && m.Character.Health > 0
                             && m.Character.HealthPercent <= TeamHealPercentage);
 
-            if (dyingTeamMembersCount >= 2)
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+            if (dyingTeamMembersCount < 2) { return false; }
 
-            return false;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         public static bool CompleteTeamHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -129,38 +118,32 @@ namespace CombatHandler.Generic
                             && m.Character.Health > 0
                             && m.Character.HealthPercent <= CompleteTeamHealPercentage);
 
-            if (dyingTeamMembersCount >= 2)
-            {
-                actionTarget.Target = DynelManager.LocalPlayer;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+            if (dyingTeamMembersCount < 2) { return false; }
 
-            return false;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         #endregion
 
         #endregion
 
-       public static bool FindMemberForTargetHeal(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        public static bool FindMemberForTargetHeal(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!GenericCombatHandler.CanCast(spell)) { return false; }
 
-            if (Team.IsInTeam)
-            {
-                var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
-                t.Character.HealthPercent <= healthPercentThreshold && spell.IsInRange(t?.Character)) .OrderBy(t => t.Character.HealthPercent)
-                .FirstOrDefault();
+            if (!Team.IsInTeam) { return false; }
 
-                if (teamMember != null)
-                {
-                    actionTarget.Target = teamMember.Character;
-                    actionTarget.ShouldSetTarget = true;
-                    return true;
-                }
-            }
-            return false;
+            var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.Health > 0 &&
+            t.Character.HealthPercent <= healthPercentThreshold && spell.IsInRange(t?.Character)).OrderBy(t => t.Character.HealthPercent)
+            .FirstOrDefault();
+
+            if (teamMember == null) { return false; }
+
+            actionTarget.Target = teamMember.Character;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
 
         public static bool FindPlayerWithHealthBelow(int healthPercentThreshold, Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -171,14 +154,11 @@ namespace CombatHandler.Generic
                 .Where(c => c != null && c.Health > 0 && c.HealthPercent <= healthPercentThreshold && c.IsInLineOfSight && spell.IsInRange(c))
                 .OrderBy(c => c.HealthPercent).FirstOrDefault();
 
-            if (player != null)
-            {
-                actionTarget.Target = player;
-                actionTarget.ShouldSetTarget = true;
-                return true;
-            }
+            if (player == null) { return false; }
 
-            return false;
+            actionTarget.Target = player;
+            actionTarget.ShouldSetTarget = true;
+            return true;
         }
     }
 }

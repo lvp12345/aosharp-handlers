@@ -1522,7 +1522,7 @@ namespace CombatHandler.Generic
 
             if (IsPlayerFlyingOrFalling()) { return false; }
 
-            if (!Spell.HasPendingCast) { return false; }
+            if (Spell.HasPendingCast) { return false; }
 
             if (_settings["GlobalRez"].AsBool())
             {

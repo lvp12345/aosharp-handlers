@@ -1093,7 +1093,7 @@ namespace CombatHandler.NanoTechnician
             if (!CanCast(spell)) { return false; }
 
             var target = DynelManager.NPCs
-                   .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                   .Where(c => c != null && !debuffAreaTargetsToIgnore.Contains(c.Name)
                        && c.Health > 0
                        && c.IsInLineOfSight
                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -1135,7 +1135,7 @@ namespace CombatHandler.NanoTechnician
             if (!CanCast(spell)) { return false; }
 
             var target = DynelManager.NPCs
-                   .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                   .Where(c => c != null && !debuffAreaTargetsToIgnore.Contains(c.Name)
                        && c.Health > 0
                        && c.IsInLineOfSight
                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
@@ -1234,7 +1234,7 @@ namespace CombatHandler.NanoTechnician
             if (fightingTarget == null) { return false; }
 
             var target = DynelManager.NPCs
-                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                .Where(c => c != null && !debuffAreaTargetsToIgnore.Contains(c.Name)
                     && c.FightingTarget != null && c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity
                     && c.Health > 0
                     && c.IsInLineOfSight
@@ -1414,8 +1414,8 @@ namespace CombatHandler.NanoTechnician
 
             if (!Team.IsInTeam) { return false; }
 
-            var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-             && spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) 
+            var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+             && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) 
              && t.Character.Identity != DynelManager.LocalPlayer.Identity)
             .FirstOrDefault();
 

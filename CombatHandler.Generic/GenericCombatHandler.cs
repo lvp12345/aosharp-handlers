@@ -584,8 +584,8 @@ namespace CombatHandler.Generic
             if (RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id) ||
                 DynelManager.LocalPlayer.FightingTarget == null) { return false; }
 
-            var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-             && spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character))
+            var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+             && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character))
             .FirstOrDefault();
 
             if (teamMember == null) { return false; }
@@ -629,8 +629,8 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-                 && spell.IsInRange(t.Character) && SpellChecksOther(spell, NanoLine.XPBonus, t.Character))
+                var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+                 && spell.IsInRange(t?.Character) && SpellChecksOther(spell, NanoLine.XPBonus, t.Character))
                 .FirstOrDefault();
 
                 if (teamMember == null) { return false; }
@@ -659,9 +659,9 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+                var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
                 & !(t.Character.Buffs.Contains(NanoLine.AAOBuffs) || AdvyMorphs.Any(morphs => t.Character.Buffs.Contains(morphs)))
-                 && spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character))
+                 && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character))
                 .FirstOrDefault();
 
                 if (teamMember == null) { return false; }
@@ -689,8 +689,8 @@ namespace CombatHandler.Generic
 
             if (!Team.IsInTeam) { return NonCombatBuff(spell, ref actionTarget, fightingTarget); }
 
-            var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-             && spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character))
+            var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+             && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character))
             .FirstOrDefault();
 
             if (teamMember == null) { return false; }
@@ -721,9 +721,9 @@ namespace CombatHandler.Generic
 
             if (Team.IsInTeam)
             {
-                var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+                var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
                 && t.Character.Profession != Profession.Keeper && t.Character.Profession != Profession.Engineer
-                 && spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character))
+                 && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character))
                 .FirstOrDefault();
 
                 if (teamMember == null) { return false; }
@@ -845,7 +845,7 @@ namespace CombatHandler.Generic
             if (NeedsReload()) { return false; }
 
             var target = DynelManager.NPCs
-                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                    .Where(c => c != null && !debuffAreaTargetsToIgnore.Contains(c.Name)
                         && c.FightingTarget != null
                         && c.Health > 0
                         && !c.Buffs.Contains(301844)
@@ -885,8 +885,8 @@ namespace CombatHandler.Generic
         {
             if (!Team.IsInTeam) { return false; }
 
-            var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-             && spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && GetWieldedWeapons(t.Character).HasFlag(supportedWeaponType))
+            var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
+             && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && GetWieldedWeapons(t.Character).HasFlag(supportedWeaponType))
             .FirstOrDefault();
 
             if (teamMember == null) { return false; }
@@ -909,8 +909,8 @@ namespace CombatHandler.Generic
         {
             if (!Team.IsInTeam) { return false; }
 
-            var teamMember = Team.Members.Where(t => t.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive && t.Character.Profession != Profession.NanoTechnician
-            && spell.IsInRange(t.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && GetWieldedWeapons(t.Character).HasFlag(supportedWeaponType))
+            var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive && t.Character.Profession != Profession.NanoTechnician
+            && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && GetWieldedWeapons(t.Character).HasFlag(supportedWeaponType))
            .FirstOrDefault();
 
             if (teamMember == null) { return false; }
@@ -1332,6 +1332,8 @@ namespace CombatHandler.Generic
             {
                 foreach (SpecialAttack special in DynelManager.LocalPlayer?.SpecialAttacks)
                 {
+                    if (target == null) { break; }
+
                     if (!ShouldUseSpecialAttack(special))
                     {
                         continue;

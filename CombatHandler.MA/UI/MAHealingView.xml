@@ -2,21 +2,15 @@
 <root>
   <BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-
 	  <OptionCheckBox label="All" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AllPlayers" layout_borders="Rect(10,1,5,6)"/>
-
-	  <OptionRadioButtonGroup label="Healing*" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__HealSelection">
-		  <RadioButton label="None" value="0"/>
-		  <RadioButton label="(Team) Single" value="1"/>
-		  <RadioButton label="(Area) Single" value="2"/>
-		  <RadioButton label="Team" value="3"/>
-	  </OptionRadioButtonGroup>
-    <TextInputView name="HealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
-    <TextView value="" layout_borders="Rect(5,5,5,5)"/>
-	  
+	  <TextView value="Target Heal %" layout_borders="Rect(5,5,5,5)"/>
+      <TextInputView name="HealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
+      <TextView value="" layout_borders="Rect(5,5,5,5)"/>
+	  <TextView value="Team Heal %" layout_borders="Rect(5,5,5,5)"/>
+	  <TextInputView name="TeamHealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
+	  <TextView value="" layout_borders="Rect(5,5,5,5)"/>  
 	  <TextView value="Fountain Of Life %" layout_borders="Rect(5,5,5,5)"/>
 	  <TextInputView name="FountainOfLifeHealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
-
 	  <TextView value="*Threshold calculated as percentage." layout_borders="Rect(5,5,5,5)"/>
     <TextView value="" layout_borders="Rect(5,5,5,5)"/>
   </BorderView>

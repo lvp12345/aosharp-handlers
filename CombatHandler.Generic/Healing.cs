@@ -37,6 +37,28 @@ namespace CombatHandler.Generic
                 return true;
             }
         }
+        public static bool TargetHealingAsTeam(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (TeamHealPercentage == 0) { return false; }
+
+            if (GenericCombatHandler._settings["AllPlayers"].AsBool())
+            {
+                return FindPlayerWithHealthBelow(TeamHealPercentage, spell, ref actionTarget);
+            }
+
+            if (Team.IsInTeam)
+            {
+                return FindMemberForTargetHeal(TeamHealPercentage, spell, ref actionTarget);
+            }
+            else
+            {
+                if (DynelManager.LocalPlayer.HealthPercent > TeamHealPercentage) { return false; }
+
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
+            }
+        }
 
         public static bool CompleteHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

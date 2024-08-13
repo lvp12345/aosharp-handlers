@@ -125,7 +125,7 @@ namespace CombatHandler.Adventurer
                 //Healing
                 RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CompleteHealingLine).OrderByStackingOrder(), Healing.CompleteHealing, CombatActionPriority.High);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), Healing.TeamHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), Healing.TargetHealingAsTeam, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MorphHeal).OrderByStackingOrder(), DragonHealing, CombatActionPriority.High);
 
                 //Buffs

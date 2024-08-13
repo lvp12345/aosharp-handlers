@@ -49,6 +49,7 @@ namespace CombatHandler.MartialArtist
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentageChangedEvent += TargetHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentageChangedEvent += TeamHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
@@ -92,8 +93,6 @@ namespace CombatHandler.MartialArtist
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AbsoluteFist);
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DebilitatingStrike);
 
-                _settings.AddVariable("HealSelection", 0);
-
                 _settings.AddVariable("DamageTypeSelection", 0);
                 _settings.AddVariable("SelfEvadeSelection", 1);
 
@@ -120,13 +119,9 @@ namespace CombatHandler.MartialArtist
 
                 //Heals
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
-                    MAHealing, CombatActionPriority.High);
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
-                    MAHealing, CombatActionPriority.High);
-
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), Healing.TeamHealing, 
-                    CombatActionPriority.High);
+                    Healing.TargetHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), 
+                    Healing.TargetHealingAsTeam, CombatActionPriority.High);
 
                 //Taunts
                 RegisterSpellProcessor(RelevantNanos.Taunts, SingleTargetTaunt, CombatActionPriority.High);
@@ -240,6 +235,7 @@ namespace CombatHandler.MartialArtist
 
                 Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
                 Healing.TargetHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage;
+                Healing.TeamHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage;
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
                 StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
@@ -552,6 +548,7 @@ namespace CombatHandler.MartialArtist
 
                 window.FindView("HealPercentageBox", out TextInputView healInput);
                 window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
 
                 if (healInput != null)
                 {
@@ -560,6 +557,10 @@ namespace CombatHandler.MartialArtist
                 if (FountainOfLifeInput != null)
                 {
                     FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (TeamHealInput != null)
+                {
+                    TeamHealInput.Text = $"{Healing.TeamHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -569,6 +570,7 @@ namespace CombatHandler.MartialArtist
 
                 container.FindView("HealPercentageBox", out TextInputView healInput);
                 container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                container.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
 
                 if (healInput != null)
                 {
@@ -577,6 +579,10 @@ namespace CombatHandler.MartialArtist
                 if (FountainOfLifeInput != null)
                 {
                     FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (TeamHealInput != null)
+                {
+                    TeamHealInput.Text = $"{Healing.TeamHealPercentage}";
                 }
             }
         }
@@ -624,6 +630,7 @@ namespace CombatHandler.MartialArtist
                 {
                     window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                     window.FindView("HealPercentageBox", out TextInputView healInput);
+                    window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
                     window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                     window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
                     window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
@@ -663,6 +670,16 @@ namespace CombatHandler.MartialArtist
                         }
                     }
 
+                    if (TeamHealInput != null && !string.IsNullOrEmpty(TeamHealInput.Text))
+                    {
+                        if (int.TryParse(TeamHealInput.Text, out int Value))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage != Value)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentage = Value;
+                            }
+                        }
+                    }
                     if (stimTargetInput != null)
                     {
                         if (Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName != stimTargetInput.Text)
@@ -959,34 +976,6 @@ namespace CombatHandler.MartialArtist
         }
 
         #region Healing
-
-        private bool MAHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (Healing.TargetHealPercentage == 0) { return false; }
-
-            if (_settings["HealSelection"].AsInt32() != 1) { return false; }
-
-            if (!spell.IsReady)
-            {
-                NanoLine alternativeLine = spell.Nanoline == NanoLine.SingleTargetHealing ? NanoLine.TeamHealing : NanoLine.SingleTargetHealing;
-                var alternativeSpells = Spell.GetSpellsForNanoline(alternativeLine).OrderByStackingOrder();
-
-                foreach (var altSpell in alternativeSpells)
-                {
-                    if (altSpell.IsReady)
-                    {
-                        spell = altSpell;
-                        break;
-                    }
-                }
-            }
-            if (!spell.IsReady)
-            {
-                return false;
-            }
-
-            return Healing.FindMemberForTargetHeal(Healing.TargetHealPercentage, spell, ref actionTarget);
-        }
 
         #endregion
 

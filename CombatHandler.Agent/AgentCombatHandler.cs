@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
@@ -89,7 +90,7 @@ namespace CombatHandler.Agent
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentageChangedEvent += CompleteHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPercentageChangedEvent += TeamHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].CompleteTeamHealPercentageChangedEvent += CompleteTeamHealPercentage_Changed;
-
+                Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentageChangedEvent += AMSPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
@@ -145,6 +146,7 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("TheShot", false);
 
                 _settings.AddVariable("FalseProfSelection", 0);
+                _settings.AddVariable("Root", false);
 
                 //trader
                 _settings.AddVariable("RKNanoDrainSelection", 0);
@@ -152,6 +154,7 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("DepriveSelection", 1);
                 _settings.AddVariable("RansackSelection", 1);
                 _settings.AddVariable("TdrEvades", 0);
+                _settings.AddVariable("TraderModeSelection", 0);
 
                 //mp
                 _settings.AddVariable("CostBuffSelection", 1);
@@ -197,14 +200,34 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("NanoHOTTeam", 0);
                 _settings.AddVariable("BlindSelection", 0);
                 _settings.AddVariable("NTEvades", 0);
+                _settings.AddVariable("NTFortify", 0);
+                _settings.AddVariable("HaloSelection", 0);
 
                 //crat
                 _settings.AddVariable("CalmingSelection", 0);
-                _settings.AddVariable("ModeSelection", 0);
-                _settings.AddVariable("Root", false);
+                _settings.AddVariable("CratModeSelection", 0);
+                _settings.AddVariable("IntensifyStressSelection", 0);
+                _settings.AddVariable("CratNuke", false);
+                _settings.AddVariable("CratSpecialNuke", false);
+                _settings.AddVariable("CutRedTape", 0);
+                _settings.AddVariable("XPBonus", false);
 
                 //fixer
                 _settings.AddVariable("AOESnare", false);
+
+                //soldier
+                _settings.AddVariable("RiotControl", false);
+                _settings.AddVariable("InitBuff", false);
+                _settings.AddVariable("RKReflectSelection", 0);
+
+                //MA
+                _settings.AddVariable("RunSpeed", 0);
+                _settings.AddVariable("BrawlBuff", 0);
+                _settings.AddVariable("MABuff", 0);
+                _settings.AddVariable("MAEvades", false);
+                _settings.AddVariable("ControlledDestructionWithShutdown", false);
+                _settings.AddVariable("DamageTypeSelection", 0);
+                _settings.AddVariable("MASelection", (int)MASelection.Sappo);
 
                 RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
@@ -213,6 +236,11 @@ namespace CombatHandler.Agent
 
                 //Perk
                 RegisterPerkProcessor(PerkHash.TheShot, TheShot);
+
+                //Root/snares
+                RegisterSpellProcessor(RelevantNanos.SuperiorHoldVictim, Root, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.GreaterDelayPursuers, AOESnare, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.GreaterDelayTheInevitable, Snare, CombatActionPriority.High);
 
                 //Buffs
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AgilityBuff).OrderByStackingOrder(),
@@ -280,6 +308,7 @@ namespace CombatHandler.Agent
                 StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
                 KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
                 KitNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage;
+                AMSPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentage;
                 CycleSpherePerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleSpherePerkDelay;
                 CycleWitOfTheAtroxPerkDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].CycleWitOfTheAtroxPerkDelay;
                 SelfHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfHealPerkPercentage;
@@ -706,11 +735,23 @@ namespace CombatHandler.Agent
 
                 _soldView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Sold", XmlViewName = "SoldView" }, _soldView);
+                window.FindView("AMSPercentageBox", out TextInputView AMSInput);
+
+                if (AMSInput != null)
+                {
+                    AMSInput.Text = $"{AMSPercentage}";
+                }
             }
             else if (_soldWindow == null || (_soldWindow != null && !_soldWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_soldWindow, PluginDir, new WindowOptions() { Name = "Sold", XmlViewName = "SoldView" }, _soldView, out var container);
                 _soldWindow = container;
+                container.FindView("AMSPercentageBox", out TextInputView AMSInput);
+
+                if (AMSInput != null)
+                {
+                    AMSInput.Text = $"{AMSPercentage}";
+                }
             }
         }
         private void HandleEnfoViewClick(object s, ButtonBase button)
@@ -958,6 +999,7 @@ namespace CombatHandler.Agent
                     _ncuUpdateTime = Time.NormalTime;
 
                 }
+                CancelBuffs();
 
                 Morphs();
 
@@ -1012,6 +1054,17 @@ namespace CombatHandler.Agent
                             #region Soldier
 
                             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => c.Name.Contains("Mirror")).OrderByStackingOrder(), AMS);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ReflectShield).Where(c => !c.Name.Contains("Mirror")).OrderByStackingOrder(), RKReflects);
+                            RegisterSpellProcessor(29251, TeamRiotControl);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(),
+                              (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                               => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TotalFocus).OrderByStackingOrder(),
+                              (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                               => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InitiativeBuffs).OrderByStackingOrder(),
+                              (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                               => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuff"));
 
                             #endregion
                             Chat.WriteLine("Setting FP to Soldier");
@@ -1043,6 +1096,9 @@ namespace CombatHandler.Agent
                     case 4://eng
                         if (uiSetting != check)
                         {
+                            #region Eng
+
+                            #endregion
                             Chat.WriteLine("Setting FP to Engineer");
                             check = uiSetting;
                         }
@@ -1118,9 +1174,21 @@ namespace CombatHandler.Agent
                             RegisterSpellProcessor(RelevantNanos.ShadowlandsCalms, ShadowlandsCalms, CombatActionPriority.High);
                             RegisterSpellProcessor(RelevantNanos.AOECalms, AOECalms, CombatActionPriority.High);
                             RegisterSpellProcessor(RelevantNanos.RkCalms, RkCalms, CombatActionPriority.High);
-
-                            //snare
+                            //buffs
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(),
+                                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "CutRedTape"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ExperienceConstructs_XPBonus).OrderByStackingOrder(), XPBonus);
+                            //Root/Snare
+                            RegisterSpellProcessor(RelevantNanos.GreaterFearofAttention, Root, CombatActionPriority.High);
                             RegisterSpellProcessor(RelevantNanos.ShacklesofObedience, Snare, CombatActionPriority.High);
+                            //debuffs
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoDeltaDebuff).OrderByStackingOrder(),
+                            (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                             => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "IntensifyStressSelection"), CombatActionPriority.Medium);
+                            //Nukes
+                            RegisterSpellProcessor(RelevantNanos.CratSpecialNuke, CratSpecialNuke, CombatActionPriority.Low);
+                            RegisterSpellProcessor(RelevantNanos.CratNuke, CratNuke, CombatActionPriority.Low);
 
                             #endregion
                             Chat.WriteLine("Setting FP to Bureaucrat");
@@ -1130,6 +1198,45 @@ namespace CombatHandler.Agent
                     case 8://ma
                         if (uiSetting != check)
                         {
+                            #region MA
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
+                                Healing.TargetHealing, CombatActionPriority.High);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
+                                Healing.TargetHealingAsTeam, CombatActionPriority.High);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "MAEvades"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BrawlBuff).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "BrawlBuff"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledRageBuff).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "MABuff"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "RunSpeed"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.StrengthBuff).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "StrengthBuffSelection"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtsBuff).OrderByStackingOrder(),
+                                  (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "MABuff"));
+                            RegisterSpellProcessor(RelevantNanos.DamageTypeFire,
+                                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                                MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Fire));
+                            RegisterSpellProcessor(RelevantNanos.DamageTypeEnergy,
+                                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                                MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Energy));
+                            RegisterSpellProcessor(RelevantNanos.DamageTypeChemical,
+                                (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                                MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Chemical));
+
+
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder < 19).OrderByStackingOrder(), ControlledDestructionWithShutdown);
+                            int maItem = _settings["MASelection"].AsInt32();
+                            RegisterItemProcessor(maItem, maItem, MAItem);
+
+                            #endregion
                             Chat.WriteLine("Setting FP to Martial artist");
                             check = uiSetting;
                         }
@@ -1147,6 +1254,7 @@ namespace CombatHandler.Agent
                             RegisterSpellProcessor(new[] { RelevantNanos.VolcanicEruption },
                             (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                             => AOENuke(aoeNuke, fightingTarget, ref actionTarget, 2));
+                            RegisterSpellProcessor(RelevantNanos.HaloNanoDebuff, HaloNanoDebuff, CombatActionPriority.High);
                             //buffs
                             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
                                  (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1165,6 +1273,10 @@ namespace CombatHandler.Agent
                             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(),
                                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                  => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NTEvades"));
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(),
+                                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "NTFortify"));
+
                             //debuffs
                             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
                             RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
@@ -1190,6 +1302,10 @@ namespace CombatHandler.Agent
                             RegisterSpellProcessor(RelevantNanos.QuantumUncertanity,
                                   (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                  => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "TdrEvades"));
+                            //Mezz
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Mezz).OrderByStackingOrder(), Mezz, CombatActionPriority.High);
+                            //Root/Snare
+                            RegisterSpellProcessor(RelevantNanos.FlowofTime, Root, CombatActionPriority.High);
 
                             #endregion
                             Chat.WriteLine("Setting FP to Trader");
@@ -1260,7 +1376,7 @@ namespace CombatHandler.Agent
                     window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                     window.FindView("TeamHealPercentageBox", out TextInputView TeamHealInput);
                     window.FindView("CompleteTeamHealPercentageBox", out TextInputView CompleteTeamHealInput);
-
+                    window.FindView("AMSPercentageBox", out TextInputView AMSInput);
                     window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                     window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
                     window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
@@ -1281,6 +1397,16 @@ namespace CombatHandler.Agent
                     window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
                     window.FindView("NullitySpherePercentageBox", out TextInputView nullSphereInput);
 
+                    if (AMSInput != null && !string.IsNullOrEmpty(AMSInput.Text))
+                    {
+                        if (int.TryParse(AMSInput.Text, out int AMSValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentage != AMSValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentage = AMSValue;
+                            }
+                        }
+                    }
                     if (TargetHealInput != null && !string.IsNullOrEmpty(TargetHealInput.Text))
                     {
                         if (int.TryParse(TargetHealInput.Text, out int healValue))
@@ -1997,7 +2123,88 @@ namespace CombatHandler.Agent
         #endregion
 
         #region Debuffs
+        //root/snare
+        private bool Root(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Buffing"].AsBool()
+                || !_settings["Root"].AsBool() || !CanCast(spell)) { return false; }
 
+            var target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && IsMoving(c)
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && (c.Name == "Flaming Vengeance"
+                            || c.Name == "Hand of the Colonel"
+                            || c.Name == "Alien Seeker"))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+
+        private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Buffing"].AsBool()
+                || !_settings["Root"].AsBool() || !CanCast(spell)) { return false; }
+
+            var target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && c.IsMoving
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && c.Name == "Alien Heavy Patroller")
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+        //snares
+        private bool AOESnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Buffing"].AsBool() || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
+
+            var target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && IsMoving(c)
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && (c.Name == "Flaming Vengeance"
+                            || c.Name == "Hand of the Colonel"
+                            || c.Name == "Alien Seeker"))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+
+        private bool FixerSnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["Buffing"].AsBool()  || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
+
+            var target = DynelManager.Characters
+                    .Where(c => c.IsInLineOfSight
+                        && c.IsMoving
+                        && !c.Buffs.Contains(NanoLine.Root)
+                        && c.Name == "Alien Heavy Patroller")
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .FirstOrDefault();
+
+            if (target == null) { return false; }
+
+            actionTarget.Target = target;
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
         #endregion
 
         #endregion
@@ -2348,17 +2555,42 @@ namespace CombatHandler.Agent
 
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfSol)) { return false; }
-
             if (!_settings["Buffing"].AsBool()) { return false; }
+            if (!CanCast(spell)) { return false; }
 
-            if (fightingtarget == null || !CanCast(spell)) { return false; }
+            return DynelManager.LocalPlayer.HealthPercent <= AMSPercentage;
 
-            if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
-
-            return false;
         }
+        private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            switch (_settings["RKReflectSelection"].AsInt32())
+            {
+                case 1:
+                    return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+                case 2:
+                    return NonComabtTeamBuff(spell, fightingTarget, ref actionTarget);
+                default:
+                    return false;
+            }
+        }
+        private bool TeamRiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["RiotControl"].AsBool()) { return false; }
+            if (!Team.IsInTeam) { return false; }
 
+            var teamMember = Team.Members.Where(t => t?.Character != null
+            && t.Character.Health > 0
+            && t.Character.IsInLineOfSight
+            && t.Character.SpecialAttacks.Contains(SpecialAttack.Burst)
+            && SpellChecksOther(spell, spell.Nanoline, t.Character)
+            && spell.IsInRange(t?.Character)).FirstOrDefault();
+
+            if (teamMember == null) { return false; }
+
+            actionTarget = (teamMember.Character, true);
+            return true;
+
+        }
         #endregion
 
         #region Trader
@@ -2600,6 +2832,55 @@ namespace CombatHandler.Agent
                     return false;
             }
         }
+        private bool Mezz(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            var setting = _settings["TraderModeSelection"].AsInt32();
+            if (setting == 0) { return false; }
+            if (!CanCast(spell)) { return false; }
+
+            switch (setting)
+            {
+                case 1:
+                    var allTarget = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && spell.IsInRange(c)
+                        && c.MaxHealth < 1000000)
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                    if (allTarget == null) { return false; }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = allTarget;
+                    return true;
+                case 2:
+                    var adds = DynelManager.NPCs
+                    .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                        && c.Health > 0
+                        && c.IsInLineOfSight
+                        && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                        && spell.IsInRange(c)
+                        && c.MaxHealth < 1000000
+                        && c.FightingTarget != null
+                        && !AttackingMob(c)
+                        && AttackingTeam(c))
+                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                    .ThenBy(c => c.Health)
+                    .FirstOrDefault();
+
+                    if (adds == null) { return false; }
+
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = adds;
+                    return true;
+                default:
+                    return false;
+            }
+        }
         #endregion
 
         #region NT
@@ -2639,7 +2920,26 @@ namespace CombatHandler.Agent
 
             return !fightingTarget.Buffs.Contains(NanoLine.AAODebuffs);
         }
+        private bool HaloNanoDebuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (_settings["HaloSelection"].AsInt32() == 0) { return false; }
 
+            if (!CanCast(spell)) { return false; }
+            if (fightingTarget == null) { return false; }
+
+            if (fightingTarget != null && fightingTarget.Buffs.Contains(NanoLine.HaloNanoDebuff)) { return false; }
+
+            switch (_settings["HaloSelection"].AsInt32())
+            {
+                case 1:
+                    return true;
+                case 3:
+                    if (fightingTarget?.MaxHealth < 1000000) { return false; }
+                    return true;
+                default:
+                    return false;
+            }
+        }
         #endregion
 
         #region Crat
@@ -2670,7 +2970,7 @@ namespace CombatHandler.Agent
 
         bool CalmTarget(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            var modeSelection = _settings["ModeSelection"].AsInt32();
+            var modeSelection = _settings["CratModeSelection"].AsInt32();
             if (modeSelection == 0) { return false; }
 
             var target = DynelManager.NPCs
@@ -2706,77 +3006,87 @@ namespace CombatHandler.Agent
                     return false;
             }
         }
-        //snare
-        private bool Snare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+
+
+        //nukes
+        private bool CratSpecialNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool()
-                || !_settings["Root"].AsBool() || !CanCast(spell)) { return false; }
+            if (fightingTarget == null || !CanCast(spell) || !_settings["CratSpecialNuke"].AsBool()) { return false; }
 
-            var target = DynelManager.Characters
-                    .Where(c => c.IsInLineOfSight
-                        && c.IsMoving
-                        && !c.Buffs.Contains(NanoLine.Root)
-                        && c.Name == "Alien Heavy Patroller")
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .FirstOrDefault();
+            if (Spell.Find(273631, out Spell workplace))
+            {
+                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842) &&
+                    ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000)
+                    || fightingTarget.MaxHealth > 1000000)) { return false; }
+            }
 
-            if (target == null) { return false; }
+            return true;
+        }
+        private bool CratNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null || !CanCast(spell) || !_settings["CratNuke"].AsBool()) { return false; }
 
-            actionTarget.Target = target;
-            actionTarget.ShouldSetTarget = true;
+            if (Spell.Find(273631, out Spell workplace))
+            {
+                if (!fightingTarget.Buffs.Contains(273632) && !fightingTarget.Buffs.Contains(301842) &&
+                    ((fightingTarget.HealthPercent >= 40 && fightingTarget.MaxHealth < 1000000)
+                    || fightingTarget.MaxHealth > 1000000)) { return false; }
+            }
+
             return true;
         }
         #endregion
 
         #region Fixer
-        //snares
-        private bool AOESnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+
+
+        #endregion
+
+        #region MA
+        private bool ControlledDestructionWithShutdown(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool() || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
+            if (!_settings["ControlledDestructionWithShutdown"].AsBool() || fightingTarget == null
+                || DynelManager.LocalPlayer.HealthPercent < 100) { return false; }
 
-            var target = DynelManager.Characters
-                    .Where(c => c.IsInLineOfSight
-                        && IsMoving(c)
-                        && !c.Buffs.Contains(NanoLine.Root)
-                        && (c.Name == "Flaming Vengeance"
-                            || c.Name == "Hand of the Colonel"
-                            || c.Name == "Alien Seeker"))
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .FirstOrDefault();
+            return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
+        }
+        private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["MASelection"].AsInt32();
 
-            if (target == null) { return false; }
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
 
-            actionTarget.Target = target;
-            actionTarget.ShouldSetTarget = true;
             return true;
         }
 
-        private bool FixerSnare(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MADamageType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, DamageTypeSelection procType)
         {
-            if (!_settings["Buffing"].AsBool()  || !_settings["AOESnare"].AsBool() || !CanCast(spell)) { return false; }
+            DamageTypeSelection currentSetting = (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32();
 
-            var target = DynelManager.Characters
-                    .Where(c => c.IsInLineOfSight
-                        && c.IsMoving
-                        && !c.Buffs.Contains(NanoLine.Root)
-                        && c.Name == "Alien Heavy Patroller")
-                    .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
-                    .FirstOrDefault();
-
-            if (target == null) { return false; }
-
-            actionTarget.Target = target;
-            actionTarget.ShouldSetTarget = true;
-            return true;
-        }
-        private static bool IsMoving(SimpleChar target)
-        {
-            if (Playfield.Identity.Instance == 4021)
+            if (currentSetting != procType)
             {
-                return true;
+                return false;
             }
 
-            return target.IsMoving;
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+        private void CancelBuffs()
+        {
+            if (DamageTypeSelection.Fire != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageTypeFire);
+            }
+            if (DamageTypeSelection.Energy != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageTypeEnergy);
+            }
+            if (DamageTypeSelection.Chemical != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageTypeChemical);
+            }
         }
         #endregion
         #region Misc
@@ -2894,7 +3204,15 @@ namespace CombatHandler.Agent
 
             return null;
         }
+        private static bool IsMoving(SimpleChar target)
+        {
+            if (Playfield.Identity.Instance == 4021)
+            {
+                return true;
+            }
 
+            return target.IsMoving;
+        }
         private static class RelevantNanos
         {
             public static readonly int[] DetauntProcs = { 226437, 226435, 226433, 226431, 226429, 226427 };
@@ -2915,7 +3233,9 @@ namespace CombatHandler.Agent
             public static readonly int[] TeamCritBuffs = { 160791, 160789, 160787 };
             public static int AssassinsAimedShot = 275007;
             public static int SteadyNerves = 160795;
-
+            public const int SuperiorHoldVictim = 270249;
+            public const int GreaterDelayPursuers = 85316;
+            public const int GreaterDelayTheInevitable = 82545;
 
             public static int CompleteHealing = 28650;
 
@@ -2984,37 +3304,47 @@ namespace CombatHandler.Agent
 
             //Trader
             public const int QuantumUncertanity = 30745;
+            public const int FlowofTime = 30719;
 
             //NT
             public static readonly int[] RKAOENukes = { 28620, 28638, 28637, 28594, 45922, 45906, 45884, 28635, 28593, 45925, 45940,
             45900, 28629, 45917, 45937, 28599, 45894, 45943, 28633, 28631};
             public const int VolcanicEruption = 28638;
-            public static readonly int[] SingleTargetNukes = { 218168, 218164, 218162, 218160, 218158, 218156, 218154, 218152, 218150,
-                218148, 218146, 218144, 218142, 218140, 218138, 218136, 269473, 218134, 201935, 202262, 201933, 218132, 28618, 218124, 218130,
-                218122, 218120, 218128, 218118, 218126, 45226, 45192, 28619, 45230, 28623, 28604, 28616, 218116, 28597, 45210, 45236, 45197,
-                45233, 45247, 45199, 45235, 45234, 218114, 45258, 45217, 28600, 45198, 28613, 45919, 45195, 45225, 45260, 45891, 45254, 45890,
-                45213, 218112, 45215, 45915, 218104, 45252, 45214, 45251, 45929, 45220, 45920, 45222, 218102, 28598, 45911, 45237, 45216,
-                218110, 45913, 45901, 45212, 45206, 45912, 45883, 45245, 45140, 45904, 45218, 28626, 218108, 45261, 218100, 45909, 45203,
-                45228, 45903, 45200, 45939, 28592, 45242, 218098, 218106, 45885, 45926, 45241, 44538, 45908, 45250, 45934, 45138, 45932,
-                28632, 45205, 28609, 45209, 45246, 45935, 45921, 45227, 45207, 45942, 45191, 45924, 218096, 28610, 45914, 45208, 45893,
-                28621, 45211, 45916, 45933, 218094, 45240, 45259, 45941, 45910, 45253, 28614, 218092, 45221, 45204, 28634, 45196, 45886,
-                45201, 45928, 45193, 45323, 45244, 45889, 45895, 28605, 45219, 45223, 45938, 28628, 45232, 45248, 45898, 45202, 45923,
-                45229, 45907, 45139, 45887, 45231, 45882, 28627, 45936, 45194, 28639, 45243, 45931, 28630, 45137, 28607, 45257, 45880,
-                45256, 45249, 45888, 45255, 45881, 42543, 45927, 45902, 42540, 42541, 45899, 45905, 28611, 45897, 28601, 42542, 28608,
-                45918, 42539, 45892, 45930, 45879, 45896, 28612 };
+            public static readonly int[] HaloNanoDebuff = { 45239, 45238, 45224 };
+            public static readonly int[] SingleTargetNukes = { 45226, 45192, 45230, 28623, 28604, 28616, 28597, 45210, 45236, 45197,
+                45233, 45247, 45199, 45235, 45234, 45258, 45217, 28600, 45198, 28613, 45919, 45195, 45225, 45260, 45891, 45254, 45890,
+                45213, 45215, 45915, 45252, 45214, 45929, 45251, 45220, 45920, 45222, 45911, 28598, 45237, 45216, 45913, 45901, 45212,
+                45912, 45206, 45883, 45245, 45904, 45140, 45218, 28626, 45261, 45909, 45203,
+                45903, 45228, 45200, 45939, 28592, 45242, 45885, 45926, 45241, 45908, 44538, 45934, 45250, 45138, 45932,
+                28632, 45205, 28609, 45209, 45246, 45935, 45921, 45227, 45207, 45942, 45924, 45191, 28610, 45914, 45893, 45208,
+                28621, 45933, 45916, 45211, 45240, 45941, 45259, 45910, 45253, 28614, 45221, 28634, 45204, 45886, 45196,
+                45928, 45201, 45193, 45323, 45889, 45895, 45244, 28605, 45219, 45938, 45223, 28628, 45232, 45248, 45898, 45923, 45202,
+                45229, 45907, 45139, 45887, 45231, 45882, 28627, 45936, 45194, 28639, 45931, 45243, 28630, 45137, 28607, 45257, 45880,
+                45256, 45249, 45888, 45881, 45255, 45927, 42543, 45902, 42540, 42541, 45899, 45905, 28611, 45897, 28601, 28608,
+                45918, 45892, 45930, 45896, 28612 };
             public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
 
             //crat
+            public const int GreaterFearofAttention = 82166; 
             public const int ShacklesofObedience = 82463;
             public static readonly int[] ShadowlandsCalms = { 224147, 224145,
             224137, 224135, 224133, 224131, 219020 };
             public static readonly int[] RkCalms = { 155577, 100428, 100429, 100430, 100431, 100432,
             30093, 30056, 30065 };
             public static readonly int[] AOECalms = { 100422, 100424, 100426 };
+            public static readonly int[] CratNuke = { 82000, 78396, 78397, 30091, 78399, 81996, 30083, 81997, 30068, 81998, 78398, 29618 };
+            public static readonly int[] CratSpecialNuke = { 78400, 30082, 78394, 78395}; 
 
             //fixer
             public const int SpinNanoweb = 85216;
             public const int GravityBindings = 82502;
+
+            //MA
+            public static int[] DamageTypeFire = { 81827, 81824, 28876 };
+            public static int[] DamageTypeEnergy = { 81825, 81823, 81826, 81829 };
+            public static int[] DamageTypeChemical = { 81822, 81830 };
+            public static int[] TargetEvades = { 28903, 28878, 28872 };
+
         }
 
         #region Agent LE procs
@@ -3039,6 +3369,14 @@ namespace CombatHandler.Agent
         }
         #endregion
 
+        #region MA Item
+        public enum MASelection
+        {
+            None, Sappo = 267525, Shen = 201281, FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
+            AttackoftheSnake = 204330, AngelofNight = 204331
+        }
+        #endregion
+
         #region Trader Selections
 
         public enum RansackSelection
@@ -3060,7 +3398,12 @@ namespace CombatHandler.Agent
 
         #endregion
 
-
+        #region MA Damage Selections
+        public enum DamageTypeSelection
+        {
+            None, Fire, Energy, Chemical
+        }
+        #endregion
         private static class RelevantIgnoreNanos
         {
             public static int[] CompNanoSkills = new[] { 220331, 220333, 220335, 220337, 292299, 220339, 220341, 220343 };

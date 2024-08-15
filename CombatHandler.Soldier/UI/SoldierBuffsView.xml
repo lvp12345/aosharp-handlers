@@ -25,6 +25,10 @@
 			<RadioButton label="(Self) Rubi-Ka" value="1"/>
 			<RadioButton label="(Team) Rubi-Ka" value="2"/>
 		</OptionRadioButtonGroup>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="AMS / TMS %" layout_borders="Rect(5,5,5,5)"/>
+		<TextInputView name="AMSPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(4,4,4,4)"/>
+		<TextView value="" layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>
 </root>

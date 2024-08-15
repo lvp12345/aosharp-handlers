@@ -759,6 +759,23 @@ namespace CombatHandler.Generic
                 }
             }
         }
+        public event EventHandler<int> AMSPercentageChangedEvent;
+        private int _AMSPercentage = 85;
+        public int AMSPercentage
+        {
+            get
+            {
+                return _AMSPercentage;
+            }
+            set
+            {
+                if (_AMSPercentage != value)
+                {
+                    _AMSPercentage = value;
+                    AMSPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> ShadesCaressPercentageChangedEvent;
         private int _shadesCaressPercentage = 40;
         public int ShadesCaressPercentage

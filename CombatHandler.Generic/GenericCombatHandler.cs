@@ -43,6 +43,7 @@ namespace CombatHandler.Generic
         public static int HealthDrainPercentage = 0;
         public static int NanoAegisPercentage = 0;
         public static int NullitySpherePercentage = 0;
+        public static int AMSPercentage = 0;
         public static int IzgimmersWealthPercentage = 0;
         public static int ShadeTattooPercentage = 0;
         public static int SelfHealPerkPercentage = 0;
@@ -2190,6 +2191,12 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage = e;
             NullitySpherePercentage = e;
+            Config.Save();
+        }
+        public static void AMSPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentage = e;
+            AMSPercentage = e;
             Config.Save();
         }
         public static void IzgimmersWealthPercentage_Changed(object s, int e)

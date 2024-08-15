@@ -52,6 +52,7 @@ namespace CombatHandler.Soldier
                 Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TimedTauntDelayChangedEvent += TimedTauntDelay_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentageChangedEvent += AMSPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentageChangedEvent += StimNanoPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentageChangedEvent += KitHealthPercentage_Changed;
@@ -170,7 +171,10 @@ namespace CombatHandler.Soldier
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(), RiotControl);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                             => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(29251, TeamRiotControl);
 
                 //Team Buffs
                 RegisterSpellProcessor(RelevantNanos.Precognition, Evades);
@@ -197,6 +201,7 @@ namespace CombatHandler.Soldier
                 SingleTauntDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay;
                 TimedTauntDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].TimedTauntDelay;
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
+                AMSPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentage;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
                 StimNanoPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimNanoPercentage;
                 KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
@@ -273,11 +278,25 @@ namespace CombatHandler.Soldier
 
                 _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierBuffsView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "SoldierBuffsView" }, _buffView);
+
+                window.FindView("AMSPercentageBox", out TextInputView AMSInput);
+
+                if (AMSInput != null)
+                {
+                    AMSInput.Text = $"{AMSPercentage}";
+                }
             }
             else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
             {
                 SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "SoldierBuffsView" }, _buffView, out var container);
                 _buffWindow = container;
+
+                container.FindView("AMSPercentageBox", out TextInputView AMSInput);
+
+                if (AMSInput != null)
+                {
+                    AMSInput.Text = $"{AMSPercentage}";
+                }
             }
         }
         private void HandleHealingViewClick(object s, ButtonBase button)
@@ -578,6 +597,7 @@ namespace CombatHandler.Soldier
                 window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
                 window.FindView("TimedTauntDelayBox", out TextInputView timedInput);
                 window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+                window.FindView("AMSPercentageBox", out TextInputView AMSInput);
                 window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                 window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
                 window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
@@ -594,6 +614,17 @@ namespace CombatHandler.Soldier
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
 
+                if (AMSInput != null && !string.IsNullOrEmpty(AMSInput.Text))
+                {
+                    if (int.TryParse(AMSInput.Text, out int AMSValue))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentage != AMSValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].AMSPercentage = AMSValue;
+                        }
+                    }
+                }
+                
                 if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
                 {
                     if (int.TryParse(FountainOfLifeInput.Text, out int Value))
@@ -1037,55 +1068,54 @@ namespace CombatHandler.Soldier
 
         #region Buffs
 
-        private bool RiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool TeamRiotControl(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["RiotControl"].AsBool())
-            {
-                if (!Team.IsInTeam) { return false; }
+            if (!_settings["RiotControl"].AsBool()) { return false; }
+            if (!Team.IsInTeam) { return false; }
 
-                var target = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        && c.SpecialAttacks.Contains(SpecialAttack.Burst)
-                        && SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
+            var teamMember = Team.Members.Where(t => t?.Character != null
+            && t.Character.Health > 0
+            && t.Character.IsInLineOfSight
+            && t.Character.SpecialAttacks.Contains(SpecialAttack.Burst)
+            && SpellChecksOther(spell, spell.Nanoline, t.Character)
+            && spell.IsInRange(t?.Character)).FirstOrDefault();
 
-                if (target == null) { return false; }
+            if (teamMember == null) { return false; }
 
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = target;
-                return true;
-            }
+            actionTarget = (teamMember.Character, true);
+            return true;
 
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (_settings["CompHeavyArt"].AsBool())
             {
-                if (!Team.IsInTeam) { return false; }
+                if (Team.IsInTeam) 
+                {
+                    var target = Team.Members.Where(t => t?.Character != null
+                        && t.Character.Health > 0
+                        && t.Character.IsInLineOfSight
+                        && !t.Character.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !t.Character.Buffs.Contains(NanoLine.AssaultRifleBuffs)
+                        && HeavyCompWeaponChecks(t.Character)
+                        && SpellChecksOther(spell, spell.Nanoline, t.Character)).FirstOrDefault()?.Character;
 
-                var target = DynelManager.Players
-                    .Where(c => c.IsInLineOfSight
-                        && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
-                        && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0
-                        && !c.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !c.Buffs.Contains(NanoLine.AssaultRifleBuffs)
-                        && HeavyCompWeaponChecks(c)
-                        && SpellChecksOther(spell, spell.Nanoline, c))
-                    .FirstOrDefault();
+                    if (target == null) { return false; }
 
-                if (target == null) { return false; }
+                    if (target.Identity == DynelManager.LocalPlayer.Identity
+                        && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
 
-                if (target.Identity == DynelManager.LocalPlayer.Identity
-                    && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
-
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = target;
-                return true;
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = target;
+                    return true;
+                }
+                else
+                {
+                    return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
+                      || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun)
+                      || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade);
+                }
+                
             }
 
             return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
@@ -1133,13 +1163,11 @@ namespace CombatHandler.Soldier
 
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if (!_settings["Buffing"].AsBool()) { return false; }
+            if   (!_settings["Buffing"].AsBool()) {  return false; }
+            if   (!CanCast(spell)) { return false; }
 
-            if (fightingtarget == null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 85) { return true; }
-
-            return false;
+            return DynelManager.LocalPlayer.HealthPercent <= AMSPercentage;
+                       
         }
 
         #endregion

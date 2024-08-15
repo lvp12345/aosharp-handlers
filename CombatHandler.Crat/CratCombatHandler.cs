@@ -260,7 +260,8 @@ namespace CombatHandler.Bureaucrat
                 RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetBuff);
                 RegisterSpellProcessor(RelevantNanos.CompositeMelee, PetSupportTargetBuff);
                 RegisterSpellProcessor(RelevantNanos.CompositeMartialProwess, PetSupportTargetBuff);
-
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), PetBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.CriticalDecreaseBuff).OrderByStackingOrder(), PetSupportTargetBuff);
                 RegisterSpellProcessor(RelevantNanos.DroidDamageMatrix, DroidMatrixBuff);
 
                 //Pet Procs

@@ -2,6 +2,7 @@
 <root>
 	<BorderView v_alignment="TOP" h_alignment="LEFT" view_layout="vertical" name="TradeView" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 		<OptionRadioButtonGroup label="Trader Evades" layout_borders="Rect(5,5,5,5)" opt_type="variant" opt_variable="CombatHandler__TdrEvades">
 			<RadioButton label="None" value="0"/>
 			<RadioButton label="Self" value="1"/>
@@ -13,11 +14,19 @@
 			<RadioButton label="Area" value="2"/>
 			<RadioButton label="Boss" value="3"/>
 		</OptionRadioButtonGroup>
+		</View>
+			<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 		<OptionRadioButtonGroup label="RK Nano Drain" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RKNanoDrainSelection">
 			<RadioButton label="None" value="0"/>
 			<RadioButton label="Target" value="1"/>
 			<RadioButton label="Boss" value="2"/>
 		</OptionRadioButtonGroup>
+		<OptionRadioButtonGroup label="Mezz/Calm Mode" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__TraderModeSelection">
+			<RadioButton label="None" value="0"/>
+			<RadioButton label="All" value="1"/>
+			<RadioButton label="Adds" value="2"/>
+		</OptionRadioButtonGroup>
+			</View>
 		<View v_alignment="TOP" h_alignment="Left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 			<OptionRadioButtonGroup label="Drains (Ransack)" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__RansackSelection">
 				<RadioButton label="None" value="0"/>

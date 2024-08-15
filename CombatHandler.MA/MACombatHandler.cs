@@ -166,11 +166,18 @@ namespace CombatHandler.MartialArtist
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonCombatBuff(spell, ref actionTarget, fightingTarget, "RunSpeed"));
-
-                RegisterSpellProcessor(RelevantNanos.DamageTypeMelee, DamageTypeMelee);
-                RegisterSpellProcessor(RelevantNanos.DamageTypeFire, DamageTypeFire);
-                RegisterSpellProcessor(RelevantNanos.DamageTypeEnergy, DamageTypeEnergy);
-                RegisterSpellProcessor(RelevantNanos.DamageTypeChemical, DamageTypeChemical);
+                RegisterSpellProcessor(RelevantNanos.DamageTypeFire,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Fire));
+                RegisterSpellProcessor(RelevantNanos.DamageTypeEnergy,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Energy));
+                RegisterSpellProcessor(RelevantNanos.DamageTypeChemical,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Chemical));
+                RegisterSpellProcessor(RelevantNanos.DamageTypeMelee,
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
+                    MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Melee));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder >= 19).OrderByStackingOrder(), ControlledDestructionNoShutdown);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder < 19).OrderByStackingOrder(), ControlledDestructionWithShutdown);
@@ -622,6 +629,7 @@ namespace CombatHandler.MartialArtist
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
+                CancelBuffs();
                 #region UI
 
                 var window = SettingsController.FindValidWindow(_windows);
@@ -1003,6 +1011,36 @@ namespace CombatHandler.MartialArtist
 
             return true;
         }
+        private bool MADamageType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, DamageTypeSelection procType)
+        {
+            DamageTypeSelection currentSetting = (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32();
+
+            if (currentSetting != procType)
+            {
+                return false;
+            }
+
+            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
+        }
+        private void CancelBuffs()
+        {
+            if (DamageTypeSelection.Fire != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageTypeFire);
+            }
+            if (DamageTypeSelection.Energy != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageTypeEnergy);
+            }
+            if (DamageTypeSelection.Chemical != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageTypeChemical);
+            }
+            if (DamageTypeSelection.Melee != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            {
+                CancelBuffs(RelevantNanos.DamageTypeMelee);
+            }
+        }
         private bool DimachItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             item.Id = _settings["DimachSelection"].AsInt32();
@@ -1244,6 +1282,10 @@ namespace CombatHandler.MartialArtist
         public enum DimachSelection
         {
             None, TouchOfSaiFung = 275018, TheWizdomofHuzzum = 303056, TreeofEnlightenment = 204607
+        }
+        public enum DamageTypeSelection
+        {
+            None, Fire, Energy, Chemical, Melee
         }
         public enum ProcType1Selection
         {

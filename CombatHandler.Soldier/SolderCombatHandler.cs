@@ -106,7 +106,7 @@ namespace CombatHandler.Soldier
 
                 _settings.AddVariable("SingleTauntsSelection", 2);
                 _settings.AddVariable("TimedTauntsSelection", 2);
-
+                _settings.AddVariable("ReleaseMeNow", false);
                 _settings.AddVariable("RKReflectSelection", 0);
 
                 _settings.AddVariable("NotumGrenades", false);
@@ -175,6 +175,7 @@ namespace CombatHandler.Soldier
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                              => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
                 RegisterSpellProcessor(29251, TeamRiotControl);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SelfRoot_SnareResistBuff).OrderByStackingOrder(), BreakRoot, CombatActionPriority.High);
 
                 //Team Buffs
                 RegisterSpellProcessor(RelevantNanos.Precognition, Evades);
